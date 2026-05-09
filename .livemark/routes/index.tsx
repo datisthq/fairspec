@@ -55,7 +55,8 @@ function Hero() {
         </h1>
 
         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Fairspec is a lightweight data exchange format compatible with{" "}
+          <code className="font-mono text-foreground">Fairspec</code> is a
+          lightweight data exchange format compatible with{" "}
           <code className="font-mono text-foreground">DataCite</code> for
           metadata and{" "}
           <code className="font-mono text-foreground">JSON Schema</code> for
