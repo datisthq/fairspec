@@ -1,8 +1,14 @@
 {
-  "name": "fairspec",
+  "name": "fairspec-standard",
   "preview_urls": true,
   "compatibility_date": "2025-08-15",
   "assets": {
     "directory": "./.livemark/build/client",
   },
+  "routes": [
+    {
+      "pattern": "fairspec.org",
+      "custom_domain": true,
+    },
+  ],
 }
