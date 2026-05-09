@@ -1,8 +1,8 @@
 ---
 title: Fairspec DataCite
-sidebar:
-  label: DataCite
-  order: 2
+label: DataCite
+path: /extensions/datacite/
+order: 2
 ---
 
 <table>

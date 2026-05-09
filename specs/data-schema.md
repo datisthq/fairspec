@@ -1,8 +1,8 @@
 ---
 title: Fairspec Data Schema
-sidebar:
-  label: Data Schema
-  order: 4
+label: Data Schema
+path: /specs/data-schema/
+order: 4
 ---
 
 <table>
@@ -32,7 +32,7 @@ A Fairspec Data Schema is a [JSON](https://json.org/) resource that `MUST` be an
 
 A top-level descriptor object defining a schema of structured data resources. It `MIGHT` have the following properties (all optional unless otherwise stated):
 
-### `$schema` {#profile}
+### `$schema` [#profile]
 
 > [!NOTE]
 > Data publisher `SHOULD` provide this property with an exact version when sharing a standalone descriptor publicly.

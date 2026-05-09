@@ -1,8 +1,8 @@
 ---
 title: Fairspec Table Schema
-sidebar:
-  label: Table Schema
-  order: 5
+label: Table Schema
+path: /specs/table-schema/
+order: 5
 ---
 
 <table>
@@ -32,7 +32,7 @@ A Fairspec Table Schema is a [JSON](https://json.org/) resource that `MUST` be a
 
 A top-level descriptor object defining a schema of tabular data resources. It `MIGHT` have the following properties (all optional unless otherwise stated):
 
-### `$schema` {#profile}
+### `$schema` [#profile]
 
 > [!NOTE]
 > Data publisher `SHOULD` provide this property with an exact version when sharing a standalone descriptor publicly.
@@ -374,7 +374,7 @@ age
 18
 ```
 
-#### `title` {#column-title}
+#### `title` [#column-title]
 
 An optional human-readable title for the column. It `MUST` be a string.
 
@@ -400,7 +400,7 @@ temp_c
 98.6
 ```
 
-#### `description` {#column-description}
+#### `description` [#column-description]
 
 An optional detailed description of the column. It `MUST` be a string.
 
@@ -583,7 +583,7 @@ temperature
 18.7
 ```
 
-#### `missingValues` {#column-missingvalues}
+#### `missingValues` [#column-missingvalues]
 
 An optional column-level list of values that represent missing or null data for this column. Each item can be either a simple value or an object with `value` and `label` properties for documentation purposes. The missing values type `MUST` be:
 

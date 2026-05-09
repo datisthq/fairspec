@@ -1,8 +1,33 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["**/build/*"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+
+  "include": [
+    "${configDir}/**/*.ts",
+    "${configDir}/**/*.tsx",
+    "${configDir}/.livemark/**/*.ts",
+    "${configDir}/.livemark/**/*.tsx"
+  ],
+  "exclude": [
+    "${configDir}/**/build/",
+    "${configDir}/.livemark/build/",
+    "${configDir}/node_modules"
+  ],
+
   "compilerOptions": {
-    "skipLibCheck": true
+    "target": "ES2024",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "lib": ["ESNext", "DOM"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+
+    "rewriteRelativeImportExtensions": true
   }
 }

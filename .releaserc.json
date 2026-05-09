@@ -15,7 +15,7 @@
       "@semantic-release/git",
       {
         "message": "release: v${nextRelease.version}",
-        "assets": ["public/profiles/**/*.json", "package.json"]
+        "assets": [".livemark/public/profiles/**/*.json", "package.json"]
       }
     ],
     ["@semantic-release/github"]

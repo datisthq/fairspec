@@ -1,8 +1,8 @@
 ---
 title: Fairspec GREI
-sidebar:
-  label: GREI
-  order: 2
+label: GREI
+path: /extensions/grei/
+order: 3
 ---
 
 <table>

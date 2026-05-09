@@ -1,8 +1,8 @@
 ---
 title: Fairspec Dataset
-sidebar:
-  label: Dataset
-  order: 2
+label: Dataset
+path: /specs/dataset/
+order: 2
 ---
 
 <table>
@@ -35,7 +35,7 @@ A Fairspec Dataset is a [JSON](https://json.org/) resource that `MUST` be an obj
 
 A top-level descriptor object describing an individual dataset. It `MIGHT` have the following properties (all optional unless otherwise stated):
 
-### `$schema` {#profile}
+### `$schema` [#profile]
 
 > [!NOTE]
 > Data publishers `SHOULD` provide this property with an exact version when sharing a standalone descriptor publicly.
@@ -89,7 +89,7 @@ For multiple resources:
 }
 ```
 
-### `<datacite>` {#dataset-datacite}
+### `<datacite>` [#dataset-datacite]
 
 Dataset supports all the properties defined in [DataCite Metadata Schema 4.6](https://datacite-metadata-schema.readthedocs.io/en/4.6/).
 
@@ -296,7 +296,7 @@ For example as an object:
 }
 ```
 
-### `<datacite>` {#resource-datacite}
+### `<datacite>` [#resource-datacite]
 
 Resource supports all the properties defined in [DataCite Metadata Schema 4.6](https://datacite-metadata-schema.readthedocs.io/en/4.6/).
 

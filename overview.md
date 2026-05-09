@@ -1,8 +1,9 @@
 ---
-title: Fairspec Standard
-sidebar:
-  order: 1
-  label: Introduction
+title: Overview
+label: Overview
+path: /overview/
+order: 10
+icon: book-open
 ---
 
 > [!TIP]

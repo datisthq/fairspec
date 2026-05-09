@@ -59,10 +59,11 @@ pids
 .vscode/
 .wrangler/
 build/
+.livemark/build/
+.tanstack/
 compile/
 dist/
 .astro/
-/docs/content/docs/reference/
 .cursor/
 .claude/
 .serena/

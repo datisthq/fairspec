@@ -1,7 +1,7 @@
 ---
 title: Examples
-sidebar:
-  order: 3
+path: /overview/examples/
+order: 3
 ---
 
 This guide demonstrates how to create Fairspec descriptors for real-world use cases. We'll walk through examples of catalogs, datasets, and table schemas.

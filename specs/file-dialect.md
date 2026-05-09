@@ -1,8 +1,8 @@
 ---
 title: Fairspec File Dialect
-sidebar:
-  label: File Dialect
-  order: 3
+label: File Dialect
+path: /specs/file-dialect/
+order: 3
 ---
 
 <table>
@@ -32,7 +32,7 @@ A Fairspec File Dialect is a [JSON](https://json.org/) resource that `MUST` be a
 
 A top-level descriptor object describing a file dialect. It `MIGHT` have the following properties (all optional unless otherwise stated):
 
-### `$schema` {#profile}
+### `$schema` [#profile]
 
 > [!NOTE]
 > Data publishers `SHOULD` provide this property with an exact version when sharing a standalone descriptor publicly.

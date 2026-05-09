@@ -1,7 +1,5 @@
 ---
 title: Contributing
-sidebar:
-  order: 4
 ---
 
 Thank you for your interest in contributing to Fairspec! As an open standard, contributions from the community help improve the specification and documentation.

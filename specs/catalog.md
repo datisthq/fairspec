@@ -1,8 +1,8 @@
 ---
 title: Fairspec Catalog
-sidebar:
-  label: Catalog
-  order: 1
+label: Catalog
+path: /specs/catalog/
+order: 1
 ---
 
 <table>
@@ -44,7 +44,7 @@ For example:
 
 A catalog entry pointing to a [Fairspec Dataset](../dataset). It `MUST` have the following properties (all required):
 
-### `loc` [required] {#loc}
+### `loc` [required] [#loc]
 
 URI to the [Fairspec Dataset](../dataset) descriptor. The property `MUST` be [JSON Schema URI](https://json-schema.org/understanding-json-schema/reference/type#resource-identifiers).
 
@@ -56,7 +56,7 @@ For example:
 }
 ```
 
-### `upd` [required] {#upd}
+### `upd` [required] [#upd]
 
 The last updated time of the dataset. The property `MUST` be [JSON Schema date-time](https://json-schema.org/understanding-json-schema/reference/type#dates-and-times) (this format requires a timezone component).
 
