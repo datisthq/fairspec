@@ -114,19 +114,68 @@ function BackgroundGrid() {
 
 /* ─────────────────────────── Installation ─────────────────────────── */
 
+const tk = {
+  punct: "text-[#7c7f93] dark:text-[#9399b2]",
+  key: "text-[#1e66f5] dark:text-[#89b4fa]",
+  str: "text-[#40a02b] dark:text-[#a6e3a1]",
+  cmd: "text-[#8839ef] dark:text-[#cba6f7]",
+  body: "text-[#4c4f69] dark:text-[#cdd6f4]",
+}
+
+function BashClaudeCode() {
+  return (
+    <code className={tk.body}>
+      <span className={tk.cmd}>claude</span> mcp add{" "}
+      <span className={tk.str}>fairspec</span>{" "}
+      <span className={tk.punct}>--</span> npx{" "}
+      <span className={tk.str}>fairspec@latest</span> mcp
+    </code>
+  )
+}
+
+function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
+  return (
+    <code className={tk.body}>
+      <span className={tk.punct}>{"{"}</span>
+      {"\n  "}
+      <span className={tk.key}>"{rootKey}"</span>
+      <span className={tk.punct}>:</span>{" "}
+      <span className={tk.punct}>{"{"}</span>
+      {"\n    "}
+      <span className={tk.key}>"fairspec"</span>
+      <span className={tk.punct}>:</span>{" "}
+      <span className={tk.punct}>{"{"}</span>
+      {"\n      "}
+      <span className={tk.key}>"command"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"npx"</span>
+      <span className={tk.punct}>,</span>
+      {"\n      "}
+      <span className={tk.key}>"args"</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>[</span>
+      <span className={tk.str}>"fairspec@latest"</span>
+      <span className={tk.punct}>,</span> <span className={tk.str}>"mcp"</span>
+      <span className={tk.punct}>]</span>
+      {"\n    "}
+      <span className={tk.punct}>{"}"}</span>
+      {"\n  "}
+      <span className={tk.punct}>{"}"}</span>
+      {"\n"}
+      <span className={tk.punct}>{"}"}</span>
+    </code>
+  )
+}
+
 interface Editor {
   name: string
   description: ReactNode
-  command: string
-  language: string
+  snippet: ReactNode
 }
 
 const editors: Editor[] = [
   {
     name: "Claude Code",
     description: <>Add the server with one command in any project directory.</>,
-    command: "claude mcp add fairspec -- npx fairspec@latest mcp",
-    language: "bash",
+    snippet: <BashClaudeCode />,
   },
   {
     name: "Claude Desktop",
@@ -135,15 +184,7 @@ const editors: Editor[] = [
         Add to your <code>claude_desktop_config.json</code>:
       </>
     ),
-    command: `{
-  "mcpServers": {
-    "fairspec": {
-      "command": "npx",
-      "args": ["fairspec@latest", "mcp"]
-    }
-  }
-}`,
-    language: "json",
+    snippet: <McpServersJson rootKey="mcpServers" />,
   },
   {
     name: "Cursor",
@@ -152,15 +193,7 @@ const editors: Editor[] = [
         Add to <code>.cursor/mcp.json</code> in your project:
       </>
     ),
-    command: `{
-  "mcpServers": {
-    "fairspec": {
-      "command": "npx",
-      "args": ["fairspec@latest", "mcp"]
-    }
-  }
-}`,
-    language: "json",
+    snippet: <McpServersJson rootKey="mcpServers" />,
   },
   {
     name: "VS Code",
@@ -169,15 +202,7 @@ const editors: Editor[] = [
         Add to <code>.vscode/mcp.json</code> in your project:
       </>
     ),
-    command: `{
-  "servers": {
-    "fairspec": {
-      "command": "npx",
-      "args": ["fairspec@latest", "mcp"]
-    }
-  }
-}`,
-    language: "json",
+    snippet: <McpServersJson rootKey="servers" />,
   },
   {
     name: "Windsurf",
@@ -186,15 +211,7 @@ const editors: Editor[] = [
         Add to <code>~/.codeium/windsurf/mcp_config.json</code>:
       </>
     ),
-    command: `{
-  "mcpServers": {
-    "fairspec": {
-      "command": "npx",
-      "args": ["fairspec@latest", "mcp"]
-    }
-  }
-}`,
-    language: "json",
+    snippet: <McpServersJson rootKey="mcpServers" />,
   },
 ]
 
@@ -244,10 +261,8 @@ function Installation() {
               <p className="text-sm text-muted-foreground mb-4">
                 {editor.description}
               </p>
-              <pre className="rounded-md border border-border bg-background p-4 text-sm overflow-x-auto">
-                <code className={`language-${editor.language}`}>
-                  {editor.command}
-                </code>
+              <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
+                {editor.snippet}
               </pre>
             </div>
           </div>
