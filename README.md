@@ -1,4 +1,4 @@
-# Fairspec
+# Fairspec Standard
 
 > [!TIP]
 > The [FAIR principles](https://en.wikipedia.org/wiki/FAIR_data) provide guidelines to improve the **Findability, Accessibility, Interoperability, and Reusability** of digital assets.

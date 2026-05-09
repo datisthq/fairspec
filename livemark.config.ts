@@ -60,7 +60,7 @@ export default defineConfig({
     {
       file: "README.md",
       article: {
-        title: "Fairspec",
+        title: "Fairspec Standard",
         label: "Overview",
         path: "/overview/",
         order: 10,
