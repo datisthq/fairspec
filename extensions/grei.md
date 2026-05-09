@@ -2,7 +2,7 @@
 title: Fairspec GREI
 label: GREI
 path: /extensions/grei/
-order: 3
+order: 4
 ---
 
 <table>

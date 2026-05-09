@@ -2,7 +2,7 @@
 title: Fairspec DataCite
 label: DataCite
 path: /extensions/datacite/
-order: 2
+order: 3
 ---
 
 <table>
