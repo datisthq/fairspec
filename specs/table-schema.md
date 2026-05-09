@@ -7,8 +7,8 @@ order: 5
 
 :::card{title="Specification" icon="file-text"}
 
-| Authors      | Profile |
-| :----------- | :------ |
+| Authors      | Profile                                                                                                          |
+| :----------- | :--------------------------------------------------------------------------------------------------------------- |
 | Evgeny Karev | [https://fairspec.org/profiles/latest/table-schema.json](https://fairspec.org/profiles/latest/table-schema.json) |
 
 :::

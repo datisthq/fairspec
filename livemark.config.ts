@@ -16,21 +16,45 @@ export default defineConfig({
     "CONTRIBUTING.md",
   ],
   sections: [
-    { title: "Docs", prefix: "/" },
+    { title: "Standard", prefix: "/", icon: "book-open" },
+    {
+      type: "custom",
+      title: "Python",
+      url: "https://python.fairspec.org",
+      icon: "code",
+    },
+    {
+      type: "custom",
+      title: "TypeScript",
+      url: "https://typescript.fairspec.org",
+      icon: "code-xml",
+    },
+    {
+      type: "custom",
+      title: "MCP Server",
+      url: "/mcp-server/",
+      icon: "sparkles",
+    },
+    {
+      type: "custom",
+      title: "Application",
+      url: "https://application.fairspec.org",
+      icon: "app-window",
+    },
     {
       title: "Changelog",
       prefix: "/changelog/",
       type: "changelog",
       source: "https://github.com/fairspec/fairspec",
       version: true,
+      icon: "history",
     },
-  ],
-  links: [
-    { url: "https://python.fairspec.org", title: "Python" },
-    { url: "https://typescript.fairspec.org", title: "TypeScript" },
-    { url: "/mcp-server/", title: "MCP Server" },
-    { url: "https://application.fairspec.org", title: "Application" },
-    { url: "https://github.com/fairspec", title: "GitHub", icon: "github" },
+    {
+      type: "custom",
+      title: "GitHub",
+      url: "https://github.com/fairspec",
+      icon: "github",
+    },
   ],
   patches: [
     {
@@ -41,7 +65,6 @@ export default defineConfig({
         path: "/overview/",
         order: 10,
         icon: "book-open",
-        group: "Articles",
       },
     },
     {
