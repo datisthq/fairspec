@@ -7,7 +7,7 @@ export default defineConfig({
   logo: "/logo.svg",
   favicon: "/logo.png",
   include: [
-    "overview.md",
+    "README.md",
     "overview/**/*.md",
     "specs.md",
     "specs/**/*.md",
@@ -33,6 +33,17 @@ export default defineConfig({
     { url: "https://github.com/fairspec", title: "GitHub", icon: "github" },
   ],
   patches: [
+    {
+      file: "README.md",
+      article: {
+        title: "Fairspec",
+        label: "Overview",
+        path: "/overview/",
+        order: 10,
+        icon: "book-open",
+        group: "Articles",
+      },
+    },
     {
       file: "CONTRIBUTING.md",
       article: {
