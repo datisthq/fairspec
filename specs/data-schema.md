@@ -5,18 +5,13 @@ path: /specs/data-schema/
 order: 4
 ---
 
-<table>
-  <tr>
-    <th>Authors</th>
-    <td>Evgeny Karev</td>
-  </tr>
-  <tr>
-    <th>Profile</th>
-    <td>
-      <a href="https://fairspec.org/profiles/latest/data-schema.json">https://fairspec.org/profiles/latest/data-schema.json</a>
-    </td>
-  </tr>
-</table>
+:::card{title="Specification" icon="file-text"}
+
+| Authors      | Profile |
+| :----------- | :------ |
+| Evgeny Karev | [https://fairspec.org/profiles/latest/data-schema.json](https://fairspec.org/profiles/latest/data-schema.json) |
+
+:::
 
 Fairspec Data Schema is a simple [JSON](https://json.org)-based format that defines Data Schema to describe a class of structured data resources. It is fully compatible with the [JSON Schema](https://json-schema.org/) standard.
 

@@ -5,18 +5,13 @@ path: /specs/dataset/
 order: 2
 ---
 
-<table>
-  <tr>
-    <th>Authors</th>
-    <td>Evgeny Karev</td>
-  </tr>
-  <tr>
-    <th>Profile</th>
-    <td>
-      <a href="https://fairspec.org/profiles/latest/dataset.json">https://fairspec.org/profiles/latest/dataset.json</a>
-    </td>
-  </tr>
-</table>
+:::card{title="Specification" icon="file-text"}
+
+| Authors      | Profile |
+| :----------- | :------ |
+| Evgeny Karev | [https://fairspec.org/profiles/latest/dataset.json](https://fairspec.org/profiles/latest/dataset.json) |
+
+:::
 
 Fairspec Dataset is a simple [JSON](https://json.org)-based format that allows to describe a single dataset and its resources. It is compatible with the [DataCite](https://schema.datacite.org/) standard for metadata and the [JSON Schema](https://json-schema.org/) standard for structured data.
 

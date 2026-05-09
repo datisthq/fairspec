@@ -5,18 +5,13 @@ path: /specs/table-schema/
 order: 5
 ---
 
-<table>
-  <tr>
-    <th>Authors</th>
-    <td>Evgeny Karev</td>
-  </tr>
-  <tr>
-    <th>Profile</th>
-    <td>
-      <a href="https://fairspec.org/profiles/latest/table-schema.json">https://fairspec.org/profiles/latest/table-schema.json</a>
-    </td>
-  </tr>
-</table>
+:::card{title="Specification" icon="file-text"}
+
+| Authors      | Profile |
+| :----------- | :------ |
+| Evgeny Karev | [https://fairspec.org/profiles/latest/table-schema.json](https://fairspec.org/profiles/latest/table-schema.json) |
+
+:::
 
 Fairspec Table Schema is a simple [JSON](https://json.org)-based format that defines Table Schema to describe a class of tabular data resources. Table Schema is structurally compatible with the [JSON Schema](https://json-schema.org/) standard. When expedient, this specification aims to be structurally compatible with the [Data Package](https://datapackage.org/standard/table-schema/) standard.
 

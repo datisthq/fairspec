@@ -5,18 +5,13 @@ path: /extensions/datacite/
 order: 3
 ---
 
-<table>
-  <tr>
-    <th>Authors</th>
-    <td>Evgeny Karev</td>
-  </tr>
-  <tr>
-    <th>Profile</th>
-    <td>
-      <a href="https://fairspec.org/profiles/latest/datacite/dataset.json">https://fairspec.org/profiles/latest/datacite/dataset.json</a>
-    </td>
-  </tr>
-</table>
+:::card{title="Specification" icon="file-text"}
+
+| Authors      | Profile |
+| :----------- | :------ |
+| Evgeny Karev | [https://fairspec.org/profiles/latest/datacite/dataset.json](https://fairspec.org/profiles/latest/datacite/dataset.json) |
+
+:::
 
 Fairspec DataCite is a [Fairspec Dataset](../dataset) extension that requires the use of the [DataCite](https://datacite.org/)'s required properties.
 
