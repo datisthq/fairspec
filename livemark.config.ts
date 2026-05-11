@@ -16,7 +16,20 @@ export default defineConfig({
     "CONTRIBUTING.md",
   ],
   sections: [
-    { title: "Standard", prefix: "/", icon: "book-open" },
+    {
+      type: "custom",
+      title: "Fairspec",
+      icon: "rocket",
+      url: "/",
+    },
+    {
+      title: "Standard",
+      prefix: "/",
+      icon: "book-open",
+      siteTitle: "Fairspec Standard",
+      siteDescription: "Data exchange specifications",
+      siteLink: "/overview/",
+    },
     {
       type: "custom",
       title: "Python",
@@ -34,6 +47,9 @@ export default defineConfig({
       title: "MCP Server",
       url: "/mcp-server/",
       icon: "sparkles",
+      siteTitle: "Fairspec MCP Server",
+      siteDescription: "AI-assisted data management",
+      siteLink: "/mcp-server/",
     },
     {
       type: "custom",
