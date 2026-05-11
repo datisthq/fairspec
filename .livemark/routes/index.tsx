@@ -60,7 +60,12 @@ function Hero() {
           <code className="font-mono text-foreground">DataCite</code> for
           metadata and{" "}
           <code className="font-mono text-foreground">JSON Schema</code> for
-          structured data — Findable, Accessible, Interoperable, and Reusable.
+          structured data, shipped with{" "}
+          <code className="font-mono text-foreground">Python</code>,{" "}
+          <code className="font-mono text-foreground">TypeScript</code>,{" "}
+          <code className="font-mono text-foreground">MCP Server</code>, and{" "}
+          <code className="font-mono text-foreground">Desktop</code>{" "}
+          implementations.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
