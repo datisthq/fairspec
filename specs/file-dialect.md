@@ -5,13 +5,18 @@ path: /specs/file-dialect/
 order: 3
 ---
 
-:::card{title="Specification" icon="file-text"}
-
-| Authors      | Profile                                                                                                          |
-| :----------- | :--------------------------------------------------------------------------------------------------------------- |
-| Evgeny Karev | [https://fairspec.org/profiles/latest/file-dialect.json](https://fairspec.org/profiles/latest/file-dialect.json) |
-
-:::
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>Evgeny Karev</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href="https://fairspec.org/profiles/latest/file-dialect.json">https://fairspec.org/profiles/latest/file-dialect.json</a>
+    </td>
+  </tr>
+</table>
 
 Fairspec File Dialect is a simple [JSON](https://json.org)-based format that defines File Dialect to describe a file's format options and features. When expedient, this specification aims to be structurally compatible with the [Data Package](https://datapackage.org/standard/data-package/) standard.
 

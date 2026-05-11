@@ -117,4 +117,31 @@
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
+
+  .prose table:not([data-slot]) {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .prose table:not([data-slot]) :is(th, td) {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .prose table:not([data-slot]) :is(th, td):not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+
+  .prose table:not([data-slot]) tr:not(:last-child) :is(th, td) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prose table:not([data-slot]) th {
+    background: var(--muted);
+    font-weight: 600;
+  }
 }

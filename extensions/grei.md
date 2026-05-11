@@ -5,13 +5,18 @@ path: /extensions/grei/
 order: 4
 ---
 
-:::card{title="Specification" icon="file-text"}
-
-| Authors      | Profile                                                                                                          |
-| :----------- | :--------------------------------------------------------------------------------------------------------------- |
-| Evgeny Karev | [https://fairspec.org/profiles/latest/grei/dataset.json](https://fairspec.org/profiles/latest/grei/dataset.json) |
-
-:::
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>Evgeny Karev</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href="https://fairspec.org/profiles/latest/grei/dataset.json">https://fairspec.org/profiles/latest/grei/dataset.json</a>
+    </td>
+  </tr>
+</table>
 
 Fairspec GREI is a [Fairspec Dataset](../dataset) extension that requires the use of the [GREI](https://datascience.nih.gov/data-ecosystem/generalist-repository-ecosystem-initiative)'s required properties.
 

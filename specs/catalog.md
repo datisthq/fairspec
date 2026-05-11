@@ -5,13 +5,18 @@ path: /specs/catalog/
 order: 1
 ---
 
-:::card{title="Specification" icon="file-text"}
-
-| Authors      | Profile                                                                                                |
-| :----------- | :----------------------------------------------------------------------------------------------------- |
-| Evgeny Karev | [https://fairspec.org/profiles/latest/catalog.json](https://fairspec.org/profiles/latest/catalog.json) |
-
-:::
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>Evgeny Karev</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href="https://fairspec.org/profiles/latest/catalog.json">https://fairspec.org/profiles/latest/catalog.json</a>
+    </td>
+  </tr>
+</table>
 
 Fairspec Catalog is a simple [JSON Lines](https://jsonlines.org/)-based replication format that allows to sync a catalog of Fairspec Datasets. Dynamic search, sorting and similar capabilities are no goals of this specification.
 
