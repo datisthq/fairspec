@@ -67,7 +67,6 @@ dist/
 .cursor/
 .claude/
 .serena/
-.mcp.json
 .env
 .venv
 uv.lock
