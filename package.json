@@ -6,16 +6,18 @@
   "scripts": {
     "build": "livemark build",
     "bump": "ncu -u",
-    "clean": "rm -rf node_modules .livemark/build .tanstack",
     "format": "vp fmt",
     "generate": "node @generate.ts",
+    "leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
     "lint": "vp fmt --check && vp lint",
     "prepare": "lefthook install",
     "preview": "livemark preview",
-    "setversion": "pnpm version --no-git-tag-version",
+    "scan": "pnpm leaks && pnpm vulns",
+    "vers": "pnpm version --no-git-tag-version",
     "start": "livemark start",
     "test": "pnpm lint && pnpm type",
-    "type": "tsgo --noEmit"
+    "type": "tsgo --noEmit",
+    "vulns": "semgrep --config=p/typescript --config=p/nodejs --config=p/owasp-top-ten --config=p/secrets --metrics=off"
   },
   "devDependencies": {
     "@plausible-analytics/tracker": "0.4.4",
