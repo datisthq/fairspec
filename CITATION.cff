@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: Fairspec Standard
+abstract: A lightweight data exchange format designed to make scientific and research data FAIR (findable, accessible, interoperable, and reusable).
+authors:
+  - family-names: Karev
+    given-names: Evgeny
+    email: eskarev@gmail.com
+url: "https://fairspec.org"
+repository-code: "https://github.com/fairspec/fairspec-standard"
+license: MIT
+keywords:
+  - fair
+  - data
+  - metadata
+  - datacite
+  - json-schema
+  - specification
