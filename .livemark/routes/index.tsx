@@ -56,15 +56,12 @@ function Hero() {
 
         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Data exchange format compatible with{" "}
-          <code className="font-mono text-foreground">DataCite</code> for
-          metadata and{" "}
-          <code className="font-mono text-foreground">JSON Schema</code> for
-          structured data, shipped with{" "}
-          <code className="font-mono text-foreground">Python</code>,{" "}
+          <code className="font-mono text-foreground">DataCite</code> for metadata and{" "}
+          <code className="font-mono text-foreground">JSON Schema</code> for structured
+          data, shipped with <code className="font-mono text-foreground">Python</code>,{" "}
           <code className="font-mono text-foreground">TypeScript</code>,{" "}
           <code className="font-mono text-foreground">MCP Server</code>, and{" "}
-          <code className="font-mono text-foreground">Desktop</code>{" "}
-          implementations.
+          <code className="font-mono text-foreground">Desktop</code> implementations.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -179,8 +176,7 @@ function Features() {
               A simple format for FAIR data
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Built on widely-adopted open standards. Easy to adopt, easy to
-              extend.
+              Built on widely-adopted open standards. Easy to adopt, easy to extend.
             </p>
           </div>
         </Reveal>
@@ -203,9 +199,7 @@ function FeatureCard({ icon: Icon, title, description }: Feature) {
         <Icon className="size-5" />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-        {description}
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   )
 }
@@ -242,10 +236,8 @@ function DatasetSample() {
         <span className={tk.key}>"creators"</span>
         <span className={tk.punct}>:</span> <span className={tk.punct}>[</span>
         {"\n    "}
-        <span className={tk.punct}>{"{"}</span>{" "}
-        <span className={tk.key}>"name"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.str}>"Ada Lovelace"</span>{" "}
+        <span className={tk.punct}>{"{"}</span> <span className={tk.key}>"name"</span>
+        <span className={tk.punct}>:</span> <span className={tk.str}>"Ada Lovelace"</span>{" "}
         <span className={tk.punct}>{"}"}</span>
         {"\n  "}
         <span className={tk.punct}>],</span>
@@ -261,16 +253,13 @@ function DatasetSample() {
         <span className={tk.punct}>,</span>
         {"\n      "}
         <span className={tk.key}>"fileDialect"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.punct}>{"{"}</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>{" "}
         <span className={tk.key}>"format"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.str}>"csv"</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.str}>"csv"</span>{" "}
         <span className={tk.punct}>{"}"},</span>
         {"\n      "}
         <span className={tk.key}>"tableSchema"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.punct}>{"{"}</span>
+        <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
         {"\n        "}
         <span className={tk.key}>"primaryKey"</span>
         <span className={tk.punct}>:</span> <span className={tk.punct}>[</span>
@@ -278,23 +267,18 @@ function DatasetSample() {
         <span className={tk.punct}>],</span>
         {"\n        "}
         <span className={tk.key}>"properties"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.punct}>{"{"}</span>
+        <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
         {"\n          "}
         <span className={tk.key}>"id"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.punct}>{"{"}</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>{" "}
         <span className={tk.key}>"type"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.str}>"integer"</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.str}>"integer"</span>{" "}
         <span className={tk.punct}>{"}"},</span>
         {"\n          "}
         <span className={tk.key}>"temperature"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.punct}>{"{"}</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>{" "}
         <span className={tk.key}>"type"</span>
-        <span className={tk.punct}>:</span>{" "}
-        <span className={tk.str}>"number"</span>{" "}
+        <span className={tk.punct}>:</span> <span className={tk.str}>"number"</span>{" "}
         <span className={tk.punct}>{"}"}</span>
         {"\n        "}
         <span className={tk.punct}>{"}"}</span>
@@ -321,8 +305,8 @@ function Showcase() {
               One JSON file. A FAIR dataset.
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              A Fairspec descriptor carries everything a consumer needs:
-              citation metadata, file dialects, and validated schemas.
+              A Fairspec descriptor carries everything a consumer needs: citation
+              metadata, file dialects, and validated schemas.
             </p>
           </div>
         </Reveal>
@@ -352,12 +336,11 @@ function FinalCta() {
       <div className="relative mx-auto max-w-3xl px-6 py-24 text-center">
         <Reveal>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            Describe your data.{" "}
-            <span className="text-primary">Make it FAIR.</span>
+            Describe your data. <span className="text-primary">Make it FAIR.</span>
           </h2>
           <p className="mt-6 text-lg text-muted-foreground">
-            Read the specifications, browse the examples, and start describing
-            your datasets in minutes.
+            Read the specifications, browse the examples, and start describing your
+            datasets in minutes.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link

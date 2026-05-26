@@ -54,10 +54,7 @@
       ]
     },
     "Path": {
-      "oneOf": [
-        { "$ref": "#/$defs/InternalPath" },
-        { "$ref": "#/$defs/ExternalPath" }
-      ]
+      "oneOf": [{ "$ref": "#/$defs/InternalPath" }, { "$ref": "#/$defs/ExternalPath" }]
     },
     "InternalPath": {
       "type": "string",
@@ -399,11 +396,7 @@
           "$ref": "#/$defs/RelatedIdentifierType"
         }
       },
-      "required": [
-        "relatedIdentifier",
-        "relatedIdentifierType",
-        "relationType"
-      ],
+      "required": ["relatedIdentifier", "relatedIdentifierType", "relationType"],
       "if": { "$ref": "#/$defs/RelatedObjectIf" },
       "else": { "$ref": "#/$defs/RelatedObjectElse" }
     },

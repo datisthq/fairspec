@@ -22,8 +22,7 @@ export const Route = createFileRoute("/mcp-server/")({
       { title: "Fairspec MCP Server" },
       {
         name: "description",
-        content:
-          "AI assistant integration for the Fairspec data management framework.",
+        content: "AI assistant integration for the Fairspec data management framework.",
       },
     ],
   }),
@@ -56,9 +55,9 @@ function Hero() {
         </h1>
         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Connect AI assistants to the{" "}
-          <strong className="text-foreground">Fairspec</strong> data management
-          framework. Validate datasets, infer schemas, and query tables —
-          directly from your editor or chat.
+          <strong className="text-foreground">Fairspec</strong> data management framework.
+          Validate datasets, infer schemas, and query tables — directly from your editor
+          or chat.
         </p>
         <div className="mt-8 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 font-mono text-sm text-foreground">
           <Terminal className="size-4 text-muted-foreground" />
@@ -126,8 +125,7 @@ function BashClaudeCode() {
   return (
     <code className={tk.body}>
       <span className={tk.cmd}>claude</span> mcp add{" "}
-      <span className={tk.str}>fairspec</span>{" "}
-      <span className={tk.punct}>--</span> npx{" "}
+      <span className={tk.str}>fairspec</span> <span className={tk.punct}>--</span> npx{" "}
       <span className={tk.str}>fairspec@latest</span> mcp
     </code>
   )
@@ -139,12 +137,10 @@ function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
       <span className={tk.punct}>{"{"}</span>
       {"\n  "}
       <span className={tk.key}>"{rootKey}"</span>
-      <span className={tk.punct}>:</span>{" "}
-      <span className={tk.punct}>{"{"}</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
       {"\n    "}
       <span className={tk.key}>"fairspec"</span>
-      <span className={tk.punct}>:</span>{" "}
-      <span className={tk.punct}>{"{"}</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
       {"\n      "}
       <span className={tk.key}>"command"</span>
       <span className={tk.punct}>:</span> <span className={tk.str}>"npx"</span>
@@ -228,8 +224,7 @@ function Installation() {
               Installation
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Wire up the Fairspec MCP server in your favorite assistant or
-              editor.
+              Wire up the Fairspec MCP server in your favorite assistant or editor.
             </p>
           </div>
         </Reveal>
@@ -258,9 +253,7 @@ function Installation() {
               ))}
             </div>
             <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-4">
-                {editor.description}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{editor.description}</p>
               <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
                 {editor.snippet}
               </pre>
@@ -291,9 +284,7 @@ function Usage() {
       <div className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Usage
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Usage</h2>
             <p className="mt-4 text-muted-foreground text-lg">
               Just ask in natural language. Try one of these prompts.
             </p>
@@ -391,12 +382,10 @@ function Tools() {
       <div className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Tools
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tools</h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Ten tools organized around core Fairspec concepts: data, data
-              schemas, datasets, file dialects, tables, and table schemas.
+              Ten tools organized around core Fairspec concepts: data, data schemas,
+              datasets, file dialects, tables, and table schemas.
             </p>
           </div>
         </Reveal>
@@ -421,9 +410,7 @@ function ToolCard({ icon: Icon, title, description }: Tool) {
         </div>
         <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        {description}
-      </p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
     </div>
   )
 }
