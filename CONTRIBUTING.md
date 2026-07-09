@@ -13,7 +13,7 @@ Thank you for your interest in contributing to Fairspec! As an open standard, co
 
 ## Using GitHub Issues
 
-Open an [issue on GitHub](https://github.com/fairspec/fairspec/issues) to:
+Open an [issue on GitHub](https://github.com/datisthq/fairspec/issues) to:
 
 - Report errors or ambiguities in the specification
 - Suggest improvements or new features
@@ -28,7 +28,7 @@ When creating an issue, please:
 
 ## Using GitHub Discussions
 
-Use [GitHub Discussions](https://github.com/fairspec/fairspec/discussions) for:
+Use [GitHub Discussions](https://github.com/datisthq/fairspec/discussions) for:
 
 - General questions about using Fairspec
 - Sharing implementation experiences

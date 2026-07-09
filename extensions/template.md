@@ -8,7 +8,7 @@ order: 1
 The [Fairspec Extension Template](https://fairspec.github.io/fairspec-extension/) is a ready-made repository template for building and publishing your own Fairspec extension. It bootstraps the JSON Schema profile, validation tests, and a documentation site so you can focus on the domain-specific properties of your extension.
 
 > [!TIP]
-> Click **Use this template** on the [GitHub repository](https://github.com/fairspec/fairspec-extension) to start a new extension in seconds.
+> Click **Use this template** on the [GitHub repository](https://github.com/datisthq/fairspec-extension) to start a new extension in seconds.
 
 ## What's included
 
