@@ -363,6 +363,16 @@ function FinalCta() {
               <Sparkles className="size-4" />
               Try the MCP server
             </Link>
+            <Link
+              to="/application/"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "lg" }),
+                "px-5 no-underline",
+              )}
+            >
+              <Laptop className="size-4" />
+              Open the application
+            </Link>
           </div>
         </Reveal>
       </div>
