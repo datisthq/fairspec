@@ -71,7 +71,7 @@ export default defineConfig({
     {
       type: "custom",
       title: "GitHub",
-      url: "https://github.com/datisthq",
+      url: "https://github.com/datisthq/fairspec",
       icon: "github",
     },
   ],
