@@ -116,7 +116,7 @@ function SpecPreview() {
         <pre className="overflow-x-auto">
           <DataciteLines />
         </pre>
-        <SpecLabel>JSONSchema compatible data</SpecLabel>
+        <SpecLabel>JSONSchema compatible for the data</SpecLabel>
         <pre className="overflow-x-auto">
           <TableSchemaLines />
         </pre>
