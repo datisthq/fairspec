@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/dataset.json",
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
   "doi": "10.1234/example.dataset.2024",
   "creators": [
     {

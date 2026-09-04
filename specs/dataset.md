@@ -194,7 +194,7 @@ For example:
 
 ### `integrity`
 
-The integrity check of the file. It `MUST` be a JSON object with the following properties:
+The integrity check of the file. It `MUST` be a JSON object with exactly the following properties, both of which are `REQUIRED`:
 
 **`type`**
 
