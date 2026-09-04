@@ -7,7 +7,6 @@ import {
   ListOrdered,
   Search,
   Sparkles,
-  Terminal,
   Wrench,
 } from "lucide-react"
 import type { ComponentType, ReactNode, SVGProps } from "react"
@@ -45,7 +44,7 @@ function McpServerPage() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-border">
+    <section className="relative overflow-hidden border-b border-border flex items-center min-h-[calc(100vh-4rem)]">
       <BackgroundGrid />
       <div className="relative w-full mx-auto max-w-7xl px-6 py-16 md:py-24 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -63,10 +62,6 @@ function Hero() {
               framework. Validate datasets, infer schemas, and query tables — directly
               from your editor or chat.
             </p>
-            <div className="mt-8 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 font-mono text-sm text-foreground">
-              <Terminal className="size-4 text-muted-foreground" />
-              <span>npx fairspec@latest mcp</span>
-            </div>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <a
                 href="#installation"
@@ -75,7 +70,7 @@ function Hero() {
                   "px-5 no-underline",
                 )}
               >
-                Get Started
+                Install
                 <ArrowRight className="size-4" />
               </a>
               <a
@@ -195,10 +190,10 @@ const tk = {
   body: "text-[#4c4f69] dark:text-[#cdd6f4]",
 }
 
-function BashClaudeCode() {
+function BashAgentAdd({ agent }: { agent: "claude" | "codex" }) {
   return (
     <code className={tk.body}>
-      <span className={tk.cmd}>claude</span> mcp add{" "}
+      <span className={tk.cmd}>{agent}</span> mcp add{" "}
       <span className={tk.str}>fairspec</span> <span className={tk.punct}>--</span> npx{" "}
       <span className={tk.str}>fairspec@latest</span> mcp
     </code>
@@ -235,18 +230,13 @@ function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
   )
 }
 
-interface Editor {
+interface Assistant {
   name: string
   description: ReactNode
   snippet: ReactNode
 }
 
-const editors: Editor[] = [
-  {
-    name: "Claude Code",
-    description: <>Add the server with one command in any project directory.</>,
-    snippet: <BashClaudeCode />,
-  },
+const assistants: Assistant[] = [
   {
     name: "Claude Desktop",
     description: (
@@ -257,28 +247,25 @@ const editors: Editor[] = [
     snippet: <McpServersJson rootKey="mcpServers" />,
   },
   {
-    name: "Cursor",
-    description: (
-      <>
-        Add to <code>.cursor/mcp.json</code> in your project:
-      </>
-    ),
-    snippet: <McpServersJson rootKey="mcpServers" />,
+    name: "Claude Code",
+    description: <>Add the server with one command in any project directory.</>,
+    snippet: <BashAgentAdd agent="claude" />,
   },
   {
-    name: "VS Code",
+    name: "Codex",
     description: (
       <>
-        Add to <code>.vscode/mcp.json</code> in your project:
+        One command configures the Codex CLI, the ChatGPT desktop app, and the IDE
+        extension — they share the same MCP configuration.
       </>
     ),
-    snippet: <McpServersJson rootKey="servers" />,
+    snippet: <BashAgentAdd agent="codex" />,
   },
   {
-    name: "Windsurf",
+    name: "Gemini CLI",
     description: (
       <>
-        Add to <code>~/.codeium/windsurf/mcp_config.json</code>:
+        Add to <code>~/.gemini/settings.json</code>:
       </>
     ),
     snippet: <McpServersJson rootKey="mcpServers" />,
@@ -287,8 +274,8 @@ const editors: Editor[] = [
 
 function Installation() {
   const [active, setActive] = useState(0)
-  const editor = editors[active] ?? editors[0]
-  if (!editor) return null
+  const assistant = assistants[active] ?? assistants[0]
+  if (!assistant) return null
   return (
     <section id="installation" className="border-b border-border scroll-mt-16">
       <div className="mx-auto max-w-5xl px-6 py-24">
@@ -298,7 +285,7 @@ function Installation() {
               Installation
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Wire up the Fairspec MCP server in your favorite assistant or editor.
+              Wire up the Fairspec MCP server in your favorite AI assistant.
             </p>
           </div>
         </Reveal>
@@ -308,9 +295,9 @@ function Installation() {
               role="tablist"
               className="flex flex-wrap border-b border-border bg-muted/40"
             >
-              {editors.map((e, i) => (
+              {assistants.map((a, i) => (
                 <button
-                  key={e.name}
+                  key={a.name}
                   type="button"
                   role="tab"
                   aria-selected={i === active}
@@ -322,14 +309,16 @@ function Installation() {
                       : "border-transparent text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {e.name}
+                  {a.name}
                 </button>
               ))}
             </div>
             <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-4">{editor.description}</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {assistant.description}
+              </p>
               <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-                {editor.snippet}
+                {assistant.snippet}
               </pre>
             </div>
           </div>
