@@ -121,7 +121,11 @@ Data or content of the resource. It `MUST` be in one of the following:
 - Inline JSON object
 - Inline JSON array of objects
 
-When multiple files are provided, they `MUST` all follow the same [Format](#format) and their contents `MUST` be physically concatenable in case of binary formats and logically concatenable in case of textual formats (i.e., combining them should produce a valid single file of that format).
+When multiple paths are provided, the resource is multipart: the files are the ordered parts of one resource. Every part `MUST` be a complete file of the same format, and the [File Dialect](#filedialect) and [Table Schema](#tableschema), if present, apply to every part. The order of the paths is significant.
+
+For tabular formats, the records of the resource are the records of each part, taken in order. If the dialect declares header rows, every part `MUST` carry its own; such rows describe their part and are not records of the resource.
+
+For other formats, the content of the resource is the content of each part, taken in order.
 
 For example, for a single internal file:
 
@@ -194,7 +198,7 @@ For example:
 
 ### `integrity`
 
-The integrity check of the file. It `MUST` be a JSON object with exactly the following properties, both of which are `REQUIRED`:
+The integrity check of the resource's content. It `MUST` be a JSON object with exactly the following properties, both of which are `REQUIRED`:
 
 **`type`**
 
@@ -207,7 +211,7 @@ The type of the integrity check. It `MUST` be one of the following values:
 
 **`hash`**
 
-The hash of the file. It `MUST` be a string.
+The hash of the resource's content. It `MUST` be a string.
 
 For example for a file with SHA-256 hash:
 
@@ -219,6 +223,8 @@ For example for a file with SHA-256 hash:
   }
 }
 ```
+
+For a multipart resource, the hash `MUST` be computed over the concatenation of the parts' bytes, taken in the order the paths appear in [Data](#data). It covers every byte of every part, including any header rows, and reordering the parts changes the hash.
 
 ### `fileDialect`
 
