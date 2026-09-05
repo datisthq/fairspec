@@ -23,8 +23,17 @@ This file provides guidance to coding agents when working with code in this repo
   `.livemark/public/profiles/<version>/`, and tell consumers the standard changed.
   Using them for a landing page tweak announces a specification change that did not
   happen, and burns a version number that can never be reused
-- When in doubt, ask whether a consumer validating against a published profile would
-  see any difference. If not, it is `chore`
+- When in doubt, ask whether the change alters what a conforming descriptor or
+  implementation `MUST` do. If it does not, it is `chore` or `docs`
+- **A normative change does not require a JSON diff.** Much of the standard is prose
+  that JSON Schema cannot express — how a hash is computed, how multipart parts
+  combine, what a dialect means. Tightening or correcting one of those is `feat` or
+  `fix` even when every file under `profiles/` stays byte-identical, because an
+  implementer pinned to the previous version has no other way to learn the
+  requirement changed
+- Within `specs/`, `profiles/` and `extensions/`, editorial edits that leave every
+  requirement intact — typos, dead links, formatting, rewording that changes no
+  `MUST` — are still `docs`
 
 ## Commands
 
