@@ -6,7 +6,7 @@ abstract: A lightweight data exchange format designed to make scientific and res
 authors:
   - family-names: Karev
     given-names: Evgeny
-    email: eskarev@gmail.com
+    email: evgeny.karev@datist.io
 url: "https://fairspec.org"
 repository-code: "https://github.com/datisthq/fairspec"
 license: MIT
