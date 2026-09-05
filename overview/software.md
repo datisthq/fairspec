@@ -19,5 +19,5 @@ Connects AI assistants to the Fairspec framework over the Model Context Protocol
 :::
 
 :::card{title="Application" icon="layout-dashboard" href="https://application.fairspec.org"}
-A hosted application for browsing catalogs, inspecting datasets, and validating descriptors against published Fairspec profiles — no install required.
+A desktop application for validating and inferring descriptors through a visual interface. Available for macOS, Windows, and Linux; your files never leave your machine.
 :::

@@ -54,11 +54,8 @@ export default defineConfig({
     {
       type: "custom",
       title: "Application",
-      url: "/application/",
+      url: "https://application.fairspec.org",
       icon: "app-window",
-      siteTitle: "Fairspec Application",
-      siteDescription: "Visual data validation",
-      siteLink: "/application/",
     },
     {
       title: "Changelog",

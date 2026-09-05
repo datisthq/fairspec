@@ -458,8 +458,8 @@ const implementations: Implementation[] = [
     description:
       "A desktop application for validating and inferring descriptors through a visual interface, with your files never leaving your machine.",
     command: "Download for macOS, Windows, Linux",
-    href: "/application/",
-    external: false,
+    href: "https://application.fairspec.org",
+    external: true,
   },
 ]
 
@@ -558,8 +558,10 @@ function FinalCta() {
               <Sparkles className="size-4" />
               Try the MCP server
             </Link>
-            <Link
-              to="/application/"
+            <a
+              href="https://application.fairspec.org"
+              target="_blank"
+              rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "lg" }),
                 "px-5 no-underline",
@@ -567,7 +569,7 @@ function FinalCta() {
             >
               <Laptop className="size-4" />
               Open the application
-            </Link>
+            </a>
           </div>
         </Reveal>
       </div>
