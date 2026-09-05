@@ -449,8 +449,8 @@ const implementations: Implementation[] = [
     description:
       "Connects AI assistants to the framework over the Model Context Protocol, so you can validate and infer in plain language.",
     command: "npx fairspec@latest mcp",
-    href: "/mcp-server/",
-    external: false,
+    href: "https://typescript.fairspec.org/mcp-server/",
+    external: true,
   },
   {
     icon: Laptop,
@@ -548,8 +548,10 @@ function FinalCta() {
               Read the specs
               <ArrowRight className="size-4" />
             </Link>
-            <Link
-              to="/mcp-server/"
+            <a
+              href="https://typescript.fairspec.org/mcp-server/"
+              target="_blank"
+              rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "lg" }),
                 "px-5 no-underline",
@@ -557,7 +559,7 @@ function FinalCta() {
             >
               <Sparkles className="size-4" />
               Try the MCP server
-            </Link>
+            </a>
             <a
               href="https://application.fairspec.org"
               target="_blank"
