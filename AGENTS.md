@@ -18,11 +18,16 @@ This file provides guidance to coding agents when working with code in this repo
   `examples/`, `overview/`, `README.md`, tooling, CI, dependencies, configuration,
   this file. An example is a demonstration, not a normative artifact: correcting one
   changes nothing about what validates
-- This is not a style preference. `feat` and `fix` are read by semantic-release: they
-  cut a new version, publish a new profile directory under
-  `.livemark/public/profiles/<version>/`, and tell consumers the standard changed.
-  Using them for a landing page tweak announces a specification change that did not
-  happen, and burns a version number that can never be reused
+- This is not a style preference. `feat` and `fix` are read by release-please: they open
+  a Release PR that bumps the version and generates a new profile directory under
+  `.livemark/public/profiles/<version>/`, and merging that PR tells consumers the standard
+  changed. Using them for a landing page tweak announces a specification change that did
+  not happen, and burns a version number that can never be reused
+- **Merging the Release PR is the gate.** Review its diff as the release itself — it
+  carries the version bump plus the generated profile JSON with its resolved
+  `https://fairspec.org/profiles/<version>/…` URLs. Nothing is tagged until you merge.
+  Release config lives in `.release/config.json` and `.release/manifest.json`; the
+  manifest holds the current version and release-please maintains it — never hand-edit it
 - When in doubt, ask whether the change alters what a conforming descriptor or
   implementation `MUST` do. If it does not, it is `chore` or `docs`
 - **A normative change does not require a JSON diff.** Much of the standard is prose
