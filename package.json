@@ -36,7 +36,8 @@
     "react-dom": "19.0.0",
     "replace-in-file": "8.4.0",
     "tasuku": "2.0.5",
-    "vite-plus": "0.3.0",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
     "wrangler": "4.90.0"
   },
   "engines": {
