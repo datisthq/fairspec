@@ -66,6 +66,7 @@ dist/
 .astro/
 .serena/
 /.claude/
+/.cursor/
 .env
 .venv
 uv.lock
