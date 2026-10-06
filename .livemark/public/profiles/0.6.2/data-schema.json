@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [{ "$ref": "#/$defs/DataSchema" }],
+  "$defs": {
+    "DataSchema": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/JsonSchema" }],
+      "properties": {
+        "$schema": { "$ref": "#/$defs/Profile" }
+      }
+    },
+    "JsonSchema": {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    "Profile": {
+      "$ref": "#/$defs/ExternalPath"
+    },
+    "ExternalPath": {
+      "type": "string",
+      "pattern": "^https?://"
+    }
+  }
+}
