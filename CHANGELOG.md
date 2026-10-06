@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/datisthq/fairspec/compare/v0.6.1...v0.6.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* **ci:** look up the release PR instead of reading the action output ([7ec280c](https://github.com/datisthq/fairspec/commit/7ec280cc05e6a5ebb615c588a07ca457c6332ebf))
+
 ## [0.6.1](https://github.com/datisthq/fairspec/compare/v0.6.0...v0.6.1) (2026-09-05)
 
 ### Bug Fixes
