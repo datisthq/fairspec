@@ -10,7 +10,7 @@
     "generate": "node @generate.ts",
     "leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
     "lint": "vp fmt --check && vp lint",
-    "prepare": "lefthook install",
+    "prepare": "lefthook install && mkdir -p .claude && ln -sfn ../.agents/skills .claude/skills",
     "preview": "livemark preview",
     "scan": "pnpm leaks && pnpm vulns",
     "start": "livemark start",

@@ -65,7 +65,7 @@ compile/
 dist/
 .astro/
 .serena/
-/.claude/settings.local.json
+/.claude/
 .env
 .venv
 uv.lock
