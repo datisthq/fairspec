@@ -70,5 +70,5 @@ dist/
 .env
 .venv
 uv.lock
-.user/
+.private/
 tmuxp.yaml
