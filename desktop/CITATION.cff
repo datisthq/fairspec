@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: Fairspec Application
+abstract: Fairspec Application is a visual tool for managing and validating tabular and structured data.
+authors:
+  - family-names: Karev
+    given-names: Evgeny
+    email: evgeny.karev@datist.io
+url: "https://application.fairspec.org"
+repository-code: "https://github.com/datisthq/fairspec-application"
+license: MIT
+keywords:
+  - fair
+  - data
+  - metadata
+  - datacite
+  - json-schema

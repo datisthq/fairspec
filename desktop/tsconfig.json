@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+
+  "include": [
+    "${configDir}/**/*.ts",
+    "${configDir}/**/*.tsx",
+    "${configDir}/.livemark/**/*.ts",
+    "${configDir}/.livemark/**/*.tsx"
+  ],
+  "exclude": [
+    "${configDir}/**/build/",
+    "${configDir}/**/generated/",
+    "${configDir}/.livemark/build/",
+    "${configDir}/compile/",
+    "${configDir}/coverage/",
+    "${configDir}/.tanstack/"
+  ],
+
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "${configDir}",
+    "outDir": "${configDir}/build",
+
+    "lib": ["ESNext", "DOM"],
+    "types": ["node", "vite/client"],
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "erasableSyntaxOnly": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "skipLibCheck": true,
+
+    "declaration": false,
+    "allowImportingTsExtensions": true
+  }
+}
