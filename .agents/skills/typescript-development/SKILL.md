@@ -11,15 +11,15 @@ plugins, a CLI and an MCP server.
 
 ## Commands
 
-Run from the repo root; `pnpm typescript <script>` runs a script of this section.
+Run from the repo root; `pnpm -C typescript <script>` runs a script of this section.
 
-- `pnpm typescript test` — build + unit
-- `pnpm typescript build` — `tsgo` per package, emitting to `<pkg>/build`
-- `pnpm typescript type` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
-- `pnpm typescript unit` — `vp test` across every package
-- Single test — `pnpm typescript unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
-- `pnpm typescript release` — publish every package (CI only)
-- Lint and format are repo-wide: `pnpm lint`, `pnpm format`
+- `pnpm -C typescript test` — build + unit
+- `pnpm -C typescript build` — `tsgo` per package, emitting to `<pkg>/build`
+- `pnpm -C typescript check:types` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
+- `pnpm -C typescript test:unit` — `vp test` across every package
+- Single test — `pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
+- `pnpm -C typescript release` — publish every package (CI only)
+- Lint and format are repo-wide: `pnpm check:lint`, `pnpm format`
 
 ## Modules
 
@@ -53,6 +53,7 @@ model, a command), then subgroup by the entity it acts on.
 - `commands/<entity>/<verb>.ts` (terminal) — CLI commands. `tools/<entity>/<verb>.ts` (mcp-server) — MCP tools.
 - `helpers/<name>.ts` — small supporting functions. `utils/<name>.ts` — heavier self-contained modules (e.g. `typescript/table/utils/sniffer/`).
 - `services/`, `profiles/`, `schemas/`, `params/`, `entrypoints/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions, executable entry points.
+- `typescript/metadata/profiles/` is a copy of `standard/profiles/` written by `pnpm sync:profiles`; never edit it by hand, edit the standard and sync (the root guard fails while they differ)
 - Root files, one concern each: `index.ts` (the public API surface), `plugin.ts`, `settings.ts`, `system.ts`, `main.ts`.
 
 ### `-test` and `-shared`
@@ -82,7 +83,7 @@ vitest-polly both derive their paths from the test file's own directory.
 - Unit tests are Vitest via vite-plus, named `*.unit.ts`, in collocated `-test` folders
 - Import test symbols from `vite-plus/test`, not `vitest`
 - Don't add useless comments like "Arrange", "Act", "Assert"
-- **The suite must pass on Windows — CI runs `pnpm typescript unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
+- **The suite must pass on Windows — CI runs `pnpm -C typescript test:unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
 - Network tests use `useRecording()` from `vitest-polly`; the HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases

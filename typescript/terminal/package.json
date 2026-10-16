@@ -36,7 +36,7 @@
     "build": "tsgo && pnpm build:copy && pnpm build:mode",
     "build:copy": "cp entrypoints/*.cmd build/entrypoints && cp package.json build",
     "build:mode": "chmod +x ./build/entrypoints/*.js",
-    "type": "tsgo --noEmit"
+    "check:types": "tsgo --noEmit"
   },
   "dependencies": {
     "@bomb.sh/tab": "^0.0.12",

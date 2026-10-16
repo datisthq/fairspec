@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "uv build --all-packages --out-dir build",
-    "coverage": "sensible-browser htmlcov/index.html",
+    "check:lint": "uv run ruff check",
+    "check:types": "uv run ty check",
     "format": "uv run ruff format",
-    "lint": "uv run ruff check",
     "release": "uv publish build/*",
     "setup": "uv sync --all-packages",
-    "test": "pnpm type && pnpm unit",
-    "type": "uv run ty check",
-    "unit": "uv run pytest --cov --cov-report html --cov-report json"
+    "show:coverage": "sensible-browser htmlcov/index.html",
+    "test": "pnpm check:types && pnpm test:unit",
+    "test:unit": "uv run pytest --cov --cov-report html --cov-report json"
   }
 }

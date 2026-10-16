@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+# Never cancel: a run cancelled after tagging leaves a release no later run publishes.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   test:
     uses: ./.github/workflows/test.yaml
@@ -60,7 +65,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           name=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json headRefName \
-            --jq '[.[] | select(.headRefName == "release-please--branches--main--components--standard")][0].headRefName')
+            --jq '[.[] | select(.headRefName == "release-please--branches--main")][0].headRefName')
           echo "name=${name:-}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout Release Branch
@@ -82,14 +87,19 @@ jobs:
         run: pnpm install
       - name: Generate Profiles
         if: steps.branch.outputs.name != ''
-        run: pnpm standard generate
+        run: pnpm generate:profiles
+      - name: Bundle Profiles
+        if: steps.branch.outputs.name != ''
+        run: pnpm sync:profiles
       - name: Commit Profiles
         if: steps.branch.outputs.name != ''
+        env:
+          LEFTHOOK: "0"
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .livemark/public/profiles
-          git diff --cached --quiet || git commit -m "chore: generate the versioned profiles"
+          git add .livemark/public/profiles typescript/metadata python/metadata/fairspec_metadata
+          git diff --cached --quiet || git commit -m "chore: generate and bundle the release profiles"
           git push
 
   desktop:
@@ -117,11 +127,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Libraries
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Build App
-        run: pnpm desktop build
+        run: pnpm -C desktop build
       - name: Compile App
-        run: pnpm desktop compile
+        run: pnpm -C desktop compile
       - name: Publish Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
@@ -160,11 +170,11 @@ jobs:
           cache: pnpm
           node-version-file: package.json
       - name: Install Dependencies
-        run: pnpm install && pnpm python setup
+        run: pnpm install && pnpm -C python setup
       - name: Build Packages
-        run: pnpm python build
+        run: pnpm -C python build
       - name: Publish Packages
-        run: pnpm python release
+        run: pnpm -C python release
 
   typescript:
     needs: [release]
@@ -188,6 +198,6 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Packages
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Publish Packages
-        run: pnpm typescript release
+        run: pnpm -C typescript release

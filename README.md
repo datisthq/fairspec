@@ -25,8 +25,8 @@ pnpm test
 ```
 
 Every command runs from the root: `pnpm <verb>` covers all sections, and
-`pnpm <section> <script>` runs one of them, for example `pnpm python test` or
-`pnpm desktop start`. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details. Coding agents
+`pnpm -C <section> <script>` runs one of them, for example `pnpm -C python test` or
+`pnpm -C desktop start`. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details. Coding agents
 read [`AGENTS.md`](AGENTS.md) and the skills in `.agents/skills/`.
 
 ## License

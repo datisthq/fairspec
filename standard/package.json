@@ -4,14 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "node @generate.ts",
-    "test": "pnpm type",
-    "type": "tsgo --noEmit"
+    "check:types": "tsgo --noEmit",
+    "test": "pnpm check:types && pnpm test:unit",
+    "test:unit": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "execa": "9.6.1",
-    "replace-in-file": "8.4.0",
-    "tasuku": "2.0.5"
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }

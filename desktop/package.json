@@ -17,16 +17,16 @@
     "#*": "./*"
   },
   "scripts": {
+    "add:component": "shadcn",
     "build": "electron-vite build",
+    "check:types": "tsgo --noEmit",
     "compile": "electron-builder --publish never",
-    "coverage": "sensible-browser coverage/index.html",
     "extract": "lingui extract",
     "preview": "electron-vite preview",
+    "show:coverage": "sensible-browser coverage/index.html",
     "start": "electron-vite dev",
-    "test": "pnpm type && pnpm unit",
-    "type": "tsgo --noEmit",
-    "ui": "shadcn",
-    "unit": "vp test"
+    "test": "pnpm check:types && pnpm test:unit",
+    "test:unit": "vp test"
   },
   "dependencies": {
     "@loglayer/transport-electron-log": "3.0.3",

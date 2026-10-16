@@ -67,7 +67,7 @@ Work through the diff asking each of these:
   so — a rule enforced by a test and a rule enforced by hope read identically on the page.
 - **A removed mechanism.** Search the docs for the thing you deleted. A paragraph explaining why
   we do X is worse than useless once X is gone.
-- **A generated artefact.** The profiles copied by `pnpm standard generate`, and the copies each
+- **A generated artefact.** The profiles copied by `pnpm generate:profiles`, and the copies each
   implementation bundles, go stale without failing anything — treat them as documentation for
   this purpose and regenerate them.
 

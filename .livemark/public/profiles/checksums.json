@@ -1,0 +1,72 @@
+{
+  "0.1.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "dataset.json": "e98ee323fc428f7520a311f89942e6904b34cf6e66c6a0f3c901cd274e3a22b7",
+    "table.json": "9eec867d3a9b8615a92146499ac004d7b43387e3ef1f3d1849142476dc7fe203"
+  },
+  "0.2.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "dataset.json": "eb5ea9b369bc0925cf65e30f469d8b2ccbc91027b5905fd58758c16be3b488c4",
+    "dialect.json": "499ce6a6d418584f5aee834b2f03b93792d1b654ec79446499728b5950bcbb1c",
+    "schema.json": "ddf9c6e79514f8a21e9f12ff279353aeeda71be90cfc75898b12ec6b9b0f5f0c"
+  },
+  "0.2.1": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "dataset.json": "ca33ddacfc0271740697b33bb6d6cccb4c9bd562e17fb110e59b1081a2f3469f",
+    "dialect.json": "1f6f0865b17741ea0edcf797a6ac345f3078e73d13fe15729297ae0fdbcef39e",
+    "schema.json": "ddf9c6e79514f8a21e9f12ff279353aeeda71be90cfc75898b12ec6b9b0f5f0c"
+  },
+  "0.2.2": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "dataset.json": "086012048f958221ebf80ae7331f4ef718e3975d7149dfb7d967606acbd2f0fb",
+    "dialect.json": "874d2056711b6c8370b1c9b0c99497ab1ed63a188bae6cdc4ecd87f0024181b2",
+    "schema.json": "ddf9c6e79514f8a21e9f12ff279353aeeda71be90cfc75898b12ec6b9b0f5f0c"
+  },
+  "0.2.3": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "dataset.json": "29a04fb44cf41a037ba22f058fb4317e502fb666831753ce5938d0ff0211b931",
+    "dialect.json": "dc2631be6815b489320641fa4875cab0fb29430397715f7dfff0693a5d970f17",
+    "schema.json": "8891c712fc00f6a71701a7c14e30682b300d590ab057dd83887da71c3b6516cc"
+  },
+  "0.3.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "dataset.json": "6d55ed26422fbecae58822cdc177d2b8adff9b6c3c4f13a5fde49b2def8d2cc5",
+    "dialect.json": "dc2631be6815b489320641fa4875cab0fb29430397715f7dfff0693a5d970f17",
+    "table-schema.json": "6ebdbbd120aaab35b10d7756de89b7df3a1912f1f1bd211f5327d26dfb613dd0"
+  },
+  "0.4.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "dataset.json": "b8115c32557c9b742aac0abb2d8259f66550553b30d52077dcd6b78af8ba0b96",
+    "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
+    "table-schema.json": "6ebdbbd120aaab35b10d7756de89b7df3a1912f1f1bd211f5327d26dfb613dd0"
+  },
+  "0.5.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "datacite/dataset.json": "6fbe19104ff874257b1a99914fb6ffc7576a714833a2b8dd078348dc8314093e",
+    "dataset.json": "00cdcad6c9345bbd0dd944bf9221f0d6b6fcee99646f0f3504ee7c61d9008e17",
+    "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
+    "grei/dataset.json": "252c1e5fb70dcabff3d93fe69a4be41db2b1ce88a4c8338625a09f05e4795d44",
+    "table-schema.json": "fcdb76e4900f47de45c67912ea68400d43ccaf1f49389795904e7ee644e3f8b3"
+  },
+  "0.6.0": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "datacite/dataset.json": "591b419ab364b0a1d96859ea06a7fca85cb82c72d838342a29d37ea8f96c6b0c",
+    "dataset.json": "409c2740c81a59d1b2a664e763ec10e228ad4f08f205dee19f009adbe4f776eb",
+    "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
+    "grei/dataset.json": "4a9faa16e435c014a2da67a6b13f1ba762ef7c2e9f85849258f80c66d484c14b",
+    "table-schema.json": "c0d24ee9152d5715c8fb0c44d2ceac8f67250659472ff7e0b6261c5b4476711a"
+  },
+  "0.6.1": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "datacite/dataset.json": "b74cc9baf8944af1c070d519325db1cb82bb91f9de4a26cd6a2d9818ec246eff",
+    "dataset.json": "5962dbe184fabf7da7bb93c9219007e375d8d44ba81668a9e44409be062a9f46",
+    "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
+    "grei/dataset.json": "57a7d4d1581c76cbfead1681b3a252827070926306c9d5e832b7612cbb4d24f9",
+    "table-schema.json": "c0d24ee9152d5715c8fb0c44d2ceac8f67250659472ff7e0b6261c5b4476711a"
+  }
+}

@@ -24,19 +24,24 @@ A Fairspec Dataset describes a collection of related data resources with rich me
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/dataset.json",
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
   "doi": "10.1234/climate-2024",
-  "title": "Global Temperature Measurements 2024",
-  "description": "Daily temperature readings from weather stations across 50 countries, collected during January-March 2024.",
+  "titles": [{ "title": "Global Temperature Measurements 2024" }],
+  "descriptions": [
+    {
+      "description": "Daily temperature readings from weather stations across 50 countries, collected during January-March 2024.",
+      "descriptionType": "Abstract"
+    }
+  ],
   "creators": [
     {
       "name": "Smith, Jane",
       "nameType": "Personal",
-      "affiliation": "Climate Research Institute"
+      "affiliation": [{ "name": "Climate Research Institute" }]
     }
   ],
-  "publicationYear": 2024,
-  "publisher": "Climate Research Institute",
+  "publicationYear": "2024",
+  "publisher": { "name": "Climate Research Institute" },
   "subjects": [
     {
       "subject": "Climate Science"
@@ -46,34 +51,44 @@ A Fairspec Dataset describes a collection of related data resources with rich me
     }
   ],
   "language": "en",
-  "resourceType": {
+  "types": {
     "resourceTypeGeneral": "Dataset"
   },
   "resources": [
     {
       "name": "measurements",
       "data": "temperature_data.csv",
-      "format": {
-        "name": "csv",
+      "fileDialect": {
+        "format": "csv",
         "delimiter": ",",
         "headerRows": [1]
       },
       "integrity": {
         "type": "sha256",
-        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "hash": "0208425b27d6e6976d9ce32817730c17d0e6b787771b68508374fb8057b3f5ec"
       },
       "tableSchema": "temperature_schema.json",
-      "title": "Temperature Measurements",
-      "description": "Daily temperature readings with station metadata"
+      "titles": [{ "title": "Temperature Measurements" }],
+      "descriptions": [
+        {
+          "description": "Daily temperature readings with station metadata",
+          "descriptionType": "Other"
+        }
+      ]
     },
     {
       "name": "stations",
       "data": "stations.json",
-      "format": {
-        "name": "json"
+      "fileDialect": {
+        "format": "json"
       },
-      "title": "Weather Stations",
-      "description": "Metadata about weather station locations and equipment",
+      "titles": [{ "title": "Weather Stations" }],
+      "descriptions": [
+        {
+          "description": "Metadata about weather station locations and equipment",
+          "descriptionType": "Other"
+        }
+      ],
       "geoLocations": [
         {
           "geoLocationPlace": "Global"
@@ -105,7 +120,7 @@ Fairspec Data Schema defines the structure and validation rules for JSON data. H
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/data-schema.json",
+  "$schema": "https://fairspec.org/profiles/latest/data-schema.json",
   "type": "object",
   "title": "Spectrometer Configuration",
   "description": "Configuration schema for UV-Vis spectrometer settings",
@@ -201,7 +216,7 @@ Fairspec Table Schema defines the structure and constraints for tabular data. He
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/schema.json",
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
   "title": "Temperature Measurement Schema",
   "description": "Schema for daily temperature readings from weather stations",
   "required": ["station_id", "date", "temperature"],
@@ -281,20 +296,25 @@ materials-lab-2024/
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/dataset.json",
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
   "doi": "10.5678/materials-2024-q1",
-  "title": "Polymer Synthesis Experiments - Q1 2024",
-  "description": "Experimental results from polymer synthesis research conducted at the Materials Science Laboratory during January-March 2024.",
+  "titles": [{ "title": "Polymer Synthesis Experiments - Q1 2024" }],
+  "descriptions": [
+    {
+      "description": "Experimental results from polymer synthesis research conducted at the Materials Science Laboratory during January-March 2024.",
+      "descriptionType": "Abstract"
+    }
+  ],
   "creators": [
     {
       "name": "Johnson, Robert",
       "nameType": "Personal",
-      "affiliation": "State University Materials Lab"
+      "affiliation": [{ "name": "State University Materials Lab" }]
     },
     {
       "name": "Chen, Li",
       "nameType": "Personal",
-      "affiliation": "State University Materials Lab"
+      "affiliation": [{ "name": "State University Materials Lab" }]
     }
   ],
   "contributors": [
@@ -304,8 +324,8 @@ materials-lab-2024/
       "contributorType": "HostingInstitution"
     }
   ],
-  "publicationYear": 2024,
-  "publisher": "State University",
+  "publicationYear": "2024",
+  "publisher": { "name": "State University" },
   "subjects": [
     {
       "subject": "Materials Science"
@@ -325,7 +345,7 @@ materials-lab-2024/
     }
   ],
   "language": "en",
-  "resourceType": {
+  "types": {
     "resourceTypeGeneral": "Dataset",
     "resourceType": "Experimental Data"
   },
@@ -340,8 +360,8 @@ materials-lab-2024/
     {
       "name": "experiments",
       "data": "experiments.csv",
-      "format": {
-        "name": "csv",
+      "fileDialect": {
+        "format": "csv",
         "delimiter": ",",
         "headerRows": [1],
         "commentPrefix": "#"
@@ -349,28 +369,38 @@ materials-lab-2024/
       "textual": true,
       "integrity": {
         "type": "sha256",
-        "hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6"
+        "hash": "7977108baf6af9ae367693f6b58bdec096c252703dc49e8187fad3d4c459b047"
       },
       "tableSchema": "experiments.schema.json",
-      "title": "Experiment Results",
-      "description": "Results from 150 polymer synthesis experiments including reaction conditions and measured properties"
+      "titles": [{ "title": "Experiment Results" }],
+      "descriptions": [
+        {
+          "description": "Results from 150 polymer synthesis experiments including reaction conditions and measured properties",
+          "descriptionType": "Other"
+        }
+      ]
     },
     {
       "name": "samples",
       "data": "samples.xlsx",
-      "format": {
-        "name": "xlsx",
+      "fileDialect": {
+        "format": "xlsx",
         "sheetName": "Sample Data",
         "headerRows": [1, 2],
         "headerJoin": "_"
       },
       "integrity": {
         "type": "sha256",
-        "hash": "z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1"
+        "hash": "de03c484abada6e43e77b414b1bbb9d8f767114ad4585ea1a7b0cc375df86173"
       },
       "tableSchema": "samples.schema.json",
-      "title": "Sample Information",
-      "description": "Detailed information about each polymer sample including chemical composition and physical properties"
+      "titles": [{ "title": "Sample Information" }],
+      "descriptions": [
+        {
+          "description": "Detailed information about each polymer sample including chemical composition and physical properties",
+          "descriptionType": "Other"
+        }
+      ]
     }
   ]
 }
@@ -380,7 +410,7 @@ materials-lab-2024/
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/schema.json",
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
   "title": "Polymer Synthesis Experiment Schema",
   "required": ["experiment_id", "sample_id", "date", "temperature", "pressure"],
   "properties": {
@@ -471,35 +501,35 @@ Fairspec supports various data formats. Here's a dataset combining different fil
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/dataset.json",
-  "title": "Multi-Format Environmental Dataset",
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
+  "titles": [{ "title": "Multi-Format Environmental Dataset" }],
   "resources": [
     {
       "name": "time_series",
       "data": "sensors.parquet",
-      "format": {
-        "name": "parquet"
+      "fileDialect": {
+        "format": "parquet"
       },
-      "title": "High-frequency sensor data in Parquet format"
+      "titles": [{ "title": "High-frequency sensor data in Parquet format" }]
     },
     {
       "name": "locations",
       "data": "locations.geojson",
-      "format": {
-        "name": "json",
+      "fileDialect": {
+        "format": "json",
         "jsonPointer": "/features"
       },
-      "title": "Sensor locations in GeoJSON format"
+      "titles": [{ "title": "Sensor locations in GeoJSON format" }]
     },
     {
       "name": "daily_summary",
       "data": "summary.jsonl",
-      "format": {
-        "name": "jsonl",
+      "fileDialect": {
+        "format": "jsonl",
         "commentPrefix": "//",
         "rowType": "object"
       },
-      "title": "Daily aggregated statistics"
+      "titles": [{ "title": "Daily aggregated statistics" }]
     },
     {
       "name": "metadata",
@@ -508,13 +538,21 @@ Fairspec supports various data formats. Here's a dataset combining different fil
         "version": "1.0",
         "sensors": ["temperature", "humidity", "pressure"]
       },
-      "title": "Inline metadata object"
+      "titles": [{ "title": "Inline metadata object" }]
     },
     {
-      "name": "images",
-      "data": ["photos/site1.jpg", "photos/site2.jpg", "photos/site3.jpg"],
-      "title": "Site photographs",
-      "description": "Visual documentation of sensor installation sites"
+      "name": "monthly_exports",
+      "data": ["exports/2024-01.csv", "exports/2024-02.csv", "exports/2024-03.csv"],
+      "fileDialect": {
+        "format": "csv"
+      },
+      "titles": [{ "title": "Monthly sensor exports" }],
+      "descriptions": [
+        {
+          "description": "One resource split into monthly parts; each part is a complete CSV file with its own header row",
+          "descriptionType": "Other"
+        }
+      ]
     }
   ]
 }
@@ -526,7 +564,7 @@ This example demonstrates advanced features like complex types and validation:
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/schema.json",
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
   "title": "Advanced Feature Schema",
   "properties": {
     "id": {
@@ -597,18 +635,23 @@ This example demonstrates advanced features like complex types and validation:
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/1.0.0/dataset.json"
+  "$schema": "https://fairspec.org/profiles/X.Y.Z/dataset.json"
 }
 ```
 
-Specify exact versions to ensure compatibility and validation.
+Specify the exact version, such as `0.6.1`, in place of `X.Y.Z` to ensure compatibility and validation.
 
 ### 2. Provide Rich Metadata
 
 ```json
 {
-  "title": "Clear, descriptive title",
-  "description": "Detailed description of what the data contains, how it was collected, and what it can be used for",
+  "titles": [{ "title": "Clear, descriptive title" }],
+  "descriptions": [
+    {
+      "description": "Detailed description of what the data contains, how it was collected, and what it can be used for",
+      "descriptionType": "Abstract"
+    }
+  ],
   "creators": [...],
   "subjects": [...],
   "dates": [...]

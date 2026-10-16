@@ -18,8 +18,8 @@ The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
 `wrangler.jsonc`) and renders the docs of every section on fairspec.org.
 
 Dot-directories hold non-product code: `.agents/` skills, `.humans/` reports for people (HTML
-by default), `.scripts/` repo-wide guards, `.release/` release-please config, `.livemark/` the
-website.
+by default), `.scripts/` repo-wide guards and scripts, `.release/` release-please config,
+`.livemark/` the website.
 
 ## General
 
@@ -58,32 +58,40 @@ website.
 
 ## Commands
 
-Everything runs from the repo root. `pnpm <verb>` covers every section; `pnpm <section> <script>`
-runs one section's script (`pnpm python test`, `pnpm typescript build`, `pnpm desktop start`,
-`pnpm standard generate`). Each section's own scripts are in its skill.
+Everything runs from the repo root. `pnpm <verb>` covers every section;
+`pnpm -C <section> <script>` runs one section's script (`pnpm -C python test`,
+`pnpm -C typescript build`, `pnpm -C desktop start`). Each section's own scripts are in its
+skill.
 
 - `pnpm install` — install Node dependencies, git hooks, the skills symlink, and the Python
-  environment when `uv` is on the PATH (`pnpm python setup` does that step alone)
+  environment when `uv` is on the PATH (`pnpm -C python setup` does that step alone)
 - `pnpm test` — the full gate: lint, the docs guard, then every section's tests
-- `pnpm lint` — `vp fmt --check && vp lint` for the whole tree, plus `ruff check`
+- `pnpm check` — `check:lint`, then `check:types`; the static half of the gate, no tests
+- `pnpm check:lint` — `vp fmt --check && vp lint` for the whole tree, plus `ruff check`
 - `pnpm format` — `vp fmt` for the whole tree, plus `ruff format`
-- `pnpm type` — root files, then every section
+- `pnpm check:types` — root files, then every section
 - `pnpm build` — TypeScript packages, the desktop app, Python distributions
-- `pnpm unit` — the docs guard, then every section's unit tests
+- `pnpm test:unit` — the docs guard, then every section's unit tests
 - `pnpm start:site` / `pnpm build:site` — the website
-- `pnpm leaks` / `pnpm vulns` / `pnpm scan` — gitleaks / semgrep / both
-- `pnpm deps` — update all Node dependencies to their latest versions
+- `pnpm scan:leaks` / `pnpm scan:vulns` / `pnpm scan` — gitleaks / semgrep / both
+- `pnpm update:deps` — update all Node dependencies to their latest versions
 
 Order matters across sections: desktop consumes `@fairspec/library` from the workspace, and
-TypeScript packages type-check against each other's `build/`, so run `pnpm typescript build`
+TypeScript packages type-check against each other's `build/`, so run `pnpm -C typescript build`
 before typing or testing `typescript/` or `desktop/`. While iterating, verify the slice the
 diff reaches, not the full gate (**`change-verification`**).
 
 ## Commits
 
 Each section is its own release-please component with its own version, tag
-(`<section>-vX.Y.Z`), changelog and Release PR. A commit counts toward the section whose
-files it touches. Scope commits with the section: `feat(python): …`, `docs(standard): …`.
+(`<section>-vX.Y.Z`) and changelog, and all of them ship through **one combined Release PR**.
+A commit counts toward every section whose files it touches. Scope commits with the section:
+`feat(python): …`, `docs(standard): …`.
+
+- PRs are squash-merged, so **the PR title is the commit release-please reads**: its type
+  decides the bump of every section the PR touches. A PR that changes `standard/profiles/`
+  also runs `pnpm sync:profiles`, so the libraries' bundled profiles change in the same commit
+  and both libraries release with the standard
 
 - **IMPORTANT**: `feat` and `fix` mean "this changes what the section ships". In each section
   that is only:
@@ -95,13 +103,14 @@ files it touches. Scope commits with the section: `feat(python): …`, `docs(sta
   `standard/examples/`, `standard/overview/`, READMEs, tests, the docs under `*/project/`,
   tooling, CI, dependencies, configuration, this file and the skills. An example is a
   demonstration, not a normative artifact
-- This is not a style preference. `feat` and `fix` are read by release-please: they open
-  a Release PR that bumps the version, and for the standard generate a new profile directory
+- This is not a style preference. `feat` and `fix` are read by release-please: they put
+  a version bump in the Release PR, and for the standard generate a new profile directory
   under `.livemark/public/profiles/<version>/`. Using them for a landing page tweak announces a
   change that did not happen, and burns a version number that can never be reused
-- **Merging a Release PR is the gate.** Review its diff as the release itself — for the
+- **Merging the Release PR is the gate.** Review its diff as the release itself — for the
   standard it carries the generated profile JSON with its resolved
-  `https://fairspec.org/profiles/<version>/…` URLs. Nothing is tagged until you merge.
+  `https://fairspec.org/profiles/<version>/…` URLs, and the libraries' `FAIRSPEC_VERSION`.
+  Nothing is tagged until you merge, and merging releases every section it lists at once.
   Release config lives in `.release/config.json` and `.release/manifest.json`; the
   manifest holds the current versions and release-please maintains it — never hand-edit it
 - For the standard, when in doubt, ask whether the change alters what a conforming descriptor
@@ -148,7 +157,9 @@ along with this table and every path and `pnpm` command the docs and skills name
   snake_case for Python functions, methods and variables
 - Name functions verbNoun (`loadTable`, `load_table`), never a bare verb or noun; factories are
   `create*`. Methods too
-- Name `package.json` scripts `verb[:object]` (`start:site`, `build:site`), never noun-first
+- Name `package.json` scripts `verb[:object]` (`start:site`, `build:site`), never noun-first;
+  a `verb:x` script exists only as a part or a scoped run of `verb` (`test:unit`,
+  `check:types`), so a report opener is `show:coverage`, not `coverage`
 - Place high-level public items first in a file and low-level private items last
 - Use ES modules with full import paths including the ".ts(x)" file extension
 

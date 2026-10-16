@@ -10,16 +10,16 @@ The `desktop/` section is the Electron application, consuming `@fairspec/library
 
 ## Commands
 
-Run from the repo root; `pnpm desktop <script>` runs a script of this section. Run
-`pnpm typescript build` first: the app resolves the workspace packages through their `build/`.
+Run from the repo root; `pnpm -C desktop <script>` runs a script of this section. Run
+`pnpm -C typescript build` first: the app resolves the workspace packages through their `build/`.
 
-- `pnpm desktop start` — run the app in development
-- `pnpm desktop type` — `tsgo --noEmit`
-- `pnpm desktop test` — type + unit
-- `pnpm desktop unit` — the Vitest tests; `pnpm desktop unit path/to/test.unit.ts` or `pnpm desktop unit -t "test name"` for one
-- `pnpm desktop build` / `pnpm desktop compile` — bundle with electron-vite, package with electron-builder into `compile/`
-- `pnpm desktop extract` — extract i18n messages
-- Lint and format are repo-wide: `pnpm lint`, `pnpm format`
+- `pnpm -C desktop start` — run the app in development
+- `pnpm -C desktop check:types` — `tsgo --noEmit`
+- `pnpm -C desktop test` — type + unit
+- `pnpm -C desktop test:unit` — the Vitest tests; `pnpm -C desktop test:unit path/to/test.unit.ts` or `pnpm -C desktop test:unit -t "test name"` for one
+- `pnpm -C desktop build` / `pnpm -C desktop compile` — bundle with electron-vite, package with electron-builder into `compile/`
+- `pnpm -C desktop extract` — extract i18n messages
+- Lint and format are repo-wide: `pnpm check:lint`, `pnpm format`
 
 ## Structure
 
@@ -41,13 +41,13 @@ Run from the repo root; `pnpm desktop <script>` runs a script of this section. R
 
 ## i18n
 
-- Any change that adds or edits a user-facing string must run `pnpm desktop extract` and then
+- Any change that adds or edits a user-facing string must run `pnpm -C desktop extract` and then
   fill `msgstr` for every new or changed message in all seven non-source catalogues
 - `pt` is European Portuguese, never Brazilian
 - `lingui extract` reports a Total count that **includes obsolete entries**. A `#~ msgid` whose
   string no longer exists still counts, and grepping `^msgstr ""` will never find it because the
   line is `#~ msgstr ""`. Parse with `@lingui/format-po`'s own `parse()` to see what is genuinely
-  untranslated, or run `pnpm desktop extract --clean` to drop obsolete entries
+  untranslated, or run `pnpm -C desktop extract --clean` to drop obsolete entries
 - Long msgids wrap across lines in the PO, so naive text replacement silently misses them. Fill
   those through the same parser and `serialize()` rather than string surgery
 

@@ -25,35 +25,41 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
 (`desktop/routes/**`).
 
 The root `vite.config.ts` also has a `test` block, whose `include` is only
-`.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard.
-Root `vp test` runs them; root `test` and `unit` call it first, and CI runs it in the always-on
+`.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard
+and the published-profiles guard.
+Root `vp test` runs them; root `test` and `test:unit` call it first, and CI runs it in the always-on
 `lint` job, so a docs-only PR is still checked. A section's `vp test` uses its own config and
-never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` covers them.
+never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:types` covers them.
 
 ## Scripts
 
-- `pnpm <section> <script>` is `pnpm -F ./<section> run`; arguments pass through
-- A qualified script is `<verb>:<target>`, verb first (`start:site`, `build:site`), as in the
-  other Datist repos — never `<target>:<verb>`. Keys stay in alphabetical order
-- Root `build`, `type`, `unit` and `test` chain sections **explicitly, in dependency order**
+- `pnpm -C <section> <script>` runs one section's script from the root; arguments pass
+  through. There are no per-section alias scripts at the root. Use `-C`, not
+  `-F ./<section>`: a filter that matches nothing exits 0 having run nothing, while `-C` on a
+  wrong directory fails
+- Script names follow the `AGENTS.md` rule, `verb[:object]`, as in the other Datist repos —
+  never `<target>:<verb>`. Keys stay in alphabetical order
+- Root `build`, `check:types`, `test:unit` and `test` chain sections **explicitly, in dependency order**
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
-  `typescript/*` package directly _and_ through the `typescript` group package, building twice,
-  and gives no order between the group and desktop
+  `typescript/*` package directly _and_ again through the `typescript` group package's
+  fan-out, so each runs twice. Its order is not the problem (desktop's `workspace:*` deps put
+  it after `library`); excluding the group needs a negated filter in every chain, the Windows
+  quoting trap below
 - pnpm runs scripts through `cmd.exe` on Windows, where single quotes are literal: quote
   filters and globs with escaped double quotes (`pnpm -F \"./*\" run build`), never `'./*'`,
   or the filter silently matches nothing and CI fails later with unresolved packages
-- A section's `test` never lints — root `test` runs `pnpm lint` once for the whole tree
+- A section's `test` never lints — root `test` runs `pnpm check:lint` once for the whole tree
 - Python is reached only through `python/package.json`, whose scripts call `uv run …` from
   `python/`. There is no taskipy; pytest, ty, ruff and coverage find their config in
   `python/pyproject.toml` because they run from there
-- `prepare` runs `pnpm python setup` only when `uv` is on the PATH, so Node-only CI jobs work
+- `prepare` runs `pnpm -C python setup` only when `uv` is on the PATH, so Node-only CI jobs work
 
 ## Adding a section
 
-1. Create `<section>/package.json` (private, `@fairspec/<section>`) with `test`/`type`/`unit`
+1. Create `<section>/package.json` (private, `@fairspec/<section>`) with `test`/`check:types`/`test:unit`
    scripts as they apply; add it to `pnpm-workspace.yaml` `packages`
-2. Add a root script `"<section>": "pnpm -F ./<section> run"` and add the section to the
-   root `build`/`type`/`unit`/`test` chains in dependency order
+2. Add the section to the root `build`/`check:types`/`test:unit`/`test` chains as
+   `pnpm -C <section> <script>`, in dependency order
 3. Add a `changes` filter and a gated job in `.github/workflows/test.yaml`, and list the job
    in the final `test` job's `needs`
 4. If it ships, add a package to `.release/config.json` (component = section name, tags
@@ -66,14 +72,33 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 
 ## Releases
 
-- `separate-pull-requests: true`: one Release PR per section, on branch
-  `release-please--branches--main--components--<section>`
+- `separate-pull-requests: false`: one combined Release PR for every section, on branch
+  `release-please--branches--main`. Merging it tags and publishes each section it lists, so
+  the standard and the libraries that bundle its profiles always ship together; a
+  library-only fix is a Release PR listing only that library
 - `extra-files` paths are relative to the section directory
 - `release-as` pins one component's next version (typescript is pinned to `0.13.1` because
   npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
   later Release PR keeps proposing the same version
-- The standard's Release PR is the one `release.yaml` regenerates profiles on
-  (`pnpm standard generate` writes `.livemark/public/profiles/{latest,<version>}`)
+- The libraries bundle `standard/profiles/` (refs resolved to `latest`) in
+  `typescript/metadata/profiles/` and `python/metadata/fairspec_metadata/profiles/`, and pin
+  `FAIRSPEC_VERSION` in their `settings` to `standard/package.json`'s version.
+  `pnpm sync:profiles` (`.scripts/@sync.ts`) writes both; the guard fails while either drifts
+- `release.yaml`'s `profiles` job runs on the Release PR: `pnpm generate:profiles`
+  (`.scripts/@generate.ts`) writes `.livemark/public/profiles/{latest,<version>}`, then
+  `pnpm sync:profiles` bumps the libraries' `FAIRSPEC_VERSION`. When the standard is not in
+  the release its version already has checksums, so the generator skips and nothing changes
+- The Release PR runs no CI (its pushes use `GITHUB_TOKEN`), so the published-profiles guard
+  (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
+  `standard/package.json`'s version must exist and `latest/` must equal it. Merging before
+  the profiles commit lands fails the post-merge `test` job, and release-please never tags
+- A published `<version>/` folder never changes. `.livemark/public/profiles/checksums.json`
+  records every file's sha256, the guard fails on any mismatch, and the generator skips a
+  version that already has an entry, so it writes only a new version's. Changing an existing
+  entry is the one way through, so review it as such
+- `release.yaml` runs one at a time (`concurrency`, `cancel-in-progress: false`). Never let it
+  cancel: release-please tags before the publish jobs run, and a later run only publishes
+  what it tagged itself, so a run cancelled in between leaves a tag that never ships
 - npm and PyPI trusted publishing is bound to repo `datisthq/fairspec`, workflow
   `release.yaml` and environment `release` — renaming any of them breaks publishing
 

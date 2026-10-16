@@ -31,7 +31,7 @@
   "exports": "./build/index.js",
   "scripts": {
     "build": "tsgo",
-    "type": "tsgo --noEmit"
+    "check:types": "tsgo --noEmit"
   },
   "dependencies": {
     "@fairspec/metadata": "workspace:*",

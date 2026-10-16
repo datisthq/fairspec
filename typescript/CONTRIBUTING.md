@@ -45,7 +45,7 @@ We use vite-plus for linting and formatting, and TypeScript for type checking:
 - **Lint**: Check for code issues
 
   ```bash
-  pnpm lint
+  pnpm check:lint
   ```
 
 - **Format**: Auto-fix formatting issues
@@ -57,7 +57,7 @@ We use vite-plus for linting and formatting, and TypeScript for type checking:
 - **Type Check**: Verify TypeScript types
 
   ```bash
-  pnpm typescript type
+  pnpm -C typescript check:types
   ```
 
 ### Testing
@@ -67,19 +67,19 @@ Tests are collocated with the code and use Vitest through vite-plus:
 - **Run All Tests**: (includes building)
 
   ```bash
-  pnpm typescript test
+  pnpm -C typescript test
   ```
 
 - **Run Tests Only**: (without linting/building)
 
   ```bash
-  pnpm typescript unit
+  pnpm -C typescript test:unit
   ```
 
 - **Run a Specific Test**:
 
   ```bash
-  pnpm typescript unit table/plugins/csv/actions/table/-test/load.unit.ts
+  pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts
   ```
 
   Bare `vitest` does not work here — it fails to collect suites that import
@@ -90,7 +90,7 @@ Tests are collocated with the code and use Vitest through vite-plus:
 Update all dependencies to their latest versions:
 
 ```bash
-pnpm deps
+pnpm update:deps
 ```
 
 ## Code Style Guidelines
@@ -116,7 +116,7 @@ When adding new functionality:
 
 1. Create a feature branch (`git checkout -b feature/your-feature`)
 2. Make your changes with appropriate tests
-3. Ensure the code passes all checks: `pnpm typescript test` and `pnpm lint`
+3. Ensure the code passes all checks: `pnpm -C typescript test` and `pnpm check:lint`
 4. Commit your changes with a descriptive message
 5. Submit a pull request
 

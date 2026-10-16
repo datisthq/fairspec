@@ -84,7 +84,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Lint Repo
-        run: pnpm lint
+        run: pnpm check:lint
       - name: Check Docs
         run: pnpm exec vp test
       - name: Check Root Types
@@ -108,7 +108,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Test Standard
-        run: pnpm standard test
+        run: pnpm -C standard test
 
   typescript:
     needs: [changes]
@@ -138,12 +138,12 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Packages
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Check Types
         if: runner.os == 'Linux'
-        run: pnpm typescript type
+        run: pnpm -C typescript check:types
       - name: Test Packages
-        run: pnpm typescript unit
+        run: pnpm -C typescript test:unit
       - name: Upload Coverage
         if: runner.os == 'Linux'
         uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
@@ -170,11 +170,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Libraries
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Test Desktop
-        run: pnpm desktop test
+        run: pnpm -C desktop test
       - name: Build Desktop
-        run: pnpm desktop build
+        run: pnpm -C desktop build
 
   python:
     needs: [changes]
@@ -206,9 +206,9 @@ jobs:
           cache: pnpm
           node-version-file: package.json
       - name: Install Dependencies
-        run: pnpm install && pnpm python setup
+        run: pnpm install && pnpm -C python setup
       - name: Test Packages
-        run: pnpm python test
+        run: pnpm -C python test
       - name: Upload Coverage
         if: runner.os == 'Linux'
         uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
