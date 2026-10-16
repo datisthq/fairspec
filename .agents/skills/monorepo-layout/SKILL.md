@@ -54,6 +54,9 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
 - `separate-pull-requests: true`: one Release PR per section, on branch
   `release-please--branches--main--components--<section>`
 - `extra-files` paths are relative to the section directory
+- `release-as` pins one component's next version (typescript is pinned to `0.13.1` because
+  npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
+  later Release PR keeps proposing the same version
 - The standard's Release PR is the one `release.yaml` regenerates profiles on
   (`pnpm standard generate` writes `.livemark/public/profiles/{latest,<version>}`)
 - npm and PyPI trusted publishing is bound to repo `datisthq/fairspec`, workflow
