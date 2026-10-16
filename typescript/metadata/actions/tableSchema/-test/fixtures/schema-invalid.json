@@ -1,0 +1,8 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
+  "properties": {
+    "id": {
+      "type": 123
+    }
+  }
+}

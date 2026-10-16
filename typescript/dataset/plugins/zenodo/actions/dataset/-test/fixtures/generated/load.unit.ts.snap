@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loadDatasetFromZenodo > should load a package 1`] = `
+{
+  "creators": [
+    {
+      "affiliation": undefined,
+      "name": "Sukhija, Vinay Jagdish",
+      "nameType": "Personal",
+    },
+  ],
+  "dates": [
+    {
+      "date": "2025-05-27",
+      "dateType": "Issued",
+    },
+  ],
+  "descriptions": [
+    {
+      "description": "<p>A brief project to extract PM 10 concentration from Japan. Data set has been created using the OpenAQ data through a python script</p>",
+      "descriptionType": "Abstract",
+    },
+  ],
+  "doi": "10.5281/zenodo.15525711",
+  "resources": [
+    {
+      "data": "https://zenodo.org/records/15525711/files/openaq_measurements_PM10_Japan_20250527_095520.csv",
+      "integrity": {
+        "hash": "5ac1b92a57ec809c546ea90334c845c9",
+        "type": "md5",
+      },
+      "name": "openaq_measurements_p_m10_japan_20250527_095520",
+    },
+  ],
+  "rightsList": [
+    {
+      "rights": {
+        "id": "cc-by-4.0",
+      },
+    },
+  ],
+  "subjects": [
+    {
+      "subject": "PM10 concentrations",
+    },
+    {
+      "subject": "Air Quality",
+    },
+    {
+      "subject": "Japan",
+    },
+    {
+      "subject": "OpenAQ",
+    },
+  ],
+  "titles": [
+    {
+      "title": "PM10 Concentration in Japan",
+    },
+  ],
+}
+`;

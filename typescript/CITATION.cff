@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: Fairspec TypeScript
+abstract: TypeScript implementation of the Fairspec data management framework.
+authors:
+  - family-names: Karev
+    given-names: Evgeny
+    email: evgeny.karev@datist.io
+url: "https://typescript.fairspec.org"
+repository-code: "https://github.com/datisthq/fairspec-typescript"
+license: MIT
+keywords:
+  - fair
+  - data
+  - metadata
+  - datacite
+  - json-schema

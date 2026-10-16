@@ -1,0 +1,11 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+}
