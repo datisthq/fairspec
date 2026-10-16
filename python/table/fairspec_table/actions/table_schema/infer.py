@@ -65,7 +65,7 @@ def infer_table_schema_from_sample(
         if options.get("missingValues") is not None
         else DEFAULT_MISSING_VALUES
     )
-    detected_missing_values: set[str] = set()
+    detected_missing_values: dict[str, None] = {}
 
     regex_mapping = _create_regex_mapping(**options)
 
@@ -105,7 +105,7 @@ def infer_table_schema_from_sample(
                 has_missing_values = False
                 for mv in effective_missing_values:
                     if sample.filter(pl.col(name) == pl.lit(mv)).height > 0:
-                        detected_missing_values.add(mv)
+                        detected_missing_values[mv] = None
                         has_missing_values = True
                         missing_filter = missing_filter | (pl.col(name) == pl.lit(mv))
                 is_nullable = has_polars_nulls or has_missing_values
