@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Unpack
 
 from fairspec_dataset import load_file_stream
 from fairspec_metadata import get_data_first_path
@@ -10,16 +10,15 @@ from fairspec_metadata.models.file_dialect.tsv import TsvFileDialect
 from fairspec_table.utils.sniffer.sniffer import Sniffer
 
 if TYPE_CHECKING:
+    from fairspec_dataset import InferFileDialectOptions
     from fairspec_metadata import Resource
-
-    from fairspec_table.models.table import LoadTableOptions
 
 
 def infer_csv_file_dialect(
     resource: Resource,
-    options: LoadTableOptions | None = None,
+    **options: Unpack[InferFileDialectOptions],
 ) -> CsvFileDialect | TsvFileDialect | None:
-    sample_bytes = 10_000
+    sample_bytes = options.get("sample_bytes", 10_000)
 
     data_path = get_data_first_path(resource)
     if not data_path:
