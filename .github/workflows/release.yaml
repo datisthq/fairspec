@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+# Never cancel: a run cancelled after tagging leaves a release no later run publishes.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   test:
     uses: ./.github/workflows/test.yaml

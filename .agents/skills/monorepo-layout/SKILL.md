@@ -85,6 +85,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
   `standard/package.json`'s version must exist and `latest/` must equal it. Merging before
   the profiles commit lands fails the post-merge `test` job, and release-please never tags
+- `release.yaml` runs one at a time (`concurrency`, `cancel-in-progress: false`). Never let it
+  cancel: release-please tags before the publish jobs run, and a later run only publishes
+  what it tagged itself, so a run cancelled in between leaves a tag that never ships
 - npm and PyPI trusted publishing is bound to repo `datisthq/fairspec`, workflow
   `release.yaml` and environment `release` — renaming any of them breaks publishing
 
