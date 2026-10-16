@@ -23,10 +23,14 @@ website.
 
 ## General
 
-- **Never commit unless asked to**
+- **Never commit unless asked to** — except that a session working directly on `main` commits
+  each task once done. The root's index is shared, so always commit with a pathspec:
+  `git commit -m "…" -- <your paths>`
 - **Never add co-authored by Claude Code to commits!**
 - **Never push main or pull requests to origin unless asked to**
-- **Never amend or rewrite existing commits unless asked** — fold in changes with a follow-up commit
+- **Never switch branches in the project root unless asked** — other sessions work in it
+- **Never amend or rewrite existing commits unless asked** — other sessions build on them; fold
+  in changes with a follow-up commit
 - **Never mark a commit breaking** — no `!` and no `BREAKING CHANGE:` footer; release-please
   turns either into a major bump of the section (`1.0.0` from any `0.x`)
 - Prioritize using LSP capabilities if possible
@@ -37,7 +41,7 @@ website.
 - **After every task, check whether a skill in `.agents/skills/` needs updating, and update it in the same commit.** Read the task description for what it taught: a new convention, a correction to how the work was done, or a decision about how an area should look or behave. Write that into the skill for that area, so the next session follows it without being told again. When no skill covers the area and the lesson will recur, add one. Where a fact belongs: the **`human-documentation`** skill
 - **End every response that finishes a task with a status line: one bold sentence of about ten
   words, as the final paragraph, nothing after it** (e.g. **Docs folded into skills; guard and
-  section tests green.**)
+  section tests green.**). The agents summary shows only this line
 
 ## Invariants
 
@@ -66,7 +70,7 @@ runs one section's script (`pnpm python test`, `pnpm typescript build`, `pnpm de
 - `pnpm type` — root files, then every section
 - `pnpm build` — TypeScript packages, the desktop app, Python distributions
 - `pnpm unit` — the docs guard, then every section's unit tests
-- `pnpm site:start` / `pnpm site:build` — the website
+- `pnpm start:site` / `pnpm build:site` — the website
 - `pnpm leaks` / `pnpm vulns` / `pnpm scan` — gitleaks / semgrep / both
 - `pnpm deps` — update all Node dependencies to their latest versions
 
@@ -142,6 +146,9 @@ along with this table and every path and `pnpm` command the docs and skills name
   `vite.config.ts`; nested configs only carry `test` settings
 - Use PascalCase for classes and interfaces; camelCase for TypeScript methods and variables,
   snake_case for Python functions, methods and variables
+- Name functions verbNoun (`loadTable`, `load_table`), never a bare verb or noun; factories are
+  `create*`. Methods too
+- Name `package.json` scripts `verb[:object]` (`start:site`, `build:site`), never noun-first
 - Place high-level public items first in a file and low-level private items last
 - Use ES modules with full import paths including the ".ts(x)" file extension
 

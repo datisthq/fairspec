@@ -2,7 +2,7 @@
   "name": "fairspec",
   "main": "./worker.ts",
   "build": {
-    "command": "pnpm site:build",
+    "command": "pnpm build:site",
   },
   "preview_urls": true,
   "compatibility_date": "2025-08-15",

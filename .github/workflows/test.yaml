@@ -235,7 +235,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Site
-        run: pnpm site:build
+        run: pnpm build:site
 
   test:
     needs: [lint, standard, typescript, desktop, python, site]

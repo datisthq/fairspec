@@ -49,7 +49,7 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    `README.md`, a `CONTRIBUTING.md` or `.humans/`, add `vp test`: the docs guard checks every
    backticked path and `pnpm` command those documents name, the skills table and the skill
    frontmatter.
-2. **Published docs or the site.** Rung 1, then look at the page: `pnpm site:start`, then open
+2. **Published docs or the site.** Rung 1, then look at the page: `pnpm start:site`, then open
    it through Claude in Chrome, falling back to chrome-devtools, then Playwright, only when the
    one above is unavailable (and say so). A landing route in `.livemark/routes/` also gets the
    root types (`pnpm exec tsgo --noEmit`).
