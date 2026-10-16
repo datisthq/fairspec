@@ -6,11 +6,11 @@ order: 2
 
 Fairspec ships with a software ecosystem so you can adopt the standard from your language of choice, your AI assistant, or a desktop UI.
 
-:::card{title="Python" icon="file-code" href="/python/"}
+:::card{title="Python" icon="file-code" href="/python/getting-started/"}
 Validate, infer, and query Fairspec descriptors from Python. Built on top of the data ecosystem with first-class support for pandas and Polars DataFrames.
 :::
 
-:::card{title="TypeScript" icon="braces" href="/typescript/"}
+:::card{title="TypeScript" icon="braces" href="/typescript/getting-started/"}
 A fast TypeScript framework with the same API surface as the Python package. Ships an opinionated terminal CLI and adapters for tabular and JSON formats.
 :::
 

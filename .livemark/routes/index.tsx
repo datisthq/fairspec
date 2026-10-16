@@ -431,7 +431,7 @@ const implementations: Implementation[] = [
     description:
       "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames.",
     command: "pip install fairspec",
-    href: "/python/",
+    href: "/python/getting-started/",
     external: true,
   },
   {
@@ -440,7 +440,7 @@ const implementations: Implementation[] = [
     description:
       "The same API surface as the Python package, built on Polars, and shipping a terminal CLI alongside the library.",
     command: "npm install fairspec",
-    href: "/typescript/",
+    href: "/typescript/getting-started/",
     external: true,
   },
   {

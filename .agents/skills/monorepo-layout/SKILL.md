@@ -80,6 +80,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 - One site on fairspec.org. Each language is an article section under its prefix
   (`/python/`, `/typescript/`); library pages live under `/<lang>/library/`, CLI pages under
   `/<lang>/terminal/`. A doc's URL is its `path:` frontmatter, not its file location
+- No article sits at a section prefix: livemark nests every article under the one at its
+  parent path, so a README at `/python/` would swallow the whole sidebar. The language READMEs
+  live at `/<lang>/getting-started/`, and `worker.ts` 301s the bare `/<lang>/` there
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `desktop.tsx`, `mcp-server.tsx`)
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
