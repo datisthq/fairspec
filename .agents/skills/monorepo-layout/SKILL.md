@@ -81,6 +81,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
   (`/python/`, `/typescript/`); library pages live under `/<lang>/library/`, CLI pages under
   `/<lang>/terminal/`. A doc's URL is its `path:` frontmatter, not its file location
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `desktop.tsx`, `mcp-server.tsx`)
+- Changelogs are articles, not `type: "changelog"` sections: each article section includes its
+  `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
+  the last item of that section's sidebar. One page per changelog, no per-version pages
 - Cloudflare Workers Builds deploys the site. `wrangler.jsonc` `build.command` runs
   `pnpm site:build` before every `wrangler versions upload`, so the deploy never depends on the
   dashboard's build command; root `pnpm build` builds the packages, not the site

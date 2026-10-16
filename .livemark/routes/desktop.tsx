@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ExternalLink,
+  History,
   ListOrdered,
   Search,
   Sparkles,
@@ -83,6 +84,18 @@ function Hero() {
               >
                 View on GitHub
                 <ExternalLink className="size-4" />
+              </a>
+              <a
+                href="https://github.com/datisthq/fairspec/blob/main/desktop/CHANGELOG.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "px-5 no-underline",
+                )}
+              >
+                Changelog
+                <History className="size-4" />
               </a>
             </div>
           </div>

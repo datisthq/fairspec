@@ -29,7 +29,9 @@ export function mapPath(section: string, pathname: string) {
   const path = `/${pathname.replace(/^\/+|\/+$/g, "")}/`.replace(/^\/\/$/, "/")
 
   if (path === "/") return `/${section}/`
-  if (path.startsWith("/changelog/")) return `/${section}${path}`
+  if (path.startsWith("/changelog/")) {
+    return section === "desktop" ? "/desktop/" : `/${section}/changelog/`
+  }
   if (path === "/contributing/") return "/overview/contributing/"
   if (section === "desktop") return "/desktop/"
   if (path.startsWith("/mcp-server/")) return path

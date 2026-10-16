@@ -54,7 +54,7 @@ The specs live inside the measured source packages, so until now they counted to
 
 - Rename test files to _unit.py to match typescript ([`fe4d303`](https://github.com/datisthq/fairspec-python/commit/fe4d30346752cb9b11c8ce8bc4877e0a2bc7c485))
 
-The TypeScript repo names every test file <module>.unit.ts. Rename the 139 Python specs from <module>_spec.py to <module>_unit.py, and the taskipy task from spec to unit so `uv run task unit` mirrors `pnpm unit`.
+The TypeScript repo names every test file &lt;module>.unit.ts. Rename the 139 Python specs from &lt;module>_spec.py to &lt;module>_unit.py, and the taskipy task from spec to unit so `uv run task unit` mirrors `pnpm unit`.
 
 Python cannot use the literal .unit.py: a dot is not legal in a module name, and 132 of the specs import their subject relatively, so the package would be computed one level too deep and every `from ..load import` would break. AGENTS.md now records that alongside the existing note on why directories are _test and _shared rather than -test.
 
@@ -81,9 +81,9 @@ dependency-type: indirect
 
 dependency-group: uv ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 - **deps**: Migrate to polars 1.44 ([`dc69b6f`](https://github.com/datisthq/fairspec-python/commit/dc69b6f6867a0819f1a4ea6df26bb5476152e176))
 
@@ -111,7 +111,7 @@ Also corrects a stale line: fairspec-typescript renamed agent to mcp-server, so 
 
 Rewrite AGENTS.md around the sections mycarro-next uses: Rules, Modules with the package DAG, Code structure including the new _test/_shared convention, Conventions, and a calibrated comment rule in place of a blanket ban.
 
-Correct a claim that was never true: the Specs section asked for test_<module>.py files, while pyproject.toml has always set python_files = "*_spec.py" and no file in the repo matched the documented pattern. The taskipy tasks for build, publish and coverage and the whole pnpm side — leaks, vulns, scan, deps, docs:start, docs:build — went undocumented.
+Correct a claim that was never true: the Specs section asked for test_&lt;module>.py files, while pyproject.toml has always set python_files = "*_spec.py" and no file in the repo matched the documented pattern. The taskipy tasks for build, publish and coverage and the whole pnpm side — leaks, vulns, scan, deps, docs:start, docs:build — went undocumented.
 
 CONTRIBUTING.md still cloned from github.com/yourusername, described tests as merely collocated, and gave a placeholder path as the single-test example.
 
@@ -368,9 +368,9 @@ dependency-type: indirect
 
 dependency-group: uv ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 ---
 
@@ -398,7 +398,7 @@ Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.c
 
 Bump livemark to 0.18.0 and consolidate header links into sections (type: "custom" with icons), matching the fairspec-typescript layout. Reorder Terminal before Python and replace renamed lucide icons (terminal-square -> square-terminal, file-type-2 -> file-code) so they render under lucide-react 0.577.0.
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com>
 
 - Bump livemark ([`e4e9cb6`](https://github.com/fairspec/fairspec-python/commit/e4e9cb617899e200a5a88fd6a561815a18d78dd9))
 
@@ -416,13 +416,13 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 Adds the same GitHub Actions plumbing that fairspec-standard and fairspec-typescript run: weekly + on-PR semgrep + gitleaks scans (`scan.yaml`), the `@claude` mention bot (`mention.yaml`), and the OWASP-themed automated PR review (`review.yaml`), along with the matching `.gitleaks.toml` allowlist. `package.json` gains `leaks` / `vulns` scripts (semgrep targets `p/python` here) plus a `scan` alias, along with `engines` and `packageManager` so the scan workflow can resolve a pinned Node and pnpm. The allowedTools list in mention/ review is adjusted from pnpm scripts to the `uv run task ...` commands this repo uses, and the pre-commit `format` job is scoped to `*.py` since `ruff format` only handles Python.
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com>
 
 - Migrate docs from Astro/Starlight to livemark ([`b2d16f2`](https://github.com/fairspec/fairspec-python/commit/b2d16f201a2302626e4b10985652ca3b0589da87))
 
 Replace the website/ workspace package with livemark at the project root. Move docs from website/content/docs/ to docs/, public assets to .livemark/public/, and route the README as the landing page. Drop the overview/contributing.md duplicate and use livemark patches instead.
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com>
 
 - Migrate to lefthook ([`a5ccd03`](https://github.com/fairspec/fairspec-python/commit/a5ccd03ff3dc6d25aba56f055c14baf6475a61e6))
 
@@ -455,9 +455,9 @@ updated-dependencies:
 
 dependency-type: indirect ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 - **deps**: Bump mermaid in the npm_and_yarn group across 1 directory ([#9](https://github.com/fairspec/fairspec-python/pull/9), [`a894aaf`](https://github.com/fairspec/fairspec-python/commit/a894aaf3a8ff51eb0b409922a97e799b93c739c0))
 
@@ -475,9 +475,9 @@ dependency-type: indirect
 
 dependency-group: npm_and_yarn ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 - **deps**: Bump pygments from 2.19.2 to 2.20.0 ([#7](https://github.com/fairspec/fairspec-python/pull/7), [`abde099`](https://github.com/fairspec/fairspec-python/commit/abde099e628d22270078ebd4d34f0c1c88dafaa2))
 
@@ -492,9 +492,9 @@ updated-dependencies:
 
 dependency-type: indirect ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 - **deps**: Bump the uv group across 1 directory with 2 updates ([#8](https://github.com/fairspec/fairspec-python/pull/8), [`7e66204`](https://github.com/fairspec/fairspec-python/commit/7e662045b3440cea06ad7d0d6581bc0bb6909a97))
 
@@ -514,17 +514,17 @@ dependency-group: uv
 
 dependency-group: uv ...
 
-Signed-off-by: dependabot[bot] <support@github.com>
+Signed-off-by: dependabot[bot] &lt;support@github.com>
 
-Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com>
 
 ### Documentation
 
 - Add high-level Python guides for dataset, table, data, file ([`bca330c`](https://github.com/fairspec/fairspec-python/commit/bca330c9e1781bfcb3c5c1901f2a7daf80a6ac6b))
 
-Add four conceptual API guides modelled on docs/terminal/{dataset,table, data,file}.md, using the programming API (load_dataset, validate_table, infer_data_schema, copy_file, …) instead of CLI subcommands. Sit above the format-specific pages in the sidebar (orders 1-4); the existing format guides are renumbered to 10-20. docs/python/table.md is rewritten in place to become the high-level Table guide while keeping the existing Polars-Table-type content (normalize/denormalize/inspect).
+Add four conceptual API guides modelled on `docs/terminal/{dataset,table, data,file}.md`, using the programming API (load_dataset, validate_table, infer_data_schema, copy_file, …) instead of CLI subcommands. Sit above the format-specific pages in the sidebar (orders 1-4); the existing format guides are renumbered to 10-20. docs/python/table.md is rewritten in place to become the high-level Table guide while keeping the existing Polars-Table-type content (normalize/denormalize/inspect).
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com>
 
 ---
 

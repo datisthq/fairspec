@@ -34,6 +34,8 @@ Run from the repo root; `pnpm desktop <script>` runs a script of this section. R
 - The landing page is `.livemark/routes/desktop.tsx` at the repo root, published at
   fairspec.org/desktop/. It is independent of the Electron app, English-only and outside the
   i18n workflow
+- The site has no article section for Desktop, so `desktop/CHANGELOG.md` is not rendered on
+  fairspec.org; the landing page's hero links to it on GitHub
 - `desktop/package.json` pins `productName: fairspec`: Electron derives the user-data directory
   from it, so renaming it would orphan every user's settings
 
