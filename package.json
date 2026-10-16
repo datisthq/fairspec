@@ -17,10 +17,10 @@
     "site:preview": "livemark preview",
     "site:start": "livemark start",
     "standard": "pnpm -F ./standard run",
-    "test": "pnpm lint && pnpm standard test && pnpm typescript test && pnpm desktop test && pnpm python test",
+    "test": "pnpm lint && vp test && pnpm standard test && pnpm typescript test && pnpm desktop test && pnpm python test",
     "type": "tsgo --noEmit && pnpm standard type && pnpm typescript type && pnpm desktop type && pnpm python type",
     "typescript": "pnpm -F ./typescript run",
-    "unit": "pnpm typescript unit && pnpm desktop unit && pnpm python unit",
+    "unit": "vp test && pnpm typescript unit && pnpm desktop unit && pnpm python unit",
     "vulns": "semgrep --config=p/typescript --config=p/nodejs --config=p/python --config=p/owasp-top-ten --config=p/secrets --exclude='**/fixtures/**' --metrics=off"
   },
   "devDependencies": {

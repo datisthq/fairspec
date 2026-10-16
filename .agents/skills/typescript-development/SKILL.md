@@ -1,6 +1,11 @@
+---
+name: typescript-development
+description: Use when working in typescript/ — the fairspec and @fairspec/* npm packages, the CLI and the MCP server. Covers commands, the package DAG, concern-then-entity layout, -test/-shared folders, barrels, Windows-safe specs and recordings.
+---
+
 # TypeScript
 
-The `typescript/` section of the Fairspec monorepo (see the root `AGENTS.md`) — a data management framework built on the Fairspec standard and
+The `typescript/` section is a data management framework built on the Fairspec standard and
 Polars DataFrames: metadata models, a table engine with per-format plugins, dataset source
 plugins, a CLI and an MCP server.
 
@@ -35,7 +40,7 @@ metadata ─┬─► dataset ───┐
 - `mcp-server` — MCP tools over the library actions, served over stdio as `fairspec mcp`.
 - `terminal` — the `fairspec` CLI (commander), one command group per entity.
 - `fairspec` — umbrella package re-exporting `@fairspec/library` and shipping the CLI binary.
-- `project` — the documentation site in `docs/` and the docs guard in `-test/`. Private and outside the DAG: nothing depends on it.
+- `project` — the documentation site in `typescript/project/docs/`. Private and outside the DAG: nothing depends on it.
 
 ## Code structure
 
@@ -46,7 +51,7 @@ model, a command), then subgroup by the entity it acts on.
 - `models/<entity>.ts` — zod schemas and their derived types.
 - `plugins/<name>/` — a self-contained plugin: `plugin.ts` (the class), `settings.ts`, `index.ts`, and its own `actions/` tree.
 - `commands/<entity>/<verb>.ts` (terminal) — CLI commands. `tools/<entity>/<verb>.ts` (mcp-server) — MCP tools.
-- `helpers/<name>.ts` — small supporting functions. `utils/<name>.ts` — heavier self-contained modules (e.g. `table/utils/sniffer/`).
+- `helpers/<name>.ts` — small supporting functions. `utils/<name>.ts` — heavier self-contained modules (e.g. `typescript/table/utils/sniffer/`).
 - `services/`, `profiles/`, `schemas/`, `params/`, `entrypoints/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions, executable entry points.
 - Root files, one concern each: `index.ts` (the public API surface), `plugin.ts`, `settings.ts`, `system.ts`, `main.ts`.
 
@@ -61,27 +66,16 @@ Test discovery is by the `*.unit.ts` **filename suffix**, not the folder name �
 a structural convention. Move a test and its `fixtures/` together: `resolveSnapshotPath` and
 vitest-polly both derive their paths from the test file's own directory.
 
-## Formats
-
-- Use 2-space indentation, UTF-8 encoding, and LF line endings
-- Formatting is configured in the root `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
-- Use PascalCase for classes, interfaces and types; camelCase for methods and variables
-- Place high-level public items first in a file and low-level private items last
-
 ## Conventions
 
 - Package manager pnpm `^11`, Node `^24`, ES Modules throughout
+- Formatting is configured in the root `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
 - Function names are **verbNoun** — a verb plus the noun it acts on (`saveArrowTable`, `inferTableSchemaFromTable`, `createColumnFromProperty`), never a bare verb or bare noun
 - Files are camelCase, named after the verb **without repeating the folder** — `actions/column/create.ts` exports `createColumnFromProperty`, not `createColumn.ts`
-- One export per file is the default, not an absolute: a file may export a closely related pair (`dataset/actions/file/temp.ts` exports `getTempFilePath` and `writeTempFile`)
+- One export per file is the default, not an absolute: a file may export a closely related pair (`typescript/dataset/actions/file/temp.ts` exports `getTempFilePath` and `writeTempFile`)
 - Use relative imports with the full `.ts`/`.tsx` file extension
 - **`index.ts` barrels are deliberate and required.** Every package publishes `"exports": "./build/index.js"`, and its `index.ts` is a curated list of explicit named re-exports — never `export *`. Adding a public API means adding its line there.
-- Commit style: Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`); release-please derives the version and changelog from them — see **Releases**
-
-## Types
-
-- Use strict TypeScript with null checks, but don't add explicit return types to functions
-- Never use TypeScript `any`, type casting `as`, or `!` without permission
+- Add brief docstrings for exported functions and models (explain what it does)
 
 ## Specs
 
@@ -95,17 +89,6 @@ vitest-polly both derive their paths from the test file's own directory.
 
 This section is the `typescript` release-please component: tags `typescript-vX.Y.Z`, its own
 Release PR, published to npm by `release.yaml`. All packages are lock-stepped to one version
-via `extra-files`. The commit rules are in the root `AGENTS.md`.
-
-- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Tests, the docs
-  in `project/`, READMEs and tooling are `chore` or `docs`
-- When in doubt, ask whether the change alters what someone installing a package gets.
-  If it does not, it is `chore`
-
-## Docs
-
-- Add Typedoc comments only for public APIs; don't add them for files or use `@params` directives
-- Add brief docstrings for exported functions and models (explain what it does)
-- **Comments must not outnumber code.** If a file has more comment lines than code lines, the comments get cut, not the code. A single comment is at most ~3 lines. The bar is not "true" or "useful context" — it is: **name the specific mistake this comment prevents**. If you cannot name one in a sentence, delete it. Most code needs no comment at all: a file with zero is the normal case, not a gap to fill.
-- **Design rationale is git history, not file content.** `git log`/`git blame` already hold why a thing was chosen and what it replaced. A file carries only what someone editing THAT line needs in order not to break something — a non-obvious invariant, a failure that presents as success, a deliberate deviation from a rule in this file.
-- Never worth a line: restating what the next statement plainly does · explaining what a well-named function already names · narrating rejected alternatives · defending a choice nobody would question · a preamble on every entry in a config object
+via `extra-files`. Only changes to the published packages use `feat` or `fix`; tests, the docs
+in `typescript/project/`, READMEs and tooling are `chore` or `docs`. When in doubt, ask whether
+the change alters what someone installing a package gets.

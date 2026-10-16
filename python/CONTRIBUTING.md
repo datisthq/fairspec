@@ -88,7 +88,8 @@ Tests are collocated with the code in `_test` directories and use pytest:
 - Use 4-space indentation, UTF-8 encoding, and LF line endings
 - Use PascalCase for classes, snake_case for functions, methods, and variables
 
-See `AGENTS.md` for the full set of conventions.
+See the root `AGENTS.md` and the `python-development` skill in `.agents/skills/` for the full
+set of conventions.
 
 ## Making Changes to the Meta-Package
 

@@ -85,6 +85,8 @@ jobs:
         run: pnpm install
       - name: Lint Repo
         run: pnpm lint
+      - name: Check Docs
+        run: pnpm exec vp test
       - name: Check Root Types
         run: pnpm exec tsgo --noEmit
 

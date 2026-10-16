@@ -10,18 +10,25 @@ is specific to it.
 
 ## Root vs section
 
-| lives at the root                                                           | lives in a section                           |
-| --------------------------------------------------------------------------- | -------------------------------------------- |
-| `package.json` scripts, `pnpm-workspace.yaml` + its `catalog:`              | the section's `package.json` and its deps    |
-| one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution) |
-| `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` block only    |
-| `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`         |
-| `.github/`, `.release/`, `.agents/`                                         | `AGENTS.md`, `README.md`, `CHANGELOG.md`     |
-| the site: `livemark.config.ts`, `.livemark/`, `worker.ts`, `wrangler.jsonc` | the Markdown the site includes               |
+| lives at the root                                                           | lives in a section                                |
+| --------------------------------------------------------------------------- | ------------------------------------------------- |
+| `package.json` scripts, `pnpm-workspace.yaml` + its `catalog:`              | the section's `package.json` and its deps         |
+| one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution)      |
+| `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` block only         |
+| `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`              |
+| `.github/`, `.release/`, `.agents/`, `.humans/`, `.scripts/`                | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`    |
+| the one `AGENTS.md`                                                         | its `<section>-development` skill (in `.agents/`) |
+| the site: `livemark.config.ts`, `.livemark/`, `worker.ts`, `wrangler.jsonc` | the Markdown the site includes                    |
 
 vite-plus reads `fmt` and `lint` from the root config only; a nested block is silently
 ignored, so path-specific lint rules go in the root `overrides` with a section prefix
 (`desktop/routes/**`).
+
+The root `vite.config.ts` also has a `test` block, whose `include` is only
+`.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard.
+Root `vp test` runs them; root `test` and `unit` call it first, and CI runs it in the always-on
+`lint` job, so a docs-only PR is still checked. A section's `vp test` uses its own config and
+never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` covers them.
 
 ## Scripts
 
@@ -50,7 +57,10 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
 4. If it ships, add a package to `.release/config.json` (component = section name, tags
    `<section>-vX.Y.Z`) and an entry to `.release/manifest.json`, plus a publish job in
    `release.yaml` gated on `steps.release.outputs['<section>--release_created']`
-5. Add a row to the section tables in the root `AGENTS.md` and `README.md`
+5. Add a row to the section tables in the root `AGENTS.md` and `README.md`, add the section to
+   `SECTIONS` in `.scripts/-test/docs.unit.ts`, and write its conventions into a
+   `.agents/skills/<section>-development/` skill listed in the `AGENTS.md` skills table — never a
+   section `AGENTS.md`, which the docs guard rejects
 
 ## Releases
 

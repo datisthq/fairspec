@@ -3,6 +3,7 @@
 
   "include": [
     "${configDir}/*.ts",
+    "${configDir}/.scripts/**/*.ts",
     "${configDir}/.livemark/**/*.ts",
     "${configDir}/.livemark/**/*.tsx"
   ],

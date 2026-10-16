@@ -101,7 +101,8 @@ pnpm deps
 - Use semicolons as needed (not required everywhere)
 - Use arrow function parentheses as needed (omitted for single parameters)
 
-See `AGENTS.md` for the full set of conventions.
+See the root `AGENTS.md` and the `typescript-development` skill in `.agents/skills/` for the
+full set of conventions.
 
 ## Making Changes to the Meta-Package
 
