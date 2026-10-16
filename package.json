@@ -15,6 +15,7 @@
     "scan": "pnpm scan:leaks && pnpm scan:vulns",
     "scan:leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
     "scan:vulns": "semgrep --config=p/typescript --config=p/nodejs --config=p/python --config=p/owasp-top-ten --config=p/secrets --exclude='**/fixtures/**' --metrics=off",
+    "squash": "node .scripts/squash-branch.ts",
     "start:site": "livemark start",
     "sync:profiles": "node .scripts/@sync.ts && vp fmt typescript/metadata/profiles python/metadata/fairspec_metadata/profiles",
     "test": "pnpm check:lint && vp test && pnpm -C standard test && pnpm -C typescript test && pnpm -C desktop test && pnpm -C python test",

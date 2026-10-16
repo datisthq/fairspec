@@ -29,7 +29,17 @@ by default), `.scripts/` repo-wide guards and scripts, `.release/` release-pleas
   `git commit -m "…" -- <your paths>`
 - **Never add co-authored by Claude Code to commits!**
 - **Never push main or pull requests to origin unless asked to**
-- **Never switch branches in the project root unless asked** — other sessions work in it
+- **Never switch branches in the project root unless asked** — other sessions work in it.
+  Branch work happens in a worktree (**`worktree-workflow`**)
+- **Every plan ends by asking how to work it** (`AskUserQuestion`, before finalising): **the
+  current branch**, **a worktree branch**, or **that worktree driven by the Workflow tool**
+- **"Land" means one squashed, semantic commit on local `main` — never a push.** In the
+  worktree: `git merge main`, the **`change-verification`** slice green, then
+  `pnpm squash <branch> -m "<type(scope): subject>"`. Never `git merge --squash` in the root,
+  never fast-forward or merge-commit a branch into `main`
+- After a worktree **you created this session** lands, `git worktree remove` it and
+  `git branch -D` its branch (squashed, so git never sees it merged). Never touch another
+  session's
 - **Never amend or rewrite existing commits unless asked** — other sessions build on them; fold
   in changes with a follow-up commit
 - **Never mark a commit breaking** — no `!` and no `BREAKING CHANGE:` footer; release-please
@@ -89,10 +99,12 @@ Each section is its own release-please component with its own version, tag
 A commit counts toward every section whose files it touches. Scope commits with the section:
 `feat(python): …`, `docs(standard): …`.
 
-- PRs are squash-merged, so **the PR title is the commit release-please reads**: its type
-  decides the bump of every section the PR touches. A PR that changes `standard/profiles/`
-  also runs `pnpm sync:profiles`, so the libraries' bundled profiles change in the same commit
-  and both libraries release with the standard
+- A branch lands as one squashed commit (`pnpm squash`; a PR, when used, is squash-merged), so
+  **its subject is the commit release-please reads**: its type decides the bump of every
+  section the branch touches. List further `fix(…)`/`feat(…)` subjects in the body, one per
+  line. A branch that changes `standard/profiles/` also runs `pnpm sync:profiles`, so the
+  libraries' bundled profiles change in the same commit and both libraries release with the
+  standard
 
 - **IMPORTANT**: `feat` and `fix` mean "this changes what the section ships". In each section
   that is only:
@@ -146,6 +158,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | `issue-resolution`       | taking one issue or bug report to a tested change                      |
 | `change-verification`    | checking a change works — the smallest slice that covers the diff      |
 | `change-review`          | reviewing a pull request or the local diff — also what CI runs         |
+| `worktree-workflow`      | a worktree branch: bootstrap, landing with `pnpm squash`, cleanup      |
 
 **There is exactly one `AGENTS.md`, at the root.** `.scripts/-test/docs.unit.ts` enforces that,
 along with this table and every path and `pnpm` command the docs and skills name.

@@ -39,6 +39,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   wrong directory fails
 - Script names follow the `AGENTS.md` rule, `verb[:object]`, as in the other Datist repos —
   never `<target>:<verb>`. Keys stay in alphabetical order
+- `pnpm squash` (`.scripts/squash-branch.ts`) lands a worktree branch as one commit on local
+  `main`; procedure in **`worktree-workflow`**
 - Root `build`, `check:types`, `test:unit` and `test` chain sections **explicitly, in dependency order**
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
   `typescript/*` package directly _and_ again through the `typescript` group package's
