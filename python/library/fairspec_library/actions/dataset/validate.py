@@ -11,7 +11,6 @@ from fairspec_metadata import (
     create_report,
     infer_resource_name,
     load_dataset_descriptor,
-    normalize_dataset,
 )
 
 from fairspec_dataset.helpers.concurrency import run_concurrent_tasks
@@ -43,7 +42,7 @@ def validate_dataset(
                 return exception.report
             return create_report()
 
-    dataset = normalize_dataset(source)
+    dataset = source.model_copy(deep=True)
     errors = _validate_dataset_resources(dataset, **options)
     fk_report = validate_dataset_foreign_keys(dataset, **options)
     errors.extend(fk_report.errors)
