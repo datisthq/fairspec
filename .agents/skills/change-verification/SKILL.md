@@ -23,7 +23,7 @@ Measured on a laptop, warm, 2026-10-16:
 | check                                           | wall  | catches                                   |
 | ----------------------------------------------- | ----- | ----------------------------------------- |
 | `vp fmt --check <files>` / `vp lint <files>`    | ~1 s  | format, oxlint, the desktop import fence  |
-| `vp test` (root)                                | ~1 s  | the docs guard                            |
+| `vp test` (root)                                | ~1 s  | the docs and published-profiles guards    |
 | `pnpm -C standard test`                         | ~3 s  | profiles compile, spec examples, fixtures |
 | `pnpm -C typescript build`                      | ~8 s  | emits every package's `build/`            |
 | `pnpm -C typescript type`                       | ~6 s  | types in every TypeScript package         |
@@ -86,14 +86,15 @@ both sections' slices.
 Some checks read files from disk or live outside a section's tests, so a folder-scoped run
 never reaches them. When the diff touches a trigger, add the check by hand:
 
-| the diff touches                                                   | add                                                                        |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| a doc or skill, a renamed path, a renamed or removed `pnpm` script | `vp test` (`.scripts/-test/docs.unit.ts`)                                  |
-| a desktop renderer import                                          | `vp lint` on the file (the root `no-restricted-imports`)                   |
-| a user-facing desktop string                                       | `pnpm -C desktop extract`, then the catalogues (**`desktop-development`**) |
-| a test path or path assertion in `typescript/`                     | read it for raw separators and bare `\n` — CI runs Windows                 |
-| a renamed recorded test                                            | `git status` for an orphaned recording                                     |
-| a root script, especially a `-F` filter                            | run it, and check its quoting holds on Windows (**`monorepo-layout`**)     |
+| the diff touches                                                       | add                                                                        |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| a doc or skill, a renamed path, a renamed or removed `pnpm` script     | `vp test` (`.scripts/-test/docs.unit.ts`)                                  |
+| a desktop renderer import                                              | `vp lint` on the file (the root `no-restricted-imports`)                   |
+| a user-facing desktop string                                           | `pnpm -C desktop extract`, then the catalogues (**`desktop-development`**) |
+| a test path or path assertion in `typescript/`                         | read it for raw separators and bare `\n` — CI runs Windows                 |
+| a renamed recorded test                                                | `git status` for an orphaned recording                                     |
+| `.livemark/public/profiles/` or the version in `standard/package.json` | `vp test` (`.scripts/-test/profiles.unit.ts`)                              |
+| a root script, especially a `-F` filter                                | run it, and check its quoting holds on Windows (**`monorepo-layout`**)     |
 
 ## When the slice is not enough
 

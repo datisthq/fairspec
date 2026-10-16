@@ -25,7 +25,8 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
 (`desktop/routes/**`).
 
 The root `vite.config.ts` also has a `test` block, whose `include` is only
-`.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard.
+`.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard
+and the published-profiles guard.
 Root `vp test` runs them; root `test` and `unit` call it first, and CI runs it in the always-on
 `lint` job, so a docs-only PR is still checked. A section's `vp test` uses its own config and
 never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` covers them.
@@ -78,6 +79,10 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 - The standard's Release PR is the one `release.yaml` regenerates profiles on:
   `pnpm generate:profiles` runs `.scripts/@generate.ts`, which writes
   `.livemark/public/profiles/{latest,<version>}`
+- The Release PR runs no CI (its pushes use `GITHUB_TOKEN`), so the published-profiles guard
+  (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
+  `standard/package.json`'s version must exist and `latest/` must equal it. Merging before
+  the profiles commit lands fails the post-merge `test` job, and release-please never tags
 - npm and PyPI trusted publishing is bound to repo `datisthq/fairspec`, workflow
   `release.yaml` and environment `release` — renaming any of them breaks publishing
 
