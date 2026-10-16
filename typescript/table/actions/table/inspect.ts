@@ -59,10 +59,16 @@ async function inspectColumns(
     )
 
     if (!polarsColumn) {
-      errors.push({
-        type: "column/missing",
-        columnName: column.name,
-      })
+      const isRequired =
+        mapping.target.allRequired || mapping.target.required?.includes(column.name)
+
+      if (isRequired) {
+        errors.push({
+          type: "column/missing",
+          columnName: column.name,
+        })
+      }
+
       return
     }
 

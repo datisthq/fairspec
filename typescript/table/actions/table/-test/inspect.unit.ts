@@ -33,6 +33,7 @@ describe("inspectTable", () => {
       .lazy()
 
     const tableSchema: TableSchema = {
+      allRequired: true,
       properties: {
         id: { type: "number" },
         name: { type: "number" },
@@ -56,6 +57,7 @@ describe("inspectTable", () => {
       .lazy()
 
     const tableSchema: TableSchema = {
+      allRequired: true,
       properties: {
         id: { type: "number" },
         name: { type: "string" },
@@ -112,8 +114,7 @@ describe("inspectTable", () => {
     })
   })
 
-  // TODO: Decide on required
-  it.skip("should pass when non-required columns are missing", async () => {
+  it("should pass when non-required columns are missing", async () => {
     const table = pl
       .DataFrame({
         id: [1, 2],
@@ -192,8 +193,7 @@ describe("inspectTable", () => {
     })
   })
 
-  // TODO: Decide on required
-  it.skip("should pass when schema contains all data columns", async () => {
+  it("should pass when schema contains all data columns", async () => {
     const table = pl
       .DataFrame({
         id: [1, 2],
@@ -230,8 +230,7 @@ describe("inspectTable", () => {
     expect(errors).toEqual([])
   })
 
-  // TODO: Decide on required
-  it.skip("should pass when at least one column matches", async () => {
+  it("should pass when at least one column matches", async () => {
     const table = pl
       .DataFrame({
         id: [1, 2],
@@ -282,6 +281,7 @@ describe("inspectTable", () => {
       .lazy()
 
     const tableSchema: TableSchema = {
+      allRequired: true,
       properties: {
         id: { type: "number" },
         name: { type: "string" },
