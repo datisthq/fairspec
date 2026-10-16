@@ -132,17 +132,11 @@
         },
         "lineString": {
           "description": "An array of two or more positions",
-          "allOf": [
-            { "$ref": "#/$defs/geometry/$defs/positionArray" },
-            { "minItems": 2 }
-          ]
+          "allOf": [{ "$ref": "#/$defs/geometry/$defs/positionArray" }, { "minItems": 2 }]
         },
         "linearRing": {
           "description": "An array of four positions where the first equals the last",
-          "allOf": [
-            { "$ref": "#/$defs/geometry/$defs/positionArray" },
-            { "minItems": 4 }
-          ]
+          "allOf": [{ "$ref": "#/$defs/geometry/$defs/positionArray" }, { "minItems": 4 }]
         },
         "polygon": {
           "description": "An array of linear rings",

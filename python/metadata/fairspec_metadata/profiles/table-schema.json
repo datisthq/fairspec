@@ -491,15 +491,7 @@
       "maxLength": 1
     },
     "ListItemType": {
-      "enum": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "date-time",
-        "date",
-        "time"
-      ]
+      "enum": ["string", "integer", "number", "boolean", "date-time", "date", "time"]
     },
     "PrimaryKey": {
       "type": "array",
