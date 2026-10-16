@@ -71,6 +71,9 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
   (`/python/`, `/typescript/`); library pages live under `/<lang>/library/`, CLI pages under
   `/<lang>/terminal/`. A doc's URL is its `path:` frontmatter, not its file location
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `desktop.tsx`, `mcp-server.tsx`)
+- Cloudflare Workers Builds deploys the site. `wrangler.jsonc` `build.command` runs
+  `pnpm site:build` before every `wrangler versions upload`, so the deploy never depends on the
+  dashboard's build command; root `pnpm build` builds the packages, not the site
 - No section sets `siteLink`; the site title always links to `/`
 - The retired subdomains (`python.`, `typescript.`, `application.`) are custom domains of the
   same Worker; `worker.ts` 301s them to the mapped path. When a doc's path changes, add the old
