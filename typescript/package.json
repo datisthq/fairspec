@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm -F './*' run build",
+    "build": "pnpm -F \"./*\" run build",
     "coverage": "sensible-browser coverage/index.html",
     "debug": "vp test --no-file-parallelism --test-timeout=0 --inspect-brk --browser run",
-    "release": "pnpm -F './*' publish --access public --ignore-scripts --no-git-checks",
+    "release": "pnpm -F \"./*\" publish --access public --ignore-scripts --no-git-checks",
     "test": "pnpm build && pnpm unit",
-    "type": "pnpm -F './*' run type",
+    "type": "pnpm -F \"./*\" run type",
     "unit": "vp test"
   },
   "devDependencies": {

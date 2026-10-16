@@ -51,11 +51,14 @@ describe("docs", () => {
     }
   })
 
-  it("exposes skills to Claude Code as a symlink", async () => {
-    const path = join(REPO, ".claude", "skills")
-    const target = await readlink(path)
-    expect(resolve(dirname(path), target)).toBe(join(REPO, ".agents", "skills"))
-  })
+  it.skipIf(process.platform === "win32")(
+    "exposes skills to Claude Code as a symlink",
+    async () => {
+      const path = join(REPO, ".claude", "skills")
+      const target = await readlink(path)
+      expect(resolve(dirname(path), target)).toBe(join(REPO, ".agents", "skills"))
+    },
+  )
 })
 
 async function readScripts() {

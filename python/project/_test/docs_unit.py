@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 
 import pytest
 
@@ -41,6 +42,9 @@ class TestDocs:
             path = os.path.join(base, value.rstrip("/"))
             assert os.path.exists(path), f'{doc} names "{value}"'
 
+    @pytest.mark.skipif(
+        sys.platform == "win32", reason="pnpm install copies, not links, on Windows"
+    )
     def test_exposes_skills_to_claude_code_as_a_symlink(self) -> None:
         path = os.path.join(REPO, ".claude", "skills")
         target = os.readlink(path)

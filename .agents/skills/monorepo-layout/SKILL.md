@@ -30,6 +30,9 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
   `typescript/*` package directly _and_ through the `typescript` group package, building twice,
   and gives no order between the group and desktop
+- pnpm runs scripts through `cmd.exe` on Windows, where single quotes are literal: quote
+  filters and globs with escaped double quotes (`pnpm -F \"./*\" run build`), never `'./*'`,
+  or the filter silently matches nothing and CI fails later with unresolved packages
 - A section's `test` never lints — root `test` runs `pnpm lint` once for the whole tree
 - Python is reached only through `python/package.json`, whose scripts call `uv run …` from
   `python/`. There is no taskipy; pytest, ty, ruff and coverage find their config in
