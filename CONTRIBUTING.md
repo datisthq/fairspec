@@ -67,8 +67,8 @@ cd fairspec
 pnpm install
 ```
 
-Run `pnpm test` for the full gate, or `pnpm <section> <script>` for one section — for
-example `pnpm python test` or `pnpm typescript unit`. Each section has its own contributing
+Run `pnpm test` for the full gate, or `pnpm -C <section> <script>` for one section — for
+example `pnpm -C python test` or `pnpm -C typescript unit`. Each section has its own contributing
 notes in its directory, and the conventions coding agents follow — which hold for people too —
 are in `AGENTS.md` and the skills in `.agents/skills/`.
 

@@ -11,14 +11,14 @@ plugins, a CLI and an MCP server.
 
 ## Commands
 
-Run from the repo root; `pnpm typescript <script>` runs a script of this section.
+Run from the repo root; `pnpm -C typescript <script>` runs a script of this section.
 
-- `pnpm typescript test` — build + unit
-- `pnpm typescript build` — `tsgo` per package, emitting to `<pkg>/build`
-- `pnpm typescript type` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
-- `pnpm typescript unit` — `vp test` across every package
-- Single test — `pnpm typescript unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
-- `pnpm typescript release` — publish every package (CI only)
+- `pnpm -C typescript test` — build + unit
+- `pnpm -C typescript build` — `tsgo` per package, emitting to `<pkg>/build`
+- `pnpm -C typescript type` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
+- `pnpm -C typescript unit` — `vp test` across every package
+- Single test — `pnpm -C typescript unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
+- `pnpm -C typescript release` — publish every package (CI only)
 - Lint and format are repo-wide: `pnpm lint`, `pnpm format`
 
 ## Modules
@@ -82,7 +82,7 @@ vitest-polly both derive their paths from the test file's own directory.
 - Unit tests are Vitest via vite-plus, named `*.unit.ts`, in collocated `-test` folders
 - Import test symbols from `vite-plus/test`, not `vitest`
 - Don't add useless comments like "Arrange", "Act", "Assert"
-- **The suite must pass on Windows — CI runs `pnpm typescript unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
+- **The suite must pass on Windows — CI runs `pnpm -C typescript unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
 - Network tests use `useRecording()` from `vitest-polly`; the HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases

@@ -70,7 +70,10 @@ describe("docs", () => {
     }
 
     const missing: string[] = []
-    const pattern = new RegExp(`pnpm (?:(${SECTIONS.join("|")}) )?([a-z][\\w:-]*)`, "g")
+    const pattern = new RegExp(
+      `pnpm (?:-C (${SECTIONS.join("|")}) )?([a-z][\\w:-]*)`,
+      "g",
+    )
     for (const doc of await readDocs()) {
       for (const [command, section = "", script = ""] of readCode(doc.text).matchAll(
         pattern,

@@ -82,7 +82,7 @@ jobs:
         run: pnpm install
       - name: Generate Profiles
         if: steps.branch.outputs.name != ''
-        run: pnpm standard generate
+        run: pnpm -C standard generate
       - name: Commit Profiles
         if: steps.branch.outputs.name != ''
         run: |
@@ -117,11 +117,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Libraries
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Build App
-        run: pnpm desktop build
+        run: pnpm -C desktop build
       - name: Compile App
-        run: pnpm desktop compile
+        run: pnpm -C desktop compile
       - name: Publish Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
@@ -160,11 +160,11 @@ jobs:
           cache: pnpm
           node-version-file: package.json
       - name: Install Dependencies
-        run: pnpm install && pnpm python setup
+        run: pnpm install && pnpm -C python setup
       - name: Build Packages
-        run: pnpm python build
+        run: pnpm -C python build
       - name: Publish Packages
-        run: pnpm python release
+        run: pnpm -C python release
 
   typescript:
     needs: [release]
@@ -188,6 +188,6 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Build Packages
-        run: pnpm typescript build
+        run: pnpm -C typescript build
       - name: Publish Packages
-        run: pnpm typescript release
+        run: pnpm -C typescript release

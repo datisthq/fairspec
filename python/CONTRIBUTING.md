@@ -44,18 +44,18 @@ We use Ruff for linting and formatting, and ty for type checking:
 - **Lint**: Check for code issues
 
   ```bash
-  pnpm python lint
+  pnpm -C python lint
   ```
 
 - **Format**: Auto-fix formatting issues
 
   ```bash
-  pnpm python format
+  pnpm -C python format
   ```
 
 - **Type Check**: Verify Python types
   ```bash
-  pnpm python type
+  pnpm -C python type
   ```
 
 ### Testing
@@ -65,18 +65,18 @@ Tests are collocated with the code in `_test` directories and use pytest:
 - **Run All Tests**: (includes linting and type checking)
 
   ```bash
-  pnpm python test
+  pnpm -C python test
   ```
 
 - **Run Tests Only**: (without linting/type checking)
 
   ```bash
-  pnpm python unit
+  pnpm -C python unit
   ```
 
 - **Run a Specific Test**:
   ```bash
-  pnpm python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
+  pnpm -C python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
   ```
 
 ## Code Style Guidelines
@@ -103,7 +103,7 @@ When adding new functionality:
 
 1. Create a feature branch (`git checkout -b feature/your-feature`)
 2. Make your changes with appropriate tests
-3. Ensure the code passes all checks: `pnpm python test`
+3. Ensure the code passes all checks: `pnpm -C python test`
 4. Commit your changes with a descriptive message
 5. Submit a pull request
 

@@ -32,7 +32,10 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 
 ## Scripts
 
-- `pnpm <section> <script>` is `pnpm -F ./<section> run`; arguments pass through
+- `pnpm -C <section> <script>` runs one section's script from the root; arguments pass
+  through. There are no per-section alias scripts at the root. Use `-C`, not
+  `-F ./<section>`: a filter that matches nothing exits 0 having run nothing, while `-C` on a
+  wrong directory fails
 - A qualified script is `<verb>:<target>`, verb first (`start:site`, `build:site`), as in the
   other Datist repos — never `<target>:<verb>`. Keys stay in alphabetical order
 - Root `build`, `type`, `unit` and `test` chain sections **explicitly, in dependency order**
@@ -46,14 +49,14 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 - Python is reached only through `python/package.json`, whose scripts call `uv run …` from
   `python/`. There is no taskipy; pytest, ty, ruff and coverage find their config in
   `python/pyproject.toml` because they run from there
-- `prepare` runs `pnpm python setup` only when `uv` is on the PATH, so Node-only CI jobs work
+- `prepare` runs `pnpm -C python setup` only when `uv` is on the PATH, so Node-only CI jobs work
 
 ## Adding a section
 
 1. Create `<section>/package.json` (private, `@fairspec/<section>`) with `test`/`type`/`unit`
    scripts as they apply; add it to `pnpm-workspace.yaml` `packages`
-2. Add a root script `"<section>": "pnpm -F ./<section> run"` and add the section to the
-   root `build`/`type`/`unit`/`test` chains in dependency order
+2. Add the section to the root `build`/`type`/`unit`/`test` chains as
+   `pnpm -C <section> <script>`, in dependency order
 3. Add a `changes` filter and a gated job in `.github/workflows/test.yaml`, and list the job
    in the final `test` job's `needs`
 4. If it ships, add a package to `.release/config.json` (component = section name, tags
@@ -73,7 +76,7 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
   npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
   later Release PR keeps proposing the same version
 - The standard's Release PR is the one `release.yaml` regenerates profiles on
-  (`pnpm standard generate` writes `.livemark/public/profiles/{latest,<version>}`)
+  (`pnpm -C standard generate` writes `.livemark/public/profiles/{latest,<version>}`)
 - npm and PyPI trusted publishing is bound to repo `datisthq/fairspec`, workflow
   `release.yaml` and environment `release` — renaming any of them breaks publishing
 

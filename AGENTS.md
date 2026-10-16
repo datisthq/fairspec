@@ -58,12 +58,12 @@ website.
 
 ## Commands
 
-Everything runs from the repo root. `pnpm <verb>` covers every section; `pnpm <section> <script>`
-runs one section's script (`pnpm python test`, `pnpm typescript build`, `pnpm desktop start`,
-`pnpm standard generate`). Each section's own scripts are in its skill.
+Everything runs from the repo root. `pnpm <verb>` covers every section; `pnpm -C <section> <script>`
+runs one section's script (`pnpm -C python test`, `pnpm -C typescript build`, `pnpm -C desktop start`,
+`pnpm -C standard generate`). Each section's own scripts are in its skill.
 
 - `pnpm install` — install Node dependencies, git hooks, the skills symlink, and the Python
-  environment when `uv` is on the PATH (`pnpm python setup` does that step alone)
+  environment when `uv` is on the PATH (`pnpm -C python setup` does that step alone)
 - `pnpm test` — the full gate: lint, the docs guard, then every section's tests
 - `pnpm lint` — `vp fmt --check && vp lint` for the whole tree, plus `ruff check`
 - `pnpm format` — `vp fmt` for the whole tree, plus `ruff format`
@@ -75,7 +75,7 @@ runs one section's script (`pnpm python test`, `pnpm typescript build`, `pnpm de
 - `pnpm deps` — update all Node dependencies to their latest versions
 
 Order matters across sections: desktop consumes `@fairspec/library` from the workspace, and
-TypeScript packages type-check against each other's `build/`, so run `pnpm typescript build`
+TypeScript packages type-check against each other's `build/`, so run `pnpm -C typescript build`
 before typing or testing `typescript/` or `desktop/`. While iterating, verify the slice the
 diff reaches, not the full gate (**`change-verification`**).
 
