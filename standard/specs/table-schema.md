@@ -542,7 +542,7 @@ Metadata example:
   "properties": {
     "status": {
       "type": "string",
-      "default": "pending"
+      "default": "pending",
       "missingValues": ["N/A"]
     }
   }
