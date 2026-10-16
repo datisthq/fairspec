@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [{ "$ref": "#/$defs/Catalog" }],
+  "$defs": {
+    "Catalog": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Dataset" }
+    },
+    "Dataset": {
+      "type": "object",
+      "required": ["loc", "upd"],
+      "additionalProperties": false,
+      "properties": {
+        "loc": { "$ref": "#/$defs/Location" },
+        "upd": { "$ref": "#/$defs/Updated" }
+      }
+    },
+    "Location": {
+      "type": "string",
+      "format": "uri"
+    },
+    "Updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

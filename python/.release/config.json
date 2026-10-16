@@ -1,0 +1,16 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "include-component-in-tag": false
+    }
+  },
+  "extra-files": [
+    { "type": "toml", "path": "dataset/pyproject.toml", "jsonpath": "$.project.version" },
+    { "type": "toml", "path": "fairspec/pyproject.toml", "jsonpath": "$.project.version" },
+    { "type": "toml", "path": "library/pyproject.toml", "jsonpath": "$.project.version" },
+    { "type": "toml", "path": "metadata/pyproject.toml", "jsonpath": "$.project.version" },
+    { "type": "toml", "path": "table/pyproject.toml", "jsonpath": "$.project.version" },
+    { "type": "toml", "path": "terminal/pyproject.toml", "jsonpath": "$.project.version" }
+  ]
+}

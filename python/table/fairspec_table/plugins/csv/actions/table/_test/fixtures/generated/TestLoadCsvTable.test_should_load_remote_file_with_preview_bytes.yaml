@@ -1,0 +1,70 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - raw.githubusercontent.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://raw.githubusercontent.com/datisthq/fairspec-typescript/refs/heads/main/table/plugins/csv/actions/table/-test/fixtures/table.csv
+  response:
+    body:
+      string: "id,name\n1,english\n2,\u4E2D\u6587\n"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - close
+      Content-Length:
+      - '27'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Fri, 04 Sep 2026 12:26:08 GMT
+      ETag:
+      - '"f32e41a0928646326054d6fac4ec63789daf58505efb50237c672db52692e86e"'
+      Expires:
+      - Fri, 04 Sep 2026 12:31:08 GMT
+      Source-Age:
+      - '59'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - c5e849eee5b77fea43e482400b128885a95931c1
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 13EA:17FFC5:88E02:925B8:6A9AB678
+      X-Served-By:
+      - cache-lis1490055-LIS
+      X-Timer:
+      - S1788524769.808097,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+      x-github-edge-region:
+      - fra
+    status:
+      code: 200
+      message: OK
+version: 1

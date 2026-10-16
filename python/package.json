@@ -1,0 +1,28 @@
+{
+  "name": "fairspec-python-project",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deps": "ncu -ws -u --cooldown 7d",
+    "docs:build": "livemark build",
+    "docs:start": "livemark start",
+    "leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
+    "scan": "pnpm leaks && pnpm vulns",
+    "vulns": "semgrep --config=p/python --config=p/owasp-top-ten --config=p/secrets --exclude='**/fixtures/**' --metrics=off"
+  },
+  "devDependencies": {
+    "@plausible-analytics/tracker": "0.4.5",
+    "@tanstack/react-start": "1.167.65",
+    "livemark": "0.20.0",
+    "npm-check-updates": "23.1.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "wrangler": "4.88.0"
+  },
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": "^11.0.0"
+  },
+  "packageManager": "pnpm@11.26.0+sha512.fc0e2bf890b9f983611f1ab68c0637bce914390653699f83c1a78b005ed25f2c81e77920c8fd8eee2ecf0b58b28cdcb00a84d97f69bcf7c56b2f344710238664"
+}

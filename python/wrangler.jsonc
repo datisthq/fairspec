@@ -1,0 +1,16 @@
+{
+  "name": "fairspec-python",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2025-08-15",
+  "preview_urls": true,
+  "workers_dev": true,
+  "assets": {
+    "directory": ".livemark/build/client",
+  },
+  "routes": [
+    {
+      "pattern": "python.fairspec.org",
+      "custom_domain": true,
+    },
+  ],
+}

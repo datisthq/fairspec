@@ -1,0 +1,39 @@
+[project]
+name = "fairspec-dataset"
+version = "0.0.0-dev"
+description = "Fairspec Python is a fast data management framework built on top of the Fairspec standard and Polars DataFrames"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+keywords = [
+  "ckan",
+  "data",
+  "dataframe",
+  "datahub",
+  "dataset",
+  "fair",
+  "fairspec",
+  "jsonschema",
+  "polars",
+  "python",
+  "quality",
+  "tableschema",
+  "validation"
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["fairspec-metadata", "charset-normalizer>=3.0"]
+
+[[project.authors]]
+name = "Evgeny Karev"
+
+[project.urls]
+homepage = "https://github.com/datisthq/fairspec-python"
+repository = "https://github.com/datisthq/fairspec-python"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
