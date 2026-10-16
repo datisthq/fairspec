@@ -33,7 +33,9 @@
     "build"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./build/settings.js"
+  ],
   "exports": "./build/index.js",
   "scripts": {
     "build": "tsgo",

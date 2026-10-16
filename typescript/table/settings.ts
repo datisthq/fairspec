@@ -1,9 +1,13 @@
 export const NUMBER_COLUMN_NAME = "fairspec:number"
 export const ERROR_COLUMN_NAME = "fairspec:error"
 
-// Each check scans the whole source file, and polars materializes a CSV in full
-// however the query is collected, so peak memory is the file size times the number
-// of checks in flight. Validating a 1 GB file needed 5 GB at one check per core
-// against 2.3 GB serially, for 3.7s against 7.3s.
-export const INSPECT_COLUMN_CONCURRENCY = 1
+// nodejs-polars takes an engine on collectSync only, and polars ignores the
+// `streaming` option of async collect, but it reads this variable on every query.
+// Without it a 1GB validation takes 24s in 8GB instead of 7s in 3GB; "0" opts out.
+process.env.POLARS_FORCE_STREAMING ??= "1"
+
+// Each check scans the whole source, so peak memory grows with the number in flight.
+// Validating a 10-column 1GB file: 4.3s in 1GB serially, 2.5s in 1.5GB at four.
+// A key check holds every key in memory (3GB for 10M rows), so they stay serial.
+export const INSPECT_COLUMN_CONCURRENCY = 4
 export const INSPECT_ROW_CONCURRENCY = 1
