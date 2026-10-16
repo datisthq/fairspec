@@ -1,0 +1,29 @@
+[
+  {
+    "description": "quote character detection",
+    "tests": [
+      {
+        "description": "double quotes around a field containing the delimiter",
+        "data": "name,description\n\"Product A\",\"A great product with, commas\"\n\"Product B\",\"Another product\"",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "quoteChar": "\"",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "single quotes",
+        "data": "id,name\n1,'John Doe'\n2,'Jane Smith'",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "quoteChar": "'",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      }
+    ]
+  }
+]

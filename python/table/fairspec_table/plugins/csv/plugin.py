@@ -49,4 +49,4 @@ class CsvPlugin(TablePlugin):
         file_dialect = get_supported_file_dialect(resource, ["csv", "tsv"])
         if not file_dialect:
             return None
-        return infer_csv_file_dialect(resource)
+        return infer_csv_file_dialect(resource, **options)

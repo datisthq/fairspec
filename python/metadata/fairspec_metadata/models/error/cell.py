@@ -10,7 +10,7 @@ from .base import BaseError
 
 class BaseCellError(BaseError):
     columnName: str = Field(description="The name of the column")
-    rowNumber: float = Field(description="The row number where the error occurred")
+    rowNumber: int = Field(description="The row number where the error occurred")
     cell: str = Field(description="The cell value that caused the error")
 
 
@@ -45,17 +45,17 @@ class CellExclusiveMaximumError(BaseCellError):
 
 class CellMultipleOfError(BaseCellError):
     type: Literal["cell/multipleOf"] = Field(description="Error type identifier")
-    multipleOf: float = Field(description="The multiple of constraint")
+    multipleOf: int | float = Field(description="The multiple of constraint")
 
 
 class CellMinLengthError(BaseCellError):
     type: Literal["cell/minLength"] = Field(description="Error type identifier")
-    minLength: float = Field(description="The minimum length required")
+    minLength: int = Field(description="The minimum length required")
 
 
 class CellMaxLengthError(BaseCellError):
     type: Literal["cell/maxLength"] = Field(description="Error type identifier")
-    maxLength: float = Field(description="The maximum length allowed")
+    maxLength: int = Field(description="The maximum length allowed")
 
 
 class CellPatternError(BaseCellError):
@@ -85,12 +85,12 @@ class CellJsonError(BaseCellError):
 
 class CellMinItemsError(BaseCellError):
     type: Literal["cell/minItems"] = Field(description="Error type identifier")
-    minItems: float = Field(description="The minimum number of items required")
+    minItems: int = Field(description="The minimum number of items required")
 
 
 class CellMaxItemsError(BaseCellError):
     type: Literal["cell/maxItems"] = Field(description="Error type identifier")
-    maxItems: float = Field(description="The maximum number of items allowed")
+    maxItems: int = Field(description="The maximum number of items allowed")
 
 
 CellError = Annotated[

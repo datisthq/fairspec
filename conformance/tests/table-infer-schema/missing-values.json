@@ -1,0 +1,40 @@
+[
+  {
+    "description": "missing values",
+    "tests": [
+      {
+        "description": "an empty cell makes the column nullable",
+        "data": "id,name\n1,alice\n,bob\n",
+        "expected": {
+          "properties": {
+            "id": { "type": ["integer", "null"] },
+            "name": { "type": "string" }
+          }
+        }
+      },
+      {
+        "description": "NA is a missing value",
+        "data": "id,name\n1,alice\nNA,bob\n",
+        "expected": {
+          "properties": {
+            "id": { "type": ["integer", "null"] },
+            "name": { "type": "string" }
+          },
+          "missingValues": ["NA"]
+        }
+      },
+      {
+        "description": "tokens are listed in the order the columns first show them",
+        "data": "a,b,c\n1,2,3\nNA,-,N/A\n4,5,6\n",
+        "expected": {
+          "properties": {
+            "a": { "type": ["integer", "null"] },
+            "b": { "type": ["integer", "null"] },
+            "c": { "type": ["integer", "null"] }
+          },
+          "missingValues": ["NA", "-", "N/A"]
+        }
+      }
+    ]
+  }
+]

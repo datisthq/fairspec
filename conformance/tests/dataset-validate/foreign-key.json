@@ -1,0 +1,85 @@
+[
+  {
+    "description": "posts reference users",
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv", "headerRows": [1] },
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "user_id": { "type": "integer" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "every reference resolves",
+        "data": {
+          "users.csv": "id,name\n1,alice\n2,bob\n",
+          "posts.csv": "id,user_id\n1,1\n2,2\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a referencing table without rows is valid",
+        "data": { "users.csv": "id,name\n1,alice\n", "posts.csv": "id,user_id\n" },
+        "valid": true
+      },
+      {
+        "description": "a dangling reference is a foreignKey error",
+        "data": {
+          "users.csv": "id,name\n1,alice\n2,bob\n",
+          "posts.csv": "id,user_id\n1,1\n2,999\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": { "resource": "users", "columns": ["id"] }
+            },
+            "cells": ["999"]
+          }
+        ]
+      },
+      {
+        "description": "cell errors carry the resource name",
+        "data": {
+          "users.csv": "id,name\nx,alice\n1,bob\n",
+          "posts.csv": "id,user_id\n1,1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "users",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  }
+]

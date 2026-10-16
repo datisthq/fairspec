@@ -1,0 +1,30 @@
+[
+  {
+    "description": "maxErrors truncates the report",
+    "tableSchema": { "properties": { "id": { "type": "integer" } } },
+    "options": { "maxErrors": 2 },
+    "tests": [
+      {
+        "description": "only the first two errors are kept",
+        "data": "id\na\nb\nc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "a"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "b"
+          }
+        ]
+      }
+    ]
+  }
+]

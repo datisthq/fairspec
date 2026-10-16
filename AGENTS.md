@@ -6,13 +6,14 @@ Fairspec is one monorepo: the standard, its Python and TypeScript implementation
 application and the website. This file carries the invariants for all of it; each section's
 conventions live in its skill (see **Skills**) — load it before working there.
 
-| section       | what                                                              | released as                  |
-| ------------- | ----------------------------------------------------------------- | ---------------------------- |
-| `standard/`   | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
-| `python/`     | uv workspace: `fairspec` and `fairspec-*` packages                | PyPI                         |
-| `typescript/` | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
-| `desktop/`    | Electron application                                              | installers on GitHub release |
-| `catalog/`    | reserved for the catalog application                              | —                            |
+| section        | what                                                              | released as                  |
+| -------------- | ----------------------------------------------------------------- | ---------------------------- |
+| `standard/`    | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
+| `python/`      | uv workspace: `fairspec` and `fairspec-*` packages                | PyPI                         |
+| `typescript/`  | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
+| `desktop/`     | Electron application                                              | installers on GitHub release |
+| `catalog/`     | reserved for the catalog application                              | —                            |
+| `conformance/` | language-neutral test suite both libraries run                    | —                            |
 
 The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
 `wrangler.jsonc`) and renders the docs of every section on fairspec.org.
@@ -134,16 +135,17 @@ for one before working in its area. **A repo skill beats a plugin skill on the s
 `change-review` over a generic code review, `change-verification` over
 verification-before-completion. Each is named `<subject>-<facet>`, subject first:
 
-| skill                    | when                                                                   |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `typescript-development` | the npm packages, CLI or MCP server in `typescript/`                   |
-| `python-development`     | the PyPI packages or CLI in `python/`                                  |
-| `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
-| `monorepo-layout`        | adding a section, a root script, a workflow job or a release component |
-| `human-documentation`    | a report for people under `.humans/`, and the docs pass before a merge |
-| `issue-resolution`       | taking one issue or bug report to a tested change                      |
-| `change-verification`    | checking a change works — the smallest slice that covers the diff      |
-| `change-review`          | reviewing a pull request or the local diff — also what CI runs         |
+| skill                     | when                                                                   |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `typescript-development`  | the npm packages, CLI or MCP server in `typescript/`                   |
+| `python-development`      | the PyPI packages or CLI in `python/`                                  |
+| `desktop-development`     | the Electron app in `desktop/`, its i18n catalogues                    |
+| `conformance-development` | the shared test suite in `conformance/` and its two runners            |
+| `monorepo-layout`         | adding a section, a root script, a workflow job or a release component |
+| `human-documentation`     | a report for people under `.humans/`, and the docs pass before a merge |
+| `issue-resolution`        | taking one issue or bug report to a tested change                      |
+| `change-verification`     | checking a change works — the smallest slice that covers the diff      |
+| `change-review`           | reviewing a pull request or the local diff — also what CI runs         |
 
 **There is exactly one `AGENTS.md`, at the root.** `.scripts/-test/docs.unit.ts` enforces that,
 along with this table and every path and `pnpm` command the docs and skills name.

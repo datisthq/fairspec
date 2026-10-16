@@ -1,0 +1,68 @@
+[
+  {
+    "description": "integer column",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "integers are valid",
+        "data": "id,name\n1,alice\n2,bob\n",
+        "valid": true
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,name\ninvalid,alice\n2,bob\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "invalid"
+          }
+        ]
+      },
+      {
+        "description": "a decimal is a cell/type error",
+        "data": "id,name\n1,alice\n2.5,bob\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "2.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "boolean column",
+    "tableSchema": { "properties": { "flag": { "type": "boolean" } } },
+    "tests": [
+      {
+        "description": "true and false are valid",
+        "data": "flag\ntrue\nfalse\n",
+        "valid": true
+      },
+      {
+        "description": "yes is a cell/type error",
+        "data": "flag\ntrue\nyes\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "flag",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "yes"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "description": "header row detection",
+    "tests": [
+      {
+        "description": "a header row is detected",
+        "data": "id,name\n1,english\n2,中文",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "no header when every row is data",
+        "data": "1,english\n2,中文\n3,español",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "headerRows": false,
+          "lineTerminator": "\n"
+        }
+      }
+    ]
+  }
+]

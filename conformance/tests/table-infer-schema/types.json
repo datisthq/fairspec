@@ -1,0 +1,69 @@
+[
+  {
+    "description": "column types",
+    "tests": [
+      {
+        "description": "integers and strings",
+        "data": "id,name,age\n1,alice,25\n2,bob,30\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "name": { "type": "string" },
+            "age": { "type": "integer" }
+          }
+        }
+      },
+      {
+        "description": "numbers",
+        "data": "id,price\n1,1.5\n2,2.25\n",
+        "expected": {
+          "properties": { "id": { "type": "integer" }, "price": { "type": "number" } }
+        }
+      },
+      {
+        "description": "booleans",
+        "data": "id,flag\n1,true\n2,false\n",
+        "expected": {
+          "properties": { "id": { "type": "integer" }, "flag": { "type": "boolean" } }
+        }
+      },
+      {
+        "description": "dates",
+        "data": "id,day\n1,2024-01-15\n2,2024-02-20\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "day": { "type": "string", "format": "date" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "comma as decimal separator",
+    "fileDialect": { "format": "csv", "delimiter": ";" },
+    "options": { "commaDecimal": true },
+    "tests": [
+      {
+        "description": "dot-grouped numbers with a decimal comma",
+        "data": "id;price\n1;1.000,5\n2;2.000,5\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "price": { "type": "number", "decimalChar": ",", "groupChar": "." }
+          }
+        }
+      },
+      {
+        "description": "dot-grouped integers",
+        "data": "id;price\n1;1.000\n2;2.000\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "price": { "type": "integer", "groupChar": "." }
+          }
+        }
+      }
+    ]
+  }
+]

@@ -5,13 +5,14 @@ implements it. Read the documentation at [fairspec.org](https://fairspec.org).
 
 This repository holds every part of the project:
 
-| section                      | what                                                     |
-| ---------------------------- | -------------------------------------------------------- |
-| [`standard/`](standard/)     | the specification, its JSON Schema profiles and examples |
-| [`python/`](python/)         | the Python framework and CLI, published to PyPI          |
-| [`typescript/`](typescript/) | the TypeScript framework, CLI and MCP server, on npm     |
-| [`desktop/`](desktop/)       | the desktop application for macOS, Windows and Linux     |
-| [`catalog/`](catalog/)       | reserved for the catalog application                     |
+| section                        | what                                                     |
+| ------------------------------ | -------------------------------------------------------- |
+| [`standard/`](standard/)       | the specification, its JSON Schema profiles and examples |
+| [`python/`](python/)           | the Python framework and CLI, published to PyPI          |
+| [`typescript/`](typescript/)   | the TypeScript framework, CLI and MCP server, on npm     |
+| [`desktop/`](desktop/)         | the desktop application for macOS, Windows and Linux     |
+| [`catalog/`](catalog/)         | reserved for the catalog application                     |
+| [`conformance/`](conformance/) | the test suite every implementation runs                 |
 
 ## Development
 

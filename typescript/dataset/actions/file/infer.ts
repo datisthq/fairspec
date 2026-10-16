@@ -30,6 +30,12 @@ export async function inferTextual(
     return false
   }
 
+  // chardet labels short ascii as latin-1; textual means utf-8, so decode first
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(buffer, { stream: true })
+    return true
+  } catch {}
+
   const matches = chardet.analyse(buffer)
   for (const match of matches) {
     if (match.confidence >= confidencePercent) {

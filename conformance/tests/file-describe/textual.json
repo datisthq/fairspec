@@ -1,0 +1,68 @@
+[
+  {
+    "description": "textual detection",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "tests": [
+      {
+        "description": "plain ascii is textual",
+        "data": "id,name\n1,alice\n",
+        "expected": {
+          "bytes": 16,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "2b19eb0a580a952891021da1cb7fcca130eadd486130eb565605fc655b6a350b"
+          }
+        }
+      },
+      {
+        "description": "latin-1 bytes are not textual",
+        "data": { "base64": "Q2Fm6SBy6XN1bekgbmHvdmUg4CBQYXJpcy4=" },
+        "expected": {
+          "bytes": 26,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "dd6b975d1684eab340766962246a64fa253f84e413dd9407ae5b36d4efed6396"
+          }
+        }
+      },
+      {
+        "description": "binary bytes are not textual",
+        "data": { "base64": "/9j/4AA=" },
+        "expected": {
+          "bytes": 5,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "f55517e918c9f1ac538778a7d787f93b66102886b93464e5bf61b48527913dfd"
+          }
+        }
+      },
+      {
+        "description": "utf-8 with non-ascii characters is textual",
+        "data": "id,name\n1,中文\n",
+        "expected": {
+          "bytes": 17,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "3b78551d3ed12aee3dca989401d01ab0d0a8fe24268824bfc615827588a9a27f"
+          }
+        }
+      },
+      {
+        "description": "an empty file",
+        "data": "",
+        "expected": {
+          "bytes": 0,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      }
+    ]
+  }
+]

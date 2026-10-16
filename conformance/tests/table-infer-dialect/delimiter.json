@@ -1,0 +1,52 @@
+[
+  {
+    "description": "delimiter detection",
+    "tests": [
+      {
+        "description": "comma",
+        "data": "id,name,age\n1,alice,25\n2,bob,30",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "semicolon",
+        "data": "id;name;age\n1;alice;25\n2;bob;30",
+        "expected": {
+          "format": "csv",
+          "delimiter": ";",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "pipe",
+        "data": "id|name|age\n1|alice|25\n2|bob|30",
+        "expected": {
+          "format": "csv",
+          "delimiter": "|",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "tab makes it tsv",
+        "data": "id\tname\tage\n1\talice\t25\n2\tbob\t30",
+        "expected": { "format": "tsv", "headerRows": [1], "lineTerminator": "\n" }
+      },
+      {
+        "description": "crlf line terminator",
+        "data": "id,name\r\n1,alice\r\n2,bob\r\n",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "headerRows": [1],
+          "lineTerminator": "\r\n"
+        }
+      }
+    ]
+  }
+]

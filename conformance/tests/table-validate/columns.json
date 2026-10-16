@@ -1,0 +1,41 @@
+[
+  {
+    "description": "required column absent from the data",
+    "tableSchema": {
+      "required": ["name"],
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [
+      { "description": "present is valid", "data": "id,name\n1,alice\n", "valid": true },
+      {
+        "description": "absent is a column/missing error",
+        "data": "id\n1\n2\n",
+        "valid": false,
+        "errors": [{ "type": "column/missing", "columnName": "name" }]
+      }
+    ]
+  },
+  {
+    "description": "all columns required",
+    "tableSchema": {
+      "allRequired": true,
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "an absent column is a column/missing error",
+        "data": "id\n1\n2\n",
+        "valid": false,
+        "errors": [{ "type": "column/missing", "columnName": "name" }]
+      }
+    ]
+  },
+  {
+    "description": "optional column absent from the data",
+    "specification": ["https://fairspec.org/specs/table-schema/#required"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [{ "description": "absent is valid", "data": "id\n1\n2\n", "valid": true }]
+  }
+]

@@ -13,6 +13,7 @@ describe("inspectColumn", () => {
         .lazy()
 
       const tableSchema: TableSchema = {
+        allRequired: true,
         properties: {
           id: {
             type: "number",
@@ -55,6 +56,7 @@ describe("inspectColumn", () => {
         .lazy()
 
       const tableSchema: TableSchema = {
+        allRequired: true,
         properties: {
           id: {
             type: "number",
