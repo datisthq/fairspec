@@ -89,6 +89,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
   Python/TypeScript switch over the install-method tabs and shows only commands that run
   unchanged on both CLIs — check each against both `--help` outputs, since the language
   docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
+- A new route blanks on hydration under `pnpm site:start` until a hard reload: livemark's
+  target lives in `node_modules`, so Vite serves `routeTree.gen.ts?v=<hash>` as `immutable`
+  and the browser keeps the tree without the route. Not a bug in the route; builds are fine
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages
