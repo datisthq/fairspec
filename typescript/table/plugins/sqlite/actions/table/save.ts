@@ -85,7 +85,7 @@ async function defineTable(
 
 async function populateTable(database: Kysely<any>, tableName: string, table: Table) {
   let offset = 0
-  const frame = await table.collect({ streaming: true })
+  const frame = await table.collect()
   while (true) {
     const buffer = frame.slice(offset, offset + BUFFER_SIZE)
     offset += BUFFER_SIZE
