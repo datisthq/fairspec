@@ -71,6 +71,9 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    (`pnpm typescript unit metadata/actions/profile/`,
    `pnpm python unit metadata/fairspec_metadata/actions/profile/`). Never run
    `pnpm standard generate` by hand: `release.yaml` regenerates the profiles on the Release PR.
+   Those implementation tests load their own vendored copies under `*/metadata/**/profiles/`, so
+   they never see a `standard/profiles/` edit: also validate the edited profile, and every JSON
+   example in its spec, with Ajv 2020 directly.
 7. **Cross-cutting**: dependencies, `pnpm-workspace.yaml`, the root `vite.config.ts`,
    `tsconfig.json` or `package.json`, `lefthook.yaml`, a `pyproject.toml` or `uv.lock`. Run
    `pnpm test`; no cherry-picking here.

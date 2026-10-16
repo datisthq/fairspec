@@ -543,13 +543,13 @@
       "enum": ["number", ["number", "null"], ["null", "number"]]
     },
     "StringType": {
-      "const": ["string", ["string", "null"], ["null", "string"]]
+      "enum": ["string", ["string", "null"], ["null", "string"]]
     },
     "ArrayType": {
-      "const": ["array", ["array", "null"], ["null", "array"]]
+      "enum": ["array", ["array", "null"], ["null", "array"]]
     },
     "ObjectType": {
-      "const": ["object", ["object", "null"], ["null", "object"]]
+      "enum": ["object", ["object", "null"], ["null", "object"]]
     },
     "MissingValues": {
       "type": "array",
