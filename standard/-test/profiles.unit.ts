@@ -29,6 +29,22 @@ describe.each(specExamples)("$spec spec examples", ({ spec, examples }) => {
   })
 })
 
+describe("examples", () => {
+  it.each(["dataset", "table-schema"])("validates %s.json", async name => {
+    const text = await readFile(join(STANDARD, "examples", `${name}.json`), "utf8")
+    const validate = getValidator(`${name}.json`)
+    expect(validate(JSON.parse(text)), JSON.stringify(validate.errors)).toBe(true)
+  })
+
+  it("validates catalog.jsonl", async () => {
+    const text = await readFile(join(STANDARD, "examples", "catalog.jsonl"), "utf8")
+    const lines = text.split(/\r?\n/).filter(line => line.trim())
+    const validate = getValidator("catalog.json")
+    const catalog = lines.map(line => JSON.parse(line))
+    expect(validate(catalog), JSON.stringify(validate.errors)).toBe(true)
+  })
+})
+
 describe("table schema columns", () => {
   it.each([
     { valid: true, column: { type: "string", minLength: 1 } },

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
+  "title": "Customer Orders",
+  "required": ["order_id", "customer_id", "placed_at"],
+  "primaryKey": ["order_id"],
+  "foreignKeys": [
+    {
+      "columns": ["customer_id"],
+      "reference": {
+        "resource": "customers",
+        "columns": ["id"]
+      }
+    }
+  ],
+  "missingValues": ["", "NA"],
+  "properties": {
+    "order_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "customer_id": {
+      "type": "integer"
+    },
+    "placed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "format": "categorical",
+      "categories": ["pending", "shipped", "delivered"]
+    },
+    "total": {
+      "type": "string",
+      "format": "decimal",
+      "minimum": 0
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    }
+  }
+}

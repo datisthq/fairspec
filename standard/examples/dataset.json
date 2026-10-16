@@ -22,6 +22,9 @@
     "name": "Fairspec Research Repository"
   },
   "publicationYear": "2024",
+  "types": {
+    "resourceTypeGeneral": "Dataset"
+  },
   "descriptions": [
     {
       "description": "This dataset contains experimental measurements from chemical reaction studies including spectroscopy data, reaction parameters, and analytical results.",
@@ -30,6 +33,7 @@
   ],
   "resources": [
     {
+      "name": "measurements",
       "data": "measurements.csv",
       "integrity": {
         "type": "sha256",
@@ -37,30 +41,28 @@
       },
       "fileDialect": {
         "format": "csv",
-        "encoding": "utf-8",
         "delimiter": ",",
         "lineTerminator": "\n",
         "quoteChar": "\"",
         "nullSequence": "NA",
-        "headerRows": [1],
+        "headerRows": [1, 2],
         "headerJoin": "_",
         "commentPrefix": "#"
       },
       "tableSchema": {
-        "fields": [
-          {
-            "name": "experiment_id",
+        "required": ["experiment_id"],
+        "primaryKey": ["experiment_id"],
+        "properties": {
+          "experiment_id": {
             "type": "integer"
           },
-          {
-            "name": "temperature_celsius",
+          "temperature_celsius": {
             "type": "number"
           },
-          {
-            "name": "concentration_mol",
-            "type": "number"
+          "concentration_mol": {
+            "type": ["number", "null"]
           }
-        ]
+        }
       },
       "titles": [
         {
@@ -69,20 +71,20 @@
       ],
       "descriptions": [
         {
-          "description": "Main data file containing all experimental measurements with multi-line headers indicating units and parameters.",
+          "description": "Main data file containing all experimental measurements with two header rows: the parameter, then its unit.",
           "descriptionType": "Other"
         }
       ]
     },
     {
+      "name": "spectroscopy",
       "data": "spectroscopy.json",
-      "format": {
-        "name": "json",
+      "fileDialect": {
+        "format": "json",
         "jsonPointer": "/data/spectra",
         "rowType": "object"
       },
-      "jsonSchema": {
-        "type": "object",
+      "tableSchema": {
         "properties": {
           "wavelength": {
             "type": "number"
@@ -103,12 +105,13 @@
       ]
     },
     {
+      "name": "reactions",
       "data": "reactions.xlsx",
-      "format": {
-        "name": "xlsx",
+      "fileDialect": {
+        "format": "xlsx",
         "sheetName": "Results",
-        "headerRows": [0],
-        "commentRows": [1, 2]
+        "headerRows": [1],
+        "commentRows": [2, 3]
       },
       "titles": [
         {
@@ -117,9 +120,10 @@
       ]
     },
     {
+      "name": "analysis",
       "data": "analysis.sqlite",
-      "format": {
-        "name": "sqlite",
+      "fileDialect": {
+        "format": "sqlite",
         "tableName": "statistical_analysis"
       },
       "titles": [
@@ -129,13 +133,13 @@
       ]
     },
     {
+      "name": "supplementary",
       "data": [
         "https://example.com/data/part1.csv",
         "https://example.com/data/part2.csv"
       ],
-      "format": {
-        "name": "csv",
-        "encoding": "utf-8",
+      "fileDialect": {
+        "format": "csv",
         "delimiter": ";",
         "headerRows": false,
         "columnNames": ["sample_id", "value", "uncertainty", "notes"]
@@ -147,6 +151,7 @@
       ]
     },
     {
+      "name": "controls",
       "data": {
         "samples": [
           {
@@ -161,9 +166,23 @@
           }
         ]
       },
-      "format": {
-        "name": "json",
-        "rowType": "object"
+      "dataSchema": {
+        "type": "object",
+        "required": ["samples"],
+        "properties": {
+          "samples": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "result"],
+              "properties": {
+                "id": { "type": "integer" },
+                "name": { "type": "string" },
+                "result": { "enum": ["positive", "negative"] }
+              }
+            }
+          }
+        }
       },
       "titles": [
         {
