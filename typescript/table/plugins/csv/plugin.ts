@@ -1,3 +1,4 @@
+import type { InferFileDialectOptions } from "@fairspec/dataset"
 import type { Resource } from "@fairspec/metadata"
 import { getSupportedFileDialect } from "@fairspec/metadata"
 import type { LoadTableOptions, SaveTableOptions, Table } from "../../models/table.ts"
@@ -26,10 +27,10 @@ export class CsvPlugin implements TablePlugin {
     return await saveCsvTable(table, { ...options, fileDialect })
   }
 
-  async inferFileDialect(resource: Resource) {
+  async inferFileDialect(resource: Resource, options?: InferFileDialectOptions) {
     const fileDialect = await getSupportedFileDialect(resource, ["csv", "tsv"])
     if (!fileDialect) return undefined
 
-    return await inferCsvFileDialect(resource)
+    return await inferCsvFileDialect(resource, options)
   }
 }
