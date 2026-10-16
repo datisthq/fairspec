@@ -41,8 +41,10 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   never `<target>:<verb>`. Keys stay in alphabetical order
 - Root `build`, `check:types`, `test:unit` and `test` chain sections **explicitly, in dependency order**
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
-  `typescript/*` package directly _and_ through the `typescript` group package, building twice,
-  and gives no order between the group and desktop
+  `typescript/*` package directly _and_ again through the `typescript` group package's
+  fan-out, so each runs twice. Its order is not the problem (desktop's `workspace:*` deps put
+  it after `library`); excluding the group needs a negated filter in every chain, the Windows
+  quoting trap below
 - pnpm runs scripts through `cmd.exe` on Windows, where single quotes are literal: quote
   filters and globs with escaped double quotes (`pnpm -F \"./*\" run build`), never `'./*'`,
   or the filter silently matches nothing and CI fails later with unresolved packages
