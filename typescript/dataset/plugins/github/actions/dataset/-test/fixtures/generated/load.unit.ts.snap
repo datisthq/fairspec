@@ -1,0 +1,89 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`loadDatasetFromGithub > should load a dataset 1`] = `
+{
+  "creators": [
+    {
+      "name": "roll",
+      "nameType": "Personal",
+    },
+  ],
+  "dates": [
+    {
+      "date": "2019-11-11T10:48:02Z",
+      "dateType": "Created",
+    },
+  ],
+  "resources": [
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/README.md",
+      "integrity": {
+        "hash": "31cd35605bbee1d3b3f297d5b0462028a46a0380",
+        "type": "sha1",
+      },
+      "name": "readme",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/data/table-10x1M-invalid.csv",
+      "integrity": {
+        "hash": "afacdaae434ff29516bbf7023ae5173e4d3f71e4",
+        "type": "sha1",
+      },
+      "name": "table_10x1_m_invalid",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/data/table-10x1M.csv",
+      "integrity": {
+        "hash": "734520644f4616825209c0c7a0750e5887b93a76",
+        "type": "sha1",
+      },
+      "name": "table_10x1_m",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/data/table-5x1M-invalid.csv",
+      "integrity": {
+        "hash": "14a34ddef5565c032b5729bd51bc14e02a534425",
+        "type": "sha1",
+      },
+      "name": "table_5x1_m_invalid",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/data/table-5x1M.csv",
+      "integrity": {
+        "hash": "eca005a30f75202d7ccdadbbb6789a9ae0389555",
+        "type": "sha1",
+      },
+      "name": "table_5x1_m",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/package.json",
+      "integrity": {
+        "hash": "4564795a02255050972182a43590b853dee8b8b5",
+        "type": "sha1",
+      },
+      "name": "package",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/pnpm-lock.yaml",
+      "integrity": {
+        "hash": "79f913beb4c13bc4dee0883df09e97909390eecd",
+        "type": "sha1",
+      },
+      "name": "pnpm_lock",
+    },
+    {
+      "data": "https://raw.githubusercontent.com/roll/data/refs/heads/main/scripts/generate.js",
+      "integrity": {
+        "hash": "80f4a1eaf4aba53794032bb3cda99939fcd95021",
+        "type": "sha1",
+      },
+      "name": "generate",
+    },
+  ],
+  "titles": [
+    {
+      "title": "roll/data",
+    },
+  ],
+}
+`;

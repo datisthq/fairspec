@@ -1,0 +1,17 @@
+{
+  "name": "@fairspec/standard",
+  "version": "0.6.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node @generate.ts",
+    "test": "pnpm type",
+    "type": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "execa": "9.6.1",
+    "replace-in-file": "8.4.0",
+    "tasuku": "2.0.5"
+  }
+}

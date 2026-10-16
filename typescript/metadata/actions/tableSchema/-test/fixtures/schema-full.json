@@ -1,0 +1,55 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/table-schema.json",
+  "required": ["id", "email"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "title": "User ID",
+      "description": "Unique identifier for the user"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email Address"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "age": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 150
+    },
+    "score": {
+      "type": "number"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "department_id": {
+      "type": "integer"
+    }
+  },
+  "primaryKey": ["id"],
+  "uniqueKeys": [["email"], ["name", "department_id"]],
+  "foreignKeys": [
+    {
+      "columns": ["department_id"],
+      "reference": {
+        "resource": "departments",
+        "columns": ["id"]
+      }
+    }
+  ],
+  "missingValues": ["", "NA", "N/A", "null"]
+}

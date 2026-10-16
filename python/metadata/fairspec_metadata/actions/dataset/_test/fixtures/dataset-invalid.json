@@ -1,0 +1,8 @@
+{
+  "resources": [
+    {
+      "name": 1,
+      "data": "table.csv"
+    }
+  ]
+}

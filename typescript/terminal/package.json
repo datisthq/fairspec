@@ -1,0 +1,51 @@
+{
+  "name": "@fairspec/terminal",
+  "version": "0.0.0-dev",
+  "description": "Fairspec TypeScript is a fast data management framework built on top of the Fairspec standard and Polars DataFrames",
+  "keywords": [
+    "cli",
+    "data",
+    "dataframe",
+    "fair",
+    "fairspec",
+    "jsonschema",
+    "polars",
+    "quality",
+    "tableschema",
+    "terminal",
+    "typescript",
+    "validation"
+  ],
+  "license": "MIT",
+  "author": "Evgeny Karev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/datisthq/fairspec",
+    "directory": "typescript/terminal"
+  },
+  "bin": {
+    "fairspec": "./build/entrypoints/run.js"
+  },
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": "./build/index.js",
+  "scripts": {
+    "build": "tsgo && pnpm build:copy && pnpm build:mode",
+    "build:copy": "cp entrypoints/*.cmd build/entrypoints && cp package.json build",
+    "build:mode": "chmod +x ./build/entrypoints/*.js",
+    "type": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@bomb.sh/tab": "^0.0.12",
+    "@commander-js/extra-typings": "^14.0.0",
+    "@fairspec/library": "workspace:*",
+    "@fairspec/mcp-server": "workspace:*",
+    "commander": "^14.0.0",
+    "json-colorizer": "^3.0.1",
+    "picocolors": "^1.1.1",
+    "tasuku": "^2.0.5"
+  }
+}

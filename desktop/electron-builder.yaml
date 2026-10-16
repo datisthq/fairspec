@@ -1,0 +1,55 @@
+appId: org.fairspec.application
+copyright: Copyright © 2025 ${author}
+artifactName: fairspec-desktop-${os}-${version}.${ext}
+
+# General
+
+directories:
+  output: compile
+  buildResources: assets
+
+files:
+  - "build/main/**/*"
+  - "build/preload/**/*"
+  - "build/renderer/**/*"
+
+# nodejs-polars ships its native binary in a platform-specific optional
+# dependency; it must live outside the asar to be loadable.
+asarUnpack:
+  - "**/*.node"
+  - "**/node_modules/nodejs-polars-*/**"
+
+# Linux
+
+linux:
+  maintainer: fairspec.org
+  category: Utility
+  target:
+    - AppImage
+    - deb
+
+# Macos
+# Some resources to understand values and github secrets
+# https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
+# https://www.electron.build/code-signing
+# https://www.electron.build/app-builder-lib.interface.macconfiguration#notarize
+# https://github.com/electron/notarize
+
+mac:
+  target:
+    - dmg
+
+dmg:
+  artifactName: fairspec-desktop-macos-${version}.${ext}
+
+# Windows
+# Variable ${name} doesn't work on windows
+
+win:
+  executableName: fairspec
+  artifactName: fairspec-desktop-windows-${version}.${ext}
+
+nsis:
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always

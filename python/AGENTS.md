@@ -1,0 +1,130 @@
+# Python
+
+The `python/` section of the Fairspec monorepo (see the root `AGENTS.md`) — a uv workspace: a data management framework built on the Fairspec standard
+and Polars DataFrames: metadata models, a table engine with per-format plugins, dataset
+source plugins, and a CLI.
+
+## Commands
+
+Run from the repo root; `pnpm python <script>` runs a script of this section, which calls
+`uv` inside `python/`.
+
+- `pnpm python setup` — `uv sync --all-packages` (`pnpm install` runs it when `uv` is on the PATH)
+- `pnpm python test` — type + unit
+- `pnpm python lint` — `ruff check`
+- `pnpm python format` — `ruff format`
+- `pnpm python type` — `ty check`
+- `pnpm python unit` — pytest with coverage (html + json reports)
+- Single test — `pnpm python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py`, or `pnpm python unit -k "name"`
+- `pnpm python coverage` — open the generated `htmlcov` report
+- `pnpm python build` — `uv build --all-packages` into `build/`
+- `pnpm python release` — `uv publish build/*` (CI only)
+
+## Modules
+
+Packages form a strict DAG — `metadata` depends on nothing and everything layers up from it.
+Never introduce an edge that reverses this.
+
+```
+metadata ─► dataset ─► table ─► library ─► terminal ─► fairspec
+```
+
+A package may depend on any layer below it, not only the adjacent one — `table` pulls in both
+`dataset` and `metadata`, and `library` pulls in all three.
+
+Each workspace directory `<name>/` holds one import package `<name>/fairspec_<name>/`, except
+the meta-package, which is `fairspec/fairspec/`, and `project/`, which ships nothing.
+
+- `metadata` — pydantic models (`Resource`, `Dataset`, `TableSchema`, `Column`, `FileDialect`), descriptor load/save, path normalization, JSON Schema profiles. No `fairspec-*` dependencies; the base of the graph.
+- `dataset` — file, folder and stream I/O plus dataset-source plugins: ckan, descriptor, folder, github, zenodo, zip.
+- `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlsx.
+- `library` — the plugin registry and the facade actions every consumer calls: `load_table`, `save_table`, `load_dataset`, `save_dataset`, `validate_*`, `infer_*`.
+- `terminal` — the `fairspec` CLI (typer), one command group per entity.
+- `fairspec` — umbrella package re-exporting `fairspec_library` and shipping the CLI binary.
+- `project` — the documentation site in `docs/` and the docs guard in `_test/`. Not a uv workspace member and nothing imports it.
+
+Unlike `typescript/`, this section has no `mcp-server` and no `extension` package.
+
+## Code structure
+
+Organise by **concern folder, then entity**: group a file by what it _is_ (an action, a
+model, a command), then subgroup by the entity it acts on.
+
+- `actions/<entity>/<verb>.py` — the operations everything else wraps (`actions/table/save.py`, `actions/column/create.py`).
+- `models/<entity>.py` — pydantic models and their derived types.
+- `plugins/<name>/` — a self-contained plugin: `plugin.py` (the class), `settings.py`, `__init__.py`, and its own `actions/` tree.
+- `commands/<entity>/<verb>.py` (terminal) — CLI commands.
+- `helpers/<name>.py` — small supporting functions. `utils/<name>/` — heavier self-contained modules (e.g. `table/fairspec_table/utils/sniffer/`).
+- `services/`, `profiles/`, `schemas/`, `params/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions.
+- Root files, one concern each: `__init__.py` (the public API surface), `plugin.py`, `settings.py`.
+
+### `_test` and `_shared`
+
+A leading underscore marks a directory that is **not a member of the structure around it**.
+TypeScript uses a leading `-` for this; Python cannot, because `_shared` is imported by its
+siblings and `-shared` is not a valid identifier.
+
+The same constraint sets the test suffix. TypeScript names tests `<module>.unit.ts`; Python
+uses `<module>_unit.py`, not `<module>.unit.py`, because a dot is not legal in a module name
+and specs import their subject relatively — `.unit.py` would break every `from ..load import`.
+
+- **`_test/`** — unit tests and everything that exists only to serve them. `<module>.py` is tested by `_test/<module>_unit.py`, fixtures live in `_test/fixtures/`, and generated artifacts (VCR cassettes) in `_test/fixtures/generated/`. A shared test double goes in the same folder, named after its export (`plugins/xlsx/actions/table/_test/test_data.py`).
+- **`_shared/`** — _production_ code shared by the siblings around it that must not itself be one of them: a helper among one-action-per-file modules (`actions/table/_shared/helpers.py`). Not fixtures, not mocks. A `_shared/` folder can hold its own `_test/`.
+
+Test discovery is by the `*_unit.py` **filename suffix** (`python_files` in `pyproject.toml`),
+not the folder name — the folder is a structural convention. Move a test and its `fixtures/`
+together: fixture paths resolve from `os.path.dirname(__file__)`, and the `vcr_cassette_dir`
+fixture resolves from the test file's own directory.
+
+**Every directory needs an `__init__.py`**, `_test/` and `_shared/` included. Specs import
+their subject relatively (`from ..load import load_descriptor`), and pytest walks up the
+`__init__.py` chain to name the module — one missing marker makes the walk stop early and the
+relative import reaches beyond the top-level package.
+
+## Formats
+
+- Use 4-space indentation, UTF-8 encoding, and LF line endings
+- Ruff is configured at `line-length = 90` with `E501` ignored
+- Use PascalCase for classes, snake_case for functions, methods, and variables
+- Place high-level public items first in a file and low-level private items last
+
+## Conventions
+
+- uv workspace, Python `>=3.12`, hatchling per member; tasks are scripts in `python/package.json`
+- Function names are **verb_noun** — a verb plus the noun it acts on (`load_descriptor`, `inspect_json_schema`, `create_column_from_property`), never a bare verb or bare noun
+- Files are snake_case, named after the verb **without repeating the folder** — `actions/descriptor/load.py` exports `load_descriptor`, not `load_descriptor.py`
+- One export per file is the default, not an absolute: a file may export a closely related pair
+- **`__init__.py` barrels are deliberate and required.** Each package's `__init__.py` is a curated list of explicit named re-exports — never `import *` outside the meta-package. Adding a public API means adding its line there.
+- Commit style: Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`); release-please derives the changelog and version bumps from them — see **Releases**
+
+## Types
+
+- Use Python type hints; target Python 3.12+
+- Type checking is `ty` (`pnpm python type`), configured under `[tool.ty.rules]`
+- Never use `Any` without permission
+
+## Specs
+
+- Unit tests are pytest, named `*_unit.py`, in collocated `_test` folders
+- Use `class TestXxx:` with `def test_...` methods
+- Don't add useless comments like "Arrange", "Act", "Assert"
+- Network tests use `@pytest.mark.vcr` from pytest-recording; the cassette lands in `_test/fixtures/generated/<TestClass>.<test_name>.yaml`. Renaming a class or test renames that file, so the old cassette is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
+
+## Releases
+
+This section is the `python` release-please component: tags `python-vX.Y.Z`, its own Release
+PR, published to PyPI by `release.yaml`. All six packages are lock-stepped to one version via
+`extra-files`. The commit rules are in the root `AGENTS.md`.
+
+- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Tests, the docs
+  in `project/`, READMEs and tooling are `chore` or `docs`. PyPI never lets a version be
+  re-uploaded
+- When in doubt, ask whether the change alters what someone installing a package gets. If it does
+  not, it is `chore`
+
+## Docs
+
+- Add docstrings only for public APIs and don't use them for files
+- **Comments must not outnumber code.** If a file has more comment lines than code lines, the comments get cut, not the code. A single comment is at most ~3 lines. The bar is not "true" or "useful context" — it is: **name the specific mistake this comment prevents**. If you cannot name one in a sentence, delete it. Most code needs no comment at all: a file with zero is the normal case, not a gap to fill.
+- **Design rationale is git history, not file content.** `git log`/`git blame` already hold why a thing was chosen and what it replaced. A file carries only what someone editing THAT line needs in order not to break something — a non-obvious invariant, a failure that presents as success, a deliberate deviation from a rule in this file.
+- Never worth a line: restating what the next statement plainly does · explaining what a well-named function already names · narrating rejected alternatives · defending a choice nobody would question · a preamble on every entry in a config object

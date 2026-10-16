@@ -1,0 +1,48 @@
+[project]
+name = "fairspec-python"
+version = "0.0.0-dev"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 90
+lint.ignore = ["E501"]
+extend-exclude = ["__pycache__", ".eggs", ".git", ".venv", "build", "dist", ".cache"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+python_files = "*_unit.py"
+filterwarnings = ["error::UserWarning"]
+
+[tool.coverage.run]
+source = [
+  "fairspec_metadata",
+  "fairspec_dataset",
+  "fairspec_table",
+  "fairspec_library",
+  "fairspec_terminal",
+]
+omit = ["*/_test/*"]
+
+[tool.ty.rules]
+index-out-of-bounds = "ignore"
+
+[tool.uv]
+package = false
+dev-dependencies = [
+  "pytest==9.0.2",
+  "ruff==0.15.0",
+  "ty==0.0.15",
+  "pytest-recording==0.13.4",
+  "pytest-cov>=7.0.0",
+]
+
+[tool.uv.workspace]
+members = ["dataset", "fairspec", "library", "metadata", "table", "terminal"]
+
+[tool.uv.sources]
+fairspec = { workspace = true }
+fairspec-dataset = { workspace = true }
+fairspec-library = { workspace = true }
+fairspec-metadata = { workspace = true }
+fairspec-table = { workspace = true }
+fairspec-terminal = { workspace = true }

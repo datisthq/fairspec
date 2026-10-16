@@ -1,0 +1,66 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
+  "titles": [
+    {
+      "title": "title"
+    }
+  ],
+  "creators": [
+    {
+      "name": "title"
+    }
+  ],
+  "publisher": {
+    "name": "publisher"
+  },
+  "publicationYear": "2017",
+  "subjects": [
+    {
+      "subject": "keyword1"
+    },
+    {
+      "subject": "keyword2"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "title",
+      "contributorType": "ContactPerson"
+    }
+  ],
+  "dates": [
+    {
+      "date": "2017-01-01",
+      "dateType": "Created"
+    }
+  ],
+  "version": "1.0",
+  "rightsList": [
+    {
+      "rights": "MIT"
+    }
+  ],
+  "descriptions": [
+    {
+      "description": "description",
+      "descriptionType": "Abstract"
+    }
+  ],
+  "relatedIdentifiers": [
+    {
+      "relatedIdentifier": "http://example.com",
+      "relatedIdentifierType": "URL",
+      "relationType": "IsDescribedBy"
+    }
+  ],
+  "resources": [
+    {
+      "name": "name",
+      "data": "table.csv",
+      "fileDialect": {
+        "format": "csv"
+      },
+      "tableSchema": "schema.json"
+    }
+  ]
+}

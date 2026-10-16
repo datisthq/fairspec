@@ -431,7 +431,7 @@ const implementations: Implementation[] = [
     description:
       "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames.",
     command: "pip install fairspec",
-    href: "https://python.fairspec.org",
+    href: "/python/",
     external: true,
   },
   {
@@ -440,7 +440,7 @@ const implementations: Implementation[] = [
     description:
       "The same API surface as the Python package, built on Polars, and shipping a terminal CLI alongside the library.",
     command: "npm install fairspec",
-    href: "https://typescript.fairspec.org",
+    href: "/typescript/",
     external: true,
   },
   {
@@ -449,7 +449,7 @@ const implementations: Implementation[] = [
     description:
       "Connects AI assistants to the framework over the Model Context Protocol, so you can validate and infer in plain language.",
     command: "npx fairspec@latest mcp",
-    href: "https://typescript.fairspec.org/mcp-server/",
+    href: "/mcp-server/",
     external: true,
   },
   {
@@ -458,7 +458,7 @@ const implementations: Implementation[] = [
     description:
       "A desktop application for validating and inferring descriptors through a visual interface, with your files never leaving your machine.",
     command: "Download for macOS, Windows, Linux",
-    href: "https://application.fairspec.org",
+    href: "/desktop/",
     external: true,
   },
 ]
@@ -549,7 +549,7 @@ function FinalCta() {
               <ArrowRight className="size-4" />
             </Link>
             <a
-              href="https://typescript.fairspec.org/mcp-server/"
+              href="/mcp-server/"
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
@@ -561,7 +561,7 @@ function FinalCta() {
               Try the MCP server
             </a>
             <a
-              href="https://application.fairspec.org"
+              href="/desktop/"
               target="_blank"
               rel="noopener noreferrer"
               className={cn(

@@ -1,0 +1,777 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-01-23 09:32+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: components/report/Error.tsx
+msgid ", but it is"
+msgstr ", but it is"
+
+#: helpers/help.ts
+msgid "A dataset descriptor you can save and edit"
+msgstr "A dataset descriptor you can save and edit"
+
+#: helpers/help.ts
+msgid "A file dialect you can save as JSON"
+msgstr "A file dialect you can save as JSON"
+
+#: helpers/help.ts
+msgid "A JSON Schema you can save and edit"
+msgstr "A JSON Schema you can save and edit"
+
+#: helpers/help.ts
+msgid "A match confirms the bytes are unchanged; a mismatch means the file differs from the one published"
+msgstr "A match confirms the bytes are unchanged; a mismatch means the file differs from the one published"
+
+#: helpers/help.ts
+msgid "A report locating each violation inside the descriptor"
+msgstr "A report locating each violation inside the descriptor"
+
+#: helpers/help.ts
+msgid "A report of every cell that violates the schema"
+msgstr "A report of every cell that violates the schema"
+
+#: helpers/help.ts
+msgid "A report of every value that violates the schema"
+msgstr "A report of every value that violates the schema"
+
+#: helpers/help.ts
+msgid "A report saying whether the file matches the expected checksum"
+msgstr "A report saying whether the file matches the expected checksum"
+
+#: components/report/Error.tsx
+msgid "A required cell in column"
+msgstr "A required cell in column"
+
+#: helpers/help.ts
+msgid "A table schema you can save as JSON"
+msgstr "A table schema you can save as JSON"
+
+#: helpers/help.ts
+msgid "Add formats, ranges and enumerations by hand to make it stricter"
+msgstr "Add formats, ranges and enumerations by hand to make it stricter"
+
+#: components/report/Report.tsx
+msgid "All Errors"
+msgstr "All Errors"
+
+#: components/report/Error.tsx
+msgid "at"
+msgstr "at"
+
+#: routes/data/index.tsx
+msgid "Automatically derive a comprehensive JSON Schema definition from your data's structure and values"
+msgstr "Automatically derive a comprehensive JSON Schema definition from your data's structure and values"
+
+#: routes/data/infer-schema.tsx
+msgid "Automatically infer comprehensive data schemas from your datasets"
+msgstr "Automatically infer comprehensive data schemas from your datasets"
+
+#: routes/table/index.tsx
+#: routes/table/infer-schema.tsx
+msgid "Automatically infer comprehensive table schema definitions with column types and constraints from your tabular data"
+msgstr "Automatically infer comprehensive table schema definitions with column types and constraints from your tabular data"
+
+#: routes/dataset/index.tsx
+#: routes/dataset/infer.tsx
+msgid "Automatically infer dataset metadata, table resources, and the overall structure from your raw data files"
+msgstr "Automatically infer dataset metadata, table resources, and the overall structure from your raw data files"
+
+#: routes/file/infer-dialect.tsx
+msgid "Automatically infer file formats, encoding specifications, and dialect parameters"
+msgstr "Automatically infer file formats, encoding specifications, and dialect parameters"
+
+#: helpers/help.ts
+msgid "Bring a JSON data file and the data schema it is supposed to satisfy"
+msgstr "Bring a JSON data file and the data schema it is supposed to satisfy"
+
+#: helpers/help.ts
+msgid "Bring a table schema to check against, or infer one first if you do not have it yet"
+msgstr "Bring a table schema to check against, or infer one first if you do not have it yet"
+
+#: helpers/help.ts
+msgid "Builds a dataset descriptor from a tabular file, inferring the resource, its schema and its dialect"
+msgstr "Builds a dataset descriptor from a tabular file, inferring the resource, its schema and its dialect"
+
+#: routes/index.tsx
+msgid "Built by"
+msgstr "Built by"
+
+#: components/layout/Language.tsx
+msgid "Change Language"
+msgstr "Change Language"
+
+#: components/layout/Theme.tsx
+msgid "Change Theme"
+msgstr "Change Theme"
+
+#: routes/data/index.tsx
+msgid "Check data values against schema specifications for quality, consistency, and constraint violations"
+msgstr "Check data values against schema specifications for quality, consistency, and constraint violations"
+
+#: helpers/help.ts
+msgid "Checks a dataset descriptor against the Fairspec specification and confirms that every resource it references is consistent"
+msgstr "Checks a dataset descriptor against the Fairspec specification and confirms that every resource it references is consistent"
+
+#: helpers/help.ts
+msgid "Checks structured data against a data schema"
+msgstr "Checks structured data against a data schema"
+
+#: helpers/help.ts
+msgid "Checks tabular data against a table schema, optionally with an explicit file dialect"
+msgstr "Checks tabular data against a table schema, optionally with an explicit file dialect"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a data file"
+msgstr "Choose a file or provide a URL to a data file"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a data schema"
+msgstr "Choose a file or provide a URL to a data schema"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a dataset"
+msgstr "Choose a file or provide a URL to a dataset"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a file"
+msgstr "Choose a file or provide a URL to a file"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a table dialect"
+msgstr "Choose a file or provide a URL to a table dialect"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a table schema"
+msgstr "Choose a file or provide a URL to a table schema"
+
+#: helpers/help.ts
+msgid "Choose a file or provide a URL to a tabular data file"
+msgstr "Choose a file or provide a URL to a tabular data file"
+
+#: components/result/Result.tsx
+msgid "Close"
+msgstr "Close"
+
+#: components/layout/Close.tsx
+msgid "Close Application"
+msgstr "Close Application"
+
+#: components/report/Error.tsx
+msgid "Column"
+msgstr "Column"
+
+#: components/layout/Theme.tsx
+msgid "Dark Theme"
+msgstr "Dark Theme"
+
+#: components/layout/Menu.tsx
+#: helpers/help.ts
+#: routes/data/index.tsx
+#: routes/index.tsx
+msgid "Data"
+msgstr "Data"
+
+#: components/report/Error.tsx
+msgid "Data error at"
+msgstr "Data error at"
+
+#: components/layout/Logo.tsx
+msgid "Data management application"
+msgstr "Data management application"
+
+#: components/layout/Menu.tsx
+#: helpers/help.ts
+#: routes/dataset/index.tsx
+#: routes/index.tsx
+msgid "Dataset"
+msgstr "Dataset"
+
+#: routes/dataset/infer.tsx
+msgid "Dataset Inferred"
+msgstr "Dataset Inferred"
+
+#: routes/index.tsx
+msgid "Datist — Software development, end to end."
+msgstr "Datist — Software development, end to end."
+
+#: helpers/help.ts
+msgid "Derives a JSON Schema from a data sample"
+msgstr "Derives a JSON Schema from a data sample"
+
+#: helpers/help.ts
+msgid "Derives a table schema from a tabular file, with field names, types and constraints"
+msgstr "Derives a table schema from a tabular file, with field names, types and constraints"
+
+#: routes/file/index.tsx
+#: routes/index.tsx
+msgid "Describe file contents and structure in detail, and automatically infer file formats and encoding specifications"
+msgstr "Describe file contents and structure in detail, and automatically infer file formats and encoding specifications"
+
+#: routes/data/index.tsx
+#: routes/file/index.tsx
+#: routes/table/index.tsx
+msgid "Detect file formats, encoding specifications, delimiters, and other dialect parameters automatically"
+msgstr "Detect file formats, encoding specifications, delimiters, and other dialect parameters automatically"
+
+#: helpers/help.ts
+msgid "Detects how a tabular file is formatted by sampling its contents"
+msgstr "Detects how a tabular file is formatted by sampling its contents"
+
+#: helpers/help.ts
+msgid "Dialect"
+msgstr "Dialect"
+
+#: routes/file/infer-dialect.tsx
+msgid "Dialect Inferred"
+msgstr "Dialect Inferred"
+
+#: components/report/Error.tsx
+msgid "do not reference existing values"
+msgstr "do not reference existing values"
+
+#: components/report/Error.tsx
+msgid "does not match the"
+msgstr "does not match the"
+
+#: components/layout/Maximize.tsx
+msgid "Enter Fullscreen"
+msgstr "Enter Fullscreen"
+
+#: routes/file/validate.tsx
+msgid "Enter hash value"
+msgstr "Enter hash value"
+
+#: helpers/help.ts
+msgid "Every resource the descriptor references is resolved and checked, so keep it next to the data it describes"
+msgstr "Every resource the descriptor references is resolved and checked, so keep it next to the data it describes"
+
+#: components/layout/Maximize.tsx
+msgid "Exit Fullscreen"
+msgstr "Exit Fullscreen"
+
+#: routes/dataset/infer.tsx
+msgid "Failed to Infer Dataset"
+msgstr "Failed to Infer Dataset"
+
+#: routes/file/infer-dialect.tsx
+msgid "Failed to Infer Dialect"
+msgstr "Failed to Infer Dialect"
+
+#: routes/data/infer-schema.tsx
+#: routes/table/infer-schema.tsx
+msgid "Failed to Infer Schema"
+msgstr "Failed to Infer Schema"
+
+#: routes/table/preview.tsx
+msgid "Failed to Load Preview"
+msgstr "Failed to Load Preview"
+
+#: helpers/help.ts
+msgid "Failures are grouped by error type, so the problem that dominates is visible at a glance"
+msgstr "Failures are grouped by error type, so the problem that dominates is visible at a glance"
+
+#: components/layout/Logo.tsx
+msgid "Fairspec Application"
+msgstr "Fairspec Application"
+
+#: helpers/help.ts
+msgid "Fairspec describes datasets, tabular data and files with plain JSON descriptors, so that data can be published with enough structure to be checked. This application validates those descriptors and the data they point at, and infers them from data you already have, all on your own machine"
+msgstr "Fairspec describes datasets, tabular data and files with plain JSON descriptors, so that data can be published with enough structure to be checked. This application validates those descriptors and the data they point at, and infers them from data you already have, all on your own machine"
+
+#: components/layout/Menu.tsx
+#: helpers/help.ts
+#: routes/file/index.tsx
+#: routes/index.tsx
+msgid "File"
+msgstr "File"
+
+#: components/report/Error.tsx
+msgid "File hash"
+msgstr "File hash"
+
+#: components/report/Error.tsx
+msgid "File is expected to be textual with utf-8 encoding but it is"
+msgstr "File is expected to be textual with utf-8 encoding but it is"
+
+#: helpers/help.ts
+msgid "Fix the reported paths or metadata and validate again"
+msgstr "Fix the reported paths or metadata and validate again"
+
+#: components/report/Error.tsx
+msgid "Foreign key constraint violated as cells"
+msgstr "Foreign key constraint violated as cells"
+
+#: components/report/Error.tsx
+msgid "has less than"
+msgstr "has less than"
+
+#: components/report/Error.tsx
+msgid "has more than"
+msgstr "has more than"
+
+#: routes/file/validate.tsx
+msgid "Hash"
+msgstr "Hash"
+
+#: components/layout/Help.tsx
+msgid "Help"
+msgstr "Help"
+
+#: helpers/help.ts
+msgid "If the columns look wrong, the dialect is being misdetected — supply one"
+msgstr "If the columns look wrong, the dialect is being misdetected — supply one"
+
+#: components/report/Error.tsx
+msgid "in column"
+msgstr "in column"
+
+#: components/report/Error.tsx
+msgid "in resource"
+msgstr "in resource"
+
+#: routes/data/infer-schema.tsx
+#: routes/dataset/infer.tsx
+#: routes/file/infer-dialect.tsx
+#: routes/table/infer-schema.tsx
+msgid "Infer"
+msgstr "Infer"
+
+#: helpers/help.ts
+msgid "Infer a schema first if you do not have one yet"
+msgstr "Infer a schema first if you do not have one yet"
+
+#: routes/data/infer-schema.tsx
+msgid "Infer Data Schema"
+msgstr "Infer Data Schema"
+
+#: components/layout/Menu.tsx
+#: routes/dataset/index.tsx
+#: routes/dataset/infer.tsx
+msgid "Infer Dataset"
+msgstr "Infer Dataset"
+
+#: components/layout/Menu.tsx
+#: routes/data/index.tsx
+#: routes/file/index.tsx
+#: routes/table/index.tsx
+msgid "Infer Dialect"
+msgstr "Infer Dialect"
+
+#: routes/file/infer-dialect.tsx
+msgid "Infer File Dialect"
+msgstr "Infer File Dialect"
+
+#: components/layout/Menu.tsx
+#: routes/data/index.tsx
+#: routes/table/index.tsx
+msgid "Infer Schema"
+msgstr "Infer Schema"
+
+#: routes/table/infer-schema.tsx
+msgid "Infer Table Schema"
+msgstr "Infer Table Schema"
+
+#: routes/dataset/infer.tsx
+msgid "Inferring Dataset..."
+msgstr "Inferring Dataset..."
+
+#: routes/file/infer-dialect.tsx
+msgid "Inferring Dialect..."
+msgstr "Inferring Dialect..."
+
+#: routes/data/infer-schema.tsx
+#: routes/table/infer-schema.tsx
+msgid "Inferring Schema..."
+msgstr "Inferring Schema..."
+
+#: routes/data/validate.tsx
+msgid "Invalid Data"
+msgstr "Invalid Data"
+
+#: routes/dataset/validate.tsx
+msgid "Invalid Dataset"
+msgstr "Invalid Dataset"
+
+#: routes/file/validate.tsx
+msgid "Invalid File"
+msgstr "Invalid File"
+
+#: routes/table/validate.tsx
+msgid "Invalid Table"
+msgstr "Invalid Table"
+
+#: components/report/Error.tsx
+msgid "is expected to be"
+msgstr "is expected to be"
+
+#: components/report/Error.tsx
+msgid "is greater or equal to"
+msgstr "is greater or equal to"
+
+#: components/report/Error.tsx
+msgid "is less or equal to"
+msgstr "is less or equal to"
+
+#: components/report/Error.tsx
+msgid "is less than"
+msgstr "is less than"
+
+#: components/report/Error.tsx
+msgid "is missing"
+msgstr "is missing"
+
+#: components/report/Error.tsx
+msgid "is missing, but expected"
+msgstr "is missing, but expected"
+
+#: components/report/Error.tsx
+msgid "is more than"
+msgstr "is more than"
+
+#: components/report/Error.tsx
+msgid "is not"
+msgstr "is not"
+
+#: components/report/Error.tsx
+msgid "is not a multiple of"
+msgstr "is not a multiple of"
+
+#: components/report/Error.tsx
+msgid "is not allowed value"
+msgstr "is not allowed value"
+
+#: components/report/Error.tsx
+msgid "is not in the allowed values"
+msgstr "is not in the allowed values"
+
+#: components/report/Error.tsx
+msgid "is not unique"
+msgstr "is not unique"
+
+#: components/report/Error.tsx
+msgid "items"
+msgstr "items"
+
+#: components/layout/Language.tsx
+msgid "Language"
+msgstr "Language"
+
+#: helpers/help.ts
+msgid "Leave the schema empty to see the one inferred from the data, or supply a schema to read the file through it"
+msgstr "Leave the schema empty to see the one inferred from the data, or supply a schema to read the file through it"
+
+#: components/report/Error.tsx
+msgid "Length of the cell"
+msgstr "Length of the cell"
+
+#: components/layout/Theme.tsx
+msgid "Light Theme"
+msgstr "Light Theme"
+
+#: routes/table/preview.tsx
+msgid "Load and preview your data table"
+msgstr "Load and preview your data table"
+
+#: routes/table/index.tsx
+#: routes/table/preview.tsx
+msgid "Load tabular data from your files and preview rows, columns, and overall structure to inspect contents"
+msgstr "Load tabular data from your files and preview rows, columns, and overall structure to inspect contents"
+
+#: routes/table/preview.tsx
+msgid "Loading Preview..."
+msgstr "Loading Preview..."
+
+#: components/report/Error.tsx
+msgid "of row"
+msgstr "of row"
+
+#: components/form/FileOrPathField.tsx
+msgid "Open"
+msgstr "Open"
+
+#: helpers/help.ts
+msgid "Pick the algorithm matching that checksum"
+msgstr "Pick the algorithm matching that checksum"
+
+#: helpers/help.ts
+msgid "Point at a dataset descriptor, usually a dataset.json sitting beside your data files"
+msgstr "Point at a dataset descriptor, usually a dataset.json sitting beside your data files"
+
+#: helpers/help.ts
+msgid "Point at a JSON data sample; its structure and values are examined"
+msgstr "Point at a JSON data sample; its structure and values are examined"
+
+#: helpers/help.ts
+msgid "Point at a tabular file whose format you are unsure of"
+msgstr "Point at a tabular file whose format you are unsure of"
+
+#: helpers/help.ts
+msgid "Point at a tabular file; each column is analysed to pick the narrowest type that fits"
+msgstr "Point at a tabular file; each column is analysed to pick the narrowest type that fits"
+
+#: helpers/help.ts
+msgid "Point at one tabular file; the descriptor is built around it as a single resource"
+msgstr "Point at one tabular file; the descriptor is built around it as a single resource"
+
+#: helpers/help.ts
+msgid "Point at the file you received and paste the checksum that was published alongside it"
+msgstr "Point at the file you received and paste the checksum that was published alongside it"
+
+#: routes/table/preview.tsx
+msgid "Preview"
+msgstr "Preview"
+
+#: components/layout/Menu.tsx
+#: routes/table/index.tsx
+#: routes/table/preview.tsx
+msgid "Preview Table"
+msgstr "Preview Table"
+
+#: helpers/help.ts
+#: routes/table/index.tsx
+msgid "Preview, validate, and infer schemas for tabular data"
+msgstr "Preview, validate, and infer schemas for tabular data"
+
+#: helpers/help.ts
+msgid "Read more"
+msgstr "Read more"
+
+#: components/report/Error.tsx
+msgid "Required column"
+msgstr "Required column"
+
+#: components/report/Error.tsx
+msgid "Resource"
+msgstr "Resource"
+
+#: components/layout/Help.tsx
+msgid "Result"
+msgstr "Result"
+
+#: helpers/help.ts
+msgid "Review the generated metadata and add a title, licence and description by hand"
+msgstr "Review the generated metadata and add a title, licence and description by hand"
+
+#: components/report/Error.tsx
+msgid "Row"
+msgstr "Row"
+
+#: routes/data/infer-schema.tsx
+#: routes/dataset/infer.tsx
+#: routes/file/infer-dialect.tsx
+#: routes/table/infer-schema.tsx
+msgid "Save"
+msgstr "Save"
+
+#: helpers/help.ts
+msgid "Save it as dataset.json beside your data, then check it with Validate Dataset"
+msgstr "Save it as dataset.json beside your data, then check it with Validate Dataset"
+
+#: helpers/help.ts
+msgid "Save it, tighten the constraints by hand, then use it with Validate Table"
+msgstr "Save it, tighten the constraints by hand, then use it with Validate Table"
+
+#: helpers/help.ts
+msgid "Save the dialect and pass it to the table tools when detection is getting it wrong"
+msgstr "Save the dialect and pass it to the table tools when detection is getting it wrong"
+
+#: helpers/help.ts
+msgid "Schema"
+msgstr "Schema"
+
+#: routes/data/infer-schema.tsx
+#: routes/table/infer-schema.tsx
+msgid "Schema Inferred"
+msgstr "Schema Inferred"
+
+#: routes/file/validate.tsx
+msgid "Select hash algorithm and enter hash value"
+msgstr "Select hash algorithm and enter hash value"
+
+#: helpers/help.ts
+msgid "Shows how a tabular file is parsed, with the start of the data and the table schema used to read it"
+msgstr "Shows how a tabular file is parsed, with the start of the data and the table schema used to read it"
+
+#: helpers/help.ts
+msgid "Supply a dialect when the delimiter or header row of the file are being misdetected"
+msgstr "Supply a dialect when the delimiter or header row of the file are being misdetected"
+
+#: components/layout/Menu.tsx
+#: helpers/help.ts
+#: routes/index.tsx
+#: routes/table/index.tsx
+msgid "Table"
+msgstr "Table"
+
+#: routes/table/preview.tsx
+msgid "Table Preview"
+msgstr "Table Preview"
+
+#: routes/index.tsx
+msgid "Technical preview"
+msgstr "Technical preview"
+
+#: helpers/help.ts
+msgid "The delimiter, quote character, header row, line terminator and encoding are read from a sample"
+msgstr "The delimiter, quote character, header row, line terminator and encoding are read from a sample"
+
+#: helpers/help.ts
+msgid "The result describes only what the sample satisfies, so a narrow sample gives a narrow schema"
+msgstr "The result describes only what the sample satisfies, so a narrow sample gives a narrow schema"
+
+#: helpers/help.ts
+msgid "The start of the file alongside the table schema used to read it"
+msgstr "The start of the file alongside the table schema used to read it"
+
+#: components/layout/Menu.tsx
+msgid "Tools"
+msgstr "Tools"
+
+#: helpers/help.ts
+msgid "Treat the result as a starting point rather than a finished specification"
+msgstr "Treat the result as a starting point rather than a finished specification"
+
+#: helpers/help.ts
+msgid "Use this to see how a file is actually parsed before you validate anything"
+msgstr "Use this to see how a file is actually parsed before you validate anything"
+
+#: routes/data/validate.tsx
+msgid "Valid Data"
+msgstr "Valid Data"
+
+#: routes/dataset/validate.tsx
+msgid "Valid Dataset"
+msgstr "Valid Dataset"
+
+#: routes/file/validate.tsx
+msgid "Valid File"
+msgstr "Valid File"
+
+#: routes/table/validate.tsx
+msgid "Valid Table"
+msgstr "Valid Table"
+
+#: routes/data/validate.tsx
+#: routes/dataset/validate.tsx
+#: routes/file/validate.tsx
+#: routes/table/validate.tsx
+msgid "Validate"
+msgstr "Validate"
+
+#: components/layout/Menu.tsx
+#: routes/data/index.tsx
+#: routes/data/validate.tsx
+msgid "Validate Data"
+msgstr "Validate Data"
+
+#: routes/data/validate.tsx
+#: routes/index.tsx
+msgid "Validate data quality, check for inconsistencies and errors, and automatically infer comprehensive data schemas from your datasets"
+msgstr "Validate data quality, check for inconsistencies and errors, and automatically infer comprehensive data schemas from your datasets"
+
+#: helpers/help.ts
+#: routes/data/index.tsx
+msgid "Validate data values and infer JSON Schemas from your datasets"
+msgstr "Validate data values and infer JSON Schemas from your datasets"
+
+#: components/layout/Menu.tsx
+#: routes/dataset/index.tsx
+#: routes/dataset/validate.tsx
+msgid "Validate Dataset"
+msgstr "Validate Dataset"
+
+#: routes/dataset/index.tsx
+#: routes/dataset/validate.tsx
+#: routes/index.tsx
+msgid "Validate dataset metadata against specifications and automatically infer dataset structure from your data files"
+msgstr "Validate dataset metadata against specifications and automatically infer dataset structure from your data files"
+
+#: helpers/help.ts
+#: routes/dataset/index.tsx
+msgid "Validate dataset metadata and infer dataset descriptors from your data files"
+msgstr "Validate dataset metadata and infer dataset descriptors from your data files"
+
+#: components/layout/Menu.tsx
+#: routes/file/index.tsx
+#: routes/file/validate.tsx
+msgid "Validate File"
+msgstr "Validate File"
+
+#: helpers/help.ts
+#: routes/file/index.tsx
+msgid "Validate files and infer their dialects"
+msgstr "Validate files and infer their dialects"
+
+#: components/layout/Menu.tsx
+#: routes/table/index.tsx
+#: routes/table/validate.tsx
+msgid "Validate Table"
+msgstr "Validate Table"
+
+#: routes/index.tsx
+#: routes/table/validate.tsx
+msgid "Validate table structure for correctness and compliance, and automatically infer table schema definitions from your tabular data"
+msgstr "Validate table structure for correctness and compliance, and automatically infer table schema definitions from your tabular data"
+
+#: routes/table/index.tsx
+msgid "Validate table structure for correctness and compliance, and automatically infer table schema from your tabular data"
+msgstr "Validate table structure for correctness and compliance, and automatically infer table schema from your tabular data"
+
+#: routes/data/validate.tsx
+msgid "Validating Data..."
+msgstr "Validating Data..."
+
+#: routes/dataset/validate.tsx
+msgid "Validating Dataset..."
+msgstr "Validating Dataset..."
+
+#: routes/file/validate.tsx
+msgid "Validating File..."
+msgstr "Validating File..."
+
+#: routes/table/validate.tsx
+msgid "Validating Table..."
+msgstr "Validating Table..."
+
+#: components/report/Error.tsx
+msgid "Value of the cell"
+msgstr "Value of the cell"
+
+#: helpers/help.ts
+msgid "Verifies a file against an expected checksum"
+msgstr "Verifies a file against an expected checksum"
+
+#: routes/file/validate.tsx
+msgid "Verify a file against an expected checksum to confirm that the bytes you received are the bytes that were published"
+msgstr "Verify a file against an expected checksum to confirm that the bytes you received are the bytes that were published"
+
+#: components/report/Error.tsx
+msgid "violates JSON schema at"
+msgstr "violates JSON schema at"
+
+#: components/report/Error.tsx
+msgid "violates primary key constraint on columns"
+msgstr "violates primary key constraint on columns"
+
+#: components/report/Error.tsx
+msgid "violates unique key constraint on columns"
+msgstr "violates unique key constraint on columns"
+
+#: routes/index.tsx
+msgid "Visual tool for managing and validating tabular and structured data"
+msgstr "Visual tool for managing and validating tabular and structured data"
+
+#: helpers/help.ts
+msgid "Wrong types, violated constraints, missing required values and broken key relationships are all reported"
+msgstr "Wrong types, violated constraints, missing required values and broken key relationships are all reported"

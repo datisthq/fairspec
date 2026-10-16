@@ -1,0 +1,41 @@
+[project]
+name = "fairspec-terminal"
+version = "0.0.0-dev"
+description = "Fairspec Python is a fast data management framework built on top of the Fairspec standard and Polars DataFrames"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+keywords = [
+  "cli",
+  "data",
+  "dataframe",
+  "fair",
+  "fairspec",
+  "jsonschema",
+  "polars",
+  "python",
+  "quality",
+  "tableschema",
+  "terminal",
+  "validation",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["fairspec-library", "typer>=0.15"]
+
+[project.scripts]
+fairspec = "fairspec_terminal.main:main"
+
+[[project.authors]]
+name = "Evgeny Karev"
+
+[project.urls]
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

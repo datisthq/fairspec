@@ -1,0 +1,25 @@
+{
+  "name": "@fairspec/typescript",
+  "version": "0.0.0-dev",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -F \"./*\" run build",
+    "coverage": "sensible-browser coverage/index.html",
+    "debug": "vp test --no-file-parallelism --test-timeout=0 --inspect-brk --browser run",
+    "release": "pnpm -F \"./*\" publish --access public --ignore-scripts --no-git-checks",
+    "test": "pnpm build && pnpm unit",
+    "type": "pnpm -F \"./*\" run type",
+    "unit": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "execa": "9.6.0",
+    "tempy": "catalog:",
+    "type-fest": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "vitest-polly": "2.1.0"
+  }
+}

@@ -55,6 +55,26 @@ Proposals for changes to the specification should consider:
 - **Use cases**: Provide concrete examples
 - **Impact**: Consider effects on existing users
 
+## Working on the Code
+
+The repository is a monorepo: the standard lives in `standard/`, the implementations in
+`python/` and `typescript/`, and the desktop application in `desktop/`. Clone it and install
+everything from the root:
+
+```bash
+git clone https://github.com/datisthq/fairspec.git
+cd fairspec
+pnpm install
+```
+
+Run `pnpm test` for the full gate, or `pnpm <section> <script>` for one section — for
+example `pnpm python test` or `pnpm typescript unit`. Each section has its own contributing
+notes in its directory.
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/) scoped by section,
+such as `fix(python): …` or `docs(standard): …`. Each section is versioned and released on its
+own, so use `feat` and `fix` only for changes to what that section ships.
+
 ## Getting Help
 
 - **Issues**: For bug reports and feature requests
