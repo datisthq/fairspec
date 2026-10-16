@@ -7,6 +7,7 @@
     "build:site": "livemark build",
     "deps": "ncu -ws --root -u --cooldown 7d",
     "format": "vp fmt --no-error-on-unmatched-pattern && pnpm -C python format",
+    "generate:profiles": "node .scripts/@generate.ts",
     "leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
     "lint": "vp fmt --check && vp lint && pnpm -C python lint",
     "prepare": "lefthook install && mkdir -p .claude && ln -sfn ../.agents/skills .claude/skills && (command -v uv >/dev/null && pnpm -C python setup || true)",

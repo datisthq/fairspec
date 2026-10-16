@@ -69,7 +69,7 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
 6. **The standard.** A change under `standard/` runs `pnpm -C standard test`: every profile
    compiles, every JSON example in the Data Schema and Table Schema specs validates, and the
    fixtures in `standard/-test/profiles.unit.ts` hold. A profile fix adds a valid and an invalid
-   case there, failing before the fix. Never run `pnpm -C standard generate` by hand:
+   case there, failing before the fix. Never run `pnpm generate:profiles` by hand:
    `release.yaml` regenerates the profiles on the Release PR. The implementations' profile tests
    (`pnpm -C typescript unit metadata/actions/profile/`,
    `pnpm -C python unit metadata/fairspec_metadata/actions/profile/`) load their own vendored

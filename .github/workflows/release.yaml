@@ -82,7 +82,7 @@ jobs:
         run: pnpm install
       - name: Generate Profiles
         if: steps.branch.outputs.name != ''
-        run: pnpm -C standard generate
+        run: pnpm generate:profiles
       - name: Commit Profiles
         if: steps.branch.outputs.name != ''
         run: |

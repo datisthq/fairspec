@@ -18,8 +18,8 @@ The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
 `wrangler.jsonc`) and renders the docs of every section on fairspec.org.
 
 Dot-directories hold non-product code: `.agents/` skills, `.humans/` reports for people (HTML
-by default), `.scripts/` repo-wide guards, `.release/` release-please config, `.livemark/` the
-website.
+by default), `.scripts/` repo-wide guards and scripts, `.release/` release-please config,
+`.livemark/` the website.
 
 ## General
 
@@ -58,9 +58,10 @@ website.
 
 ## Commands
 
-Everything runs from the repo root. `pnpm <verb>` covers every section; `pnpm -C <section> <script>`
-runs one section's script (`pnpm -C python test`, `pnpm -C typescript build`, `pnpm -C desktop start`,
-`pnpm -C standard generate`). Each section's own scripts are in its skill.
+Everything runs from the repo root. `pnpm <verb>` covers every section;
+`pnpm -C <section> <script>` runs one section's script (`pnpm -C python test`,
+`pnpm -C typescript build`, `pnpm -C desktop start`). Each section's own scripts are in its
+skill.
 
 - `pnpm install` — install Node dependencies, git hooks, the skills symlink, and the Python
   environment when `uv` is on the PATH (`pnpm -C python setup` does that step alone)
