@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "generate": "node @generate.ts",
-    "test": "pnpm type",
-    "type": "tsgo --noEmit"
+    "test": "pnpm type && pnpm unit",
+    "type": "tsgo --noEmit",
+    "unit": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
     "execa": "9.6.1",
     "replace-in-file": "8.4.0",
-    "tasuku": "2.0.5"
+    "tasuku": "2.0.5",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }

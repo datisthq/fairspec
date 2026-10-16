@@ -20,21 +20,21 @@ table/`, `pnpm typescript type`"). Never write "tests pass" for a slice.
 
 Measured on a laptop, warm, 2026-10-16:
 
-| check                                        | wall  | catches                                  |
-| -------------------------------------------- | ----- | ---------------------------------------- |
-| `vp fmt --check <files>` / `vp lint <files>` | ~1 s  | format, oxlint, the desktop import fence |
-| `vp test` (root)                             | ~1 s  | the docs guard                           |
-| `pnpm standard test`                         | ~2 s  | types of `standard/@generate.ts`         |
-| `pnpm typescript build`                      | ~8 s  | emits every package's `build/`           |
-| `pnpm typescript type`                       | ~6 s  | types in every TypeScript package        |
-| `pnpm -F ./typescript/<pkg> run type`        | ~2 s  | types in one package                     |
-| `pnpm typescript unit <dir or file>`         | 3+ s  | the tests named                          |
-| `pnpm typescript unit`                       | ~32 s | every TypeScript test                    |
-| `pnpm desktop type` / `pnpm desktop unit`    | ~3 s  | the app's types / tests                  |
-| `pnpm python type`                           | ~2 s  | `ty` over the workspace                  |
-| `pnpm python unit <dir or file>`             | 4+ s  | the tests named                          |
-| `pnpm python unit`                           | ~16 s | every Python test                        |
-| `pnpm lint`                                  | ~3 s  | fmt + oxlint + ruff over the whole tree  |
+| check                                        | wall  | catches                                   |
+| -------------------------------------------- | ----- | ----------------------------------------- |
+| `vp fmt --check <files>` / `vp lint <files>` | ~1 s  | format, oxlint, the desktop import fence  |
+| `vp test` (root)                             | ~1 s  | the docs guard                            |
+| `pnpm standard test`                         | ~3 s  | profiles compile, spec examples, fixtures |
+| `pnpm typescript build`                      | ~8 s  | emits every package's `build/`            |
+| `pnpm typescript type`                       | ~6 s  | types in every TypeScript package         |
+| `pnpm -F ./typescript/<pkg> run type`        | ~2 s  | types in one package                      |
+| `pnpm typescript unit <dir or file>`         | 3+ s  | the tests named                           |
+| `pnpm typescript unit`                       | ~32 s | every TypeScript test                     |
+| `pnpm desktop type` / `pnpm desktop unit`    | ~3 s  | the app's types / tests                   |
+| `pnpm python type`                           | ~2 s  | `ty` over the workspace                   |
+| `pnpm python unit <dir or file>`             | 4+ s  | the tests named                           |
+| `pnpm python unit`                           | ~16 s | every Python test                         |
+| `pnpm lint`                                  | ~3 s  | fmt + oxlint + ruff over the whole tree   |
 
 All of these run from the repo root. Paths after `pnpm typescript unit` are relative to
 `typescript/`, after `pnpm python unit` to `python/`. Bare `vitest` fails to collect
@@ -66,14 +66,14 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
 5. **The desktop app.** fmt + `vp lint` on the files, `pnpm desktop type` and `pnpm desktop unit`
    (after `pnpm typescript build` if `typescript/` changed too). A UI change also gets looked at
    in the running app (`pnpm desktop start`): no unit test renders a screen.
-6. **The standard.** A change to `standard/profiles/` or `standard/extensions/` runs
-   `pnpm standard test` and the profile tests of both implementations
+6. **The standard.** A change under `standard/` runs `pnpm standard test`: every profile
+   compiles, every JSON example in the Data Schema and Table Schema specs validates, and the
+   fixtures in `standard/-test/profiles.unit.ts` hold. A profile fix adds a valid and an invalid
+   case there, failing before the fix. Never run `pnpm standard generate` by hand:
+   `release.yaml` regenerates the profiles on the Release PR. The implementations' profile tests
    (`pnpm typescript unit metadata/actions/profile/`,
-   `pnpm python unit metadata/fairspec_metadata/actions/profile/`). Never run
-   `pnpm standard generate` by hand: `release.yaml` regenerates the profiles on the Release PR.
-   Those implementation tests load their own vendored copies under `*/metadata/**/profiles/`, so
-   they never see a `standard/profiles/` edit: also validate the edited profile, and every JSON
-   example in its spec, with Ajv 2020 directly.
+   `pnpm python unit metadata/fairspec_metadata/actions/profile/`) load their own vendored
+   copies, so they never see a `standard/profiles/` edit.
 7. **Cross-cutting**: dependencies, `pnpm-workspace.yaml`, the root `vite.config.ts`,
    `tsconfig.json` or `package.json`, `lefthook.yaml`, a `pyproject.toml` or `uv.lock`. Run
    `pnpm test`; no cherry-picking here.
