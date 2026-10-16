@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Unpack
 
-from fairspec_metadata import Report, create_report, resolve_table_schema
+from fairspec_metadata import (
+    Report,
+    ResourceTypeError,
+    create_report,
+    resolve_table_schema,
+)
 from fairspec_table import inspect_table
 
 from fairspec_library.actions.file_dialect.infer import infer_file_dialect
@@ -27,9 +32,14 @@ def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) 
     if not table_schema and not no_infer:
         table_schema = infer_table_schema(resource, **options)
 
+    if not table_schema:
+        return create_report()
+
     table = load_table(resource, denormalized=True, **options)
     if table is None:
-        return create_report()
+        return create_report(
+            [ResourceTypeError(type="resource/type", expectedResourceType="table")]
+        )
 
     errors = inspect_table(
         table,
