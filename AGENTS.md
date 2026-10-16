@@ -13,6 +13,7 @@ conventions live in its skill (see **Skills**) — load it before working there.
 | `typescript/` | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
 | `desktop/`    | Electron application                                              | installers on GitHub release |
 | `catalog/`    | reserved for the catalog application                              | —                            |
+| `benchmark/`  | reserved for benchmarks                                           | —                            |
 | `testsuite/`  | language-neutral test suite both libraries run                    | —                            |
 
 The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
