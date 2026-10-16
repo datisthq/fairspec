@@ -1,6 +1,6 @@
-# Conformance
+# Testsuite
 
-A language-neutral test suite that every Fairspec implementation runs: the same input data,
+The language-neutral conformance test suite that every Fairspec implementation runs: the same input data,
 the same operation, the same expected result. The TypeScript and Python libraries both run
 it, so a difference between them is a failing test rather than a surprise for a user.
 
@@ -9,7 +9,7 @@ The format follows [JSON-Schema-Test-Suite](https://github.com/json-schema-org/J
 ## Layout
 
 ```
-conformance/
+testsuite/
   test-schema.json             JSON Schema of a test file
   tests/<operation>/<feature>.json
 ```
@@ -82,8 +82,8 @@ A test has a `description`, its `data`, and exactly one outcome:
 
 ## Runners
 
-- TypeScript: `typescript/library/-test/conformance.unit.ts`, run by `pnpm -C typescript test:unit`
-- Python: `python/library/fairspec_library/_test/conformance_unit.py`, run by `pnpm -C python test:unit`
+- TypeScript: `typescript/library/-test/testsuite.unit.ts`, run by `pnpm -C typescript test:unit`
+- Python: `python/library/fairspec_library/_test/testsuite_unit.py`, run by `pnpm -C python test:unit`
 
 Each runner:
 

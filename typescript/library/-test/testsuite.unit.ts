@@ -19,7 +19,7 @@ import {
   writeTempFile,
 } from "../index.ts"
 
-const SUITE = resolve(import.meta.dirname, "..", "..", "..", "conformance")
+const SUITE = resolve(import.meta.dirname, "..", "..", "..", "testsuite")
 const TEST_SCHEMA = join(SUITE, "test-schema.json")
 
 type Data = string | { base64: string } | unknown[] | Record<string, string>
@@ -146,7 +146,7 @@ async function writeData(group: Group, data: Data) {
 }
 
 async function writeDataset(group: Group, test: Test) {
-  const dir = await mkdtemp(join(tmpdir(), "fairspec-conformance-"))
+  const dir = await mkdtemp(join(tmpdir(), "fairspec-testsuite-"))
   tempDirs.push(dir)
 
   if (typeof test.data !== "object" || Array.isArray(test.data)) {

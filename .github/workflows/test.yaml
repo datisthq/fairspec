@@ -46,11 +46,11 @@ jobs:
             python:
               - *root
               - python/**
-              - conformance/**
+              - testsuite/**
             typescript:
               - *root
               - typescript/**
-              - conformance/**
+              - testsuite/**
             site:
               - *root
               - .livemark/**

@@ -85,8 +85,8 @@ vitest-polly both derive their paths from the test file's own directory.
 - Import test symbols from `vite-plus/test`, not `vitest`
 - Don't add useless comments like "Arrange", "Act", "Assert"
 - **The suite must pass on Windows — CI runs `pnpm -C typescript test:unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
-- `library/-test/conformance.unit.ts` runs the shared `conformance/` suite; a behaviour both
-  libraries share gets a conformance test there, not only a unit test here (**`conformance-development`**)
+- `library/-test/testsuite.unit.ts` runs the shared `testsuite/` suite; a behaviour both
+  libraries share gets a `testsuite/` test there, not only a unit test here (**`testsuite-development`**)
 - Network tests use `useRecording()` from `vitest-polly`; the HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases
