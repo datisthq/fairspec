@@ -1,30 +1,21 @@
-import { execFileSync } from "node:child_process"
 import { cp, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import standardPackage from "../standard/package.json" with { type: "json" }
 import {
   CHECKSUMS,
   PUBLISHED,
-  ROOT,
+  SOURCE,
   hashFolder,
   readChecksums,
+  resolveRefs,
 } from "./-shared/profiles.ts"
 
-const SOURCE = join(ROOT, "standard", "profiles")
 const VERSION = standardPackage.version
+const checksums = await readChecksums()
 
-const tags = execFileSync(
-  "git",
-  ["tag", "--list", `v${VERSION}`, `standard-v${VERSION}`],
-  {
-    cwd: ROOT,
-    encoding: "utf8",
-  },
-)
-if (tags.trim()) {
-  throw new Error(
-    `Standard ${VERSION} is already released (tag ${tags.trim()}); its published profiles never change`,
-  )
+if (checksums[VERSION]) {
+  console.log(`Standard ${VERSION} is already published; its profiles never change`)
+  process.exit(0)
 }
 
 for (const tag of [VERSION, "latest"]) {
@@ -35,13 +26,10 @@ for (const tag of [VERSION, "latest"]) {
   for (const entry of await readdir(folder, { recursive: true })) {
     if (!entry.endsWith(".json")) continue
     const path = join(folder, entry)
-    const text = await readFile(path, "utf8")
-    const url = `https://fairspec.org/profiles/${tag}/$1.json`
-    await writeFile(path, text.replace(/\{([a-z-]+)-ref\}/g, url))
+    await writeFile(path, resolveRefs(await readFile(path, "utf8"), tag))
   }
 }
 
-const checksums = await readChecksums()
 checksums[VERSION] = await hashFolder(join(PUBLISHED, VERSION))
 const versions = Object.keys(checksums).sort((a, b) =>
   a.localeCompare(b, "en", { numeric: true }),

@@ -72,23 +72,30 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 
 ## Releases
 
-- `separate-pull-requests: true`: one Release PR per section, on branch
-  `release-please--branches--main--components--<section>`
+- `separate-pull-requests: false`: one combined Release PR for every section, on branch
+  `release-please--branches--main`. Merging it tags and publishes each section it lists, so
+  the standard and the libraries that bundle its profiles always ship together; a
+  library-only fix is a Release PR listing only that library
 - `extra-files` paths are relative to the section directory
 - `release-as` pins one component's next version (typescript is pinned to `0.13.1` because
   npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
   later Release PR keeps proposing the same version
-- The standard's Release PR is the one `release.yaml` regenerates profiles on:
-  `pnpm generate:profiles` runs `.scripts/@generate.ts`, which writes
-  `.livemark/public/profiles/{latest,<version>}`
+- The libraries bundle `standard/profiles/` (refs resolved to `latest`) in
+  `typescript/metadata/profiles/` and `python/metadata/fairspec_metadata/profiles/`, and pin
+  `FAIRSPEC_VERSION` in their `settings` to `standard/package.json`'s version.
+  `pnpm sync:profiles` (`.scripts/@sync.ts`) writes both; the guard fails while either drifts
+- `release.yaml`'s `profiles` job runs on the Release PR: `pnpm generate:profiles`
+  (`.scripts/@generate.ts`) writes `.livemark/public/profiles/{latest,<version>}`, then
+  `pnpm sync:profiles` bumps the libraries' `FAIRSPEC_VERSION`. When the standard is not in
+  the release its version already has checksums, so the generator skips and nothing changes
 - The Release PR runs no CI (its pushes use `GITHUB_TOKEN`), so the published-profiles guard
   (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
   `standard/package.json`'s version must exist and `latest/` must equal it. Merging before
   the profiles commit lands fails the post-merge `test` job, and release-please never tags
 - A published `<version>/` folder never changes. `.livemark/public/profiles/checksums.json`
-  records every file's sha256, the guard fails on any mismatch, and the generator refuses a
-  version that already has a `v<version>` or `standard-v<version>` tag. It writes only its own
-  version's entry; changing an older entry is the one way through, so review it as such
+  records every file's sha256, the guard fails on any mismatch, and the generator skips a
+  version that already has an entry, so it writes only a new version's. Changing an existing
+  entry is the one way through, so review it as such
 - `release.yaml` runs one at a time (`concurrency`, `cancel-in-progress: false`). Never let it
   cancel: release-please tags before the publish jobs run, and a later run only publishes
   what it tagged itself, so a run cancelled in between leaves a tag that never ships

@@ -53,6 +53,7 @@ model, a command), then subgroup by the entity it acts on.
 - `commands/<entity>/<verb>.ts` (terminal) — CLI commands. `tools/<entity>/<verb>.ts` (mcp-server) — MCP tools.
 - `helpers/<name>.ts` — small supporting functions. `utils/<name>.ts` — heavier self-contained modules (e.g. `typescript/table/utils/sniffer/`).
 - `services/`, `profiles/`, `schemas/`, `params/`, `entrypoints/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions, executable entry points.
+- `typescript/metadata/profiles/` is a copy of `standard/profiles/` written by `pnpm sync:profiles`; never edit it by hand, edit the standard and sync (the root guard fails while they differ)
 - Root files, one concern each: `index.ts` (the public API surface), `plugin.ts`, `settings.ts`, `system.ts`, `main.ts`.
 
 ### `-test` and `-shared`

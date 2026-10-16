@@ -1,5 +1,5 @@
 {
-  "separate-pull-requests": true,
+  "separate-pull-requests": false,
   "include-component-in-tag": true,
   "packages": {
     "standard": {

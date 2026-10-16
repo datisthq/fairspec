@@ -3,7 +3,16 @@ import { readFile, readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 import standardPackage from "../../standard/package.json" with { type: "json" }
-import { PUBLISHED, hashFolder, readChecksums } from "../-shared/profiles.ts"
+import {
+  LIBRARIES,
+  PUBLISHED,
+  SOURCE,
+  VERSION_SETTING,
+  hashFolder,
+  listBundledProfiles,
+  readChecksums,
+  resolveRefs,
+} from "../-shared/profiles.ts"
 
 const VERSION = standardPackage.version
 
@@ -36,6 +45,26 @@ describe("published profiles", () => {
         checksums[version],
       )
     }
+  })
+})
+
+describe.each(LIBRARIES)("bundled profiles in $profiles", library => {
+  it("equal the standard profiles", async () => {
+    const names = await listBundledProfiles()
+    const bundled = (await readdir(library.profiles)).filter(name =>
+      name.endsWith(".json"),
+    )
+    expect(bundled.sort()).toEqual(names)
+    for (const name of names) {
+      const source = await readFile(join(SOURCE, name), "utf8")
+      const copy = await readFile(join(library.profiles, name), "utf8")
+      expect(JSON.parse(copy), name).toEqual(JSON.parse(resolveRefs(source, "latest")))
+    }
+  })
+
+  it("pin the current standard version", async () => {
+    const settings = await readFile(library.settings, "utf8")
+    expect(VERSION_SETTING.exec(settings)?.[1]).toBe(VERSION)
   })
 })
 

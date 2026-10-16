@@ -84,8 +84,14 @@ diff reaches, not the full gate (**`change-verification`**).
 ## Commits
 
 Each section is its own release-please component with its own version, tag
-(`<section>-vX.Y.Z`), changelog and Release PR. A commit counts toward the section whose
-files it touches. Scope commits with the section: `feat(python): …`, `docs(standard): …`.
+(`<section>-vX.Y.Z`) and changelog, and all of them ship through **one combined Release PR**.
+A commit counts toward every section whose files it touches. Scope commits with the section:
+`feat(python): …`, `docs(standard): …`.
+
+- PRs are squash-merged, so **the PR title is the commit release-please reads**: its type
+  decides the bump of every section the PR touches. A PR that changes `standard/profiles/`
+  also runs `pnpm sync:profiles`, so the libraries' bundled profiles change in the same commit
+  and both libraries release with the standard
 
 - **IMPORTANT**: `feat` and `fix` mean "this changes what the section ships". In each section
   that is only:
@@ -97,13 +103,14 @@ files it touches. Scope commits with the section: `feat(python): …`, `docs(sta
   `standard/examples/`, `standard/overview/`, READMEs, tests, the docs under `*/project/`,
   tooling, CI, dependencies, configuration, this file and the skills. An example is a
   demonstration, not a normative artifact
-- This is not a style preference. `feat` and `fix` are read by release-please: they open
-  a Release PR that bumps the version, and for the standard generate a new profile directory
+- This is not a style preference. `feat` and `fix` are read by release-please: they put
+  a version bump in the Release PR, and for the standard generate a new profile directory
   under `.livemark/public/profiles/<version>/`. Using them for a landing page tweak announces a
   change that did not happen, and burns a version number that can never be reused
-- **Merging a Release PR is the gate.** Review its diff as the release itself — for the
+- **Merging the Release PR is the gate.** Review its diff as the release itself — for the
   standard it carries the generated profile JSON with its resolved
-  `https://fairspec.org/profiles/<version>/…` URLs. Nothing is tagged until you merge.
+  `https://fairspec.org/profiles/<version>/…` URLs, and the libraries' `FAIRSPEC_VERSION`.
+  Nothing is tagged until you merge, and merging releases every section it lists at once.
   Release config lives in `.release/config.json` and `.release/manifest.json`; the
   manifest holds the current versions and release-please maintains it — never hand-edit it
 - For the standard, when in doubt, ask whether the change alters what a conforming descriptor

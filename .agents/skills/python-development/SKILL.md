@@ -61,6 +61,7 @@ model, a command), then subgroup by the entity it acts on.
 - `commands/<entity>/<verb>.py` (terminal) — CLI commands.
 - `helpers/<name>.py` — small supporting functions. `utils/<name>/` — heavier self-contained modules (e.g. `python/table/fairspec_table/utils/sniffer/`).
 - `services/`, `profiles/`, `schemas/`, `params/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions.
+- `python/metadata/fairspec_metadata/profiles/` is a copy of `standard/profiles/` written by `pnpm sync:profiles`; never edit it by hand, edit the standard and sync (the root guard fails while they differ)
 - Root files, one concern each: `__init__.py` (the public API surface), `plugin.py`, `settings.py`.
 
 ### `_test` and `_shared`
