@@ -1,47 +1,24 @@
-# fairspec-python
+# Python
 
-Python uv workspace monorepo — a data management framework built on the Fairspec standard
+The `python/` section of the Fairspec monorepo (see the root `AGENTS.md`) — a uv workspace: a data management framework built on the Fairspec standard
 and Polars DataFrames: metadata models, a table engine with per-format plugins, dataset
 source plugins, and a CLI.
 
-## Rules
-
-- **Never commit unless asked to**
-- **Never add co-authored by Claude Code to commits!**
-- **Never push main or pull requests to origin unless asked to**
-- **Never amend or rewrite existing commits unless asked** (`git commit --amend`, `git reset` of already-made commits, `git rebase`, force-squash) — other worktrees or sessions may be based on those commits. Fold in changes with a follow-up commit instead.
-- Prioritize using LSP capabilities if possible
-- When resolving a TODO, follow its instructions literally
-- Run type checking, specs and linting as part of your tasks
-- Start a plan from a new/updated API summary (models/signatures) and the most challenging points, then continue with your default settings
-- Update docs when a change requires it
-- **After every task, check whether a skill in `.agents/skills/` needs updating, and update it in the same commit.** Read the task description for what it taught: a new convention, a correction to how the work was done, or a decision about how an area should look or behave. Write that into the skill for that area, so the next session follows it without being told again. When no skill covers the area and the lesson will recur, add one.
-
-## Skills
-
-Depth lives in `.agents/skills/` (reached by Claude Code through the `.claude/skills` symlink `uv run task install` creates), so
-this file carries invariants and the skills carry procedure. Reach for one before working in
-its area. Each is named `<subject>-<facet>`, subject first (`change-review`):
-
-| skill            | when                                                          |
-| ---------------- | ------------------------------------------------------------- |
-| `change-review`  | reviewing a pull request — also what the review workflow runs |
-
 ## Commands
 
-- `uv run task install` — `uv sync --all-packages` plus the lefthook hooks
-- `uv run task test` — full gate: lint + type + unit
-- `uv run task lint` — `ruff check`
-- `uv run task format` — `ruff format`, auto-fix formatting
-- `uv run task type` — `ty check`
-- `uv run task unit` — pytest with coverage (html + json reports)
-- Single test — `uv run pytest metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py`, or `uv run pytest -k "name"`
-- `uv run task coverage` — open the generated `htmlcov` report
-- `uv run task build` — `uv build --all-packages` into `build/`
-- `uv run task publish` — `uv publish build/*`
-- `pnpm leaks` / `pnpm vulns` / `pnpm scan` — gitleaks / semgrep / both
-- `pnpm deps` — update all dependencies to their latest versions
-- `pnpm docs:start` / `pnpm docs:build` — the livemark documentation site
+Run from the repo root; `pnpm python <script>` runs a script of this section, which calls
+`uv` inside `python/`.
+
+- `pnpm python setup` — `uv sync --all-packages` (`pnpm install` runs it when `uv` is on the PATH)
+- `pnpm python test` — type + unit
+- `pnpm python lint` — `ruff check`
+- `pnpm python format` — `ruff format`
+- `pnpm python type` — `ty check`
+- `pnpm python unit` — pytest with coverage (html + json reports)
+- Single test — `pnpm python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py`, or `pnpm python unit -k "name"`
+- `pnpm python coverage` — open the generated `htmlcov` report
+- `pnpm python build` — `uv build --all-packages` into `build/`
+- `pnpm python release` — `uv publish build/*` (CI only)
 
 ## Modules
 
@@ -66,7 +43,7 @@ the meta-package, which is `fairspec/fairspec/`, and `project/`, which ships not
 - `fairspec` — umbrella package re-exporting `fairspec_library` and shipping the CLI binary.
 - `project` — the documentation site in `docs/` and the docs guard in `_test/`. Not a uv workspace member and nothing imports it.
 
-Unlike `fairspec-typescript`, this repo has no `mcp-server` and no `extension` package.
+Unlike `typescript/`, this section has no `mcp-server` and no `extension` package.
 
 ## Code structure
 
@@ -113,17 +90,17 @@ relative import reaches beyond the top-level package.
 
 ## Conventions
 
-- uv workspace, Python `>=3.12`, hatchling per member, taskipy for tasks
+- uv workspace, Python `>=3.12`, hatchling per member; tasks are scripts in `python/package.json`
 - Function names are **verb_noun** — a verb plus the noun it acts on (`load_descriptor`, `inspect_json_schema`, `create_column_from_property`), never a bare verb or bare noun
 - Files are snake_case, named after the verb **without repeating the folder** — `actions/descriptor/load.py` exports `load_descriptor`, not `load_descriptor.py`
 - One export per file is the default, not an absolute: a file may export a closely related pair
 - **`__init__.py` barrels are deliberate and required.** Each package's `__init__.py` is a curated list of explicit named re-exports — never `import *` outside the meta-package. Adding a public API means adding its line there.
-- Commit style: Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`); python-semantic-release derives the changelog and version bumps from them
+- Commit style: Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`); release-please derives the changelog and version bumps from them — see **Releases**
 
 ## Types
 
 - Use Python type hints; target Python 3.12+
-- Type checking is `ty` (`uv run task type`), configured under `[tool.ty.rules]`
+- Type checking is `ty` (`pnpm python type`), configured under `[tool.ty.rules]`
 - Never use `Any` without permission
 
 ## Specs
@@ -135,21 +112,15 @@ relative import reaches beyond the top-level package.
 
 ## Releases
 
-Conventional Commits drive [release-please](https://github.com/googleapis/release-please): a
-`feat` or `fix` landing on `main` opens a Release PR, and merging that PR cuts the version,
-tags it and publishes to PyPI. Merging is the gate — nothing ships without it.
+This section is the `python` release-please component: tags `python-vX.Y.Z`, its own Release
+PR, published to PyPI by `release.yaml`. All six packages are lock-stepped to one version via
+`extra-files`. The commit rules are in the root `AGENTS.md`.
 
-- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Everything else MUST
-  be `chore` or `docs` — CI and workflows, release config, dependencies, tooling, `AGENTS.md`,
-  the README, the docs site
-- This is not a style preference. release-please reads the commit type: a `fix:` on a workflow
-  file cuts a release and burns a version number on a change no consumer can observe. PyPI never
-  lets a version be re-uploaded
+- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Tests, the docs
+  in `project/`, READMEs and tooling are `chore` or `docs`. PyPI never lets a version be
+  re-uploaded
 - When in doubt, ask whether the change alters what someone installing a package gets. If it does
   not, it is `chore`
-- Release config lives in `.release/config.json` and `.release/manifest.json`. The manifest holds
-  the current version and release-please maintains it — never hand-edit it. All six packages are
-  lock-stepped to one version via `extra-files`
 
 ## Docs
 

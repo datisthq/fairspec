@@ -1,45 +1,20 @@
-# fairspec-typescript
+# TypeScript
 
-TypeScript pnpm monorepo — a data management framework built on the Fairspec standard and
+The `typescript/` section of the Fairspec monorepo (see the root `AGENTS.md`) — a data management framework built on the Fairspec standard and
 Polars DataFrames: metadata models, a table engine with per-format plugins, dataset source
 plugins, a CLI and an MCP server.
 
-## Rules
-
-- **Never commit unless asked to**
-- **Never add co-authored by Claude Code to commits!**
-- **Never push main or pull requests to origin unless asked to**
-- **Never amend or rewrite existing commits unless asked** (`git commit --amend`, `git reset` of already-made commits, `git rebase`, force-squash) — other worktrees or sessions may be based on those commits. Fold in changes with a follow-up commit instead.
-- Prioritize using LSP capabilities if possible
-- When resolving a TODO, follow its instructions literally
-- Run type checking, specs and linting as part of your tasks
-- Start a plan from a new/updated API summary (models/signatures) and the most challenging points, then continue with your default settings
-- Update docs when a change requires it
-- **After every task, check whether a skill in `.agents/skills/` needs updating, and update it in the same commit.** Read the task description for what it taught: a new convention, a correction to how the work was done, or a decision about how an area should look or behave. Write that into the skill for that area, so the next session follows it without being told again. When no skill covers the area and the lesson will recur, add one.
-
-## Skills
-
-Depth lives in `.agents/skills/` (reached by Claude Code through the `.claude/skills` symlink `pnpm install` creates), so
-this file carries invariants and the skills carry procedure. Reach for one before working in
-its area. Each is named `<subject>-<facet>`, subject first (`change-review`):
-
-| skill           | when                                                          |
-| --------------- | ------------------------------------------------------------- |
-| `change-review` | reviewing a pull request — also what the review workflow runs |
-
 ## Commands
 
-- `pnpm install` — install all dependencies
-- `pnpm test` — full gate: lint + build + unit
-- `pnpm lint` — `vp fmt --check && vp lint` (vite-plus)
-- `pnpm format` — `vp fmt`, auto-fix formatting
-- `pnpm type` — `tsgo --noEmit`, recursive across packages
-- `pnpm unit` — `vp test` — run from the repo root
-- Single test — `pnpm unit path/to/file.unit.ts` (bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
-- `pnpm build` — `tsgo` per package, emitting to `<pkg>/build`
-- `pnpm leaks` / `pnpm vulns` / `pnpm scan` — gitleaks / semgrep / both
-- `pnpm deps` — update all dependencies to their latest versions
-- `pnpm docs:start` / `pnpm docs:build` — the livemark documentation site
+Run from the repo root; `pnpm typescript <script>` runs a script of this section.
+
+- `pnpm typescript test` — build + unit
+- `pnpm typescript build` — `tsgo` per package, emitting to `<pkg>/build`
+- `pnpm typescript type` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
+- `pnpm typescript unit` — `vp test` across every package
+- Single test — `pnpm typescript unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
+- `pnpm typescript release` — publish every package (CI only)
+- Lint and format are repo-wide: `pnpm lint`, `pnpm format`
 
 ## Modules
 
@@ -89,7 +64,7 @@ vitest-polly both derive their paths from the test file's own directory.
 ## Formats
 
 - Use 2-space indentation, UTF-8 encoding, and LF line endings
-- Formatting is configured in `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
+- Formatting is configured in the root `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
 - Use PascalCase for classes, interfaces and types; camelCase for methods and variables
 - Place high-level public items first in a file and low-level private items last
 
@@ -113,25 +88,19 @@ vitest-polly both derive their paths from the test file's own directory.
 - Unit tests are Vitest via vite-plus, named `*.unit.ts`, in collocated `-test` folders
 - Import test symbols from `vite-plus/test`, not `vitest`
 - Don't add useless comments like "Arrange", "Act", "Assert"
-- **The suite must pass on Windows — CI runs it there via `pnpm test:win`.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
+- **The suite must pass on Windows — CI runs `pnpm typescript unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
 - Network tests use `useRecording()` from `vitest-polly`; the HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases
 
-Conventional Commits drive [release-please](https://github.com/googleapis/release-please): a
-`feat` or `fix` landing on `main` opens a Release PR, and merging that PR cuts the version,
-tags it and publishes. Merging is the gate — nothing ships without it.
+This section is the `typescript` release-please component: tags `typescript-vX.Y.Z`, its own
+Release PR, published to npm by `release.yaml`. All packages are lock-stepped to one version
+via `extra-files`. The commit rules are in the root `AGENTS.md`.
 
-- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Everything else MUST be
-  `chore` or `docs` — CI and workflows, release config, dependencies, tooling, `AGENTS.md`,
-  the README, the docs site
-- This is not a style preference. release-please reads the commit type: a `fix:` on a workflow
-  file cuts a release and burns a version number on a change no consumer can observe. Version
-  numbers can never be reused
+- **IMPORTANT: only changes to the published packages use `feat` or `fix`.** Tests, the docs
+  in `project/`, READMEs and tooling are `chore` or `docs`
 - When in doubt, ask whether the change alters what someone installing a package gets.
   If it does not, it is `chore`
-- Release config lives in `.release/config.json` and `.release/manifest.json`. The manifest
-  holds the current version and release-please maintains it — never hand-edit it
 
 ## Docs
 

@@ -45,6 +45,7 @@ jobs:
             Bash(gh pr comment:*),
             Bash(gh pr diff:*),
             Bash(gh pr view:*),
+            Bash(uv:*),
             Bash(pnpm:*),
             Edit,
             Glob,

@@ -9,3 +9,13 @@ coverage:
     patch:
       default:
         informational: true
+
+flags:
+  python:
+    paths:
+      - python/
+    carryforward: true
+  typescript:
+    paths:
+      - typescript/
+    carryforward: true

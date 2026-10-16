@@ -1,37 +1,25 @@
-# Agents
+# Desktop
 
-This file provides guidance to coding agents when working with code in this repository.
+The `desktop/` section of the Fairspec monorepo (see the root `AGENTS.md`) — the Electron application.
 
 ## General
 
-- Never commit code to git!
 - Don't change shadcn code in `elements/`
-- Prioritize using LSP capabilities if possible
-- When resolving a TODO, follow its instructions literally
-- Run type checking as part of your tasks
 - Run specs as part of your tasks
-- Don't run linting as part of your tasks
-- **After every task, check whether a skill in `.agents/skills/` needs updating, and update it in the same commit.** Read the task description for what it taught: a new convention, a correction to how the work was done, or a decision about how an area should look or behave. Write that into the skill for that area, so the next session follows it without being told again. When no skill covers the area and the lesson will recur, add one.
-
-## Skills
-
-Depth lives in `.agents/skills/` (reached by Claude Code through the `.claude/skills` symlink `pnpm install` creates), so
-this file carries invariants and the skills carry procedure. Reach for one before working in
-its area. Each is named `<subject>-<facet>`, subject first (`change-review`):
-
-| skill           | when                                                          |
-| --------------- | ------------------------------------------------------------- |
-| `change-review` | reviewing a pull request — also what the review workflow runs |
 
 ## Commands
 
-- Run `pnpm lint` to lint the code
-- Run `pnpm format` to auto-fix formatting issues
-- Run `pnpm type` to check TypeScript types
-- Run `pnpm test` to run the full test suite including linting, type checking, and tests
-- Run `pnpm unit` to run only the Vitest tests
-- Run `pnpm exec vitest run -t "test name"` or `pnpm exec vitest run path/to/test.ts` to run a single test
-- Run `pnpm docs:start` to serve the landing site and `pnpm docs:build` to build it
+Run from the repo root; `pnpm desktop <script>` runs a script of this section. The app
+consumes `@fairspec/library` and `@fairspec/metadata` from `typescript/`, so run
+`pnpm typescript build` first.
+
+- `pnpm desktop start` — run the app in development
+- `pnpm desktop type` — `tsgo --noEmit`
+- `pnpm desktop test` — type + unit
+- `pnpm desktop unit` — the Vitest tests; `pnpm desktop unit path/to/test.unit.ts` or `pnpm desktop unit -t "test name"` for one
+- `pnpm desktop build` / `pnpm desktop compile` — bundle with electron-vite, package with electron-builder into `compile/`
+- `pnpm desktop extract` — extract i18n messages
+- Lint and format are repo-wide: `pnpm lint`, `pnpm format`
 
 ## Structure
 
@@ -41,10 +29,11 @@ its area. Each is named `<subject>-<facet>`, subject first (`change-review`):
 - `models/` holds the zod schemas shared by the renderer and the engine — the oRPC wire contract
 - The renderer must never import from `#processes/*`, `electron` or `node:*`; the only legal
   crossing is the type-only `Router` import in `services/engine.ts` (enforced by oxlint)
-- `.livemark/` is the landing site published at application.fairspec.org, built with livemark and
-  deployed to Cloudflare as static assets. It is independent of the Electron app, is English-only
-  and outside the i18n workflow, and its dependencies must stay in `devDependencies` so they never
-  reach the installer
+- The landing page is `.livemark/routes/desktop.tsx` at the repo root, published at
+  fairspec.org/desktop/. It is independent of the Electron app, English-only and outside the
+  i18n workflow
+- `package.json` pins `productName: fairspec`: Electron derives the user-data directory from it,
+  so renaming it would orphan every user's settings
 
 ## i18n
 
@@ -76,20 +65,14 @@ its area. Each is named `<subject>-<facet>`, subject first (`change-review`):
 
 ## Releases
 
-Conventional Commits drive [release-please](https://github.com/googleapis/release-please): a
-`feat` or `fix` landing on `main` opens a Release PR, and merging that PR cuts the version,
-tags it and publishes. Merging is the gate — nothing ships without it.
+This section is the `desktop` release-please component: tags `desktop-vX.Y.Z`, its own
+Release PR; `release.yaml` builds installers for macOS, Windows and Linux and attaches them to
+the GitHub release. The commit rules are in the root `AGENTS.md`.
 
-- **IMPORTANT: only changes to the shipped application use `feat` or `fix`.** Everything else MUST be
-  `chore` or `docs` — CI and workflows, release config, dependencies, tooling, `AGENTS.md`,
-  the README, the docs site
-- This is not a style preference. release-please reads the commit type: a `fix:` on a workflow
-  file cuts a release and burns a version number on a change no consumer can observe. Version
-  numbers can never be reused
+- **IMPORTANT: only changes to the shipped application use `feat` or `fix`.** The landing
+  page, tests, READMEs and tooling are `chore` or `docs`
 - When in doubt, ask whether the change alters what someone installing the app gets.
   If it does not, it is `chore`
-- Release config lives in `.release/config.json` and `.release/manifest.json`. The manifest
-  holds the current version and release-please maintains it — never hand-edit it
 
 ## Docs
 

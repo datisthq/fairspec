@@ -19,18 +19,20 @@ Project is a monorepo with the following packages:
 
 - **Python**: v3.12 or higher
 - **uv**: v0.7.0 or higher
+- **Node**: v24.11.0 or higher, with **pnpm** v11 (the repo scripts run through pnpm)
 
 ### Setup
 
 1. Clone the repository
+
    ```bash
-   git clone https://github.com/datisthq/fairspec-python.git fairspec-python
-   cd fairspec-python
+   git clone https://github.com/datisthq/fairspec.git
+   cd fairspec
    ```
 
 2. Install dependencies
    ```bash
-   uv run task install
+   pnpm install
    ```
 
 ## Development Workflow
@@ -40,18 +42,20 @@ Project is a monorepo with the following packages:
 We use Ruff for linting and formatting, and ty for type checking:
 
 - **Lint**: Check for code issues
+
   ```bash
-  uv run task lint
+  pnpm python lint
   ```
 
 - **Format**: Auto-fix formatting issues
+
   ```bash
-  uv run task format
+  pnpm python format
   ```
 
 - **Type Check**: Verify Python types
   ```bash
-  uv run task type
+  pnpm python type
   ```
 
 ### Testing
@@ -59,18 +63,20 @@ We use Ruff for linting and formatting, and ty for type checking:
 Tests are collocated with the code in `_test` directories and use pytest:
 
 - **Run All Tests**: (includes linting and type checking)
+
   ```bash
-  uv run task test
+  pnpm python test
   ```
 
 - **Run Tests Only**: (without linting/type checking)
+
   ```bash
-  uv run task unit
+  pnpm python unit
   ```
 
 - **Run a Specific Test**:
   ```bash
-  uv run pytest metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
+  pnpm python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
   ```
 
 ## Code Style Guidelines
@@ -96,7 +102,7 @@ When adding new functionality:
 
 1. Create a feature branch (`git checkout -b feature/your-feature`)
 2. Make your changes with appropriate tests
-3. Ensure the code passes all checks: `uv run task test`
+3. Ensure the code passes all checks: `pnpm python test`
 4. Commit your changes with a descriptive message
 5. Submit a pull request
 

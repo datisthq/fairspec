@@ -1,8 +1,64 @@
 {
+  "separate-pull-requests": true,
+  "include-component-in-tag": true,
   "packages": {
-    ".": {
+    "standard": {
       "release-type": "node",
-      "include-component-in-tag": false
+      "component": "standard"
+    },
+    "desktop": {
+      "release-type": "node",
+      "component": "desktop"
+    },
+    "python": {
+      "release-type": "python",
+      "component": "python",
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "dataset/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "fairspec/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "library/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "metadata/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "table/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "terminal/pyproject.toml",
+          "jsonpath": "$.project.version"
+        }
+      ]
+    },
+    "typescript": {
+      "release-type": "node",
+      "component": "typescript",
+      "extra-files": [
+        { "type": "json", "path": "dataset/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "extension/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "fairspec/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "library/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "mcp-server/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "metadata/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "table/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "terminal/package.json", "jsonpath": "$.version" }
+      ]
     }
   }
 }

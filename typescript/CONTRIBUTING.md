@@ -27,8 +27,8 @@ Project is a monorepo with the following packages:
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/datisthq/fairspec-typescript.git fairspec-typescript
-   cd fairspec-typescript
+   git clone https://github.com/datisthq/fairspec.git
+   cd fairspec
    ```
 
 2. Install dependencies
@@ -57,29 +57,29 @@ We use vite-plus for linting and formatting, and TypeScript for type checking:
 - **Type Check**: Verify TypeScript types
 
   ```bash
-  pnpm type
+  pnpm typescript type
   ```
 
 ### Testing
 
 Tests are collocated with the code and use Vitest through vite-plus:
 
-- **Run All Tests**: (includes linting and building)
+- **Run All Tests**: (includes building)
 
   ```bash
-  pnpm test
+  pnpm typescript test
   ```
 
 - **Run Tests Only**: (without linting/building)
 
   ```bash
-  pnpm unit
+  pnpm typescript unit
   ```
 
 - **Run a Specific Test**:
 
   ```bash
-  pnpm unit table/plugins/csv/actions/table/-test/load.unit.ts
+  pnpm typescript unit table/plugins/csv/actions/table/-test/load.unit.ts
   ```
 
   Bare `vitest` does not work here — it fails to collect suites that import
@@ -115,7 +115,7 @@ When adding new functionality:
 
 1. Create a feature branch (`git checkout -b feature/your-feature`)
 2. Make your changes with appropriate tests
-3. Ensure the code passes all checks: `pnpm test`
+3. Ensure the code passes all checks: `pnpm typescript test` and `pnpm lint`
 4. Commit your changes with a descriptive message
 5. Submit a pull request
 
