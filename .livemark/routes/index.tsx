@@ -11,6 +11,7 @@ import {
   Puzzle,
   Rocket,
   Sparkles,
+  SquareTerminal,
 } from "lucide-react"
 import type { ComponentType, ReactNode, SVGProps } from "react"
 import { buttonVariants } from "livemark/elements/button"
@@ -548,6 +549,18 @@ function FinalCta() {
               Read the specs
               <ArrowRight className="size-4" />
             </Link>
+            <a
+              href="/cli-tool/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "lg" }),
+                "px-5 no-underline",
+              )}
+            >
+              <SquareTerminal className="size-4" />
+              Use the CLI tool
+            </a>
             <a
               href="/mcp-server/"
               target="_blank"

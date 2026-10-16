@@ -83,7 +83,12 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 - No article sits at a section prefix: livemark nests every article under the one at its
   parent path, so a README at `/python/` would swallow the whole sidebar. The language READMEs
   live at `/<lang>/getting-started/`, and `worker.ts` 301s the bare `/<lang>/` there
-- Landing pages are routes in `.livemark/routes/` (`index.tsx`, `desktop.tsx`, `mcp-server.tsx`)
+- Landing pages are routes in `.livemark/routes/` (`index.tsx`, `cli-tool.tsx`,
+  `mcp-server.tsx`, `desktop.tsx`), each a `type: "custom"` section in `livemark.config.ts`
+  in that nav order. A landing that covers both languages (`cli-tool.tsx`) puts a
+  Python/TypeScript switch over the install-method tabs and shows only commands that run
+  unchanged on both CLIs — check each against both `--help` outputs, since the language
+  docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages

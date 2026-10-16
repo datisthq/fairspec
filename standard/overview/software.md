@@ -14,6 +14,10 @@ Validate, infer, and query Fairspec descriptors from Python. Built on top of the
 A fast TypeScript framework with the same API surface as the Python package. Ships an opinionated terminal CLI and adapters for tabular and JSON formats.
 :::
 
+:::card{title="CLI Tool" icon="square-terminal" href="/cli-tool/"}
+The `fairspec` command, shipped by both the Python and TypeScript packages. Validate datasets, infer schemas, and query tables from scripts, CI pipelines, or an interactive terminal.
+:::
+
 :::card{title="MCP Server" icon="sparkles" href="/mcp-server/"}
 Connects AI assistants to the Fairspec framework over the Model Context Protocol. Lets your editor or chat validate datasets, infer schemas, and query tables in plain language.
 :::
