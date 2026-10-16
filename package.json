@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm -C typescript build && pnpm -C desktop build && pnpm -C python build",
     "build:site": "livemark build",
+    "check": "pnpm check:lint && pnpm check:types",
     "check:lint": "vp fmt --check && vp lint && pnpm -C python check:lint",
     "check:types": "tsgo --noEmit && pnpm -C standard check:types && pnpm -C typescript check:types && pnpm -C desktop check:types && pnpm -C python check:types",
     "format": "vp fmt --no-error-on-unmatched-pattern && pnpm -C python format",

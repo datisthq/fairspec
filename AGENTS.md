@@ -66,6 +66,7 @@ skill.
 - `pnpm install` — install Node dependencies, git hooks, the skills symlink, and the Python
   environment when `uv` is on the PATH (`pnpm -C python setup` does that step alone)
 - `pnpm test` — the full gate: lint, the docs guard, then every section's tests
+- `pnpm check` — `check:lint`, then `check:types`; the static half of the gate, no tests
 - `pnpm check:lint` — `vp fmt --check && vp lint` for the whole tree, plus `ruff check`
 - `pnpm format` — `vp fmt` for the whole tree, plus `ruff format`
 - `pnpm check:types` — root files, then every section
