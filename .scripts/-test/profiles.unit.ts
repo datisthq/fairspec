@@ -1,11 +1,10 @@
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
-import { join, resolve } from "node:path"
+import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 import standardPackage from "../../standard/package.json" with { type: "json" }
+import { PUBLISHED, hashFolder, readChecksums } from "../-shared/profiles.ts"
 
-const ROOT = resolve(import.meta.dirname, "..", "..")
-const PUBLISHED = join(ROOT, ".livemark", "public", "profiles")
 const VERSION = standardPackage.version
 
 describe("published profiles", () => {
@@ -23,6 +22,20 @@ describe("published profiles", () => {
       ]),
     )
     expect(pinned).toEqual(versioned)
+  })
+
+  it("match their recorded checksums", async () => {
+    const checksums = await readChecksums()
+    const entries = await readdir(PUBLISHED, { withFileTypes: true })
+    const versions = entries
+      .filter(entry => entry.isDirectory() && entry.name !== "latest")
+      .map(entry => entry.name)
+    expect(Object.keys(checksums).sort()).toEqual(versions.sort())
+    for (const version of versions) {
+      expect(await hashFolder(join(PUBLISHED, version)), version).toEqual(
+        checksums[version],
+      )
+    }
   })
 })
 

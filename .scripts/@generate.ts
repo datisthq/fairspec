@@ -1,13 +1,34 @@
+import { execFileSync } from "node:child_process"
 import { cp, readFile, readdir, rm, writeFile } from "node:fs/promises"
-import { join, resolve } from "node:path"
+import { join } from "node:path"
 import standardPackage from "../standard/package.json" with { type: "json" }
+import {
+  CHECKSUMS,
+  PUBLISHED,
+  ROOT,
+  hashFolder,
+  readChecksums,
+} from "./-shared/profiles.ts"
 
-const ROOT = resolve(import.meta.dirname, "..")
 const SOURCE = join(ROOT, "standard", "profiles")
-const TARGET = join(ROOT, ".livemark", "public", "profiles")
+const VERSION = standardPackage.version
 
-for (const tag of [standardPackage.version, "latest"]) {
-  const folder = join(TARGET, tag)
+const tags = execFileSync(
+  "git",
+  ["tag", "--list", `v${VERSION}`, `standard-v${VERSION}`],
+  {
+    cwd: ROOT,
+    encoding: "utf8",
+  },
+)
+if (tags.trim()) {
+  throw new Error(
+    `Standard ${VERSION} is already released (tag ${tags.trim()}); its published profiles never change`,
+  )
+}
+
+for (const tag of [VERSION, "latest"]) {
+  const folder = join(PUBLISHED, tag)
   await rm(folder, { recursive: true, force: true })
   await cp(SOURCE, folder, { recursive: true })
 
@@ -19,3 +40,11 @@ for (const tag of [standardPackage.version, "latest"]) {
     await writeFile(path, text.replace(/\{([a-z-]+)-ref\}/g, url))
   }
 }
+
+const checksums = await readChecksums()
+checksums[VERSION] = await hashFolder(join(PUBLISHED, VERSION))
+const versions = Object.keys(checksums).sort((a, b) =>
+  a.localeCompare(b, "en", { numeric: true }),
+)
+const sorted = Object.fromEntries(versions.map(version => [version, checksums[version]]))
+await writeFile(CHECKSUMS, `${JSON.stringify(sorted, null, 2)}\n`)

@@ -85,6 +85,10 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
   `standard/package.json`'s version must exist and `latest/` must equal it. Merging before
   the profiles commit lands fails the post-merge `test` job, and release-please never tags
+- A published `<version>/` folder never changes. `.livemark/public/profiles/checksums.json`
+  records every file's sha256, the guard fails on any mismatch, and the generator refuses a
+  version that already has a `v<version>` or `standard-v<version>` tag. It writes only its own
+  version's entry; changing an older entry is the one way through, so review it as such
 - `release.yaml` runs one at a time (`concurrency`, `cancel-in-progress: false`). Never let it
   cancel: release-please tags before the publish jobs run, and a later run only publishes
   what it tagged itself, so a run cancelled in between leaves a tag that never ships
