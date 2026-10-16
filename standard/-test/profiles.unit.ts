@@ -12,9 +12,10 @@ const ajv = await createAjv()
 const specExamples = await Promise.all(
   ["data-schema", "table-schema"].map(async spec => ({
     spec,
-    examples: await readJsonExamples(spec),
+    examples: await readJsonBlocks(join("specs", `${spec}.md`)),
   })),
 )
+const documentExamples = await readDocumentExamples()
 
 describe("profiles", () => {
   it.each(profileNames)("compiles %s", name => {
@@ -25,6 +26,13 @@ describe("profiles", () => {
 describe.each(specExamples)("$spec spec examples", ({ spec, examples }) => {
   it.each(examples)("validates the example at line $line", example => {
     const validate = getValidator(`${spec}.json`)
+    expect(validate(JSON.parse(example.text)), JSON.stringify(validate.errors)).toBe(true)
+  })
+})
+
+describe.each(documentExamples)("$document examples", ({ examples }) => {
+  it.each(examples)("validates the $profile example at line $line", example => {
+    const validate = getValidator(example.profile)
     expect(validate(JSON.parse(example.text)), JSON.stringify(validate.errors)).toBe(true)
   })
 })
@@ -83,10 +91,28 @@ function getValidator(name: string) {
   return validate
 }
 
-async function readJsonExamples(spec: string) {
-  const text = await readFile(join(STANDARD, "specs", `${spec}.md`), "utf8")
+async function readJsonBlocks(document: string) {
+  const text = await readFile(join(STANDARD, document), "utf8")
   return [...text.matchAll(/```json\n([\s\S]*?)```/g)].map(match => ({
     line: text.slice(0, match.index).split("\n").length,
     text: match[1] ?? "",
   }))
+}
+
+async function readDocumentExamples() {
+  const entries = await readdir(STANDARD, { recursive: true })
+  const documents = entries
+    .filter(entry => entry.endsWith(".md") && !entry.includes("node_modules"))
+    .sort()
+  const profile = /"\$schema": "https:\/\/fairspec\.org\/profiles\/[^/]+\/([^"]+)"/
+  const results = []
+  for (const document of documents) {
+    const examples = []
+    for (const block of await readJsonBlocks(document)) {
+      const name = profile.exec(block.text)?.[1]
+      if (name) examples.push({ ...block, profile: name })
+    }
+    if (examples.length) results.push({ document, examples })
+  }
+  return results
 }
