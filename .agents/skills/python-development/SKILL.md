@@ -16,7 +16,7 @@ Run from the repo root; `pnpm -C python <script>` runs a script of this section,
 
 - `pnpm -C python setup` — `uv sync --all-packages` (`pnpm install` runs it when `uv` is on the PATH)
 - `pnpm -C python test` — type + unit
-- `pnpm -C python lint` — `ruff check`
+- `pnpm -C python check:lint` — `ruff check`
 - `pnpm -C python format` — `ruff format`
 - `pnpm -C python check:types` — `ty check`
 - `pnpm -C python test:unit` — pytest with coverage (html + json reports)

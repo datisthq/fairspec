@@ -34,7 +34,7 @@ Measured on a laptop, warm, 2026-10-16:
 | `pnpm -C python check:types`                                | ~2 s  | `ty` over the workspace                   |
 | `pnpm -C python test:unit <dir or file>`                    | 4+ s  | the tests named                           |
 | `pnpm -C python test:unit`                                  | ~16 s | every Python test                         |
-| `pnpm lint`                                                 | ~3 s  | fmt + oxlint + ruff over the whole tree   |
+| `pnpm check:lint`                                           | ~3 s  | fmt + oxlint + ruff over the whole tree   |
 
 All of these run from the repo root. Paths after `pnpm -C typescript test:unit` are relative to
 `typescript/`, after `pnpm -C python test:unit` to `python/`. Bare `vitest` fails to collect

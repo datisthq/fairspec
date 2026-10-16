@@ -46,7 +46,7 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 - pnpm runs scripts through `cmd.exe` on Windows, where single quotes are literal: quote
   filters and globs with escaped double quotes (`pnpm -F \"./*\" run build`), never `'./*'`,
   or the filter silently matches nothing and CI fails later with unresolved packages
-- A section's `test` never lints — root `test` runs `pnpm lint` once for the whole tree
+- A section's `test` never lints — root `test` runs `pnpm check:lint` once for the whole tree
 - Python is reached only through `python/package.json`, whose scripts call `uv run …` from
   `python/`. There is no taskipy; pytest, ty, ruff and coverage find their config in
   `python/pyproject.toml` because they run from there

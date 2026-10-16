@@ -84,7 +84,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
       - name: Lint Repo
-        run: pnpm lint
+        run: pnpm check:lint
       - name: Check Docs
         run: pnpm exec vp test
       - name: Check Root Types

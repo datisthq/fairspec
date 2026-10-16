@@ -19,7 +19,7 @@ Run from the repo root; `pnpm -C typescript <script>` runs a script of this sect
 - `pnpm -C typescript test:unit` — `vp test` across every package
 - Single test — `pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
 - `pnpm -C typescript release` — publish every package (CI only)
-- Lint and format are repo-wide: `pnpm lint`, `pnpm format`
+- Lint and format are repo-wide: `pnpm check:lint`, `pnpm format`
 
 ## Modules
 

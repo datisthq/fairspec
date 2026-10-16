@@ -44,7 +44,7 @@ We use Ruff for linting and formatting, and ty for type checking:
 - **Lint**: Check for code issues
 
   ```bash
-  pnpm -C python lint
+  pnpm -C python check:lint
   ```
 
 - **Format**: Auto-fix formatting issues

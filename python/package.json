@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "uv build --all-packages --out-dir build",
+    "check:lint": "uv run ruff check",
     "check:types": "uv run ty check",
     "format": "uv run ruff format",
-    "lint": "uv run ruff check",
     "release": "uv publish build/*",
     "setup": "uv sync --all-packages",
     "show:coverage": "sensible-browser htmlcov/index.html",
