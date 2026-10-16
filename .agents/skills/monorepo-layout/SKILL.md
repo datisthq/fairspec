@@ -33,6 +33,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 ## Scripts
 
 - `pnpm <section> <script>` is `pnpm -F ./<section> run`; arguments pass through
+- A qualified script is `<verb>:<target>`, verb first (`start:site`, `build:site`), as in the
+  other Datist repos — never `<target>:<verb>`. Keys stay in alphabetical order
 - Root `build`, `type`, `unit` and `test` chain sections **explicitly, in dependency order**
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
   `typescript/*` package directly _and_ through the `typescript` group package, building twice,
@@ -89,16 +91,20 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
   Python/TypeScript switch over the install-method tabs and shows only commands that run
   unchanged on both CLIs — check each against both `--help` outputs, since the language
   docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
-- A new route blanks on hydration under `pnpm site:start` until a hard reload: livemark's
+- A new route blanks on hydration under `pnpm start:site` until a hard reload: livemark's
   target lives in `node_modules`, so Vite serves `routeTree.gen.ts?v=<hash>` as `immutable`
   and the browser keeps the tree without the route. Not a bug in the route; builds are fine
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages
 - Cloudflare Workers Builds deploys the site. `wrangler.jsonc` `build.command` runs
-  `pnpm site:build` before every `wrangler versions upload`, so the deploy never depends on the
+  `pnpm build:site` before every `wrangler versions upload`, so the deploy never depends on the
   dashboard's build command; root `pnpm build` builds the packages, not the site
 - No section sets `siteLink`; the site title always links to `/`
 - The retired subdomains (`python.`, `typescript.`, `application.`) are custom domains of the
   same Worker; `worker.ts` 301s them to the mapped path. When a doc's path changes, add the old
-  path to `mapPath` if the old URL was ever public
+  path to `mapPath` (subdomain URLs) or `MOVED` (fairspec.org URLs) if the old URL was ever
+  public; any `<prefix>changelog/<version>/` 301s to its one changelog page
+- Google Search Console (domain property `fairspec.org`) is the list of URLs that were ever
+  public: before removing or renaming pages, replay its indexed and not-indexed URLs through
+  `worker.ts` against the `.livemark/build/client` build and fix any that end on a 404

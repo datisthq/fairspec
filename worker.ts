@@ -6,9 +6,12 @@ const SUBDOMAINS: Record<string, string> = {
   "application.fairspec.org": "desktop",
 }
 
-const SECTION_HOMES: Record<string, string> = {
+const MOVED: Record<string, string> = {
   "/python/": "/python/getting-started/",
   "/typescript/": "/typescript/getting-started/",
+  "/extensions/overview/": "/extensions/",
+  "/overview/introduction/": "/overview/",
+  "/specs/table/": "/specs/table-schema/",
 }
 
 interface Env {
@@ -19,13 +22,10 @@ export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
     const section = SUBDOMAINS[url.hostname]
-    if (!section) {
-      const home = SECTION_HOMES[url.pathname]
-      if (!home) return env.ASSETS.fetch(request)
-      return Response.redirect(new URL(home + url.search, ORIGIN).toString(), 301)
-    }
+    const path = section ? mapPath(section, url.pathname) : movedPath(url.pathname)
+    if (!path) return env.ASSETS.fetch(request)
 
-    const target = new URL(mapPath(section, url.pathname), ORIGIN)
+    const target = new URL(path, ORIGIN)
     target.search = url.search
     return Response.redirect(target.toString(), 301)
   },
@@ -35,7 +35,7 @@ export default {
  * Maps a path on a retired subdomain to its page on the single site
  */
 export function mapPath(section: string, pathname: string) {
-  const path = `/${pathname.replace(/^\/+|\/+$/g, "")}/`.replace(/^\/\/$/, "/")
+  const path = normalizePath(pathname)
 
   const home = section === "desktop" ? "/desktop/" : `/${section}/getting-started/`
 
@@ -52,4 +52,20 @@ export function mapPath(section: string, pathname: string) {
   }
 
   return home
+}
+
+/**
+ * Maps a retired path on fairspec.org to its current page, if it moved
+ */
+export function movedPath(pathname: string) {
+  const path = normalizePath(pathname)
+
+  const changelog = path.match(/^(\/(?:python\/|typescript\/)?changelog\/).+/)
+  if (changelog) return changelog[1]
+
+  return MOVED[path]
+}
+
+function normalizePath(pathname: string) {
+  return `/${pathname.replace(/^\/+|\/+$/g, "")}/`.replace(/^\/\/$/, "/")
 }
