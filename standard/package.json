@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "pnpm type && pnpm unit",
-    "type": "tsgo --noEmit",
-    "unit": "vp test"
+    "check:types": "tsgo --noEmit",
+    "test": "pnpm check:types && pnpm test:unit",
+    "test:unit": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -27,9 +27,9 @@ ignored, so path-specific lint rules go in the root `overrides` with a section p
 The root `vite.config.ts` also has a `test` block, whose `include` is only
 `.scripts/-test/*.unit.ts`: repo-wide guards that belong to no section, today the docs guard
 and the published-profiles guard.
-Root `vp test` runs them; root `test` and `unit` call it first, and CI runs it in the always-on
+Root `vp test` runs them; root `test` and `test:unit` call it first, and CI runs it in the always-on
 `lint` job, so a docs-only PR is still checked. A section's `vp test` uses its own config and
-never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` covers them.
+never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:types` covers them.
 
 ## Scripts
 
@@ -37,9 +37,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
   through. There are no per-section alias scripts at the root. Use `-C`, not
   `-F ./<section>`: a filter that matches nothing exits 0 having run nothing, while `-C` on a
   wrong directory fails
-- A qualified script is `<verb>:<target>`, verb first (`start:site`, `build:site`), as in the
-  other Datist repos — never `<target>:<verb>`. Keys stay in alphabetical order
-- Root `build`, `type`, `unit` and `test` chain sections **explicitly, in dependency order**
+- Script names follow the `AGENTS.md` rule, `verb[:object]`, as in the other Datist repos —
+  never `<target>:<verb>`. Keys stay in alphabetical order
+- Root `build`, `check:types`, `test:unit` and `test` chain sections **explicitly, in dependency order**
   (`typescript` before `desktop`). Never switch them to `pnpm -r`: that runs every
   `typescript/*` package directly _and_ through the `typescript` group package, building twice,
   and gives no order between the group and desktop
@@ -54,9 +54,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm type` co
 
 ## Adding a section
 
-1. Create `<section>/package.json` (private, `@fairspec/<section>`) with `test`/`type`/`unit`
+1. Create `<section>/package.json` (private, `@fairspec/<section>`) with `test`/`check:types`/`test:unit`
    scripts as they apply; add it to `pnpm-workspace.yaml` `packages`
-2. Add the section to the root `build`/`type`/`unit`/`test` chains as
+2. Add the section to the root `build`/`check:types`/`test:unit`/`test` chains as
    `pnpm -C <section> <script>`, in dependency order
 3. Add a `changes` filter and a gated job in `.github/workflows/test.yaml`, and list the job
    in the final `test` job's `needs`

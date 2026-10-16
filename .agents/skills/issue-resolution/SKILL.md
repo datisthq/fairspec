@@ -41,7 +41,7 @@ output, not a crash in the test setup.
 - The CLI or MCP server: assert on the action it wraps first; add a command or tool test only
   when the bug is in the wrapping.
 
-Run it on its own and watch it fail (`pnpm -C typescript unit <path>`, `pnpm -C python unit <path>`).
+Run it on its own and watch it fail (`pnpm -C typescript test:unit <path>`, `pnpm -C python test:unit <path>`).
 
 ## 4. Fix it minimally, through the section skill
 

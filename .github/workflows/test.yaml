@@ -141,9 +141,9 @@ jobs:
         run: pnpm -C typescript build
       - name: Check Types
         if: runner.os == 'Linux'
-        run: pnpm -C typescript type
+        run: pnpm -C typescript check:types
       - name: Test Packages
-        run: pnpm -C typescript unit
+        run: pnpm -C typescript test:unit
       - name: Upload Coverage
         if: runner.os == 'Linux'
         uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5

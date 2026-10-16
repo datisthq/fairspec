@@ -68,7 +68,7 @@ pnpm install
 ```
 
 Run `pnpm test` for the full gate, or `pnpm -C <section> <script>` for one section — for
-example `pnpm -C python test` or `pnpm -C typescript unit`. Each section has its own contributing
+example `pnpm -C python test` or `pnpm -C typescript test:unit`. Each section has its own contributing
 notes in its directory, and the conventions coding agents follow — which hold for people too —
 are in `AGENTS.md` and the skills in `.agents/skills/`.
 

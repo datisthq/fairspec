@@ -68,12 +68,12 @@ skill.
 - `pnpm test` — the full gate: lint, the docs guard, then every section's tests
 - `pnpm lint` — `vp fmt --check && vp lint` for the whole tree, plus `ruff check`
 - `pnpm format` — `vp fmt` for the whole tree, plus `ruff format`
-- `pnpm type` — root files, then every section
+- `pnpm check:types` — root files, then every section
 - `pnpm build` — TypeScript packages, the desktop app, Python distributions
-- `pnpm unit` — the docs guard, then every section's unit tests
+- `pnpm test:unit` — the docs guard, then every section's unit tests
 - `pnpm start:site` / `pnpm build:site` — the website
-- `pnpm leaks` / `pnpm vulns` / `pnpm scan` — gitleaks / semgrep / both
-- `pnpm deps` — update all Node dependencies to their latest versions
+- `pnpm scan:leaks` / `pnpm scan:vulns` / `pnpm scan` — gitleaks / semgrep / both
+- `pnpm update:deps` — update all Node dependencies to their latest versions
 
 Order matters across sections: desktop consumes `@fairspec/library` from the workspace, and
 TypeScript packages type-check against each other's `build/`, so run `pnpm -C typescript build`
@@ -149,7 +149,9 @@ along with this table and every path and `pnpm` command the docs and skills name
   snake_case for Python functions, methods and variables
 - Name functions verbNoun (`loadTable`, `load_table`), never a bare verb or noun; factories are
   `create*`. Methods too
-- Name `package.json` scripts `verb[:object]` (`start:site`, `build:site`), never noun-first
+- Name `package.json` scripts `verb[:object]` (`start:site`, `build:site`), never noun-first;
+  a `verb:x` script exists only as a part or a scoped run of `verb` (`test:unit`,
+  `check:types`), so a report opener is `show:coverage`, not `coverage`
 - Place high-level public items first in a file and low-level private items last
 - Use ES modules with full import paths including the ".ts(x)" file extension
 

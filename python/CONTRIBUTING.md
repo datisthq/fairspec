@@ -55,7 +55,7 @@ We use Ruff for linting and formatting, and ty for type checking:
 
 - **Type Check**: Verify Python types
   ```bash
-  pnpm -C python type
+  pnpm -C python check:types
   ```
 
 ### Testing
@@ -71,12 +71,12 @@ Tests are collocated with the code in `_test` directories and use pytest:
 - **Run Tests Only**: (without linting/type checking)
 
   ```bash
-  pnpm -C python unit
+  pnpm -C python test:unit
   ```
 
 - **Run a Specific Test**:
   ```bash
-  pnpm -C python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
+  pnpm -C python test:unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py
   ```
 
 ## Code Style Guidelines

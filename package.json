@@ -5,19 +5,19 @@
   "scripts": {
     "build": "pnpm -C typescript build && pnpm -C desktop build && pnpm -C python build",
     "build:site": "livemark build",
-    "deps": "ncu -ws --root -u --cooldown 7d",
+    "check:types": "tsgo --noEmit && pnpm -C standard check:types && pnpm -C typescript check:types && pnpm -C desktop check:types && pnpm -C python check:types",
     "format": "vp fmt --no-error-on-unmatched-pattern && pnpm -C python format",
     "generate:profiles": "node .scripts/@generate.ts",
-    "leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
     "lint": "vp fmt --check && vp lint && pnpm -C python lint",
     "prepare": "lefthook install && mkdir -p .claude && ln -sfn ../.agents/skills .claude/skills && (command -v uv >/dev/null && pnpm -C python setup || true)",
     "preview:site": "livemark preview",
-    "scan": "pnpm leaks && pnpm vulns",
+    "scan": "pnpm scan:leaks && pnpm scan:vulns",
+    "scan:leaks": "gitleaks git --config=.gitleaks.toml --verbose --redact",
+    "scan:vulns": "semgrep --config=p/typescript --config=p/nodejs --config=p/python --config=p/owasp-top-ten --config=p/secrets --exclude='**/fixtures/**' --metrics=off",
     "start:site": "livemark start",
     "test": "pnpm lint && vp test && pnpm -C standard test && pnpm -C typescript test && pnpm -C desktop test && pnpm -C python test",
-    "type": "tsgo --noEmit && pnpm -C standard type && pnpm -C typescript type && pnpm -C desktop type && pnpm -C python type",
-    "unit": "vp test && pnpm -C standard unit && pnpm -C typescript unit && pnpm -C desktop unit && pnpm -C python unit",
-    "vulns": "semgrep --config=p/typescript --config=p/nodejs --config=p/python --config=p/owasp-top-ten --config=p/secrets --exclude='**/fixtures/**' --metrics=off"
+    "test:unit": "vp test && pnpm -C standard test:unit && pnpm -C typescript test:unit && pnpm -C desktop test:unit && pnpm -C python test:unit",
+    "update:deps": "ncu -ws --root -u --cooldown 7d"
   },
   "devDependencies": {
     "@plausible-analytics/tracker": "0.4.5",

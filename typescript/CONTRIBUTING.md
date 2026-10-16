@@ -57,7 +57,7 @@ We use vite-plus for linting and formatting, and TypeScript for type checking:
 - **Type Check**: Verify TypeScript types
 
   ```bash
-  pnpm -C typescript type
+  pnpm -C typescript check:types
   ```
 
 ### Testing
@@ -73,13 +73,13 @@ Tests are collocated with the code and use Vitest through vite-plus:
 - **Run Tests Only**: (without linting/building)
 
   ```bash
-  pnpm -C typescript unit
+  pnpm -C typescript test:unit
   ```
 
 - **Run a Specific Test**:
 
   ```bash
-  pnpm -C typescript unit table/plugins/csv/actions/table/-test/load.unit.ts
+  pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts
   ```
 
   Bare `vitest` does not work here — it fails to collect suites that import
@@ -90,7 +90,7 @@ Tests are collocated with the code and use Vitest through vite-plus:
 Update all dependencies to their latest versions:
 
 ```bash
-pnpm deps
+pnpm update:deps
 ```
 
 ## Code Style Guidelines

@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -F \"./*\" run build",
-    "coverage": "sensible-browser coverage/index.html",
+    "check:types": "pnpm -F \"./*\" run check:types",
     "debug": "vp test --no-file-parallelism --test-timeout=0 --inspect-brk --browser run",
     "release": "pnpm -F \"./*\" publish --access public --ignore-scripts --no-git-checks",
-    "test": "pnpm build && pnpm unit",
-    "type": "pnpm -F \"./*\" run type",
-    "unit": "vp test"
+    "show:coverage": "sensible-browser coverage/index.html",
+    "test": "pnpm build && pnpm test:unit",
+    "test:unit": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",

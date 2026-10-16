@@ -13,31 +13,31 @@ lefthook pre-push hook and CI.
 
 - Never re-run a check that passed if nothing it covers has changed.
 - Never chain two heavy commands in one call. One that fails hides the cost of the other.
-- Say in the report which slice ran (e.g. "fmt on 3 files, docs guard, `pnpm -C typescript unit
-table/`, `pnpm -C typescript type`"). Never write "tests pass" for a slice.
+- Say in the report which slice ran (e.g. "fmt on 3 files, docs guard, `pnpm -C typescript test:unit
+table/`, `pnpm -C typescript check:types`"). Never write "tests pass" for a slice.
 
 ## What each check costs
 
 Measured on a laptop, warm, 2026-10-16:
 
-| check                                           | wall  | catches                                   |
-| ----------------------------------------------- | ----- | ----------------------------------------- |
-| `vp fmt --check <files>` / `vp lint <files>`    | ~1 s  | format, oxlint, the desktop import fence  |
-| `vp test` (root)                                | ~1 s  | the docs and published-profiles guards    |
-| `pnpm -C standard test`                         | ~3 s  | profiles compile, spec examples, fixtures |
-| `pnpm -C typescript build`                      | ~8 s  | emits every package's `build/`            |
-| `pnpm -C typescript type`                       | ~6 s  | types in every TypeScript package         |
-| `pnpm -F ./typescript/<pkg> run type`           | ~2 s  | types in one package                      |
-| `pnpm -C typescript unit <dir or file>`         | 3+ s  | the tests named                           |
-| `pnpm -C typescript unit`                       | ~32 s | every TypeScript test                     |
-| `pnpm -C desktop type` / `pnpm -C desktop unit` | ~3 s  | the app's types / tests                   |
-| `pnpm -C python type`                           | ~2 s  | `ty` over the workspace                   |
-| `pnpm -C python unit <dir or file>`             | 4+ s  | the tests named                           |
-| `pnpm -C python unit`                           | ~16 s | every Python test                         |
-| `pnpm lint`                                     | ~3 s  | fmt + oxlint + ruff over the whole tree   |
+| check                                                       | wall  | catches                                   |
+| ----------------------------------------------------------- | ----- | ----------------------------------------- |
+| `vp fmt --check <files>` / `vp lint <files>`                | ~1 s  | format, oxlint, the desktop import fence  |
+| `vp test` (root)                                            | ~1 s  | the docs and published-profiles guards    |
+| `pnpm -C standard test`                                     | ~3 s  | profiles compile, spec examples, fixtures |
+| `pnpm -C typescript build`                                  | ~8 s  | emits every package's `build/`            |
+| `pnpm -C typescript check:types`                            | ~6 s  | types in every TypeScript package         |
+| `pnpm -F ./typescript/<pkg> run check:types`                | ~2 s  | types in one package                      |
+| `pnpm -C typescript test:unit <dir or file>`                | 3+ s  | the tests named                           |
+| `pnpm -C typescript test:unit`                              | ~32 s | every TypeScript test                     |
+| `pnpm -C desktop check:types` / `pnpm -C desktop test:unit` | ~3 s  | the app's types / tests                   |
+| `pnpm -C python check:types`                                | ~2 s  | `ty` over the workspace                   |
+| `pnpm -C python test:unit <dir or file>`                    | 4+ s  | the tests named                           |
+| `pnpm -C python test:unit`                                  | ~16 s | every Python test                         |
+| `pnpm lint`                                                 | ~3 s  | fmt + oxlint + ruff over the whole tree   |
 
-All of these run from the repo root. Paths after `pnpm -C typescript unit` are relative to
-`typescript/`, after `pnpm -C python unit` to `python/`. Bare `vitest` fails to collect
+All of these run from the repo root. Paths after `pnpm -C typescript test:unit` are relative to
+`typescript/`, after `pnpm -C python test:unit` to `python/`. Bare `vitest` fails to collect
 `vite-plus/test` suites. The changed files come from `git diff --name-only main...` plus
 `git status --short`.
 
@@ -54,16 +54,16 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    one above is unavailable (and say so). A landing route in `.livemark/routes/` also gets the
    root types (`pnpm exec tsgo --noEmit`).
 3. **Logic in one package.** fmt on the files, the touched folder's tests
-   (`pnpm -C typescript unit table/plugins/csv/` or `pnpm -C python unit table/`), and that package's
-   types (`pnpm -F ./typescript/<pkg> run type`, or `pnpm -C python type`). A new or changed test is
+   (`pnpm -C typescript test:unit table/plugins/csv/` or `pnpm -C python test:unit table/`), and that package's
+   types (`pnpm -F ./typescript/<pkg> run check:types`, or `pnpm -C python check:types`). A new or changed test is
    run on its own first, and fails before the fix. TypeScript packages type-check against each
    other's `build/`, so rebuild (`pnpm -C typescript build`) when the diff changed an export another
    package uses.
 4. **A lower package**: `metadata`, `dataset` or `table`, whose consumers layer above it.
-   `pnpm -C typescript build`, then `pnpm -C typescript type`, then `pnpm -C desktop type` (the app consumes
+   `pnpm -C typescript build`, then `pnpm -C typescript check:types`, then `pnpm -C desktop check:types` (the app consumes
    `@fairspec/library` and `@fairspec/metadata`), and the consumer tests the change can reach.
-   For Python, `pnpm -C python type` plus the tests of the packages above it.
-5. **The desktop app.** fmt + `vp lint` on the files, `pnpm -C desktop type` and `pnpm -C desktop unit`
+   For Python, `pnpm -C python check:types` plus the tests of the packages above it.
+5. **The desktop app.** fmt + `vp lint` on the files, `pnpm -C desktop check:types` and `pnpm -C desktop test:unit`
    (after `pnpm -C typescript build` if `typescript/` changed too). A UI change also gets looked at
    in the running app (`pnpm -C desktop start`): no unit test renders a screen.
 6. **The standard.** A change under `standard/` runs `pnpm -C standard test`: every profile
@@ -71,8 +71,8 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    fixtures in `standard/-test/profiles.unit.ts` hold. A profile fix adds a valid and an invalid
    case there, failing before the fix. Never run `pnpm generate:profiles` by hand:
    `release.yaml` regenerates the profiles on the Release PR. The implementations' profile tests
-   (`pnpm -C typescript unit metadata/actions/profile/`,
-   `pnpm -C python unit metadata/fairspec_metadata/actions/profile/`) load their own vendored
+   (`pnpm -C typescript test:unit metadata/actions/profile/`,
+   `pnpm -C python test:unit metadata/fairspec_metadata/actions/profile/`) load their own vendored
    copies, so they never see a `standard/profiles/` edit.
 7. **Cross-cutting**: dependencies, `pnpm-workspace.yaml`, the root `vite.config.ts`,
    `tsconfig.json` or `package.json`, `lefthook.yaml`, a `pyproject.toml` or `uv.lock`. Run

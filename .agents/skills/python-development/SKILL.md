@@ -18,10 +18,10 @@ Run from the repo root; `pnpm -C python <script>` runs a script of this section,
 - `pnpm -C python test` — type + unit
 - `pnpm -C python lint` — `ruff check`
 - `pnpm -C python format` — `ruff format`
-- `pnpm -C python type` — `ty check`
-- `pnpm -C python unit` — pytest with coverage (html + json reports)
-- Single test — `pnpm -C python unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py`, or `pnpm -C python unit -k "name"`
-- `pnpm -C python coverage` — open the generated `htmlcov` report
+- `pnpm -C python check:types` — `ty check`
+- `pnpm -C python test:unit` — pytest with coverage (html + json reports)
+- Single test — `pnpm -C python test:unit metadata/fairspec_metadata/actions/descriptor/_test/load_unit.py`, or `pnpm -C python test:unit -k "name"`
+- `pnpm -C python show:coverage` — open the generated `htmlcov` report
 - `pnpm -C python build` — `uv build --all-packages` into `build/`
 - `pnpm -C python release` — `uv publish build/*` (CI only)
 
@@ -94,7 +94,7 @@ relative import reaches beyond the top-level package.
 - Files are snake_case, named after the verb **without repeating the folder** — `actions/descriptor/load.py` exports `load_descriptor`, not `load_descriptor.py`
 - One export per file is the default, not an absolute: a file may export a closely related pair
 - **`__init__.py` barrels are deliberate and required.** Each package's `__init__.py` is a curated list of explicit named re-exports — never `import *` outside the meta-package. Adding a public API means adding its line there.
-- Type checking is `ty` (`pnpm -C python type`), configured under `[tool.ty.rules]`
+- Type checking is `ty` (`pnpm -C python check:types`), configured under `[tool.ty.rules]`
 - Add docstrings only for public APIs and don't use them for files
 
 ## Specs
