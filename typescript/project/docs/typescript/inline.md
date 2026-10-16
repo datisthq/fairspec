@@ -1,7 +1,7 @@
 ---
 title: Working with Inline Data tables in TypeScript
 label: Inline Data
-path: /typescript/inline/
+path: /typescript/library/inline/
 order: 14
 ---
 

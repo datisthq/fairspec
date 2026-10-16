@@ -1,7 +1,7 @@
 ---
 title: Using Fairspec Python in Jupyter Notebooks
 label: Jupyter Notebooks
-path: /python/jupyter/
+path: /python/library/jupyter/
 order: 20
 ---
 

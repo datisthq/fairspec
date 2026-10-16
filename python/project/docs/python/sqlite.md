@@ -1,7 +1,7 @@
 ---
 title: Working with SQLite in Python
 label: SQLite
-path: /python/sqlite/
+path: /python/library/sqlite/
 order: 18
 ---
 

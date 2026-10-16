@@ -1,7 +1,7 @@
 ---
 title: Working with Parquet in TypeScript
 label: Parquet
-path: /typescript/parquet/
+path: /typescript/library/parquet/
 order: 12
 ---
 

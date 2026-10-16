@@ -1,7 +1,7 @@
 ---
 title: Working with ODS in Python
 label: ODS
-path: /python/ods/
+path: /python/library/ods/
 order: 15
 ---
 

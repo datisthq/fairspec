@@ -52,14 +52,14 @@ const sections: readonly HeaderSection[] = [
     key: "python",
     title: "Python",
     icon: icons.Code,
-    href: "https://python.fairspec.org",
+    href: "https://fairspec.org/python/",
     external: true,
   },
   {
     key: "typescript",
     title: "TypeScript",
     icon: icons.CodeXml,
-    href: "https://typescript.fairspec.org",
+    href: "https://fairspec.org/typescript/",
     external: true,
   },
   {

@@ -1,9 +1,10 @@
 ---
 title: Working with Datasets in Python
 label: Dataset
-path: /python/dataset/
+path: /python/library/dataset/
 order: 1
 ---
+
 Dataset operations for managing collections of tabular resources with metadata and schemas — from Python.
 
 ## Available Functions
@@ -232,7 +233,7 @@ for resource in dataset.resources or []:
     print(resource.name, resource.data)
 ```
 
-To load a single resource as a table, pass it to `load_table` (see [Tables](/python/table/)):
+To load a single resource as a table, pass it to `load_table` (see [Tables](/python/library/table/)):
 
 ```python
 from fairspec import load_table
@@ -240,7 +241,7 @@ from fairspec import load_table
 users = load_table(dataset.resources[0])
 ```
 
-To validate a single resource without re-validating the whole dataset, use `validate_resource` (see [Tables](/python/table/) for the table-level operations and [Files](/python/file/) for file-level operations).
+To validate a single resource without re-validating the whole dataset, use `validate_resource` (see [Tables](/python/library/table/) for the table-level operations and [Files](/python/library/file/) for file-level operations).
 
 ## Common Workflows
 

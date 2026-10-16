@@ -1,7 +1,7 @@
 ---
 title: Working with XLSX in Python
 label: XLSX
-path: /python/xlsx/
+path: /python/library/xlsx/
 order: 14
 ---
 

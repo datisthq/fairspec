@@ -1,7 +1,7 @@
 ---
 title: Terminal
 label: Terminal
-path: /terminal/
+path: /typescript/terminal/
 order: 10
 icon: square-terminal
 ---

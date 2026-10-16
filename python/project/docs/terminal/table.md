@@ -1,7 +1,7 @@
 ---
 title: Working with Tables in Terminal
 label: Table
-path: /terminal/table/
+path: /python/terminal/table/
 order: 2
 ---
 
@@ -41,6 +41,7 @@ fairspec table describe data.csv --json
 ### Output
 
 Returns statistics for each column including:
+
 - `count` - Number of non-null values
 - `null_count` - Number of null values
 - `mean` - Average value (numeric columns)
@@ -114,10 +115,12 @@ fairspec table validate data.csv --schema schema.json --json
 ### Validation Report
 
 Returns a validation report with:
+
 - `valid` - Boolean indicating if validation passed
 - `errors` - Array of validation errors (if any)
 
 Example validation errors:
+
 ```json
 {
   "valid": false,
@@ -176,6 +179,7 @@ fairspec table infer-schema data.csv --sample-rows 1000 --confidence 0.95
 ### Generated Schema
 
 The inferred schema automatically detects:
+
 - Column types (string, integer, number, boolean, date, datetime, etc.)
 - Required columns based on presence
 - Enum values for columns with limited distinct values
@@ -186,6 +190,7 @@ The inferred schema automatically detects:
 ### Example
 
 Given this CSV data:
+
 ```csv
 id,name,price,quantity,active,created_at
 1,Product A,19.99,100,true,2024-01-15
@@ -194,11 +199,13 @@ id,name,price,quantity,active,created_at
 ```
 
 Infer the schema:
+
 ```bash
 fairspec table infer-schema products.csv --json
 ```
 
 Generated schema:
+
 ```json
 {
   "properties": {
@@ -259,6 +266,7 @@ fairspec table validate-schema schema.json --json
 ### Schema Validation
 
 This validates that the schema itself is:
+
 - Valid JSON
 - Compliant with Table Schema specification
 - Has correct property definitions
@@ -274,6 +282,7 @@ This validates that the schema itself is:
 ```
 
 Or if invalid:
+
 ```json
 {
   "valid": false,
@@ -310,6 +319,7 @@ fairspec table infer-dialect data.parquet --json
 ### Detected Formats
 
 The command can detect:
+
 - `csv` - Comma-separated values
 - `tsv` - Tab-separated values
 - `json` - JSON format
@@ -511,6 +521,7 @@ fairspec table describe data.csv
 ```
 
 Output:
+
 ```
 #          count  mean   std     min    max
 id         100    50.5   29.01   1      100

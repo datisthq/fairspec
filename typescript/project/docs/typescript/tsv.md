@@ -1,7 +1,7 @@
 ---
 title: Working with TSV in TypeScript
 label: TSV
-path: /typescript/tsv/
+path: /typescript/library/tsv/
 order: 6
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Using Fairspec TypeScript in Jupyter Notebooks
 label: Jupyter Notebooks
-path: /typescript/jupyter/
+path: /typescript/library/jupyter/
 order: 15
 ---
 

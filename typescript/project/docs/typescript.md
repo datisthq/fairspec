@@ -1,7 +1,7 @@
 ---
 title: TypeScript
 label: TypeScript
-path: /typescript/
+path: /typescript/library/
 order: 20
 icon: file-code
 ---

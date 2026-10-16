@@ -1,9 +1,10 @@
 ---
 title: Working with JSON Data in Python
 label: Data
-path: /python/data/
+path: /python/library/data/
 order: 3
 ---
+
 JSON data validation and schema operations using JSON Schema standards — from Python.
 
 ## Available Functions
@@ -112,7 +113,7 @@ Example — given `users.json`:
 ```json
 [
   { "id": 1, "name": "Alice", "email": "alice@example.com", "age": 30, "active": true },
-  { "id": 2, "name": "Bob",   "email": "bob@example.com",   "age": 25, "active": false }
+  { "id": 2, "name": "Bob", "email": "bob@example.com", "age": 25, "active": false }
 ]
 ```
 
@@ -124,10 +125,10 @@ The inferred schema is:
   "items": {
     "type": "object",
     "properties": {
-      "id":     { "type": "integer" },
-      "name":   { "type": "string"  },
-      "email":  { "type": "string"  },
-      "age":    { "type": "integer" },
+      "id": { "type": "integer" },
+      "name": { "type": "string" },
+      "email": { "type": "string" },
+      "age": { "type": "integer" },
       "active": { "type": "boolean" }
     },
     "required": ["id", "name", "email", "age", "active"]

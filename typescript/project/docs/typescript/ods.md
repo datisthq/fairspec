@@ -1,7 +1,7 @@
 ---
 title: Working with ODS in TypeScript
 label: ODS
-path: /typescript/ods/
+path: /typescript/library/ods/
 order: 10
 ---
 

@@ -7,7 +7,7 @@ authors:
   - family-names: Karev
     given-names: Evgeny
     email: evgeny.karev@datist.io
-url: "https://typescript.fairspec.org"
+url: "https://fairspec.org/typescript/"
 repository-code: "https://github.com/datisthq/fairspec-typescript"
 license: MIT
 keywords:

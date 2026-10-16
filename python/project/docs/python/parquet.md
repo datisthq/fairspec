@@ -1,7 +1,7 @@
 ---
 title: Working with Parquet in Python
 label: Parquet
-path: /python/parquet/
+path: /python/library/parquet/
 order: 17
 ---
 

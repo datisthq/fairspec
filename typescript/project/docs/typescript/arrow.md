@@ -1,7 +1,7 @@
 ---
 title: Working with Arrow in TypeScript
 label: Arrow
-path: /typescript/arrow/
+path: /typescript/library/arrow/
 order: 11
 ---
 

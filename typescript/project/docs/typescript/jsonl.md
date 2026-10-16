@@ -1,7 +1,7 @@
 ---
 title: Working with JSONL tables in TypeScript
 label: JSONL
-path: /typescript/jsonl/
+path: /typescript/library/jsonl/
 order: 8
 ---
 

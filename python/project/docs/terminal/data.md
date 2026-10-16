@@ -1,7 +1,7 @@
 ---
 title: Working with JSON Data in Terminal
 label: Data
-path: /terminal/data/
+path: /python/terminal/data/
 order: 3
 ---
 
@@ -41,10 +41,12 @@ fairspec data validate data.json --schema schema.json --json
 ### Validation Report
 
 Returns a validation report with:
+
 - `valid` - Boolean indicating if validation passed
 - `errors` - Array of validation errors (if any)
 
 Example validation errors:
+
 ```json
 {
   "valid": false,
@@ -63,6 +65,7 @@ Example validation errors:
 ### Example Usage
 
 Create a JSON Schema file (`user-schema.json`):
+
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -77,6 +80,7 @@ Create a JSON Schema file (`user-schema.json`):
 ```
 
 Validate data against the schema:
+
 ```bash
 fairspec data validate user.json --schema user-schema.json
 ```
@@ -108,6 +112,7 @@ fairspec data infer-schema data.json
 ### Generated Schema
 
 The inferred schema will automatically detect:
+
 - Data types (string, number, integer, boolean, null)
 - Object structures and nested properties
 - Array items and their types
@@ -117,6 +122,7 @@ The inferred schema will automatically detect:
 ### Example
 
 Given this JSON data (`users.json`):
+
 ```json
 [
   {
@@ -137,11 +143,13 @@ Given this JSON data (`users.json`):
 ```
 
 Infer the schema:
+
 ```bash
 fairspec data infer-schema users.json --json
 ```
 
 Generated schema:
+
 ```json
 {
   "type": "array",
@@ -183,6 +191,7 @@ fairspec data validate-schema schema.json --json
 ### Schema Validation
 
 This validates that the schema itself is:
+
 - Valid JSON
 - Compliant with JSON Schema Draft 2020-12 specification
 - Has correct property definitions
@@ -198,6 +207,7 @@ This validates that the schema itself is:
 ```
 
 Or if invalid:
+
 ```json
 {
   "valid": false,
@@ -235,6 +245,7 @@ fairspec data infer-dialect data.json --json
 ### Detected Formats
 
 The command can detect:
+
 - `json` - Standard JSON format
 - `jsonl` - JSON Lines (newline-delimited JSON)
 
@@ -247,6 +258,7 @@ The command can detect:
 ```
 
 Or for JSONL:
+
 ```json
 {
   "name": "jsonl"
@@ -330,11 +342,13 @@ fairspec data validate data.json --schema schema.json
 ```
 
 Output:
+
 ```
 ✓ Data is valid
 ```
 
 Or with errors:
+
 ```
 ✗ Data validation failed
 
@@ -360,6 +374,7 @@ fairspec data validate data.json --schema schema.json --silent
 ```
 
 Use exit code to check success:
+
 ```bash
 if fairspec data validate data.json --schema schema.json --silent; then
   echo "Valid"

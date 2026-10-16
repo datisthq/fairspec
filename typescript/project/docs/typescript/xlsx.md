@@ -1,7 +1,7 @@
 ---
 title: Working with XLSX in TypeScript
 label: XLSX
-path: /typescript/xlsx/
+path: /typescript/library/xlsx/
 order: 9
 ---
 

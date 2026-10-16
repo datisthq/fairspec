@@ -1,7 +1,7 @@
 ---
 title: Working with Inline Data tables in Python
 label: Inline Data
-path: /python/inline/
+path: /python/library/inline/
 order: 19
 ---
 

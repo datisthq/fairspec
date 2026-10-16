@@ -1,7 +1,7 @@
 ---
 title: Python
 label: Python
-path: /python/
+path: /python/library/
 order: 20
 icon: file-code
 ---

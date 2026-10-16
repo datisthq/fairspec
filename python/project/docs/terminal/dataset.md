@@ -1,7 +1,7 @@
 ---
 title: Working with Datasets in Terminal
 label: Dataset
-path: /terminal/dataset/
+path: /python/terminal/dataset/
 order: 1
 ---
 
@@ -20,6 +20,7 @@ The `fairspec dataset` command provides utilities for working with datasets:
 ## What is a Dataset?
 
 A dataset is a collection of related data resources (tables) with:
+
 - Metadata describing the dataset (title, description, license, etc.)
 - Resource definitions for each table (path, format, schema)
 - Table Schemas defining the structure of each resource
@@ -48,6 +49,7 @@ fairspec dataset infer *.csv --json > dataset.json
 ### Inference Process
 
 The infer command automatically:
+
 1. Detects format for each file (CSV, JSON, Excel, etc.)
 2. Infers Table Schema for each resource
 3. Generates resource names from file names
@@ -132,6 +134,7 @@ fairspec dataset copy dataset.json --to-path ./output --silent
 ### Copy Behavior
 
 The copy command:
+
 - Downloads all remote resources
 - Preserves directory structure
 - Updates resource paths in the descriptor to point to local files
@@ -148,6 +151,7 @@ The copy command:
 ### Example
 
 Given a dataset with remote resources:
+
 ```json
 {
   "resources": [
@@ -164,11 +168,13 @@ Given a dataset with remote resources:
 ```
 
 After copying:
+
 ```bash
 fairspec dataset copy dataset.json --to-path ./local
 ```
 
 Results in:
+
 ```
 ./local/
   dataset.json   # Updated descriptor
@@ -194,6 +200,7 @@ fairspec dataset validate dataset.json --json
 ### Validation Checks
 
 The validate command checks:
+
 - **Descriptor validity** - Valid JSON and conforms to Data Package spec
 - **Resource existence** - All referenced resources can be loaded
 - **Schema validation** - Each resource validates against its Table Schema
@@ -203,10 +210,12 @@ The validate command checks:
 ### Validation Report
 
 Returns a validation report with:
+
 - `valid` - Boolean indicating if validation passed
 - `errors` - Array of validation errors (if any)
 
 Example validation errors:
+
 ```json
 {
   "valid": false,
@@ -257,6 +266,7 @@ fairspec dataset list dataset.json --json
 Returns an array of resource names in the dataset:
 
 Text output:
+
 ```
 users
 products
@@ -265,6 +275,7 @@ transactions
 ```
 
 JSON output:
+
 ```json
 ["users", "products", "orders", "transactions"]
 ```
@@ -409,6 +420,7 @@ fairspec dataset list dataset.json
 ```
 
 Output:
+
 ```
 users
 products
@@ -432,6 +444,7 @@ fairspec dataset copy dataset.json --to-path ./output --silent
 ```
 
 Use exit code to check success:
+
 ```bash
 if fairspec dataset copy dataset.json --to-path ./output --silent; then
   echo "Success"
@@ -578,6 +591,7 @@ fairspec table infer-schema --dataset dataset.json --resource users
 ```
 
 This approach allows you to:
+
 - Work with resources without specifying paths or formats
 - Use embedded Table Schemas automatically
 - Maintain consistency across your dataset

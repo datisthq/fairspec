@@ -1,7 +1,7 @@
 ---
 title: Working with Tables in Terminal
 label: Table
-path: /terminal/table/
+path: /typescript/terminal/table/
 order: 2
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Working with JSON tables in Python
 label: JSON
-path: /python/json/
+path: /python/library/json/
 order: 12
 ---
 
@@ -66,8 +66,8 @@ JSON tables use an array of objects format:
 
 ```json
 [
-  {"id": 1, "name": "Alice", "age": 30},
-  {"id": 2, "name": "Bob", "age": 25}
+  { "id": 1, "name": "Alice", "age": 30 },
+  { "id": 2, "name": "Bob", "age": 25 }
 ]
 ```
 

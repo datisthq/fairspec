@@ -1,7 +1,7 @@
 ---
 title: Working with Tables in TypeScript
 label: Table
-path: /typescript/table/
+path: /typescript/library/table/
 order: 2
 ---
 

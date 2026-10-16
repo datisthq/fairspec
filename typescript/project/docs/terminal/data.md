@@ -1,7 +1,7 @@
 ---
 title: Working with JSON Data in Terminal
 label: Data
-path: /terminal/data/
+path: /typescript/terminal/data/
 order: 3
 ---
 

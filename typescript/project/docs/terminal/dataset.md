@@ -1,7 +1,7 @@
 ---
 title: Working with Datasets in Terminal
 label: Dataset
-path: /terminal/dataset/
+path: /typescript/terminal/dataset/
 order: 1
 ---
 

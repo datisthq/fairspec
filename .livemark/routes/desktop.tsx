@@ -16,11 +16,11 @@ import { cn } from "cn"
 // Livemark generates its route tree at build time, so this route id
 // is not known to the checker here.
 // @ts-ignore
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/desktop/")({
   component: ApplicationPage,
   head: () => ({
     meta: [
-      { title: "Fairspec Application" },
+      { title: "Fairspec Desktop" },
       {
         name: "description",
         content:
@@ -73,7 +73,7 @@ function Hero() {
                 <ArrowRight className="size-4" />
               </a>
               <a
-                href="https://github.com/datisthq/fairspec-application"
+                href="https://github.com/datisthq/fairspec/tree/main/desktop"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -234,7 +234,7 @@ function ToolCard({ icon: Icon, title, description }: Tool) {
 
 /* ─────────────────────────── Download ─────────────────────────── */
 
-const RELEASES = "https://github.com/datisthq/fairspec-application/releases"
+const RELEASES = "https://github.com/datisthq/fairspec/releases?q=desktop"
 
 interface Platform {
   name: string

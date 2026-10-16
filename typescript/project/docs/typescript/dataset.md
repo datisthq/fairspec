@@ -1,7 +1,7 @@
 ---
 title: Working with Datasets in TypeScript
 label: Dataset
-path: /typescript/dataset/
+path: /typescript/library/dataset/
 order: 1
 ---
 

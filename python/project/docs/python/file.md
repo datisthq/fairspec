@@ -1,9 +1,10 @@
 ---
 title: Working with Files in Python
 label: File
-path: /python/file/
+path: /python/library/file/
 order: 4
 ---
+
 File operations for copying, describing, validating, and analyzing local or remote files — from Python.
 
 ## Available Functions

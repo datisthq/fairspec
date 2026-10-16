@@ -1,7 +1,7 @@
 ---
 title: Working with Files in TypeScript
 label: File
-path: /typescript/file/
+path: /typescript/library/file/
 order: 4
 ---
 

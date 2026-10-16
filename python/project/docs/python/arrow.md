@@ -1,7 +1,7 @@
 ---
 title: Working with Arrow in Python
 label: Arrow
-path: /python/arrow/
+path: /python/library/arrow/
 order: 16
 ---
 

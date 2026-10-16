@@ -7,7 +7,7 @@ authors:
   - family-names: Karev
     given-names: Evgeny
     email: evgeny.karev@datist.io
-url: "https://application.fairspec.org"
+url: "https://fairspec.org/desktop/"
 repository-code: "https://github.com/datisthq/fairspec-application"
 license: MIT
 keywords:

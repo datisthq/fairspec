@@ -1,7 +1,7 @@
 ---
 title: Working with JSONL tables in Python
 label: JSONL
-path: /python/jsonl/
+path: /python/library/jsonl/
 order: 13
 ---
 

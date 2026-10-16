@@ -5,7 +5,8 @@ This guide will help you get started with Fairspec Python. If you are new to the
 ## Runtimes
 
 > [!TIP]
-> - It is possible to use Fairspec Python in [Jupyter Notebooks](/python/jupyter)!
+>
+> - It is possible to use Fairspec Python in [Jupyter Notebooks](/python/library/jupyter/)!
 
 Fairspec Python requires:
 

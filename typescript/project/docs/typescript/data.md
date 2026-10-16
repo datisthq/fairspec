@@ -1,7 +1,7 @@
 ---
 title: Working with JSON Data in TypeScript
 label: Data
-path: /typescript/data/
+path: /typescript/library/data/
 order: 3
 ---
 

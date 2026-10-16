@@ -1,9 +1,10 @@
 ---
 title: Working with Tables in Python
 label: Table
-path: /python/table/
+path: /python/library/table/
 order: 2
 ---
+
 Load, save, query, and validate tabular data in Python. Tables are represented as **Polars** `LazyFrame` objects for high-performance processing.
 
 ## Available Functions
@@ -199,7 +200,7 @@ from fairspec import Resource, infer_file_dialect
 dialect = infer_file_dialect(Resource(data="data.csv"))
 ```
 
-See [Files](/python/file/) for the broader file-operations API.
+See [Files](/python/library/file/) for the broader file-operations API.
 
 ## Normalizing Tables
 

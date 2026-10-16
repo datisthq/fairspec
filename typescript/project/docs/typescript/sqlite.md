@@ -1,7 +1,7 @@
 ---
 title: Working with SQLite in TypeScript
 label: SQLite
-path: /typescript/sqlite/
+path: /typescript/library/sqlite/
 order: 13
 ---
 

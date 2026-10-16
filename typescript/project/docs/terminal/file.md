@@ -1,7 +1,7 @@
 ---
 title: Working with Files in Terminal
 label: File
-path: /terminal/file/
+path: /typescript/terminal/file/
 order: 4
 ---
 

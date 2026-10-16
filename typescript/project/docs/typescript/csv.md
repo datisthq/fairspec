@@ -1,7 +1,7 @@
 ---
 title: Working with CSV in TypeScript
 label: CSV
-path: /typescript/csv/
+path: /typescript/library/csv/
 order: 5
 ---
 

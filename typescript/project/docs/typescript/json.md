@@ -1,7 +1,7 @@
 ---
 title: Working with JSON tables in TypeScript
 label: JSON
-path: /typescript/json/
+path: /typescript/library/json/
 order: 7
 ---
 
