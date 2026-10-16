@@ -5,7 +5,7 @@ import { describe, expect, it } from "vite-plus/test"
 
 const ROOT = resolve(import.meta.dirname, "..", "..")
 const SKILLS = join(ROOT, ".agents", "skills")
-const SECTIONS = ["catalog", "desktop", "python", "standard", "typescript"]
+const SECTIONS = ["catalog", "conformance", "desktop", "python", "standard", "typescript"]
 
 const ROOTED = [
   ...SECTIONS,

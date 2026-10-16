@@ -1,0 +1,41 @@
+[
+  {
+    "description": "csv with a table schema",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "tests": [
+      {
+        "description": "cells are cast to the schema types",
+        "data": "id,name,active\n1,alice,true\n2,bob,false\n",
+        "expected": {
+          "columns": ["id", "name", "active"],
+          "rows": [
+            [1, "alice", true],
+            [2, "bob", false]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "csv without a table schema",
+    "tests": [
+      {
+        "description": "types are inferred",
+        "data": "id,name\n1,alice\n2,bob\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  }
+]

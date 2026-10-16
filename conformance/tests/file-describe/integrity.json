@@ -1,0 +1,31 @@
+[
+  {
+    "description": "sha256 integrity and byte count",
+    "tests": [
+      {
+        "description": "a small csv",
+        "data": "id,name\n1,alice\n",
+        "expected": {
+          "bytes": 16,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "2b19eb0a580a952891021da1cb7fcca130eadd486130eb565605fc655b6a350b"
+          }
+        }
+      },
+      {
+        "description": "crlf line endings are kept byte for byte",
+        "data": "id,name\r\n1,alice\r\n",
+        "expected": {
+          "bytes": 18,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "fcff756f30f91ad315c254426eee94f177c609ef3d1a7388897482625908ea6b"
+          }
+        }
+      }
+    ]
+  }
+]

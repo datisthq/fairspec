@@ -1,0 +1,37 @@
+[
+  {
+    "description": "primary key",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "distinct keys are valid",
+        "data": "id,name\n1,alice\n2,bob\n",
+        "valid": true
+      },
+      {
+        "description": "a repeated key is a row/primaryKey error",
+        "data": "id,name\n1,alice\n2,bob\n1,carol\n",
+        "valid": false,
+        "errors": [{ "type": "row/primaryKey", "rowNumber": 3, "columnNames": ["id"] }]
+      }
+    ]
+  },
+  {
+    "description": "unique key",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "email": { "type": "string" } },
+      "uniqueKeys": [["email"]]
+    },
+    "tests": [
+      {
+        "description": "a repeated value is a row/uniqueKey error",
+        "data": "id,email\n1,a@x.org\n2,a@x.org\n",
+        "valid": false,
+        "errors": [{ "type": "row/uniqueKey", "rowNumber": 2, "columnNames": ["email"] }]
+      }
+    ]
+  }
+]

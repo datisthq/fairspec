@@ -1,0 +1,25 @@
+[
+  {
+    "description": "sha256 integrity of Hello",
+    "integrity": {
+      "type": "sha256",
+      "hash": "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969"
+    },
+    "tests": [
+      { "description": "matching content is valid", "data": "Hello", "valid": true },
+      {
+        "description": "different content is a file/integrity error",
+        "data": "Goodbye",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha256",
+            "expectedHash": "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+            "actualHash": "c015ad6ddaf8bb50689d2d7cbf1539dff6dd84473582a08ed1d15d841f4254f4"
+          }
+        ]
+      }
+    ]
+  }
+]

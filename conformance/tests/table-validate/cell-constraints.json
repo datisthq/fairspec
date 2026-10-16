@@ -1,0 +1,134 @@
+[
+  {
+    "description": "column type without null",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "a filled cell is valid",
+        "data": "id,name\n1,alice\n",
+        "valid": true
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,name\n1,alice\n2,\n",
+        "valid": false,
+        "errors": [
+          { "type": "cell/missing", "columnName": "name", "rowNumber": 2, "cell": "" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "column type with null",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": ["string", "null"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,name\n1,alice\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "minimum and maximum",
+    "tableSchema": {
+      "properties": { "age": { "type": "integer", "minimum": 0, "maximum": 150 } }
+    },
+    "tests": [
+      {
+        "description": "values in range are valid",
+        "data": "age\n0\n150\n",
+        "valid": true
+      },
+      {
+        "description": "values out of range",
+        "data": "age\n-1\n200\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "age",
+            "rowNumber": 1,
+            "cell": "-1",
+            "minimum": "0"
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "age",
+            "rowNumber": 2,
+            "cell": "200",
+            "maximum": "150"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "string length",
+    "tableSchema": {
+      "properties": { "code": { "type": "string", "minLength": 2, "maxLength": 3 } }
+    },
+    "tests": [
+      {
+        "description": "lengths in range are valid",
+        "data": "code\nab\nabc\n",
+        "valid": true
+      },
+      {
+        "description": "too short and too long",
+        "data": "code\na\nabcd\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "code",
+            "rowNumber": 1,
+            "cell": "a",
+            "minLength": 2
+          },
+          {
+            "type": "cell/maxLength",
+            "columnName": "code",
+            "rowNumber": 2,
+            "cell": "abcd",
+            "maxLength": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "enum",
+    "tableSchema": {
+      "properties": { "color": { "type": "string", "enum": ["red", "green"] } }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "color\nred\ngreen\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/enum error",
+        "data": "color\nred\nblue\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "color",
+            "rowNumber": 2,
+            "cell": "blue",
+            "enum": ["red", "green"]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,39 @@
+[
+  {
+    "description": "jsonl rows",
+    "format": "jsonl",
+    "tests": [
+      {
+        "description": "one object per line",
+        "data": "{\"id\":1,\"name\":\"alice\"}\n{\"id\":2,\"name\":\"bob\"}\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json array of objects",
+    "format": "json",
+    "tests": [
+      {
+        "description": "rows given as an array",
+        "data": [
+          { "id": 1, "name": "alice" },
+          { "id": 2, "name": "bob" }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  }
+]

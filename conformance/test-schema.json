@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fairspec.org/conformance/test-schema.json",
+  "title": "Fairspec conformance test file",
+  "description": "An array of groups. A group fixes the subject of an operation; each of its tests varies only the data and states the outcome. The layout follows JSON-Schema-Test-Suite.",
+  "type": "array",
+  "minItems": 1,
+  "items": { "$ref": "#/$defs/group" },
+  "$defs": {
+    "group": {
+      "type": "object",
+      "required": ["description", "tests"],
+      "properties": {
+        "description": {
+          "description": "What the group covers; unique within the file",
+          "type": "string"
+        },
+        "comment": {
+          "description": "Context for maintainers; never read by a runner",
+          "type": "string"
+        },
+        "specification": {
+          "description": "Links to the spec sections the group exercises",
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "format": {
+          "description": "File extension the data is written with",
+          "type": "string",
+          "default": "csv"
+        },
+        "fileDialect": { "type": "object" },
+        "tableSchema": { "type": "object" },
+        "integrity": { "type": "object" },
+        "dataset": {
+          "description": "Dataset descriptor written as dataset.json; each resource's data names a key of the test's data",
+          "type": "object"
+        },
+        "options": {
+          "description": "Options of the operation, with the camelCase keys the TypeScript API uses",
+          "type": "object"
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/test" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "test": {
+      "type": "object",
+      "required": ["description", "data"],
+      "properties": {
+        "description": {
+          "description": "What the test checks; unique within the group",
+          "type": "string"
+        },
+        "comment": { "type": "string" },
+        "data": {
+          "description": "The file content: exact text, base64 bytes, JSON rows, or for a dataset one entry per file name",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["base64"],
+              "properties": { "base64": { "type": "string" } },
+              "additionalProperties": false
+            },
+            { "type": "array" },
+            {
+              "type": "object",
+              "not": { "required": ["base64"] },
+              "additionalProperties": { "type": "string" }
+            }
+          ]
+        },
+        "valid": {
+          "description": "Expected `valid` of the report, for validate operations",
+          "type": "boolean"
+        },
+        "errors": {
+          "description": "Expected `errors` of the report, compared exactly and in order",
+          "type": "array",
+          "items": { "type": "object", "required": ["type"] }
+        },
+        "expected": {
+          "description": "Expected result of an infer, describe or load operation"
+        },
+        "throws": {
+          "description": "The operation is expected to raise",
+          "const": true
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["valid"],
+          "not": { "anyOf": [{ "required": ["expected"] }, { "required": ["throws"] }] }
+        },
+        {
+          "required": ["expected"],
+          "not": { "anyOf": [{ "required": ["valid"] }, { "required": ["throws"] }] }
+        },
+        {
+          "required": ["throws"],
+          "not": { "anyOf": [{ "required": ["valid"] }, { "required": ["expected"] }] }
+        }
+      ],
+      "dependentRequired": { "errors": ["valid"] }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "description": "data in a format no table plugin reads",
+    "format": "bin",
+    "tableSchema": { "properties": { "id": { "type": "integer" } } },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": "id\n1\n",
+        "valid": false,
+        "errors": [{ "type": "resource/type", "expectedResourceType": "table" }]
+      }
+    ]
+  }
+]
