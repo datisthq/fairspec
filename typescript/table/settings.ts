@@ -7,7 +7,7 @@ export const ERROR_COLUMN_NAME = "fairspec:error"
 process.env.POLARS_FORCE_STREAMING ??= "1"
 
 // Each check scans the whole source, so peak memory grows with the number in flight.
-// Validating a 10-column 1GB file: 4.3s in 1GB serially, 2.5s in 1.5GB at four.
+// At four, validating 10 columns fits 768MB for a 1GB file and 1GB for a 3GB one.
 // A key check holds every key in memory (3GB for 10M rows), so they stay serial.
 export const INSPECT_COLUMN_CONCURRENCY = 4
 export const INSPECT_ROW_CONCURRENCY = 1

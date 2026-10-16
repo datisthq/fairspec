@@ -8,8 +8,9 @@ export function parseBooleanColumn(column: BooleanColumn, columnExpr: pl.Expr) {
   const trueValues = column.property.trueValues ?? DEFAULT_TRUE_VALUES
   const falseValues = column.property.falseValues ?? DEFAULT_FALSE_VALUES
 
-  for (const value of trueValues) columnExpr = columnExpr.replace(value, "1")
-  for (const value of falseValues) columnExpr = columnExpr.replace(value, "0")
+  // Expr.replace cannot stream: it holds the whole column, unlike str.replace
+  for (const value of trueValues) columnExpr = replaceWholeValue(columnExpr, value, "1")
+  for (const value of falseValues) columnExpr = replaceWholeValue(columnExpr, value, "0")
 
   columnExpr = columnExpr.cast(pl.Int8)
 
@@ -34,4 +35,9 @@ export function stringifyBooleanColumn(column: BooleanColumn, columnExpr: pl.Exp
     .then(pl.lit(trueValue))
     .otherwise(pl.lit(falseValue))
     .alias(column.name)
+}
+
+function replaceWholeValue(columnExpr: pl.Expr, value: string, replacement: string) {
+  const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return columnExpr.str.replace(`^${escapedValue}$`, replacement)
 }

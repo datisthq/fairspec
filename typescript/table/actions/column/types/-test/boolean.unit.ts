@@ -64,6 +64,28 @@ describe("parseBooleanColumn", () => {
   })
 
   it.each([
+    ["y.s", true],
+    ["yes", null],
+    ["oui (y)", true],
+  ])("trueValues with regex characters: %s -> %s", async (cell, expected) => {
+    const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        name: {
+          type: "boolean",
+          trueValues: ["y.s", "oui (y)"],
+        },
+      },
+    }
+
+    const result = await normalizeTable(table, tableSchema)
+    const frame = await result.collect()
+
+    const actual = frame.toRecords()[0]?.name
+    expect(actual).toEqual(expected)
+  })
+
+  it.each([
     ["N", false],
     ["n", false],
     ["no", false],
