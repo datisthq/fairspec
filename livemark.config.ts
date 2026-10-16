@@ -3,7 +3,7 @@ import { defineConfig } from "livemark"
 export default defineConfig({
   site: "https://fairspec.org",
   title: "Fairspec",
-  description: "FAIR data exchange format",
+  description: "Data exchange format",
   logo: "/logo.svg",
   favicon: "/logo.png",
   include: [
@@ -24,38 +24,28 @@ export default defineConfig({
       title: "Standard",
       prefix: "/",
       icon: "book-open",
-      siteTitle: "Fairspec Standard",
-      siteDescription: "Data exchange specifications",
     },
     {
       title: "Python",
       prefix: "/python/",
       icon: "code",
-      siteTitle: "Fairspec Python",
-      siteDescription: "Data management framework",
     },
     {
       title: "TypeScript",
       prefix: "/typescript/",
       icon: "code-xml",
-      siteTitle: "Fairspec TypeScript",
-      siteDescription: "Data management framework",
     },
     {
       type: "custom",
       title: "MCP Server",
       url: "/mcp-server/",
       icon: "sparkles",
-      siteTitle: "Fairspec MCP Server",
-      siteDescription: "AI-assisted data management",
     },
     {
       type: "custom",
       title: "Desktop",
       url: "/desktop/",
       icon: "app-window",
-      siteTitle: "Fairspec Desktop",
-      siteDescription: "Visual data validation",
     },
     {
       type: "custom",
