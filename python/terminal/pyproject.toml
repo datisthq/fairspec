@@ -17,17 +17,14 @@ keywords = [
   "quality",
   "tableschema",
   "terminal",
-  "validation"
+  "validation",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "fairspec-library",
-  "typer>=0.15",
-]
+dependencies = ["fairspec-library", "typer>=0.15"]
 
 [project.scripts]
 fairspec = "fairspec_terminal.main:main"
@@ -36,8 +33,8 @@ fairspec = "fairspec_terminal.main:main"
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [build-system]
 requires = ["hatchling"]

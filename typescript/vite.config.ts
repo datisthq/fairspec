@@ -2,17 +2,6 @@ import { basename, dirname, join } from "node:path"
 import { coverageConfigDefaults, defineConfig } from "vite-plus"
 
 export default defineConfig({
-  fmt: {
-    semi: false,
-    printWidth: 90,
-    arrowParens: "avoid",
-  },
-  lint: {
-    options: {
-      typeAware: false,
-      typeCheck: false,
-    },
-  },
   test: {
     include: ["**/*.unit.(ts|tsx)"],
     exclude: ["**/node_modules/**", "**/build/**"],

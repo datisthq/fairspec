@@ -69,6 +69,8 @@ dist/
 /.cursor/
 .env
 .venv
-uv.lock
 .private/
 tmuxp.yaml
+.content-collections/
+.vitest/
+/.worktrees/

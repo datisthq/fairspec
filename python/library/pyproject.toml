@@ -23,19 +23,14 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "fairspec-dataset",
-  "fairspec-metadata",
-  "fairspec-table",
-  "genson>=1.3",
-]
+dependencies = ["fairspec-dataset", "fairspec-metadata", "fairspec-table", "genson>=1.3"]
 
 [[project.authors]]
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [build-system]
 requires = ["hatchling"]

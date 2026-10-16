@@ -18,7 +18,7 @@ keywords = [
   "python",
   "quality",
   "tableschema",
-  "validation"
+  "validation",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -31,8 +31,8 @@ dependencies = ["fairspec-metadata", "charset-normalizer>=3.0"]
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [build-system]
 requires = ["hatchling"]

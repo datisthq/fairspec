@@ -23,18 +23,14 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "jsonschema>=4.23",
-  "pydantic>=2.12",
-  "typing-extensions>=4.15",
-]
+dependencies = ["jsonschema>=4.23", "pydantic>=2.12", "typing-extensions>=4.15"]
 
 [[project.authors]]
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [build-system]
 requires = ["hatchling"]

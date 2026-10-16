@@ -6,26 +6,7 @@ requires-python = ">=3.12"
 [tool.ruff]
 line-length = 90
 lint.ignore = ["E501"]
-extend-exclude = [
-  "__pycache__",
-  ".eggs",
-  ".git",
-  ".venv",
-  "build",
-  "dist",
-  ".cache",
-]
-
-[tool.taskipy.tasks]
-build = "uv build --all-packages --out-dir build"
-coverage = "sensible-browser htmlcov/index.html"
-format = "ruff format"
-install = "uv sync --all-packages && ([ \"$CI\" = 'true' ] || lefthook install) && mkdir -p .claude && ln -sfn ../.agents/skills .claude/skills"
-lint = "ruff check"
-publish = "uv publish build/*"
-unit = "pytest --cov --cov-report html --cov-report json"
-test = "task lint && task type && task unit"
-type = "ty check"
+extend-exclude = ["__pycache__", ".eggs", ".git", ".venv", "build", "dist", ".cache"]
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib"
@@ -48,10 +29,8 @@ index-out-of-bounds = "ignore"
 [tool.uv]
 package = false
 dev-dependencies = [
-  "lefthook==1.11.13",
   "pytest==9.0.2",
   "ruff==0.15.0",
-  "taskipy==1.14.1",
   "ty==0.0.15",
   "pytest-recording==0.13.4",
   "pytest-cov>=7.0.0",

@@ -23,7 +23,7 @@ keywords = [
   "table",
   "tableschema",
   "validation",
-  "xlsx"
+  "xlsx",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -38,15 +38,15 @@ dependencies = [
   "openpyxl>=3.1",
   "polars>=1.0",
   "shapely>=2.0",
-  "tzdata>=2024.1"
+  "tzdata>=2024.1",
 ]
 
 [[project.authors]]
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [build-system]
 requires = ["hatchling"]

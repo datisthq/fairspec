@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 
 const ROOT = join(import.meta.dirname, "..", "..")
+const REPO = dirname(ROOT)
 const DOCS = ["AGENTS.md", "README.md", "CONTRIBUTING.md"]
 
 const PACKAGES = [
@@ -50,22 +51,20 @@ describe("docs", () => {
     }
   })
 
-  it("exposes AGENTS.md to Claude Code as a symlink", async () => {
-    const path = join(ROOT, ".claude", "CLAUDE.md")
-    const target = await readlink(path)
-    expect(resolve(dirname(path), target)).toBe(join(ROOT, "AGENTS.md"))
-  })
-
   it("exposes skills to Claude Code as a symlink", async () => {
-    const path = join(ROOT, ".claude", "skills")
+    const path = join(REPO, ".claude", "skills")
     const target = await readlink(path)
-    expect(resolve(dirname(path), target)).toBe(join(ROOT, ".agents", "skills"))
+    expect(resolve(dirname(path), target)).toBe(join(REPO, ".agents", "skills"))
   })
 })
 
 async function readScripts() {
-  const content = await readFile(join(ROOT, "package.json"), "utf-8")
-  return Object.keys(JSON.parse(content).scripts)
+  const scripts: string[] = []
+  for (const base of [REPO, ROOT]) {
+    const content = await readFile(join(base, "package.json"), "utf-8")
+    scripts.push(...Object.keys(JSON.parse(content).scripts))
+  }
+  return scripts
 }
 
 async function readDoc(name: string) {
@@ -87,7 +86,7 @@ function isRepoPath(value: string) {
 
 async function getIsPathExist(path: string) {
   try {
-    await stat(join(ROOT, path))
+    await stat(join(path.startsWith(".claude/") ? REPO : ROOT, path))
     return true
   } catch {
     return false

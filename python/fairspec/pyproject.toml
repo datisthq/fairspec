@@ -22,17 +22,14 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "fairspec-library",
-  "fairspec-terminal",
-]
+dependencies = ["fairspec-library", "fairspec-terminal"]
 
 [[project.authors]]
 name = "Evgeny Karev"
 
 [project.urls]
-homepage = "https://github.com/datisthq/fairspec-python"
-repository = "https://github.com/datisthq/fairspec-python"
+homepage = "https://fairspec.org/python/"
+repository = "https://github.com/datisthq/fairspec"
 
 [project.scripts]
 fairspec = "fairspec.main:main"
