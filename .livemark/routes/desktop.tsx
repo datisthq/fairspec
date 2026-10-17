@@ -55,7 +55,7 @@ function Hero() {
               Technical preview
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-              Fairspec Application
+              Fairspec Desktop
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground">
               Visual tool for validating and inferring{" "}
