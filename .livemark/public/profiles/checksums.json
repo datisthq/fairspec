@@ -68,5 +68,14 @@
     "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
     "grei/dataset.json": "57a7d4d1581c76cbfead1681b3a252827070926306c9d5e832b7612cbb4d24f9",
     "table-schema.json": "c0d24ee9152d5715c8fb0c44d2ceac8f67250659472ff7e0b6261c5b4476711a"
+  },
+  "0.6.2": {
+    "catalog.json": "6b15f5f278e34d6b5e9949a36d31aef20a01fa56f85adac0286a6db09c9d404b",
+    "data-schema.json": "e6a1641222250865c58c1aa3d72496724cb6d1ca7f98fb45f56066c9e3cb4fbe",
+    "datacite/dataset.json": "12423cd54351c665b384d767c73999fbfa45d4abec1742b5a9b938eaecfcc188",
+    "dataset.json": "789e995975795fd9b006a83bdce467f8aaea73b922cf3110ada2740d617bb92f",
+    "file-dialect.json": "8ea04428597f4ab99f5c23add4cd5a6a911da66749963bd7a2a99c47457532d2",
+    "grei/dataset.json": "f907ef7073c6883d9ab43163ef26a24e2f3c6e98e7a885f602a486cc926c7f79",
+    "table-schema.json": "28885b022643a33c874a0408bc11f4423c02b3293f802f5ef7c13ebd209f8acb"
   }
 }
