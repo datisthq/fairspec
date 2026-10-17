@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/datisthq/fairspec/compare/python-v0.2.0...python-v0.2.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* add a conformance suite and fix the divergences it found ([#74](https://github.com/datisthq/fairspec/issues/74)) ([9e9ee2b](https://github.com/datisthq/fairspec/commit/9e9ee2b7be097e879197b38794a23eeb567086f6))
+* **standard:** improve standard pipeline ([#52](https://github.com/datisthq/fairspec/issues/52)) ([407d938](https://github.com/datisthq/fairspec/commit/407d9381adb1be365ac7243ece48410aca150ec7))
+
 ## 0.2.0 (2026-09-10)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 [project]
 name = "fairspec-python"
-version = "0.0.0-dev"
+version = "0.2.1"
 requires-python = ">=3.12"
 
 [tool.ruff]

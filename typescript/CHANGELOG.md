@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.13.1](https://github.com/datisthq/fairspec/compare/typescript-v0.12.4...typescript-v0.13.1) (2026-10-17)
+
+
+### Features
+
+* **typescript:** run polars queries on the streaming engine ([#62](https://github.com/datisthq/fairspec/issues/62)) ([04c8d2c](https://github.com/datisthq/fairspec/commit/04c8d2cc4d451416962c6f9f16378604e61a98aa))
+
+
+### Bug Fixes
+
+* add a conformance suite and fix the divergences it found ([#74](https://github.com/datisthq/fairspec/issues/74)) ([9e9ee2b](https://github.com/datisthq/fairspec/commit/9e9ee2b7be097e879197b38794a23eeb567086f6))
+* **standard:** improve standard pipeline ([#52](https://github.com/datisthq/fairspec/issues/52)) ([407d938](https://github.com/datisthq/fairspec/commit/407d9381adb1be365ac7243ece48410aca150ec7))
+
 ## [0.12.4](https://github.com/fairspec/fairspec-typescript/compare/v0.12.3...v0.12.4) (2026-06-15)
 
 ### Bug Fixes

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/datisthq/fairspec/compare/desktop-v0.8.0...desktop-v0.8.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* **standard:** improve standard pipeline ([#52](https://github.com/datisthq/fairspec/issues/52)) ([407d938](https://github.com/datisthq/fairspec/commit/407d9381adb1be365ac7243ece48410aca150ec7))
+
 ## [0.8.0](https://github.com/datisthq/fairspec-application/compare/v0.7.0...v0.8.0) (2026-09-05)
 
 ### Features
