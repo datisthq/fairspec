@@ -25,7 +25,6 @@ minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - "@fairspec/*"
   - livemark
-  - vitest-polly
 minimumReleaseAgeExcludePrune: true
 
 saveExact: true

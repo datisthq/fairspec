@@ -19,7 +19,6 @@
     "tempy": "catalog:",
     "type-fest": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "catalog:",
-    "vitest-polly": "2.1.0"
+    "vitest": "catalog:"
   }
 }

@@ -40,7 +40,7 @@ more than the generic checklist:
 - a package edge that reverses the `metadata`-first DAG in `python/` or `typescript/`;
 - a public API missing from its package's `index.ts` / `__init__.py`, or an `export *` there;
 - a TypeScript test asserting on a raw path string or a bare `\n` — it fails on Windows CI;
-- a renamed recorded test (vitest-polly, pytest-recording) with its old recording left behind;
+- a renamed recorded test (`useRecording`, pytest-recording) with its old recording left behind;
 - a desktop renderer file importing `#processes/*`, `electron` or `node:*`, a new user-facing
   string with unfilled catalogues, or a changed `productName`;
 - a root script switched to `pnpm -r`, or a filter quoted with single quotes (literal on Windows);

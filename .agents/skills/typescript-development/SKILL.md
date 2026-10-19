@@ -60,12 +60,12 @@ model, a command), then subgroup by the entity it acts on.
 
 A leading `-` marks a directory that is **not a member of the structure around it**.
 
-- **`-test/`** — unit tests and everything that exists only to serve them. `<module>.ts` is tested by `-test/<module>.unit.ts`, fixtures live in `-test/fixtures/`, and generated artifacts (snapshots, vitest-polly HAR recordings) in `-test/fixtures/generated/`. A shared test double goes in the same folder, named after its export.
+- **`-test/`** — unit tests and everything that exists only to serve them. `<module>.ts` is tested by `-test/<module>.unit.ts`, fixtures live in `-test/fixtures/`, and generated artifacts (snapshots, `useRecording` HAR recordings) in `-test/fixtures/generated/`. A shared test double goes in the same folder, named after its export.
 - **`-shared/`** — _production_ code shared by the siblings around it that must not itself be one of them: a helper among one-action-per-file modules (`actions/column/-shared/helpers.ts`). Not fixtures, not mocks. A `-shared/` folder can hold its own `-test/`.
 
 Test discovery is by the `*.unit.ts` **filename suffix**, not the folder name — the folder is
 a structural convention. Move a test and its `fixtures/` together: `resolveSnapshotPath` and
-vitest-polly both derive their paths from the test file's own directory.
+`useRecording` both derive their paths from the test file's own directory.
 
 ## Conventions
 
@@ -75,7 +75,7 @@ vitest-polly both derive their paths from the test file's own directory.
 - Files are camelCase, named after the verb **without repeating the folder** — `actions/column/create.ts` exports `createColumnFromProperty`, not `createColumn.ts`
 - One export per file is the default, not an absolute: a file may export a closely related pair (`typescript/dataset/actions/file/temp.ts` exports `getTempFilePath` and `writeTempFile`)
 - Use relative imports with the full `.ts`/`.tsx` file extension
-- **`index.ts` barrels are deliberate and required.** Every package publishes `"exports": "./build/index.js"`, and its `index.ts` is a curated list of explicit named re-exports — never `export *`. Adding a public API means adding its line there.
+- **`index.ts` barrels are deliberate and required.** Every package publishes `"exports": "./build/index.js"` (`metadata` adds only the test-only `testing` subpath), and its `index.ts` is a curated list of explicit named re-exports — never `export *`. Adding a public API means adding its line there.
 - Add brief docstrings for exported functions and models (explain what it does)
 - **Polars runs on the streaming engine through `POLARS_FORCE_STREAMING`**, set once in `typescript/table/settings.ts` (listed in `sideEffects`). Async `collect()` takes no engine and its `streaming` option is a dead flag, so call plain `collect()` — never `collect({ streaming: true })`, and never `collectSync` to reach the engine, which blocks the MCP server and the desktop app. Not every expression streams: `Expr.replace` holds the whole column (use an anchored `str.replace`), so one such check makes a validation's memory grow with the file. Judge a memory change by the smallest cgroup cap it survives (`systemd-run --user --scope -p MemoryMax=…`), not peak RSS, which counts the mmap'd source
 
@@ -87,7 +87,7 @@ vitest-polly both derive their paths from the test file's own directory.
 - **The suite must pass on Windows — CI runs `pnpm -C typescript test:unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
 - `library/-test/testsuite.unit.ts` runs the shared `testsuite/` suite; a behaviour both
   libraries share gets a `testsuite/` test there, not only a unit test here (**`testsuite-development`**)
-- Network tests use `useRecording()` from `vitest-polly`; the HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
+- Network tests use `useRecording()` from `@fairspec/metadata/testing` (a relative import inside `metadata`), a Polly fetch recorder kept in `typescript/metadata/-test/recording.ts` — a subpath export, so Polly stays out of the barrel and its packages stay `devDependencies`. The HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases
 

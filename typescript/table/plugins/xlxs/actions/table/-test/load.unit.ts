@@ -1,6 +1,6 @@
 import { getTempFilePath } from "@fairspec/dataset"
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "@fairspec/metadata/testing"
 import { loadXlsxTable } from "../load.ts"
 import { writeTestData } from "./test.ts"
 

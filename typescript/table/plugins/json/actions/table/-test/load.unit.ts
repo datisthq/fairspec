@@ -1,6 +1,6 @@
 import { writeTempFile } from "@fairspec/dataset"
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "@fairspec/metadata/testing"
 import { loadJsonTable } from "../load.ts"
 
 useRecording()

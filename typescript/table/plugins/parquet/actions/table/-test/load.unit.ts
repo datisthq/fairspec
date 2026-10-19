@@ -1,7 +1,7 @@
 import { getTempFilePath } from "@fairspec/dataset"
 import * as pl from "nodejs-polars"
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "@fairspec/metadata/testing"
 import { loadParquetTable } from "../load.ts"
 
 useRecording()

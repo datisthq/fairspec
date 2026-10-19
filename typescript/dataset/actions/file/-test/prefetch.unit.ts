@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises"
 import type { Resource } from "@fairspec/metadata"
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "@fairspec/metadata/testing"
 import { prefetchFiles } from "../prefetch.ts"
 
 useRecording()

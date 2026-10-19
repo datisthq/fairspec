@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "@fairspec/metadata/testing"
 import { loadDatasetFromCkan } from "../load.ts"
 
 useRecording()

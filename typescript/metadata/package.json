@@ -27,7 +27,10 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "exports": "./build/index.js",
+  "exports": {
+    ".": "./build/index.js",
+    "./testing": "./build/-test/recording.js"
+  },
   "scripts": {
     "build": "tsgo",
     "check:types": "tsgo --noEmit"
@@ -39,5 +42,10 @@
     "quick-lru": "^7.0.1",
     "ts-extras": "^0.16.1",
     "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@pollyjs/adapter-fetch": "6.0.6",
+    "@pollyjs/core": "6.0.6",
+    "@pollyjs/persister-fs": "6.0.6"
   }
 }

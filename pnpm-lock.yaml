@@ -382,9 +382,6 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 5.0.1(@types/node@24.2.0)(@vitest/browser-preview@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1(vitest@5.0.1))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))
-      vitest-polly:
-        specifier: 2.1.0
-        version: 2.1.0(supports-color@10.2.2)(vite-plus@1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(vitest@5.0.1)
 
   typescript/dataset:
     dependencies:
@@ -525,6 +522,16 @@ importers:
       zod:
         specifier: ^4.2.1
         version: 4.2.1
+    devDependencies:
+      '@pollyjs/adapter-fetch':
+        specifier: 6.0.6
+        version: 6.0.6
+      '@pollyjs/core':
+        specifier: 6.0.6
+        version: 6.0.6
+      '@pollyjs/persister-fs':
+        specifier: 6.0.6
+        version: 6.0.6(supports-color@10.2.2)
 
   typescript/project: {}
 
@@ -2685,8 +2692,8 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@pollyjs/adapter-fetch@6.0.7':
-    resolution: {integrity: sha512-kv44DROx/2qzlcgS71EccGr2/I5nK40Xt92paGNI+1/Kmz290bw/ykt8cvXDg4O4xCc9Fh/jXeAkS7qwGpCx2g==}
+  '@pollyjs/adapter-fetch@6.0.6':
+    resolution: {integrity: sha512-euWzM5TnA2jptdJgjIkEd/Q2hNFB652XivPKerWpLMFB13IKlrERX9wn2Dw3pquDAP0LvXH1qVBZt5DK0Xhzyg==}
 
   '@pollyjs/adapter@6.0.6':
     resolution: {integrity: sha512-szhys0NiFQqCJDMC0kpDyjhLqSI7aWc6m6iATCRKgcMcN/7QN85pb3GmRzvnNV8+/Bi2AUSCwxZljcsKhbYVWQ==}
@@ -9045,18 +9052,6 @@ packages:
       vite:
         optional: true
 
-  vitest-polly@2.1.0:
-    resolution: {integrity: sha512-qJawsW7xvUkDaU9eyDAYCDzIvOK7d6h77lBqA794zCGviBUxaZPsGa00Q2tkUedD2EzRR0A2batAi+HVZvB7ag==}
-    engines: {node: ^24.0.0, pnpm: ^10.0.0}
-    peerDependencies:
-      vite-plus: '>=0.1.14'
-      vitest: 5.0.1
-    peerDependenciesMeta:
-      vite-plus:
-        optional: true
-      vitest:
-        optional: true
-
   vitest@5.0.1:
     resolution: {integrity: sha512-iA95lQbKEkvrtTkdAgnWbXfbipWiiWe/hDl2P5tMi6WFwD76G0NxXAGp/M9EOcYupeGJRr6wppMc7CoA41TQjg==}
     engines: {node: ^22.12.0 || ^24.0.0 || >=26.0.0}
@@ -11225,10 +11220,11 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@pollyjs/adapter-fetch@6.0.7':
+  '@pollyjs/adapter-fetch@6.0.6':
     dependencies:
       '@pollyjs/adapter': 6.0.6
       '@pollyjs/utils': 6.0.6
+      detect-node: 2.1.0
       to-arraybuffer: 1.0.1
 
   '@pollyjs/adapter@6.0.6':
@@ -11251,7 +11247,7 @@ snapshots:
     dependencies:
       '@pollyjs/utils': 6.0.6
       body-parser: 1.20.3(supports-color@10.2.2)
-      cors: 2.8.5
+      cors: 2.8.6
       express: 4.21.2(supports-color@10.2.2)
       fs-extra: 10.1.0
       http-graceful-shutdown: 3.1.14(supports-color@10.2.2)
@@ -14462,8 +14458,7 @@ snapshots:
 
   detect-node-es@1.1.0: {}
 
-  detect-node@2.1.0:
-    optional: true
+  detect-node@2.1.0: {}
 
   devlop@1.1.0:
     dependencies:
@@ -18934,17 +18929,6 @@ snapshots:
     optionalDependencies:
       vite: '@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0)'
     optional: true
-
-  vitest-polly@2.1.0(supports-color@10.2.2)(vite-plus@1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(vitest@5.0.1):
-    dependencies:
-      '@pollyjs/adapter-fetch': 6.0.7
-      '@pollyjs/core': 6.0.6
-      '@pollyjs/persister-fs': 6.0.6(supports-color@10.2.2)
-    optionalDependencies:
-      vite-plus: 1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0)
-      vitest: 5.0.1(@types/node@24.2.0)(@vitest/browser-preview@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1(vitest@5.0.1))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))
-    transitivePeerDependencies:
-      - supports-color
 
   vitest@5.0.1(@types/node@24.2.0)(@vitest/browser-preview@5.0.1)(@vitest/coverage-v8@5.0.1(@vitest/browser@5.0.1(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.25.12)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(vitest@5.0.1))(vitest@5.0.1))(@vitest/ui@5.0.1(vitest@5.0.1))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.25.12)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3)):
     dependencies:

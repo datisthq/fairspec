@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { useRecording } from "vitest-polly"
+import { useRecording } from "../../../-test/recording.ts"
 import { validateDatasetDescriptor } from "../validate.ts"
 
 useRecording()

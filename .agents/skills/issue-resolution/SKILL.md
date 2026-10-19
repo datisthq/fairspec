@@ -35,7 +35,7 @@ Work on a branch named after the issue, never on `main`. Write a unit test, in t
 `-test` (TypeScript) or `_test` (Python) folder, that fails **for the issue's reason**: wrong
 output, not a crash in the test setup.
 
-- A remote source (ckan, github, zenodo …): record it with `useRecording()` from vitest-polly
+- A remote source (ckan, github, zenodo …): record it with `useRecording()` from `@fairspec/metadata/testing`
   or `@pytest.mark.vcr`, and assert on what the plugin yields.
 - A file format: put the smallest file that shows the bug in `fixtures/` beside the test.
 - The CLI or MCP server: assert on the action it wraps first; add a command or tool test only
