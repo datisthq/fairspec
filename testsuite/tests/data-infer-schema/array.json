@@ -1,0 +1,54 @@
+[
+  {
+    "description": "array of objects",
+    "comment": "The spec does not define data schema inference; the TypeScript shape is the reference. Items whose types disagree leave the array without an items schema",
+    "format": "json",
+    "tests": [
+      {
+        "description": "rows with the same shape share one items schema",
+        "data": "[{\"name\": \"alice\", \"age\": 30}, {\"name\": \"bob\", \"age\": 25}]",
+        "expected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+          }
+        }
+      },
+      {
+        "description": "rows with mixed property types have no items schema",
+        "data": "[{\"a\": 1}, {\"a\": \"x\"}]",
+        "expected": { "type": "array" }
+      },
+      {
+        "description": "rows with a null and a value have no items schema",
+        "data": "[{\"a\": null}, {\"a\": 1}]",
+        "expected": { "type": "array" }
+      },
+      {
+        "description": "rows with different keys have no items schema",
+        "data": "[{\"a\": 1}, {\"b\": 2}]",
+        "expected": { "type": "array" }
+      },
+      {
+        "description": "an empty array has no items schema",
+        "data": "[]",
+        "expected": { "type": "array" }
+      }
+    ]
+  },
+  {
+    "description": "inline array of objects",
+    "inline": true,
+    "tests": [
+      {
+        "description": "is inferred like a file",
+        "data": [{ "id": 1 }, { "id": 2 }],
+        "expected": {
+          "type": "array",
+          "items": { "type": "object", "properties": { "id": { "type": "integer" } } }
+        }
+      }
+    ]
+  }
+]

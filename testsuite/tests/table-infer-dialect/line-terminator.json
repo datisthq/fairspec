@@ -1,0 +1,33 @@
+[
+  {
+    "description": "carriage return line terminator",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "tests": [
+      {
+        "description": "csv rows ending with a carriage return",
+        "data": "id,name\r1,alice\r2,bob\r",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "headerRows": [1],
+          "lineTerminator": "\r"
+        }
+      },
+      {
+        "description": "semicolon rows ending with a carriage return",
+        "data": "id;name;age\r1;alice;25\r2;bob;30",
+        "expected": {
+          "format": "csv",
+          "delimiter": ";",
+          "headerRows": [1],
+          "lineTerminator": "\r"
+        }
+      },
+      {
+        "description": "tsv rows ending with a carriage return",
+        "data": "id\tname\tage\r1\talice\t25\r2\tbob\t30\r",
+        "expected": { "format": "tsv", "headerRows": [1], "lineTerminator": "\r" }
+      }
+    ]
+  }
+]

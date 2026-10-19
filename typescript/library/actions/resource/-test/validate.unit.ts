@@ -23,6 +23,18 @@ describe("validateResource", () => {
     expect(report.errors).toHaveLength(0)
   })
 
+  it("should validate a JSON object file against its data schema only", async () => {
+    const path = await writeTempFile('{"name": "alice"}', { format: "json" })
+    const source: Resource = {
+      data: path,
+      dataSchema: { type: "object", properties: { name: { type: "string" } } },
+    }
+
+    const report = await validateResource(source)
+
+    expect(report).toEqual({ valid: true, errors: [] })
+  })
+
   it("should return errors for invalid tabular data", async () => {
     const path = await writeTempFile("id,name\ninvalid,alice\n2,bob")
     const source: Resource = {

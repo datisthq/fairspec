@@ -1,0 +1,62 @@
+[
+  {
+    "description": "top-level array file",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+      }
+    },
+    "tests": [
+      {
+        "description": "an array of matching objects is valid",
+        "data": "[{\"name\": \"alice\", \"age\": 30}, {\"name\": \"bob\"}]",
+        "valid": true
+      },
+      {
+        "description": "a wrong item property points into that item",
+        "data": "[{\"name\": \"alice\"}, {\"name\": \"bob\", \"age\": \"x\"}]",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/1/age" }]
+      },
+      {
+        "description": "an object where an array is expected is a data error at the root",
+        "data": "{\"name\": \"alice\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      }
+    ]
+  },
+  {
+    "description": "inline array of objects",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "inline": true,
+    "dataSchema": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": { "id": { "type": "integer" } }
+      }
+    },
+    "tests": [
+      {
+        "description": "matching rows are valid",
+        "data": [{ "id": 1 }, { "id": 2 }],
+        "valid": true
+      },
+      {
+        "description": "a wrong row points at its index",
+        "data": [{ "id": 1 }, { "id": "two" }],
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/1/id" }]
+      }
+    ]
+  }
+]

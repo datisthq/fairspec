@@ -1,0 +1,92 @@
+[
+  {
+    "description": "no dialect",
+    "comment": "Produced with odfpy in the Python environment: sheet 1 `fruits` (id, name: 1 apple, 2 orange), sheet 2 `animals` (id, name: 1 cat)",
+    "specification": ["https://fairspec.org/specs/file-dialect/#ods"],
+    "format": "ods",
+    "tests": [
+      {
+        "description": "the first sheet is loaded",
+        "data": {
+          "base64": "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"
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "sheetName",
+    "comment": "Produced with odfpy in the Python environment: sheet 1 `fruits` (id, name: 1 apple, 2 orange), sheet 2 `animals` (id, name: 1 cat)",
+    "specification": ["https://fairspec.org/specs/file-dialect/#sheetname"],
+    "format": "ods",
+    "fileDialect": {
+      "format": "ods",
+      "sheetName": "animals"
+    },
+    "tests": [
+      {
+        "description": "the named sheet is loaded",
+        "data": {
+          "base64": "UEsDBBQAAAAAADGUUF2FbDmKLgAAAC4AAAAIAAAAbWltZXR5cGVhcHBsaWNhdGlvbi92bmQub2FzaXMub3BlbmRvY3VtZW50LnNwcmVhZHNoZWV0UEsDBBQAAAAIADGUUF0dvi9fsgAAAOoBAAAKAAAAc3R5bGVzLnhtbI2RQQ6CMBBF956CdNMVKK5MA2XnCfQAtQymCZ0aOhi8vSDUgBu7bOa//smbohpsmzyh88ZhyfPswBNA7WqD95JfL+f0xCu5K1zTGA2idrq3gJR6erXgkxFGL+ZhyfoOhVPeeIHKghekhXsABkis02KsYgtPMFAsPWXXrAVSseyU3fSqWxu99ie8aVZoGvDRm4f8/MdiIZhneXZkMmie7e6/b9WTs4qMXrzLYv938nMq+QZQSwMEFAAAAAgAMZRQXakT3vI+AQAAjAYAAAsAAABjb250ZW50LnhtbO1VzW6DMAy+7ylQLpwog9MUAb3tCbYHcIPpIoUEJWYrb79QflqmtWJbpV52IU78ffZnY0K2PdQqeEfrpNF5mGwewwC1MKXU+zx8fXmOnsJt8ZCZqpICeWlEW6OmSBhNfg08Wzs+eHPWWs0NOOm4hhodJ8FNg3pi8XM097nYyCc80Fp2jz3n1kiwlttjF3lhp1bLPoIXmUHLCt1q5RN+iDF2YWo9SzYpK6Y+Q0umBpIictQpdPHs2ZmymzeusQile0OkIhv0HZ/BYPdiclbZVpJjC0BkzcfyQKBSsyZQLUbUNZ7tyPpR6Nl935tCllk8mt74EuB3IXuZV4PGV5WvLqVSBogtPL7tJx3JzSuDplH3Ky09CUlvXpqxoPc/re385PLA+s+kBvU/sfeYWAH0p3caf3czxYu7K77wLyk+AVBLAwQUAAAACAAxlFBd05Pfe+cAAADxAgAACAAAAG1ldGEueG1sjZK9rsIwDEZ3nqLq0omWIgYUpWFBrDDAwOibuhCJOigJf29PU6iUXjFkzjmfrXzmq2d7Se5orNJUZWU+yxIkqWtFpyo77DfTZbYSE66bRklktZa3FslNW3SQdCpZ9nmq0pshpsEqywhatMxJpq9Ig8JCmnWD0q/v8Olibc+Grl8j1vXsaC78XaLX7uHRZCDVoI3efODDDHkGEx3Qw6FdG3jEyp7tGg31q0HbAeB88ZExoRNmWfeK/8oe/tjfYxjOLy3zeSqGW/N9Cd63dkJCA04bsV1vdseizBd5yYt/b7wYmcWvmxVvUEsDBBQAAAAIADGUUF14Pmq9EAEAAP8DAAAVAAAATUVUQS1JTkYvbWFuaWZlc3QueG1srZNNasMwEIX3PYXxxivb7a6IONnlBO0BptK4FugPaZzGt68kEqxQCip0Z+T3vfcYjQ6nq1bNBX2Q1kzdy/DcNWi4FdJ8Tt3727l/7U7Hp4MGI2cMxO4fTeRMYHaeJcepXb1hFoIMzIDGwIgz69AIy1eNhlipZjGlvfGEV6qlk7ZkNRLUskn7kAsfqrp2Fj8k34ZQnX6fXuHBF/DVBllc0sLDVy2ctPE6S9x5DFEAlG690qZkSq9AW/0oszjTx32nZqmwjxq/NfvZqlTvgJapHdv9WKOQ0NPmYiI4pyTPfcaLEUNOH8rQIcTSIMKCSO1Yn5hbhiFW/iU6reKYfv/BlFtDqdP/uqbFrrQcfzzi4zdQSwECFAMUAAAAAAAxlFBdhWw5ii4AAAAuAAAACAAAAAAAAAAAAAAApIEAAAAAbWltZXR5cGVQSwECFAMUAAAACAAxlFBdHb4vX7IAAADqAQAACgAAAAAAAAAAAAAApIFUAAAAc3R5bGVzLnhtbFBLAQIUAxQAAAAIADGUUF2pE97yPgEAAIwGAAALAAAAAAAAAAAAAACkgS4BAABjb250ZW50LnhtbFBLAQIUAxQAAAAIADGUUF3Tk9975wAAAPECAAAIAAAAAAAAAAAAAACkgZUCAABtZXRhLnhtbFBLAQIUAxQAAAAIADGUUF14Pmq9EAEAAP8DAAAVAAAAAAAAAAAAAACkgaIDAABNRVRBLUlORi9tYW5pZmVzdC54bWxQSwUGAAAAAAUABQAgAQAA5QQAAAAA"
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "cat"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "sheetNumber 2",
+    "comment": "Produced with odfpy in the Python environment: sheet 1 `fruits` (id, name: 1 apple, 2 orange), sheet 2 `animals` (id, name: 1 cat)",
+    "specification": ["https://fairspec.org/specs/file-dialect/#sheetnumber"],
+    "format": "ods",
+    "fileDialect": {
+      "format": "ods",
+      "sheetNumber": 2
+    },
+    "tests": [
+      {
+        "description": "the second sheet is loaded",
+        "data": {
+          "base64": "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"
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "cat"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "sheetNumber 1",
+    "comment": "Produced with odfpy in the Python environment: sheet 1 `fruits` (id, name: 1 apple, 2 orange), sheet 2 `animals` (id, name: 1 cat)",
+    "specification": ["https://fairspec.org/specs/file-dialect/#sheetnumber"],
+    "format": "ods",
+    "fileDialect": {
+      "format": "ods",
+      "sheetNumber": 1
+    },
+    "tests": [
+      {
+        "description": "the first sheet is loaded",
+        "data": {
+          "base64": "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"
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  }
+]

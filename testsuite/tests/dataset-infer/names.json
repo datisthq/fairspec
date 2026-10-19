@@ -1,0 +1,76 @@
+[
+  {
+    "description": "names inferred from file names",
+    "comment": "The spec does not say how a missing name is inferred, only that a name is alphanumerics and underscores. Both libraries slug the file stem: lowercase, camelCase split, other runs of characters become one underscore",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        { "data": "My Data.csv" },
+        { "data": "userList.csv" },
+        { "data": "posts-2024.csv" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "every inferred name is a valid name",
+        "data": {
+          "My Data.csv": "id\n1\n",
+          "userList.csv": "id\n1\n",
+          "posts-2024.csv": "id\n1\n"
+        },
+        "expected": {
+          "resources": [
+            {
+              "data": "My Data.csv",
+              "name": "my_data",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": { "properties": { "id": { "type": "integer" } } }
+            },
+            {
+              "data": "userList.csv",
+              "name": "user_list",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": { "properties": { "id": { "type": "integer" } } }
+            },
+            {
+              "data": "posts-2024.csv",
+              "name": "posts_2024",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": { "properties": { "id": { "type": "integer" } } }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

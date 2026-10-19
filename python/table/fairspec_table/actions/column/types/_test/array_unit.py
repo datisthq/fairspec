@@ -50,6 +50,7 @@ class TestInspectArrayColumn:
         column = ArrayColumn(
             name="data",
             type="array",
+            nullable=True,
             property=ArrayColumnProperty(),
         )
 
@@ -216,7 +217,7 @@ class TestInspectArrayColumn:
         assert json_errors[2].rowNumber == 3
         assert json_errors[2].cell == "[1]"
         assert json_errors[2].message == "[1] is too short"
-        assert json_errors[2].jsonPointer == "/"
+        assert json_errors[2].jsonPointer == ""
 
     def test_complex_json_schema_with_array_of_objects(self):
         table = pl.DataFrame(
@@ -276,4 +277,4 @@ class TestInspectArrayColumn:
         assert errors[0].rowNumber == 2
         assert errors[0].cell == '["duplicate","duplicate"]'
         assert "has non-unique elements" in errors[0].message
-        assert errors[0].jsonPointer == "/"
+        assert errors[0].jsonPointer == ""

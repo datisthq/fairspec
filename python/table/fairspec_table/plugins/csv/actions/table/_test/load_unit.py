@@ -119,6 +119,22 @@ class TestLoadCsvTable:
             {"id": 2, "name": "bob"},
         ]
 
+    def test_should_handle_crlf_line_terminator(self):
+        path = write_temp_file("id,name\r\n1,alice\r\n2,bob\r\n")
+
+        table = load_csv_table(
+            Resource(
+                data=path,
+                fileDialect=CsvFileDialect(lineTerminator="\r\n"),
+            )
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [
+            {"id": 1, "name": "alice"},
+            {"id": 2, "name": "bob"},
+        ]
+
     def test_should_handle_custom_quote_character(self):
         path = write_temp_file("id,name\n1,'alice smith'\n2,'bob jones'")
 

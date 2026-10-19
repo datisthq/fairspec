@@ -1,0 +1,87 @@
+[
+  {
+    "description": "column, cell and row errors in one report",
+    "comment": "The spec does not order errors. Proposed: column errors, then cell errors column by column in row order, then row errors",
+    "tableSchema": {
+      "required": ["note"],
+      "properties": {
+        "id": { "type": "integer" },
+        "age": { "type": "integer", "minimum": 0 },
+        "note": { "type": "string" }
+      },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "every error kind is reported",
+        "data": "id,age\n1,5\n1,-1\nx,3\n",
+        "valid": false,
+        "errors": [
+          { "type": "column/missing", "columnName": "note" },
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 3,
+            "cell": "x"
+          },
+          {
+            "type": "cell/minimum",
+            "columnName": "age",
+            "rowNumber": 2,
+            "cell": "-1",
+            "minimum": "0"
+          },
+          { "type": "row/primaryKey", "rowNumber": 2, "columnNames": ["id"] }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "cell errors in several columns and rows",
+    "comment": "The spec does not order errors; both libraries list them column by column, each column in row order",
+    "tableSchema": {
+      "properties": {
+        "a": { "type": "integer" },
+        "b": { "type": "integer", "maximum": 9 }
+      }
+    },
+    "tests": [
+      {
+        "description": "errors are grouped by column",
+        "data": "a,b\nx,10\n1,2\ny,z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "a",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "a",
+            "columnType": "integer",
+            "rowNumber": 3,
+            "cell": "y"
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "b",
+            "rowNumber": 1,
+            "cell": "10",
+            "maximum": "9"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "b",
+            "columnType": "integer",
+            "rowNumber": 3,
+            "cell": "z"
+          }
+        ]
+      }
+    ]
+  }
+]

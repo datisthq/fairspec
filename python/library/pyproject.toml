@@ -23,7 +23,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["fairspec-dataset", "fairspec-metadata", "fairspec-table", "genson>=1.3"]
+dependencies = ["fairspec-dataset", "fairspec-metadata", "fairspec-table"]
 
 [[project.authors]]
 name = "Evgeny Karev"

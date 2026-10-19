@@ -21,13 +21,14 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
         },
       },
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -43,14 +44,15 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           groupChar: ",",
         },
       },
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -64,14 +66,15 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           decimalChar: ",",
         },
       },
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -85,7 +88,8 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           groupChar: ".",
           decimalChar: ",",
         },
@@ -93,7 +97,7 @@ describe("parseDecimalColumn", () => {
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -109,14 +113,15 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           withText: true,
         },
       },
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -130,7 +135,8 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           withText: true,
           groupChar: ",",
         },
@@ -138,7 +144,7 @@ describe("parseDecimalColumn", () => {
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
@@ -153,7 +159,8 @@ describe("parseDecimalColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         name: {
-          type: "number",
+          type: "string",
+          format: "decimal",
           withText: true,
           groupChar: ".",
           decimalChar: ",",
@@ -162,7 +169,7 @@ describe("parseDecimalColumn", () => {
     }
 
     const result = await normalizeTable(table, tableSchema)
-    const frame = await result.collect()
+    const frame = await result.select(pl.col("name").cast(pl.Float64)).collect()
 
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)

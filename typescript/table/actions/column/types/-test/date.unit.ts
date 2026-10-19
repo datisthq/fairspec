@@ -52,7 +52,8 @@ describe("parseDateColumn", () => {
   })
 
   it.each([
-    ["21/11/06 16:30", new Date(Date.UTC(2006, 10, 21))],
+    ["21/11/06", new Date(Date.UTC(2006, 10, 21))],
+    ["21/11/06 16:30", null],
     ["invalid", null],
     ["", null],
   ])("temporalFormat %%d/%%m/%%y: %s -> %s", async (cell, expected) => {

@@ -56,7 +56,7 @@ class TestInferJsonFileDialectNestedJson:
         result = infer_json_file_dialect(resource)
 
         assert isinstance(result, JsonFileDialect)
-        assert result.jsonPointer == "data"
+        assert result.jsonPointer == "/data"
         assert result.rowType == RowType.array
 
     def test_should_detect_json_pointer_with_array_of_objects(self):
@@ -67,7 +67,7 @@ class TestInferJsonFileDialectNestedJson:
 
         result = infer_json_file_dialect(resource)
 
-        assert result == JsonFileDialect(jsonPointer="records", rowType=RowType.object)
+        assert result == JsonFileDialect(jsonPointer="/records", rowType=RowType.object)
 
 
 class TestInferJsonFileDialectJsonl:

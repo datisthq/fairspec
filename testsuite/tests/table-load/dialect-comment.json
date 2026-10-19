@@ -1,0 +1,71 @@
+[
+  {
+    "description": "commentRows",
+    "comment": "Row numbers count every row of the file, the header included, as in the spec's example",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "fileDialect": { "format": "csv", "commentRows": [2] },
+    "tests": [
+      {
+        "description": "the listed row is omitted",
+        "data": "id,name\n# a comment row\n1,apple\n2,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows with several rows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "fileDialect": { "format": "csv", "commentRows": [3, 5] },
+    "tests": [
+      {
+        "description": "every listed row is omitted",
+        "data": "id,name\n1,apple\nx,skipped\n2,orange\ny,skipped\n3,pear\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"],
+            [3, "pear"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "fileDialect": { "format": "csv", "commentPrefix": "#" },
+    "tests": [
+      {
+        "description": "rows starting with the prefix are omitted",
+        "data": "id,name\n# This row is ignored\n1,apple\n# Another comment\n2,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "format": "tsv",
+    "fileDialect": { "format": "tsv", "commentPrefix": "//" },
+    "tests": [
+      {
+        "description": "rows starting with the prefix are omitted",
+        "data": "id\tname\n// skipped\n1\tapple\n",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+      }
+    ]
+  }
+]

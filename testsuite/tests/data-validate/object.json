@@ -1,0 +1,131 @@
+[
+  {
+    "description": "inline object against a data schema",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "inline": true,
+    "dataSchema": {
+      "type": "object",
+      "required": ["name"],
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    },
+    "tests": [
+      {
+        "description": "a matching object is valid",
+        "data": { "name": "alice", "age": 30 },
+        "valid": true
+      },
+      {
+        "description": "a wrong type is a data error",
+        "data": { "name": "alice", "age": "thirty" },
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/age" }]
+      },
+      {
+        "description": "an undeclared property is allowed",
+        "data": { "name": "alice", "city": "paris" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "json file against a data schema",
+    "comment": "The pointer of an error on the whole document is the empty string, which RFC 6901 defines as the root; \"/\" points at a member named \"\"",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "required": ["name"],
+      "properties": { "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "a matching file is valid",
+        "data": "{\"name\": \"alice\"}",
+        "valid": true
+      },
+      {
+        "description": "a missing required property is a data error at the root",
+        "data": "{\"age\": 30}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      },
+      {
+        "description": "a wrong property type is a data error at that property",
+        "data": "{\"name\": 1}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/name" }]
+      }
+    ]
+  },
+  {
+    "description": "nested object",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "object",
+          "required": ["city"],
+          "properties": {
+            "city": { "type": "string" },
+            "geo": {
+              "type": "object",
+              "properties": { "lat": { "type": "number" } }
+            }
+          }
+        },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tests": [
+      {
+        "description": "a matching nested object is valid",
+        "data": "{\"address\": {\"city\": \"paris\", \"geo\": {\"lat\": 48.8}}, \"tags\": [\"a\"]}",
+        "valid": true
+      },
+      {
+        "description": "a wrong type two levels deep points at the leaf",
+        "data": "{\"address\": {\"city\": \"paris\", \"geo\": {\"lat\": \"north\"}}}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/address/geo/lat" }]
+      },
+      {
+        "description": "a missing nested required property points at its parent",
+        "data": "{\"address\": {}}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/address" }]
+      },
+      {
+        "description": "a wrong array item points at its index",
+        "data": "{\"tags\": [\"a\", 2]}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/tags/1" }]
+      }
+    ]
+  },
+  {
+    "description": "pointer escaping",
+    "comment": "RFC 6901 escapes \"~\" as \"~0\" and \"/\" as \"~1\" in a reference token",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a/b": { "type": "integer" }, "c~d": { "type": "integer" } }
+    },
+    "tests": [
+      {
+        "description": "a slash in a property name is escaped",
+        "data": "{\"a/b\": \"x\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a~1b" }]
+      },
+      {
+        "description": "a tilde in a property name is escaped",
+        "data": "{\"c~d\": \"x\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/c~0d" }]
+      }
+    ]
+  }
+]

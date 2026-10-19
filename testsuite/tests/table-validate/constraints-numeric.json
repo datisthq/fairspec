@@ -1,0 +1,268 @@
+[
+  {
+    "description": "exclusive bounds on an integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "level": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 10
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values strictly inside the bounds are valid",
+        "data": "level\n1\n9\n",
+        "valid": true
+      },
+      {
+        "description": "values equal to the bounds are errors",
+        "data": "level\n0\n5\n10\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "level",
+            "rowNumber": 1,
+            "cell": "0",
+            "minimum": "0"
+          },
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "level",
+            "rowNumber": 3,
+            "cell": "10",
+            "maximum": "10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "exclusive bounds on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "probability": {
+          "type": "number",
+          "exclusiveMinimum": 0.5,
+          "exclusiveMaximum": 1.5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values strictly inside the bounds are valid",
+        "data": "probability\n0.51\n1.49\n",
+        "valid": true
+      },
+      {
+        "description": "values on the bounds are errors",
+        "data": "probability\n0.5\n1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "probability",
+            "rowNumber": 1,
+            "cell": "0.5",
+            "minimum": "0.5"
+          },
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "probability",
+            "rowNumber": 2,
+            "cell": "1.5",
+            "maximum": "1.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minimum and maximum on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "minimum": -1.5,
+          "maximum": 2.5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values on the inclusive bounds are valid",
+        "data": "temperature\n-1.5\n2.5\n",
+        "valid": true
+      },
+      {
+        "description": "values past the bounds are errors",
+        "data": "temperature\n-1.6\n0\n2.6\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "temperature",
+            "rowNumber": 1,
+            "cell": "-1.6",
+            "minimum": "-1.5"
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "temperature",
+            "rowNumber": 3,
+            "cell": "2.6",
+            "maximum": "2.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minimum and maximum on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#decimal",
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "string",
+          "format": "decimal",
+          "minimum": 1.5,
+          "maximum": 10.5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values on the inclusive bounds are valid",
+        "data": "price\n1.50\n10.50\n",
+        "valid": true
+      },
+      {
+        "description": "values past the bounds are errors",
+        "data": "price\n1.49\n5.00\n10.51\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "price",
+            "rowNumber": 1,
+            "cell": "1.49",
+            "minimum": "1.5"
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "price",
+            "rowNumber": 3,
+            "cell": "10.51",
+            "maximum": "10.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minimum on a date column",
+    "comment": "minimum supports Integer, Number and Decimal only, so on a Date column it constrains nothing",
+    "specification": ["https://fairspec.org/specs/table-schema/#minimum"],
+    "tableSchema": {
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date",
+          "minimum": 20240101
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an earlier date is still valid",
+        "data": "day\n2023-12-31\n2024-01-02\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "multipleOf on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "step": {
+          "type": "integer",
+          "multipleOf": 5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "multiples, zero and negatives included, are valid",
+        "data": "step\n0\n5\n-10\n",
+        "valid": true
+      },
+      {
+        "description": "a non-multiple is a cell/multipleOf error",
+        "data": "step\n5\n7\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "step",
+            "rowNumber": 2,
+            "cell": "7",
+            "multipleOf": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 0.01 on a number column",
+    "comment": "The valid data is the spec's own example; a binary floating-point remainder rejects 99.99 and 25.5",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "number",
+          "multipleOf": 0.01
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values with two decimals are valid",
+        "data": "price\n10.00\n25.50\n99.99\n0.07\n",
+        "valid": true
+      },
+      {
+        "description": "a third decimal is a cell/multipleOf error",
+        "data": "price\n1.25\n1.255\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "price",
+            "rowNumber": 2,
+            "cell": "1.255",
+            "multipleOf": 0.01
+          }
+        ]
+      }
+    ]
+  }
+]

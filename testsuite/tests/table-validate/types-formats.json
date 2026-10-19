@@ -1,0 +1,504 @@
+[
+  {
+    "description": "email column",
+    "specification": ["https://fairspec.org/specs/table-schema/#email"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "email"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "addresses are valid",
+        "data": "id,x\n1,alice@example.com\n2,bob@company.org\n",
+        "valid": true
+      },
+      {
+        "description": "a bare name is a cell/type error",
+        "data": "id,x\n1,alice@example.com\n2,alice\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "email",
+            "rowNumber": 2,
+            "cell": "alice"
+          }
+        ]
+      },
+      {
+        "description": "a missing domain is a cell/type error",
+        "data": "id,x\n1,alice@example.com\n2,alice@\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "email",
+            "rowNumber": 2,
+            "cell": "alice@"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,alice@example.com\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable email column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#email"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "email"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,alice@example.com\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "url column",
+    "comment": "The spec limits URL columns to the HTTP and HTTPS protocols",
+    "specification": ["https://fairspec.org/specs/table-schema/#url"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "url"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "http and https URLs are valid",
+        "data": "id,x\n1,https://example.com\n2,http://example.org/page\n",
+        "valid": true
+      },
+      {
+        "description": "a URL without a scheme is a cell/type error",
+        "data": "id,x\n1,https://example.com\n2,example.com\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "url",
+            "rowNumber": 2,
+            "cell": "example.com"
+          }
+        ]
+      },
+      {
+        "description": "an ftp URL is a cell/type error",
+        "data": "id,x\n1,https://example.com\n2,ftp://example.com\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "url",
+            "rowNumber": 2,
+            "cell": "ftp://example.com"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,https://example.com\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable url column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#url"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "url"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,https://example.com\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "hex column",
+    "specification": ["https://fairspec.org/specs/table-schema/#hex"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "hex"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "upper and lower case hex is valid",
+        "data": "id,x\n1,FF5733\n2,00bfff\n",
+        "valid": true
+      },
+      {
+        "description": "non-hex letters are a cell/type error",
+        "data": "id,x\n1,FF5733\n2,XYZ123\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "hex",
+            "rowNumber": 2,
+            "cell": "XYZ123"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,FF5733\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable hex column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#hex"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "hex"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,FF5733\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "base64 column",
+    "specification": ["https://fairspec.org/specs/table-schema/#base64"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "base64"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "padded base64 is valid",
+        "data": "id,x\n1,aGVsbG8gd29ybGQ=\n2,R0lGODlh\n",
+        "valid": true
+      },
+      {
+        "description": "punctuation is a cell/type error",
+        "data": "id,x\n1,aGVsbG8gd29ybGQ=\n2,@@@@\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "base64",
+            "rowNumber": 2,
+            "cell": "@@@@"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,aGVsbG8gd29ybGQ=\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable base64 column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#base64"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "base64"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,aGVsbG8gd29ybGQ=\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "wkt column",
+    "specification": ["https://fairspec.org/specs/table-schema/#wkt"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkt"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "points, lines and polygons are valid",
+        "data": "id,x\n1,\"POINT (30 10)\"\n2,\"LINESTRING (30 10, 10 30, 40 40)\"\n3,\"POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unknown geometry is a cell/type error",
+        "data": "id,x\n1,\"POINT (30 10)\"\n2,\"CIRCLE (30 10)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "CIRCLE (30 10)"
+          }
+        ]
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,\"POINT (30 10)\"\n2,hello\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "hello"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,\"POINT (30 10)\"\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable wkt column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#wkt"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "wkt"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,\"POINT (30 10)\"\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "wkb column",
+    "comment": "01010000000000000000003E400000000000002440 is POINT (30 10) as little-endian WKB in hex",
+    "specification": ["https://fairspec.org/specs/table-schema/#wkb"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkb"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a hex-encoded point is valid",
+        "data": "id,x\n1,01010000000000000000003E400000000000002440\n",
+        "valid": true
+      },
+      {
+        "description": "a truncated geometry is a cell/type error",
+        "data": "id,x\n1,01010000000000000000003E400000000000002440\n2,0101000000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkb",
+            "rowNumber": 2,
+            "cell": "0101000000"
+          }
+        ]
+      },
+      {
+        "description": "non-hex text is a cell/type error",
+        "data": "id,x\n1,01010000000000000000003E400000000000002440\n2,hello\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkb",
+            "rowNumber": 2,
+            "cell": "hello"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,01010000000000000000003E400000000000002440\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable wkb column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#wkb"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "wkb"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,01010000000000000000003E400000000000002440\n2,\n",
+        "valid": true
+      }
+    ]
+  }
+]

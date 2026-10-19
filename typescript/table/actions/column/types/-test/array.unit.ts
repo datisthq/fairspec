@@ -52,13 +52,23 @@ describe("validateArrayColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         data: {
-          type: "array",
+          type: ["array", "null"],
         },
       },
     }
 
     const errors = await inspectTable(table, { tableSchema })
     expect(errors).toHaveLength(0)
+  })
+
+  it("should report a null value in a non-null column as missing", async () => {
+    const table = pl.DataFrame({ data: ['["value"]', null] }).lazy()
+    const tableSchema: TableSchema = { properties: { data: { type: "array" } } }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      { type: "cell/missing", columnName: "data", rowNumber: 2, cell: "" },
+    ])
   })
 
   it("should errors for JSON objects", async () => {

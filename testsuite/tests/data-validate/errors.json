@@ -1,0 +1,54 @@
+[
+  {
+    "description": "several errors",
+    "comment": "Every violation is reported, not only the first. The spec does not order them; the expected order is the order of the schema's properties, which both libraries are expected to share",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "age": { "type": "integer" },
+        "city": { "type": "string" }
+      }
+    },
+    "tests": [
+      {
+        "description": "two wrong properties are two errors",
+        "data": "{\"name\": 1, \"age\": \"x\", \"city\": \"paris\"}",
+        "valid": false,
+        "errors": [
+          { "type": "data", "jsonPointer": "/name" },
+          { "type": "data", "jsonPointer": "/age" }
+        ]
+      },
+      {
+        "description": "three wrong properties are three errors",
+        "data": "{\"name\": 1, \"age\": \"x\", \"city\": 2}",
+        "valid": false,
+        "errors": [
+          { "type": "data", "jsonPointer": "/name" },
+          { "type": "data", "jsonPointer": "/age" },
+          { "type": "data", "jsonPointer": "/city" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "several wrong array items",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": { "type": "array", "items": { "type": "integer" } },
+    "tests": [
+      {
+        "description": "each wrong item is an error, in item order",
+        "data": "[1, \"a\", 3, \"b\"]",
+        "valid": false,
+        "errors": [
+          { "type": "data", "jsonPointer": "/1" },
+          { "type": "data", "jsonPointer": "/3" }
+        ]
+      }
+    ]
+  }
+]

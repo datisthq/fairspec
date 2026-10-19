@@ -1,0 +1,50 @@
+[
+  {
+    "description": "quoteChar",
+    "specification": ["https://fairspec.org/specs/file-dialect/#quotechar"],
+    "fileDialect": { "format": "csv", "quoteChar": "'" },
+    "tests": [
+      {
+        "description": "a quoted cell keeps its delimiter",
+        "data": "id,name\n1,'apple,red'\n2,'orange,citrus'\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple,red"],
+            [2, "orange,citrus"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "default quoteChar",
+    "specification": ["https://fairspec.org/specs/file-dialect/#quotechar"],
+    "fileDialect": { "format": "csv", "headerRows": [1] },
+    "tests": [
+      {
+        "description": "a double-quoted cell keeps its delimiter",
+        "data": "id,name\n1,\"apple,red\"\n",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple,red"]] }
+      }
+    ]
+  },
+  {
+    "description": "delimiter",
+    "specification": ["https://fairspec.org/specs/file-dialect/#delimiter"],
+    "fileDialect": { "format": "csv", "delimiter": ";" },
+    "tests": [
+      {
+        "description": "cells are split on the delimiter",
+        "data": "id;name;price\n1;apple;1.5\n2;orange;2.0\n",
+        "expected": {
+          "columns": ["id", "name", "price"],
+          "rows": [
+            [1, "apple", 1.5],
+            [2, "orange", 2.0]
+          ]
+        }
+      }
+    ]
+  }
+]

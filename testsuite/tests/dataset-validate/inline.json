@@ -1,0 +1,224 @@
+[
+  {
+    "description": "inline rows matching the table schema",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": [
+            { "id": 1, "name": "alice" },
+            { "id": 2, "name": "bob" }
+          ],
+          "tableSchema": {
+            "required": ["id", "name"],
+            "properties": {
+              "id": { "type": "integer", "minimum": 1 },
+              "name": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [{ "description": "are valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "inline rows breaking a minimum",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/table-schema/#minimum"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": [
+            { "id": 1, "name": "alice" },
+            { "id": 0, "name": "bob" }
+          ],
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer", "minimum": 1 },
+              "name": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a cell/minimum error",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "resourceName": "people",
+            "columnName": "id",
+            "rowNumber": 2,
+            "cell": "0",
+            "minimum": "1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "inline rows with a value of the wrong type",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/table-schema/#integer"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": [
+            { "id": 1, "name": "alice" },
+            { "id": "x", "name": "bob" }
+          ],
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a cell/type error",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "inline row without a value of a non-nullable column",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/table-schema/#type"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": [{ "id": 1, "name": "alice" }, { "id": 2 }],
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a cell/missing error",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "resourceName": "people",
+            "columnName": "name",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "inline object matching a data schema",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "profile",
+          "data": { "name": "alice", "age": 30 },
+          "dataSchema": {
+            "type": "object",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+          }
+        }
+      ]
+    },
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "inline object against a data schema",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "profile",
+          "data": { "name": "alice", "age": "thirty" },
+          "dataSchema": {
+            "type": "object",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a wrong type is a data error",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "data", "resourceName": "profile", "jsonPointer": "/age" }]
+      }
+    ]
+  },
+  {
+    "description": "json file against a data schema",
+    "comment": "not inline: the resource points at a json file in the dataset, which its data schema validates",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "profile",
+          "data": "profile.json",
+          "dataSchema": {
+            "type": "object",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a matching file is valid",
+        "data": { "profile.json": "{\"name\": \"alice\", \"age\": 30}" },
+        "valid": true
+      },
+      {
+        "description": "a wrong type is a data error",
+        "data": { "profile.json": "{\"name\": \"alice\", \"age\": \"thirty\"}" },
+        "valid": false,
+        "errors": [{ "type": "data", "resourceName": "profile", "jsonPointer": "/age" }]
+      },
+      {
+        "description": "a missing required property is a data error at the root",
+        "data": { "profile.json": "{\"age\": 30}" },
+        "valid": false,
+        "errors": [{ "type": "data", "resourceName": "profile", "jsonPointer": "" }]
+      }
+    ]
+  }
+]

@@ -4,6 +4,8 @@ import os
 import re
 import urllib.parse
 
+from ._shared.slugify import slugify_text
+
 
 def safe_relpath(path: str, start: str | None = None) -> str:
     try:
@@ -60,12 +62,4 @@ def get_file_name_slug(path: str) -> str | None:
     basename = get_file_basename(path)
     if not basename:
         return None
-    return _slugify(basename)
-
-
-def _slugify(text: str) -> str:
-    text = re.sub(r"([a-z])([A-Z])", r"\1_\2", text)
-    text = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", text)
-    slug = re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
-    slug = re.sub(r"_+", "_", slug)
-    return re.sub(r"[^a-zA-Z0-9_]", "", slug)
+    return re.sub(r"[^a-zA-Z0-9_]", "", slugify_text(basename, separator="_"))

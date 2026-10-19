@@ -1,0 +1,62 @@
+[
+  {
+    "description": "json dialect",
+    "comment": "The spec leaves which properties an inferred dialect carries to the implementation; the values follow the libraries, except jsonPointer, which the spec requires to be an RFC 6901 pointer",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#json",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "json",
+    "tests": [
+      {
+        "description": "an array of objects",
+        "data": [
+          { "id": 1, "name": "apple" },
+          { "id": 2, "name": "orange" }
+        ],
+        "expected": { "format": "json", "rowType": "object" }
+      },
+      {
+        "description": "an array of arrays with a header row",
+        "data": [
+          ["id", "name"],
+          [1, "apple"],
+          [2, "orange"]
+        ],
+        "expected": { "format": "json", "rowType": "array", "headerRows": [1] }
+      }
+    ]
+  },
+  {
+    "description": "json dialect with the rows under a property",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "tests": [
+      {
+        "description": "the pointer is an RFC 6901 JSON Pointer",
+        "data": "{\"items\":[{\"id\":1,\"name\":\"apple\"},{\"id\":2,\"name\":\"orange\"}]}",
+        "expected": { "format": "json", "jsonPointer": "/items", "rowType": "object" }
+      }
+    ]
+  },
+  {
+    "description": "jsonl dialect",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "jsonl",
+    "tests": [
+      {
+        "description": "one object per line",
+        "data": "{\"id\":1,\"name\":\"apple\"}\n{\"id\":2,\"name\":\"orange\"}\n",
+        "expected": { "format": "jsonl", "rowType": "object" }
+      },
+      {
+        "description": "one array per line with a header line",
+        "data": "[\"id\",\"name\"]\n[1,\"apple\"]\n[2,\"orange\"]\n",
+        "expected": { "format": "jsonl", "rowType": "array", "headerRows": [1] }
+      }
+    ]
+  }
+]

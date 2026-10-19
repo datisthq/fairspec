@@ -7,6 +7,7 @@ import polars as pl
 from fairspec_metadata import CellExclusiveMaximumError, CellMaximumError
 from fairspec_metadata import Column
 
+from fairspec_table.helpers import stringify_number
 from fairspec_table.models import CellMapping
 
 
@@ -42,7 +43,7 @@ def create_check_cell_maximum(
             error_template = CellExclusiveMaximumError(
                 type="cell/exclusiveMaximum",
                 columnName=column.name,
-                maximum=str(maximum),
+                maximum=stringify_number(maximum),
                 rowNumber=0,
                 cell="",
             )
@@ -50,7 +51,7 @@ def create_check_cell_maximum(
             error_template = CellMaximumError(
                 type="cell/maximum",
                 columnName=column.name,
-                maximum=str(maximum),
+                maximum=stringify_number(maximum),
                 rowNumber=0,
                 cell="",
             )

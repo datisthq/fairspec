@@ -33,7 +33,9 @@ describe("parseTimeColumn", () => {
   it.each([
     ["06:00", "06:00:00"],
     ["06:50", "06:50:00"],
-    ["3:00 am", "03:00:00"],
+    ["3:00", "03:00:00"],
+    ["3:00 am", null],
+    ["06:00:00", null],
     ["some night", null],
     ["invalid", null],
     ["", null],

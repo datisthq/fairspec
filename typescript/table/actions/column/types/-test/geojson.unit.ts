@@ -113,7 +113,7 @@ describe("validateGeojsonColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         location: {
-          type: "object",
+          type: ["object", "null"],
           format: "geojson",
         },
       },

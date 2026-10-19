@@ -10,48 +10,37 @@ class TestJoinHeaderRows:
     def test_should_join_two_header_rows_with_default_space_separator(self):
         table = pl.DataFrame(
             {
-                "col1": ["first", "name", "header3", "Alice", "Bob"],
-                "col2": ["last", "name", "header3", "Smith", "Jones"],
-                "col3": [
-                    "contact",
-                    "email",
-                    "header3",
-                    "alice@example.com",
-                    "bob@example.com",
-                ],
+                "column_1": ["first", "name", "Alice", "Bob"],
+                "column_2": ["last", "name", "Smith", "Jones"],
+                "column_3": ["contact", "email", "alice@example.com", "bob@example.com"],
             }
         ).lazy()
 
-        result = join_header_rows(table, CsvFileDialect(headerRows=[2, 3]))
+        result = join_header_rows(table, CsvFileDialect(headerRows=[1, 2]))
 
         collected: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-        assert collected.columns == ["col1 first", "col2 last", "col3 contact"]
-        assert collected.height == 4
-        assert collected.row(0) == ("name", "name", "email")
-        assert collected.row(1) == ("header3", "header3", "header3")
-        assert collected.row(2) == ("Alice", "Smith", "alice@example.com")
-        assert collected.row(3) == ("Bob", "Jones", "bob@example.com")
+        assert collected.columns == ["first name", "last name", "contact email"]
+        assert collected.rows() == [
+            ("Alice", "Smith", "alice@example.com"),
+            ("Bob", "Jones", "bob@example.com"),
+        ]
 
     def test_should_join_two_header_rows_with_custom_separator(self):
         table = pl.DataFrame(
             {
-                "col1": ["user", "first", "header3", "Alice", "Bob"],
-                "col2": ["user", "last", "header3", "Smith", "Jones"],
-                "col3": ["meta", "created", "header3", "2023-01-01", "2023-01-02"],
+                "column_1": ["user", "first", "Alice"],
+                "column_2": ["user", "last", "Smith"],
+                "column_3": ["meta", "created", "2023-01-01"],
             }
         ).lazy()
 
         result = join_header_rows(
-            table, CsvFileDialect(headerRows=[2, 3], headerJoin="_")
+            table, CsvFileDialect(headerRows=[1, 2], headerJoin="_")
         )
 
         collected: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-        assert collected.columns == ["col1_user", "col2_user", "col3_meta"]
-        assert collected.height == 4
-        assert collected.row(0) == ("first", "last", "created")
-        assert collected.row(1) == ("header3", "header3", "header3")
-        assert collected.row(2) == ("Alice", "Smith", "2023-01-01")
-        assert collected.row(3) == ("Bob", "Jones", "2023-01-02")
+        assert collected.columns == ["user_first", "user_last", "meta_created"]
+        assert collected.rows() == [("Alice", "Smith", "2023-01-01")]
 
     def test_should_return_table_unchanged_when_only_one_header_row(self):
         table = pl.DataFrame(
@@ -83,12 +72,12 @@ class TestJoinHeaderRows:
         assert collected.columns == ["field1", "field2", "field3"]
         assert collected.height == 2
 
-    def test_should_join_three_header_rows(self):
+    def test_should_join_three_header_rows_after_skipped_rows(self):
         table = pl.DataFrame(
             {
-                "col1": ["person", "user", "first", "header4", "Alice", "Bob"],
-                "col2": ["person", "user", "last", "header4", "Smith", "Jones"],
-                "col3": ["location", "address", "city", "header4", "NYC", "LA"],
+                "column_1": ["person", "user", "first", "Alice"],
+                "column_2": ["person", "user", "last", "Smith"],
+                "column_3": ["location", "address", "city", "NYC"],
             }
         ).lazy()
 
@@ -96,34 +85,42 @@ class TestJoinHeaderRows:
 
         collected: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert collected.columns == [
-            "col1 person user",
-            "col2 person user",
-            "col3 location address",
+            "person user first",
+            "person user last",
+            "location address city",
         ]
-        assert collected.height == 4
-        assert collected.row(0) == ("first", "last", "city")
-        assert collected.row(1) == ("header4", "header4", "header4")
-        assert collected.row(2) == ("Alice", "Smith", "NYC")
-        assert collected.row(3) == ("Bob", "Jones", "LA")
+        assert collected.rows() == [("Alice", "Smith", "NYC")]
 
-    def test_should_handle_empty_strings_in_header_rows(self):
+    def test_should_carry_a_label_forward_across_empty_header_cells(self):
         table = pl.DataFrame(
             {
-                "col1": ["person", "", "header3", "Alice", "Bob"],
-                "col2": ["", "name", "header3", "Smith", "Jones"],
-                "col3": ["location", "city", "header3", "NYC", "LA"],
+                "column_1": ["person", "first", "Alice"],
+                "column_2": [None, "last", "Smith"],
+                "column_3": ["location", "city", "NYC"],
             }
         ).lazy()
 
-        result = join_header_rows(table, CsvFileDialect(headerRows=[2, 3]))
+        result = join_header_rows(table, CsvFileDialect(headerRows=[1, 2]))
 
         collected: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-        assert collected.columns == ["col1 person", "col2 ", "col3 location"]
-        assert collected.height == 4
-        assert collected.row(0) == ("", "name", "city")
-        assert collected.row(1) == ("header3", "header3", "header3")
-        assert collected.row(2) == ("Alice", "Smith", "NYC")
-        assert collected.row(3) == ("Bob", "Jones", "LA")
+        assert collected.columns == ["person first", "person last", "location city"]
+        assert collected.rows() == [("Alice", "Smith", "NYC")]
+
+    def test_should_drop_the_other_header_rows_with_column_names(self):
+        table = pl.DataFrame(
+            {
+                "key": ["id", "1"],
+                "label": ["name", "apple"],
+            }
+        ).lazy()
+
+        result = join_header_rows(
+            table, CsvFileDialect(headerRows=[1, 2], columnNames=["key", "label"])
+        )
+
+        collected: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert collected.columns == ["key", "label"]
+        assert collected.rows() == [("1", "apple")]
 
 
 class TestSkipCommentRows:

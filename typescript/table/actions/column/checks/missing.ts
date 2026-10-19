@@ -2,7 +2,7 @@ import type { CellMissingError, Column } from "@fairspec/metadata"
 import type { CellMapping } from "../../../models/cell.ts"
 
 export function checkCellMissing(column: Column, mapping: CellMapping) {
-  if (column.nullable) return undefined
+  if (column.nullable || column.type === "unknown") return undefined
 
   const isErrorExpr = mapping.target.isNull()
 

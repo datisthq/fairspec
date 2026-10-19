@@ -185,7 +185,7 @@ For example:
 
 ### `textual`
 
-A boolean indicating whether the file is text-based. When `true`, the file `MUST` be `utf-8` encoded.
+A boolean indicating whether the file is text-based. When `true`, the file `MUST` be `utf-8` encoded. For a multipart resource, every part `MUST` be `utf-8` encoded.
 
 For example:
 
@@ -244,6 +244,8 @@ For example, for a file with CSV format:
 ### `dataSchema`
 
 It `MUST` be a [Path](#path) to or an object with [Fairspec Data Schema](../data-schema). If present, [Data](#data) `MUST` be a JSON document that is compatible with the provided schema.
+
+A JSON file whose top-level value is an object, read without a [`jsonPointer`](../file-dialect#jsonpointer), is not a table: it is described by a Data Schema, and a [Table Schema](#tableschema) does not apply to it.
 
 For example as an external path:
 
@@ -326,6 +328,10 @@ For example for a resource with geolocation:
   ]
 }
 ```
+
+## Validation
+
+A validator that reports the errors of a dataset `MUST` list the errors of its resources first, each resource's table errors in the order the [Table Schema](../table-schema#validation) specification sets. Dataset-level errors follow them: [foreign key](../table-schema#foreignkeys) violations, and foreign keys that reference a resource the dataset does not contain.
 
 ## Common
 

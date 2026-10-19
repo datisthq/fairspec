@@ -368,4 +368,15 @@ describe("inspectTable (cell/minimum)", () => {
       },
     ])
   })
+
+  it("should ignore minimum on a date column", async () => {
+    const table = pl.DataFrame({ day: ["2023-12-31", "2024-01-02"] }).lazy()
+    const bound = { minimum: 20240101 }
+    const tableSchema: TableSchema = {
+      properties: { day: { type: "string", format: "date", ...bound } },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([])
+  })
 })

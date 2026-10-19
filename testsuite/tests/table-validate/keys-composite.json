@@ -1,0 +1,80 @@
+[
+  {
+    "description": "composite primary key",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "site": { "type": "string" },
+        "year": { "type": "integer" },
+        "value": { "type": "number" }
+      },
+      "primaryKey": ["site", "year"]
+    },
+    "tests": [
+      {
+        "description": "a repeated part with a distinct combination is valid",
+        "data": "site,year,value\na,2020,1\na,2021,2\nb,2020,3\n",
+        "valid": true
+      },
+      {
+        "description": "a repeated combination is a row/primaryKey error",
+        "data": "site,year,value\na,2020,1\nb,2020,2\na,2020,3\n",
+        "valid": false,
+        "errors": [
+          { "type": "row/primaryKey", "rowNumber": 3, "columnNames": ["site", "year"] }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "several unique keys",
+    "specification": ["https://fairspec.org/specs/table-schema/#uniquekeys"],
+    "tableSchema": {
+      "properties": {
+        "email": { "type": "string" },
+        "dept": { "type": "string" },
+        "number": { "type": "integer" }
+      },
+      "uniqueKeys": [["email"], ["dept", "number"]]
+    },
+    "tests": [
+      {
+        "description": "distinct values for every key are valid",
+        "data": "email,dept,number\na@x.org,hr,1\nb@x.org,hr,2\nc@x.org,it,1\n",
+        "valid": true
+      },
+      {
+        "description": "each violated key is reported",
+        "data": "email,dept,number\na@x.org,hr,1\na@x.org,it,1\nb@x.org,hr,1\n",
+        "valid": false,
+        "errors": [
+          { "type": "row/uniqueKey", "rowNumber": 2, "columnNames": ["email"] },
+          { "type": "row/uniqueKey", "rowNumber": 3, "columnNames": ["dept", "number"] }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "primary key and unique key together",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#primarykey",
+      "https://fairspec.org/specs/table-schema/#uniquekeys"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "email": { "type": "string" } },
+      "primaryKey": ["id"],
+      "uniqueKeys": [["email"]]
+    },
+    "tests": [
+      {
+        "description": "one row breaking both keys reports both",
+        "data": "id,email\n1,a@x.org\n1,a@x.org\n",
+        "valid": false,
+        "errors": [
+          { "type": "row/primaryKey", "rowNumber": 2, "columnNames": ["id"] },
+          { "type": "row/uniqueKey", "rowNumber": 2, "columnNames": ["email"] }
+        ]
+      }
+    ]
+  }
+]

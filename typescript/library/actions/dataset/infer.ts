@@ -8,7 +8,10 @@ export async function inferDataset(dataset: Dataset, options?: InferResourceOpti
   const concurrency = os.cpus().length
 
   const resources = await pAll(
-    (dataset.resources ?? []).map(res => () => inferResource(res, options)),
+    (dataset.resources ?? []).map(
+      (resource, index) => () =>
+        inferResource(resource, { ...options, resourceNumber: index + 1 }),
+    ),
     { concurrency },
   )
 

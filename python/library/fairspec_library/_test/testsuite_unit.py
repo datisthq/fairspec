@@ -10,9 +10,20 @@ from typing import TypedDict
 import polars as pl
 import pytest
 from fairspec_dataset import describe_file, validate_file, write_temp_file
-from fairspec_metadata import Resource, inspect_json
+from fairspec_metadata import (
+    Dataset,
+    Resource,
+    denormalize_dataset,
+    infer_resource_name,
+    inspect_json,
+)
+from fairspec_table import Table, query_table
 from pydantic import BaseModel
 
+from ..actions.data.validate import validate_data
+from ..actions.data_schema.infer import infer_data_schema
+from ..actions.dataset.infer import infer_dataset
+from ..actions.dataset.load import load_dataset
 from ..actions.dataset.validate import validate_dataset
 from ..actions.file_dialect.infer import infer_file_dialect
 from ..actions.table.load import load_table
@@ -23,6 +34,13 @@ SUITE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "testsuite")
 )
 TEST_SCHEMA = os.path.join(SUITE, "test-schema.json")
+
+UNSPECIFIED_MESSAGE_ERRORS = ("data", "metadata", "cell/json")
+TEMPORAL_FORMATS = (
+    (pl.Date, "%Y-%m-%d"),
+    (pl.Time, "%H:%M:%S"),
+    (pl.Datetime, "%Y-%m-%dT%H:%M:%S"),
+)
 
 type Json = None | bool | int | float | str | list[Json] | dict[str, Json]
 
@@ -39,16 +57,49 @@ class Case(TypedDict, total=False):
 class Group(TypedDict, total=False):
     description: str
     format: str
+    inline: bool
     fileDialect: dict[str, object]
     tableSchema: dict[str, object]
+    dataSchema: dict[str, object]
     integrity: dict[str, object]
+    textual: bool
     dataset: dict[str, object]
+    query: str
     options: dict[str, object]
     tests: list[Case]
 
 
+def run_data_infer_schema(group: Group, test: Case) -> object:
+    return infer_data_schema(create_resource(group, test))
+
+
+def run_data_validate(group: Group, test: Case) -> object:
+    return validate_data(create_resource(group, test))
+
+
+def run_dataset_infer(group: Group, test: Case) -> object:
+    path = write_dataset(group, test)
+    dataset = Dataset.model_validate(load_dataset(path))
+    inferred = infer_dataset(dataset, **group.get("options", {}))
+    return denormalize_dataset(inferred, basepath=os.path.dirname(path))
+
+
+def run_dataset_list(group: Group, test: Case) -> object:
+    dataset = Dataset.model_validate(load_dataset(write_dataset(group, test)))
+    return [
+        resource.name or infer_resource_name(resource, resource_number=index + 1)
+        for index, resource in enumerate(dataset.resources or [])
+    ]
+
+
+def run_dataset_validate(group: Group, test: Case) -> object:
+    return validate_dataset(write_dataset(group, test))
+
+
 def run_file_describe(group: Group, test: Case) -> object:
-    return describe_file(write_data(group, test["data"]))
+    hash_type = group.get("options", {}).get("hashType", "sha256")
+    assert isinstance(hash_type, str)
+    return describe_file(write_data(group, test["data"]), hash_type=hash_type)
 
 
 def run_file_validate(group: Group, test: Case) -> object:
@@ -68,28 +119,34 @@ def run_table_infer_schema(group: Group, test: Case) -> object:
 
 def run_table_load(group: Group, test: Case) -> object:
     table = load_table(create_resource(group, test), **group.get("options", {}))
-    if table is None:
+    return None if table is None else read_rows(table)
+
+
+def run_table_query(group: Group, test: Case) -> object:
+    table = load_table(create_resource(group, test), **group.get("options", {}))
+    query = group.get("query")
+    if table is None or query is None:
         return None
-    frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-    return {"columns": frame.columns, "rows": [list(row) for row in frame.rows()]}
+    return read_rows(query_table(table, query))
 
 
 def run_table_validate(group: Group, test: Case) -> object:
     return validate_table(create_resource(group, test), **group.get("options", {}))
 
 
-def run_dataset_validate(group: Group, test: Case) -> object:
-    return validate_dataset(write_dataset(group, test))
-
-
 OPERATIONS: dict[str, Callable[[Group, Case], object]] = {
+    "data-infer-schema": run_data_infer_schema,
+    "data-validate": run_data_validate,
+    "dataset-infer": run_dataset_infer,
+    "dataset-list": run_dataset_list,
+    "dataset-validate": run_dataset_validate,
     "file-describe": run_file_describe,
     "file-validate": run_file_validate,
     "table-infer-dialect": run_table_infer_dialect,
     "table-infer-schema": run_table_infer_schema,
     "table-load": run_table_load,
+    "table-query": run_table_query,
     "table-validate": run_table_validate,
-    "dataset-validate": run_dataset_validate,
 }
 
 
@@ -154,12 +211,15 @@ class TestTestsuite:
 
 
 def create_resource(group: Group, test: Case) -> Resource:
+    data = test["data"] if group.get("inline") else write_data(group, test["data"])
     return Resource.model_validate(
         {
-            "data": write_data(group, test["data"]),
+            "data": data,
             "fileDialect": group.get("fileDialect"),
             "tableSchema": group.get("tableSchema"),
+            "dataSchema": group.get("dataSchema"),
             "integrity": group.get("integrity"),
+            "textual": group.get("textual"),
         }
     )
 
@@ -184,6 +244,21 @@ def write_dataset(group: Group, test: Case) -> str:
     return path
 
 
+def read_rows(table: Table) -> object:
+    frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+    columns: list[str] = []
+    for name, dtype in frame.schema.items():
+        format = next((f for t, f in TEMPORAL_FORMATS if isinstance(dtype, t)), None)
+        quoted = f'"{name}"'
+        columns.append(
+            f"STRFTIME({quoted}, '{format}') AS {quoted}" if format else quoted
+        )
+    rendered: pl.DataFrame = query_table(  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        frame.lazy(), f"SELECT {', '.join(columns)} FROM self"
+    ).collect()
+    return {"columns": rendered.columns, "rows": [list(row) for row in rendered.rows()]}
+
+
 def encode_data(data: Json) -> str | bytes:
     if isinstance(data, str):
         return data
@@ -206,4 +281,12 @@ def assert_same(actual: Json, expected: Json):
 def canonicalize(value: object) -> Json:
     if isinstance(value, BaseModel):
         value = value.model_dump(mode="json", by_alias=True, exclude_none=True)
-    return json.loads(json.dumps(value))
+    result = json.loads(json.dumps(value))
+    if isinstance(result, dict) and isinstance(result.get("errors"), list):
+        for error in result["errors"]:
+            if (
+                isinstance(error, dict)
+                and error.get("type") in UNSPECIFIED_MESSAGE_ERRORS
+            ):
+                error.pop("message", None)
+    return result

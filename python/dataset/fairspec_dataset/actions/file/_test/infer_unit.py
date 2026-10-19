@@ -173,6 +173,12 @@ class TestInferTextual:
         path = write_temp_file(buffer)
         assert infer_textual(Resource(data=path)) is False
 
+    def test_requires_every_part_to_be_utf8(self):
+        first = write_temp_file("Hello\n")
+        second = write_temp_file("Café résumé naïve à Paris.".encode("latin-1"))
+        assert infer_textual(Resource(data=[first, first])) is True
+        assert infer_textual(Resource(data=[first, second])) is False
+
 
 class TestInferHashConcurrency:
     def test_hashes_multipart_identically_under_concurrency(self):

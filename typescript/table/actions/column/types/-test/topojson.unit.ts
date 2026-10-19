@@ -102,7 +102,7 @@ describe("validateTopojsonColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         topology: {
-          type: "object",
+          type: ["object", "null"],
           format: "topojson",
         },
       },

@@ -4,11 +4,18 @@ from typing import Union
 
 from fairspec_metadata import (
     CsvFileDialect,
+    JsonFileDialect,
+    JsonlFileDialect,
     OdsFileDialect,
     TsvFileDialect,
     XlsxFileDialect,
 )
 
 FileDialectWithHeaderAndCommentRows = Union[
-    CsvFileDialect, OdsFileDialect, TsvFileDialect, XlsxFileDialect
+    CsvFileDialect,
+    JsonFileDialect,
+    JsonlFileDialect,
+    OdsFileDialect,
+    TsvFileDialect,
+    XlsxFileDialect,
 ]

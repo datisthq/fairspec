@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def load_data(resource: Resource) -> object | None:
     data_value = get_data_value(resource)
-    if data_value:
+    if data_value is not None:
         return data_value
 
     first_path = get_data_first_path(resource)

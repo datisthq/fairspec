@@ -207,6 +207,16 @@ describe("inferTextual", () => {
     expect(result).toBe(true)
   })
 
+  it("should require every part to be utf-8", async () => {
+    const first = await writeTempFile("Hello\n")
+    const second = await writeTempFile(
+      Buffer.from("Café résumé naïve à Paris.", "latin1"),
+    )
+
+    expect(await inferTextual({ data: [first, first] })).toBe(true)
+    expect(await inferTextual({ data: [first, second] })).toBe(false)
+  })
+
   it("should return true for ascii text", async () => {
     const buffer = Buffer.from("Simple ASCII text only", "ascii")
     const tempFilePath = await writeTempFile(buffer)

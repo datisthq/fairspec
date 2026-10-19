@@ -76,7 +76,7 @@ describe("inferJsonFileDialect", () => {
 
       expect(result).toMatchObject({
         format: "json",
-        jsonPointer: "data",
+        jsonPointer: "/data",
         rowType: "array",
       })
     })
@@ -95,7 +95,7 @@ describe("inferJsonFileDialect", () => {
 
       expect(result).toEqual({
         format: "json",
-        jsonPointer: "records",
+        jsonPointer: "/records",
         rowType: "object",
       })
     })

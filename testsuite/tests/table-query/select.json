@@ -1,0 +1,112 @@
+[
+  {
+    "description": "filter and project",
+    "comment": "Querying is a library feature the spec does not define; the query runs against the table typed by its table schema",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#integer",
+      "https://fairspec.org/specs/table-schema/#string"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT name FROM self WHERE id > 1",
+    "tests": [
+      {
+        "description": "keeps matching rows and the selected column",
+        "data": "id,name\n1,alice\n2,bob\n3,carol\n",
+        "expected": { "columns": ["name"], "rows": [["bob"], ["carol"]] }
+      },
+      {
+        "description": "no matching row keeps the columns",
+        "data": "id,name\n1,alice\n",
+        "expected": { "columns": ["name"], "rows": [] }
+      }
+    ]
+  },
+  {
+    "description": "select all",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT * FROM self",
+    "tests": [
+      {
+        "description": "returns every column in table order",
+        "data": "id,name\n1,alice\n2,bob\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columns renamed and reordered",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT name AS label, id FROM self",
+    "tests": [
+      {
+        "description": "follows the select list",
+        "data": "id,name\n1,alice\n",
+        "expected": { "columns": ["label", "id"], "rows": [["alice", 1]] }
+      }
+    ]
+  },
+  {
+    "description": "filter on a boolean column",
+    "specification": ["https://fairspec.org/specs/table-schema/#boolean"],
+    "tableSchema": {
+      "properties": { "name": { "type": "string" }, "active": { "type": "boolean" } }
+    },
+    "query": "SELECT name, active FROM self WHERE active",
+    "tests": [
+      {
+        "description": "true and false are parsed before the filter",
+        "data": "name,active\nalice,true\nbob,false\n",
+        "expected": { "columns": ["name", "active"], "rows": [["alice", true]] }
+      }
+    ]
+  },
+  {
+    "description": "filter on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tableSchema": {
+      "properties": { "name": { "type": "string" }, "score": { "type": "number" } }
+    },
+    "query": "SELECT name, score FROM self WHERE score > 2",
+    "tests": [
+      {
+        "description": "compares numerically",
+        "data": "name,score\nalice,1.5\nbob,2.5\ncarol,10.5\n",
+        "expected": {
+          "columns": ["name", "score"],
+          "rows": [
+            ["bob", 2.5],
+            ["carol", 10.5]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "filter on missing values",
+    "comment": "An empty cell is a missing value by default, so it is null in the query",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "properties": { "name": { "type": "string" }, "score": { "type": "number" } }
+    },
+    "query": "SELECT name FROM self WHERE score IS NULL",
+    "tests": [
+      {
+        "description": "an empty cell is null",
+        "data": "name,score\nalice,1.5\nbob,\n",
+        "expected": { "columns": ["name"], "rows": [["bob"]] }
+      }
+    ]
+  }
+]

@@ -80,7 +80,7 @@ class TestCheckCellMaximum:
 
         assert result is not None
         assert result.error_template.type == "cell/maximum"
-        assert result.error_template.maximum == "40.0"
+        assert result.error_template.maximum == "40"
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 1
 
@@ -100,7 +100,7 @@ class TestCheckCellMaximum:
 
         assert result is not None
         assert result.error_template.type == "cell/exclusiveMaximum"
-        assert result.error_template.maximum == "40.0"
+        assert result.error_template.maximum == "40"
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 2
 

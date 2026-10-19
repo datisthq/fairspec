@@ -27,10 +27,6 @@ class JsonPlugin(TablePlugin):
         if not file_dialect:
             return None
 
-        inferred = infer_json_file_dialect(resource)
-        if inferred:
-            resource = resource.model_copy(update={"fileDialect": inferred})
-
         return load_json_table(resource, **options)
 
     def save_table(self, table: Table, **options: Unpack[SaveTableOptions]) -> str | None:

@@ -1,0 +1,55 @@
+[
+  {
+    "description": "empty inline object",
+    "comment": "An empty object is still a JSON document the schema applies to; it must not be skipped as missing data",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "inline": true,
+    "dataSchema": {
+      "type": "object",
+      "required": ["name"],
+      "properties": { "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "an empty object misses a required property",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      }
+    ]
+  },
+  {
+    "description": "empty json array file",
+    "comment": "Inline data cannot be an empty array: the profile's Data is a oneOf, and [] matches both an array of paths and an array of objects. A file can hold one",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": { "type": "array", "minItems": 1 },
+    "tests": [
+      {
+        "description": "an empty array is shorter than minItems",
+        "data": "[]",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      }
+    ]
+  },
+  {
+    "description": "empty json file documents",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "format": "json",
+    "dataSchema": { "type": "object", "properties": { "name": { "type": "string" } } },
+    "tests": [
+      {
+        "description": "an empty object with no required properties is valid",
+        "data": "{}",
+        "valid": true
+      },
+      {
+        "description": "an empty array where an object is expected is a data error",
+        "data": "[]",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      }
+    ]
+  }
+]

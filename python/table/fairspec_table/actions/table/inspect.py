@@ -22,6 +22,7 @@ from fairspec_table.settings import (
     QUERY_ENGINE,
 )
 
+from ._shared.helpers import merge_missing_values
 from .checks.key import RowKeyCheck, create_row_key_checks
 
 _row_error_adapter = TypeAdapter(RowError)
@@ -80,7 +81,8 @@ def _inspect_columns(
                 return [ColumnMissingError(type="column/missing", columnName=column.name)]
             return []
 
-        column_mapping = ColumnMapping(source=polars_column, target=column)
+        merged_column = merge_missing_values(column, mapping.target)
+        column_mapping = ColumnMapping(source=polars_column, target=merged_column)
         return inspect_column(column_mapping, table, max_errors=max_column_errors)
 
     for chunk in iter_concurrent_chunks(
@@ -92,7 +94,7 @@ def _inspect_columns(
         if len(errors) >= max_errors:
             break
 
-    return errors
+    return sorted(errors, key=lambda error: not error.type.startswith("column/"))
 
 
 def _inspect_rows(

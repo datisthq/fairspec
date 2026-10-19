@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises"
 import type { Resource } from "@fairspec/metadata"
-import { getDataFirstPath } from "@fairspec/metadata"
+import { getDataPaths } from "@fairspec/metadata"
 import chardet from "chardet"
 import * as hasha from "hasha"
 import { isBinaryFile } from "isbinaryfile"
@@ -19,32 +19,19 @@ export async function inferTextual(
   const maxBytes = options?.sampleBytes ?? 10_000
   const confidencePercent = options?.confidencePercent ?? 80
 
-  const firstPath = getDataFirstPath(resource)
-  if (!firstPath) {
+  const paths = getDataPaths(resource)
+  if (!paths.length) {
     return false
   }
 
-  const buffer = await loadFile(firstPath, { maxBytes })
-  const isBinary = await isBinaryFile(buffer)
-  if (isBinary) {
-    return false
-  }
-
-  // chardet labels short ascii as latin-1; textual means utf-8, so decode first
-  try {
-    new TextDecoder("utf-8", { fatal: true }).decode(buffer, { stream: true })
-    return true
-  } catch {}
-
-  const matches = chardet.analyse(buffer)
-  for (const match of matches) {
-    if (match.confidence >= confidencePercent) {
-      const encoding = match.name.toLowerCase()
-      return ["utf-8", "ascii"].includes(encoding)
+  for (const path of paths) {
+    const isTextual = await getIsTextual(path, { maxBytes, confidencePercent })
+    if (!isTextual) {
+      return false
     }
   }
 
-  return false
+  return true
 }
 
 export async function inferIntegrity(
@@ -86,4 +73,31 @@ export async function inferBytes(resource: Resource) {
   }
 
   return bytes
+}
+
+async function getIsTextual(
+  path: string,
+  options: { maxBytes: number; confidencePercent: number },
+) {
+  const buffer = await loadFile(path, { maxBytes: options.maxBytes })
+  const isBinary = await isBinaryFile(buffer)
+  if (isBinary) {
+    return false
+  }
+
+  // chardet labels short ascii as latin-1; textual means utf-8, so decode first
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(buffer, { stream: true })
+    return true
+  } catch {}
+
+  const matches = chardet.analyse(buffer)
+  for (const match of matches) {
+    if (match.confidence >= options.confidencePercent) {
+      const encoding = match.name.toLowerCase()
+      return ["utf-8", "ascii"].includes(encoding)
+    }
+  }
+
+  return false
 }

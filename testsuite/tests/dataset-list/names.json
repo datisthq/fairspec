@@ -1,0 +1,124 @@
+[
+  {
+    "description": "resource names",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [{ "name": "users", "data": "users.csv" }, { "data": "posts.csv" }]
+    },
+    "tests": [
+      {
+        "description": "a given name is kept and a missing one is inferred from the file",
+        "data": { "users.csv": "id\n1\n", "posts.csv": "id\n1\n" },
+        "expected": ["users", "posts"]
+      }
+    ]
+  },
+  {
+    "description": "a given name wins over the file name",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "people", "data": "users.csv" }] },
+    "tests": [
+      {
+        "description": "the declared name is listed",
+        "data": { "users.csv": "id\n1\n" },
+        "expected": ["people"]
+      }
+    ]
+  },
+  {
+    "description": "names slugged from file names",
+    "comment": "The spec does not say how a missing name is inferred, only that a name is alphanumerics and underscores. Both libraries slug the file stem: lowercase, camelCase split, other runs of characters become one underscore",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        { "data": "My Data.csv" },
+        { "data": "userList.csv" },
+        { "data": "posts-2024.csv" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "every inferred name is a valid name",
+        "data": {
+          "My Data.csv": "id\n1\n",
+          "userList.csv": "id\n1\n",
+          "posts-2024.csv": "id\n1\n"
+        },
+        "expected": ["my_data", "user_list", "posts_2024"]
+      }
+    ]
+  },
+  {
+    "description": "names slugged from non-ascii file names",
+    "comment": "The spec does not decide between transliterating and dropping a non-ascii letter; the proposed answer transliterates it, as the TypeScript library does",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "data": "données.csv" }] },
+    "tests": [
+      {
+        "description": "an accented letter is transliterated",
+        "data": { "données.csv": "id\n1\n" },
+        "expected": ["donnees"]
+      }
+    ]
+  },
+  {
+    "description": "paths other than a single local file",
+    "comment": "A multipart resource is named after its first part, and a remote or nested path after its file stem",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#name"
+    ],
+    "dataset": {
+      "resources": [
+        { "data": ["part1.csv", "part2.csv"] },
+        { "data": "https://example.com/files/remote.csv" },
+        { "data": "sub/nested.csv" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "first part, remote stem and nested stem",
+        "data": { "part1.csv": "id\n1\n", "part2.csv": "id\n2\n" },
+        "expected": ["part1", "remote", "nested"]
+      }
+    ]
+  },
+  {
+    "description": "unnamed resources without a file name",
+    "comment": "The spec does not say how such a resource is named; both libraries list it as resource followed by its 1-based position",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "users.csv" },
+        { "data": [{ "id": 1 }] },
+        { "data": { "id": 1 } }
+      ]
+    },
+    "tests": [
+      {
+        "description": "inline data is named by position",
+        "data": { "users.csv": "id\n1\n" },
+        "expected": ["users", "resource2", "resource3"]
+      }
+    ]
+  },
+  {
+    "description": "several resources with the same file stem",
+    "comment": "The spec does not require names to be unique, and both libraries infer the same name for each. A name that references a resource is ambiguous then",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        { "data": "users.csv" },
+        { "data": "users.json" },
+        { "data": "sub/users.csv" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "each gets the stem",
+        "data": { "users.csv": "id\n1\n", "users.json": "[{\"id\": 1}]" },
+        "expected": ["users", "users", "users"]
+      }
+    ]
+  }
+]

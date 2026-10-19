@@ -1,0 +1,103 @@
+[
+  {
+    "description": "plain categories on a string column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tableSchema": {
+      "properties": {
+        "size": {
+          "type": "string",
+          "format": "categorical",
+          "categories": ["S", "M", "L"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories are valid",
+        "data": "size\nS\nL\nM\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted category is an error",
+        "data": "size\nS\nXL\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "size",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "XL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "labelled categories on an integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tableSchema": {
+      "properties": {
+        "severity": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [
+            {
+              "value": 1,
+              "label": "Low"
+            },
+            {
+              "value": 2,
+              "label": "Medium"
+            },
+            {
+              "value": 3,
+              "label": "High"
+            }
+          ]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "category values are valid",
+        "data": "severity\n1\n3\n2\n",
+        "valid": true
+      },
+      {
+        "description": "a label is not a value",
+        "data": "severity\n1\nLow\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "severity",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "Low"
+          }
+        ]
+      },
+      {
+        "description": "an unlisted value is an error",
+        "data": "severity\n1\n4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "severity",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "4"
+          }
+        ]
+      }
+    ]
+  }
+]

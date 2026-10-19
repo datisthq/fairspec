@@ -1,0 +1,67 @@
+[
+  {
+    "description": "composite foreign key",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "catalog",
+          "data": "catalog.csv",
+          "tableSchema": {
+            "properties": {
+              "supplier_id": { "type": "integer" },
+              "code": { "type": "string" }
+            },
+            "primaryKey": ["supplier_id", "code"]
+          }
+        },
+        {
+          "name": "orders",
+          "data": "orders.csv",
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "supplier_id": { "type": "integer" },
+              "product_code": { "type": "string" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["supplier_id", "product_code"],
+                "reference": { "resource": "catalog", "columns": ["supplier_id", "code"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "every combination resolves",
+        "data": {
+          "catalog.csv": "supplier_id,code\n1,a\n1,b\n2,a\n",
+          "orders.csv": "id,supplier_id,product_code\n1,1,b\n2,2,a\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "parts that resolve only separately are a foreignKey error",
+        "data": {
+          "catalog.csv": "supplier_id,code\n1,a\n1,b\n2,a\n",
+          "orders.csv": "id,supplier_id,product_code\n1,1,a\n2,2,b\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "orders",
+            "foreignKey": {
+              "columns": ["supplier_id", "product_code"],
+              "reference": { "resource": "catalog", "columns": ["supplier_id", "code"] }
+            },
+            "cells": ["2", "b"]
+          }
+        ]
+      }
+    ]
+  }
+]

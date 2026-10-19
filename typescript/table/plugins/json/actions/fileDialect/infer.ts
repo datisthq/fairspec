@@ -4,6 +4,7 @@ import type { JsonFileDialect, JsonlFileDialect, Resource } from "@fairspec/meta
 import { getDataFirstPath, getSupportedFileDialect } from "@fairspec/metadata"
 import { Sniffer } from "../../../../utils/sniffer/sniffer.ts"
 import { decodeJsonBuffer } from "../buffer/decode.ts"
+import { formatJsonPointer } from "../../helpers/pointer.ts"
 
 export async function inferJsonFileDialect(
   resource: Resource,
@@ -53,7 +54,7 @@ export async function inferJsonFileDialect(
         const value = (data as Record<string, unknown>)[key]
         if (Array.isArray(value)) {
           if (dialect.format === "json") {
-            jsonPointer = key
+            jsonPointer = formatJsonPointer([key])
           }
           data = value
           break

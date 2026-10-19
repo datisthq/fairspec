@@ -35,6 +35,11 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   }
 
   const scanOptions = getScanOptions(fileDialect)
+  const isMultiHeader = getHeaderRows(fileDialect).length > 1 && !fileDialect?.columnNames
+  if (isMultiHeader) {
+    scanOptions.schema = getHeaderlessSchema(paths[0], scanOptions)
+  }
+
   const tables: Table[] = []
   for (const path of paths) {
     const table = pl.scanCSV(path, scanOptions)
@@ -44,7 +49,7 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   // There is no way to specify column names in nodejs-polars by default
   // so we have to rename `column_*` to `column*` is table doesn't have header
   let table = pl.concat(tables)
-  if (!scanOptions.hasHeader && !fileDialect?.columnNames) {
+  if (!scanOptions.hasHeader && !fileDialect?.columnNames && !isMultiHeader) {
     table = table.rename(
       Object.fromEntries(
         table.columns.map(name => [name, name.replace("column_", "column")]),
@@ -75,8 +80,10 @@ function getScanOptions(fileDialect?: TsvFileDialect | CsvFileDialect) {
   }
 
   options.skipRows = headerRows[0] ? headerRows[0] - 1 : 0
-  options.hasHeader = headerRows.length > 0
-  options.eolChar = fileDialect?.lineTerminator ?? "\n"
+  options.hasHeader =
+    headerRows.length === 1 || (headerRows.length > 1 && !!fileDialect?.columnNames)
+  // Polars takes a single eol character and drops the "\r" before a "\n" itself
+  options.eolChar = (fileDialect?.lineTerminator ?? "\n").slice(-1)
   options.sep = fileDialect?.format === "csv" ? (fileDialect?.delimiter ?? ",") : "\t"
   options.quoteChar =
     fileDialect?.format === "csv" ? (fileDialect?.quoteChar ?? '"') : undefined
@@ -90,4 +97,16 @@ function getScanOptions(fileDialect?: TsvFileDialect | CsvFileDialect) {
   }
 
   return options
+}
+
+// Header rows are joined from the data, so every column is read as text and the
+// widest of the first rows sets the width: a first header row may be shorter
+function getHeaderlessSchema(
+  path: string | undefined,
+  options: Partial<pl.ScanCsvOptions>,
+) {
+  const columns = path
+    ? pl.scanCSV(path, { ...options, inferSchemaLength: 100 }).columns
+    : []
+  return Object.fromEntries(columns.map(name => [name, pl.String]))
 }

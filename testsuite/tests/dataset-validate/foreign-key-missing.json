@@ -1,0 +1,41 @@
+[
+  {
+    "description": "foreign key to a missing resource",
+    "comment": "The reference names a resource the dataset does not have",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "user_id": { "type": "integer" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the unresolved resource is a resource/missing error",
+        "data": { "posts.csv": "id,user_id\n1,1\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/missing",
+            "resourceName": "users",
+            "referencingResourceName": "posts"
+          }
+        ]
+      }
+    ]
+  }
+]

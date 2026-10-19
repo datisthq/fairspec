@@ -1,0 +1,71 @@
+[
+  {
+    "description": "keepStrings",
+    "comment": "Inference options reach the table schema inference of every resource",
+    "dataset": { "resources": [{ "data": "users.csv" }] },
+    "options": { "keepStrings": true },
+    "tests": [
+      {
+        "description": "every column stays a string",
+        "data": { "users.csv": "id,name\n1,alice\n2,bob\n" },
+        "expected": {
+          "resources": [
+            {
+              "data": "users.csv",
+              "name": "users",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "e0af2be21679d859fa60c48fb33da4de8f26582b08fddc711059172ef378af37"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": {
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "sampleRows",
+    "comment": "Only the first sampleRows rows are inspected, so the words after the first row do not make id a string",
+    "dataset": { "resources": [{ "data": "items.csv" }] },
+    "options": { "sampleRows": 1 },
+    "tests": [
+      {
+        "description": "a column is typed from the sampled rows only",
+        "data": { "items.csv": "id\n1\nx\nx\nx\n" },
+        "expected": {
+          "resources": [
+            {
+              "data": "items.csv",
+              "name": "items",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "20123472f0f6c5ffb84abcc0b0eb111c57d11ac54634524fc7510ae1718331f8"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": { "properties": { "id": { "type": "integer" } } }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

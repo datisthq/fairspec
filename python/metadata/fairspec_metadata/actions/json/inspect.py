@@ -44,14 +44,10 @@ def _retrieve(uri: str) -> referencing.Resource:
 
 def _deque_to_json_pointer(path: object) -> str:
     parts = list(path)  # type: ignore[arg-type]
-    if not parts:
-        return "/"
-    return "/" + "/".join(str(p) for p in parts)
+    return "".join("/" + str(p).replace("~", "~0").replace("/", "~1") for p in parts)
 
 
 def _combine_json_pointers(root: str, instance: str) -> str:
-    if root == "" or root == "/":
+    if root == "/":
         return instance
-    if instance == "/":
-        return root
     return root + instance

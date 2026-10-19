@@ -1,4 +1,4 @@
-import { getHeaderRows } from "../../helpers/fileDialect.ts"
+import { getHeaderRows, joinHeaderLabels } from "../../helpers/fileDialect.ts"
 import type { DataRecord, DataRow } from "../../models/data.ts"
 import type { FileDialectWithHeaderAndCommentRows } from "../../models/fileDialect.ts"
 
@@ -99,17 +99,11 @@ function getLabelsFromHeader(
     return undefined
   }
 
-  const labels = header[0].map(String)
-  const headerJoin = fileDialect?.headerJoin ?? " "
-
-  for (const row of header.slice(1)) {
-    for (const [index, label] of row.entries()) {
-      const prefix = labels[index] ?? ""
-      labels[index] = [prefix, label].filter(Boolean).join(headerJoin)
-    }
+  if (header.length === 1) {
+    return header[0].map(String)
   }
 
-  return labels
+  return joinHeaderLabels(header, fileDialect?.headerJoin ?? " ")
 }
 
 function getIsCommentedRow(

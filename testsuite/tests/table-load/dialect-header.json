@@ -1,0 +1,112 @@
+[
+  {
+    "description": "headerRows false",
+    "comment": "The spec does not name the columns of a headerless file without columnNames; both libraries use column1, column2, …",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": { "format": "csv", "headerRows": false },
+    "tests": [
+      {
+        "description": "every row is data",
+        "data": "1,apple\n2,orange\n",
+        "expected": {
+          "columns": ["column1", "column2"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2] with the default headerJoin",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "fileDialect": { "format": "csv", "headerRows": [1, 2] },
+    "tests": [
+      {
+        "description": "two header rows are joined with a space",
+        "data": "fruit,fruit price\nid,in usd\n1,1.5\n2,2.0\n",
+        "expected": {
+          "columns": ["fruit id", "fruit price in usd"],
+          "rows": [
+            [1, 1.5],
+            [2, 2.0]
+          ]
+        }
+      },
+      {
+        "description": "a label repeated across the first header row joins as is",
+        "comment": "The spec's example produces fruit id, fruit name, fruit price",
+        "data": "fruit,fruit,fruit\nid,name,price\n1,apple,1.5\n2,orange,2.0\n",
+        "expected": {
+          "columns": ["fruit id", "fruit name", "fruit price"],
+          "rows": [
+            [1, "apple", 1.5],
+            [2, "orange", 2.0]
+          ]
+        }
+      },
+      {
+        "description": "the spec's example with a single cell in the first header row",
+        "comment": "Verbatim from the spec, which says it produces fruit id, fruit name, fruit price",
+        "data": "fruit\nid,name,price\n1,apple,1.50\n2,orange,2.00\n",
+        "expected": {
+          "columns": ["fruit id", "fruit name", "fruit price"],
+          "rows": [
+            [1, "apple", 1.5],
+            [2, "orange", 2.0]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2] with headerJoin",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerjoin"],
+    "fileDialect": { "format": "csv", "headerRows": [1, 2], "headerJoin": "_" },
+    "tests": [
+      {
+        "description": "two header rows are joined with the headerJoin",
+        "data": "fruit,price\nid,usd\n1,1.5\n2,2.0\n",
+        "expected": {
+          "columns": ["fruit_id", "price_usd"],
+          "rows": [
+            [1, 1.5],
+            [2, 2.0]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2, 3]",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "fileDialect": { "format": "csv", "headerRows": [1, 2, 3], "headerJoin": "." },
+    "tests": [
+      {
+        "description": "three header rows are joined in order",
+        "data": "a,b\nc,d\ne,f\n1,2\n",
+        "expected": { "columns": ["a.c.e", "b.d.f"], "rows": [[1, 2]] }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [2]",
+    "comment": "The spec numbers rows from 1; rows before the first header row are not data",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": { "format": "csv", "headerRows": [2] },
+    "tests": [
+      {
+        "description": "the row above the header is skipped",
+        "data": "a title line,\nid,name\n1,apple\n",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+      }
+    ]
+  }
+]

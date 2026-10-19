@@ -2,17 +2,32 @@ import { Buffer } from "node:buffer"
 import { readdirSync, readFileSync } from "node:fs"
 import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { basename, join, resolve } from "node:path"
-import type { Dataset, FileDialect, Integrity, TableSchema } from "@fairspec/metadata"
+import { basename, dirname, join, resolve } from "node:path"
+import type {
+  DataSchema,
+  Dataset,
+  FileDialect,
+  Resource,
+  TableSchema,
+} from "@fairspec/metadata"
+import type { Table } from "@fairspec/table"
 import { afterAll, describe, expect, it } from "vite-plus/test"
 import {
+  denormalizeDataset,
   describeFile,
   InferFileDialectOptions,
+  Integrity,
+  inferDataSchema,
+  inferDataset,
   inferFileDialect,
+  inferResourceName,
   inferTableSchema,
   inspectJson,
+  loadDataset,
   loadTable,
+  queryTable,
   ValidateTableOptions,
+  validateData,
   validateDataset,
   validateFile,
   validateTable,
@@ -22,15 +37,26 @@ import {
 const SUITE = resolve(import.meta.dirname, "..", "..", "..", "testsuite")
 const TEST_SCHEMA = join(SUITE, "test-schema.json")
 
-type Data = string | { base64: string } | unknown[] | Record<string, string>
+const UNSPECIFIED_MESSAGE_ERRORS = ["data", "metadata", "cell/json"]
+const TEMPORAL_FORMATS: Record<string, string> = {
+  Date: "%Y-%m-%d",
+  Time: "%H:%M:%S",
+  Datetime: "%Y-%m-%dT%H:%M:%S",
+}
+
+type Data = string | { base64: string } | unknown[] | Record<string, unknown>
 
 type Group = {
   description: string
   format?: string
+  inline?: boolean
   fileDialect?: FileDialect
   tableSchema?: TableSchema
+  dataSchema?: DataSchema
   integrity?: Integrity
+  textual?: boolean
   dataset?: Dataset
+  query?: string
   options?: Record<string, unknown>
   tests: Test[]
 }
@@ -45,7 +71,30 @@ type Test = {
 }
 
 const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>> = {
-  "file-describe": async (group, test) => describeFile(await writeData(group, test.data)),
+  "data-infer-schema": async (group, test) =>
+    inferDataSchema(await createResource(group, test)),
+  "data-validate": async (group, test) => validateData(await createResource(group, test)),
+  "dataset-infer": async (group, test) => {
+    const path = await writeDataset(group, test)
+    const dataset = await inferDataset(
+      await loadDataset(path),
+      ValidateTableOptions.parse(group.options ?? {}),
+    )
+    return denormalizeDataset(dataset, { basepath: dirname(path) })
+  },
+  "dataset-list": async (group, test) => {
+    const dataset = await loadDataset(await writeDataset(group, test))
+    return (dataset.resources ?? []).map(
+      (resource, index) =>
+        resource.name ?? inferResourceName(resource, { resourceNumber: index + 1 }),
+    )
+  },
+  "dataset-validate": async (group, test) =>
+    validateDataset(await writeDataset(group, test)),
+  "file-describe": async (group, test) =>
+    describeFile(await writeData(group, test.data), {
+      hashType: Integrity.shape.type.parse(group.options?.hashType ?? "sha256"),
+    }),
   "file-validate": async (group, test) => validateFile(await createResource(group, test)),
   "table-infer-dialect": async (group, test) =>
     inferFileDialect(
@@ -62,17 +111,21 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
       await createResource(group, test),
       ValidateTableOptions.parse(group.options ?? {}),
     )
-    if (!table) return null
-    const frame = await table.collect()
-    return { columns: frame.columns, rows: frame.rows() }
+    return table ? await readRows(table) : null
+  },
+  "table-query": async (group, test) => {
+    const table = await loadTable(
+      await createResource(group, test),
+      ValidateTableOptions.parse(group.options ?? {}),
+    )
+    if (!table || !group.query) return null
+    return await readRows(queryTable(table, group.query))
   },
   "table-validate": async (group, test) =>
     validateTable(
       await createResource(group, test),
       ValidateTableOptions.parse(group.options ?? {}),
     ),
-  "dataset-validate": async (group, test) =>
-    validateDataset(await writeDataset(group, test)),
 }
 
 const tempDirs: string[] = []
@@ -133,12 +186,15 @@ for (const operation of readdirSync(join(SUITE, "tests")).sort()) {
 }
 
 async function createResource(group: Group, test: Test) {
-  return {
-    data: await writeData(group, test.data),
+  const resource: Resource = {
+    data: group.inline ? test.data : await writeData(group, test.data),
     fileDialect: group.fileDialect,
     tableSchema: group.tableSchema,
+    dataSchema: group.dataSchema,
     integrity: group.integrity,
+    textual: group.textual,
   }
+  return resource
 }
 
 async function writeData(group: Group, data: Data) {
@@ -162,6 +218,19 @@ async function writeDataset(group: Group, test: Test) {
   return path
 }
 
+async function readRows(table: Table) {
+  const frame = await table.collect()
+  const columns = frame.columns.map(name => {
+    const format = TEMPORAL_FORMATS[frame.getColumn(name).dtype.variant]
+    return format ? `STRFTIME("${name}", '${format}') AS "${name}"` : `"${name}"`
+  })
+  const rendered = await queryTable(
+    frame.lazy(),
+    `SELECT ${columns.join(", ")} FROM self`,
+  ).collect()
+  return { columns: rendered.columns, rows: rendered.rows() }
+}
+
 function encodeData(data: unknown) {
   if (typeof data === "string") return data
   if (Array.isArray(data)) return JSON.stringify(data)
@@ -177,5 +246,11 @@ function encodeData(data: unknown) {
 }
 
 function canonicalize(value: unknown): unknown {
-  return value === undefined ? null : JSON.parse(JSON.stringify(value))
+  const json = value === undefined ? null : JSON.parse(JSON.stringify(value))
+  if (json && typeof json === "object" && Array.isArray(json.errors)) {
+    for (const error of json.errors) {
+      if (UNSPECIFIED_MESSAGE_ERRORS.includes(error.type)) delete error.message
+    }
+  }
+  return json
 }

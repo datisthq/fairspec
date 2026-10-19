@@ -1,0 +1,93 @@
+[
+  {
+    "description": "flat object",
+    "comment": "The spec does not define data schema inference; the TypeScript shape is the reference: types and properties only, no required list and no $schema. A $schema, if emitted, must name a Fairspec data schema profile or draft 2020-12",
+    "specification": ["https://fairspec.org/specs/data-schema/#profile"],
+    "format": "json",
+    "tests": [
+      {
+        "description": "string and integer properties",
+        "data": "{\"name\": \"alice\", \"age\": 30}",
+        "expected": {
+          "type": "object",
+          "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+        }
+      },
+      {
+        "description": "boolean and number properties",
+        "data": "{\"active\": true, \"score\": 1.5}",
+        "expected": {
+          "type": "object",
+          "properties": { "active": { "type": "boolean" }, "score": { "type": "number" } }
+        }
+      },
+      {
+        "description": "a null property is typed null",
+        "data": "{\"name\": \"alice\", \"note\": null}",
+        "expected": {
+          "type": "object",
+          "properties": { "name": { "type": "string" }, "note": { "type": "null" } }
+        }
+      },
+      {
+        "description": "an empty object is an object with no properties",
+        "data": "{}",
+        "expected": { "type": "object" }
+      }
+    ]
+  },
+  {
+    "description": "nested object",
+    "format": "json",
+    "tests": [
+      {
+        "description": "nested objects and arrays get their own schemas",
+        "data": "{\"id\": 1, \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"paris\", \"zip\": 75001}}",
+        "expected": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "address": {
+              "type": "object",
+              "properties": { "city": { "type": "string" }, "zip": { "type": "integer" } }
+            }
+          }
+        }
+      },
+      {
+        "description": "an empty nested array has no items schema",
+        "data": "{\"tags\": []}",
+        "expected": {
+          "type": "object",
+          "properties": { "tags": { "type": "array" } }
+        }
+      }
+    ]
+  },
+  {
+    "description": "inline object",
+    "inline": true,
+    "tests": [
+      {
+        "description": "is inferred like a file",
+        "data": { "name": "alice", "age": 30 },
+        "expected": {
+          "type": "object",
+          "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+        }
+      }
+    ]
+  },
+  {
+    "description": "data that is not json",
+    "format": "csv",
+    "tests": [
+      {
+        "description": "a csv file has no data schema",
+        "data": "id,name\n1,alice\n",
+        "expected": null
+      }
+    ]
+  }
+]

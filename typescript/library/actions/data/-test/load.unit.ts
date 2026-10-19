@@ -33,6 +33,20 @@ describe("loadData", () => {
     expect(data).toEqual({ id: 1, name: "test" })
   })
 
+  it("should load a top-level array from a JSON file", async () => {
+    const path = await writeTempFile("[1, 2, 3]", { format: "json" })
+
+    const data = await loadData({ data: path })
+    expect(data).toEqual([1, 2, 3])
+  })
+
+  it("should load an empty object from a JSON file", async () => {
+    const path = await writeTempFile("{}", { format: "json" })
+
+    const data = await loadData({ data: path })
+    expect(data).toEqual({})
+  })
+
   it("should return undefined when no data available", async () => {
     const resource: Resource = { name: "empty-resource" }
 

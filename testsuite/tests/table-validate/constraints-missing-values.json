@@ -1,0 +1,145 @@
+[
+  {
+    "description": "table-level missing values",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "missingValues": ["NA", -999],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "score": {
+          "type": ["integer", "null"]
+        },
+        "note": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "missing values in nullable columns are valid",
+        "data": "id,score,note\n1,NA,NA\n2,-999,x\n",
+        "valid": true
+      },
+      {
+        "description": "a missing value in a non-null column is a cell/missing error",
+        "data": "id,score,note\n1,5,x\nNA,6,y\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "id",
+            "rowNumber": 2,
+            "cell": "NA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer table-level missing value on a string column",
+    "comment": "A string column only takes string missing values, so the compatible table-level values exclude -999 and it stays a value",
+    "specification": ["https://fairspec.org/specs/table-schema/#column-missingvalues"],
+    "tableSchema": {
+      "missingValues": ["NA", -999],
+      "properties": {
+        "code": {
+          "type": ["string", "null"],
+          "minLength": 5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the string missing value is null",
+        "data": "code\nNA\nabcde\n",
+        "valid": true
+      },
+      {
+        "description": "the integer missing value is kept as text",
+        "data": "code\n-999\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "code",
+            "rowNumber": 1,
+            "cell": "-999",
+            "minLength": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "labelled column-level missing values",
+    "specification": ["https://fairspec.org/specs/table-schema/#column-missingvalues"],
+    "tableSchema": {
+      "properties": {
+        "measurement": {
+          "type": ["number", "null"],
+          "missingValues": [
+            {
+              "value": -999,
+              "label": "Sensor malfunction"
+            },
+            {
+              "value": "NR",
+              "label": "Not recorded"
+            }
+          ]
+        },
+        "label": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "labelled values are missing",
+        "data": "measurement,label\n25.3,a\n-999,b\nNR,c\n",
+        "valid": true
+      },
+      {
+        "description": "a column-level value is not missing in another column",
+        "data": "measurement,label\n1,NR\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted marker is a cell/type error",
+        "data": "measurement,label\nNA,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "measurement",
+            "columnType": "number",
+            "rowNumber": 1,
+            "cell": "NA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "column-level missing values add to table-level ones",
+    "specification": ["https://fairspec.org/specs/table-schema/#column-missingvalues"],
+    "tableSchema": {
+      "missingValues": ["NA"],
+      "properties": {
+        "value": {
+          "type": ["integer", "null"],
+          "missingValues": ["-"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "both the column and the table values are missing",
+        "data": "value\n1\n-\nNA\n",
+        "valid": true
+      }
+    ]
+  }
+]

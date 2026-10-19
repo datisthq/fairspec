@@ -15,6 +15,7 @@ describe("inferDataset", () => {
 
     expect(target.language).toBe("en")
     expect(target.resources).toHaveLength(1)
+    expect(target.resources?.[0]?.name).toBe("resource1")
     expect(target.resources?.[0]?.tableSchema).toEqual({
       properties: {
         id: { type: "integer" },

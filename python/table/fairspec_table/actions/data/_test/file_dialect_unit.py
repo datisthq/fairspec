@@ -273,7 +273,7 @@ class TestGetRecordsFromRows:
         )
 
         assert result == [
-            {"person first": "Alice", "last": "Smith", "location city": "NYC"},
+            {"person first": "Alice", "person last": "Smith", "location city": "NYC"},
         ]
 
     def test_combination_of_header_rows_and_comment_rows(self):

@@ -23,11 +23,23 @@ describe("saveJsonTable", () => {
 
     await saveJsonTable(table, {
       path,
-      fileDialect: { format: "json", jsonPointer: "key" },
+      fileDialect: { format: "json", jsonPointer: "/key" },
     })
 
     const content = await readFile(path, "utf-8")
     expect(content).toEqual(JSON.stringify({ key: [row1, row2] }, null, 2))
+  })
+
+  it("should handle a nested jsonPointer", async () => {
+    const path = getTempFilePath()
+
+    await saveJsonTable(table, {
+      path,
+      fileDialect: { format: "json", jsonPointer: "/data/a~1b" },
+    })
+
+    const content = await readFile(path, "utf-8")
+    expect(content).toEqual(JSON.stringify({ data: { "a/b": [row1, row2] } }, null, 2))
   })
 
   it("should handle item keys", async () => {
@@ -80,7 +92,7 @@ describe("saveJsonTable", () => {
     await saveJsonTable(source, { path })
 
     const target = await loadJsonTable({ data: path }, { denormalized: true })
-    expect((await target.collect()).toRecords()).toEqual([
+    expect((await target?.collect())?.toRecords()).toEqual([
       {
         boolean: true,
         date: "2025-01-01",

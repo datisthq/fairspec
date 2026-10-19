@@ -52,6 +52,7 @@ class TestInspectTextColumn:
         column = DurationColumn(
             name="duration",
             type="duration",
+            nullable=True,
             property=DurationColumnProperty(),
         )
 
@@ -60,6 +61,33 @@ class TestInspectTextColumn:
         )
 
         assert errors == []
+
+    def test_error_for_missing_values_in_non_null_column(self):
+        table = pl.DataFrame({"duration": ["P1Y", None, "NA"]}).lazy()
+        column = DurationColumn(
+            name="duration",
+            type="duration",
+            property=DurationColumnProperty(missingValues=["NA"]),
+        )
+
+        errors = inspect_text_column(
+            column, table, parse=lambda s: s if s.startswith("P") else None
+        )
+
+        assert [error.model_dump(exclude_none=True) for error in errors] == [
+            {
+                "type": "cell/missing",
+                "columnName": "duration",
+                "rowNumber": 2,
+                "cell": "",
+            },
+            {
+                "type": "cell/missing",
+                "columnName": "duration",
+                "rowNumber": 3,
+                "cell": "NA",
+            },
+        ]
 
     def test_error_when_parse_raises(self):
         def failing_parse(source: str) -> object:
@@ -148,12 +176,27 @@ class TestInspectJsonColumn:
         column = ObjectColumn(
             name="data",
             type="object",
+            nullable=True,
             property=ObjectColumnProperty(),
         )
 
         errors = inspect_json_column(column, table)
 
         assert errors == []
+
+    def test_error_for_null_values_in_non_null_column(self):
+        table = pl.DataFrame({"data": [None, '{"a": 1}']}).lazy()
+        column = ObjectColumn(
+            name="data",
+            type="object",
+            property=ObjectColumnProperty(),
+        )
+
+        errors = inspect_json_column(column, table)
+
+        assert [error.model_dump(exclude_none=True) for error in errors] == [
+            {"type": "cell/missing", "columnName": "data", "rowNumber": 1, "cell": ""}
+        ]
 
     def test_type_json_schema_valid(self):
         table = pl.DataFrame({"data": ['{"name": "test"}']}).lazy()

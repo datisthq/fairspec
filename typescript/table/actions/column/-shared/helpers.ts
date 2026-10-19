@@ -11,8 +11,10 @@ import type {
 import { inspectJson } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import { getIsObject } from "../../../helpers/general.ts"
+import type { ColumnMapping } from "../../../models/column.ts"
 import type { Table } from "../../../models/table.ts"
 import { NUMBER_COLUMN_NAME } from "../../../settings.ts"
+import { normalizeColumn } from "../normalize.ts"
 
 // TODO: Generalize wkt/wkb/duration inspectors
 
@@ -20,18 +22,18 @@ export async function inspectTextColumn(
   column: DurationColumn | WktColumn | WkbColumn,
   table: Table,
   options: {
+    mapping: ColumnMapping
     parse: (source: string) => unknown | undefined
   },
 ) {
   const errors: CellError[] = []
-
-  const frame = await table
-    .withRowIndex(NUMBER_COLUMN_NAME, 1)
-    .select(pl.col(NUMBER_COLUMN_NAME), pl.col(column.name).alias("source"))
-    .collect()
+  const frame = await collectCellFrame(table, options.mapping)
 
   for (const row of frame.toRecords() as any[]) {
-    if (row.source === null) continue
+    if (row.source === null) {
+      if (!column.nullable) errors.push(createMissingError(column.name, row))
+      continue
+    }
 
     let target: unknown | undefined
     try {
@@ -55,22 +57,22 @@ export async function inspectTextColumn(
 export async function inspectJsonColumn(
   column: ArrayColumn | ObjectColumn | GeojsonColumn | TopojsonColumn,
   table: Table,
-  options?: {
+  options: {
+    mapping: ColumnMapping
     typeJsonSchema?: Record<string, any>
   },
 ) {
   const errors: CellError[] = []
 
-  const typeJsonSchema = options?.typeJsonSchema
+  const typeJsonSchema = options.typeJsonSchema
   const constraintJsonSchema = column.property
-
-  const frame = await table
-    .withRowIndex(NUMBER_COLUMN_NAME, 1)
-    .select(pl.col(NUMBER_COLUMN_NAME), pl.col(column.name).alias("source"))
-    .collect()
+  const frame = await collectCellFrame(table, options.mapping)
 
   for (const row of frame.toRecords() as any[]) {
-    if (row.source === null) continue
+    if (row.source === null) {
+      if (!column.nullable) errors.push(createMissingError(column.name, row))
+      continue
+    }
 
     let target: Record<string, any> | undefined
     const checkCompat = column.type === "array" ? Array.isArray : getIsObject
@@ -128,4 +130,26 @@ export async function inspectJsonColumn(
   }
 
   return errors
+}
+
+async function collectCellFrame(table: Table, mapping: ColumnMapping) {
+  return await table
+    .withRowIndex(NUMBER_COLUMN_NAME, 1)
+    .select(
+      pl.col(NUMBER_COLUMN_NAME),
+      normalizeColumn(mapping, { keepType: true }).alias("source"),
+      pl.col(mapping.source.name).alias("cell"),
+    )
+    .collect()
+}
+
+function createMissingError(columnName: string, row: Record<string, unknown>) {
+  const error: CellError = {
+    type: "cell/missing",
+    columnName,
+    rowNumber: Number(row[NUMBER_COLUMN_NAME]),
+    cell: String(row.cell ?? ""),
+  }
+
+  return error
 }

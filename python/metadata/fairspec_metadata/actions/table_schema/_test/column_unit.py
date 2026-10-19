@@ -1,7 +1,18 @@
+from fairspec_metadata.models.table_schema import TableSchema
+
 from ..column import get_columns
 
 
 class TestGetColumns:
+    def test_property_without_type_is_unknown(self):
+        table_schema = TableSchema.model_validate(
+            {"properties": {"x": {"title": "Column"}}}
+        )
+
+        columns = get_columns(table_schema.model_dump())
+
+        assert [column.type for column in columns] == ["unknown"]
+
     def test_sets_required_for_listed_columns(self):
         columns = get_columns(
             {

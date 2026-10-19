@@ -143,6 +143,14 @@ class TestGetFileNameSlug:
     ):
         assert get_file_name_slug("/data/My Data File!.csv") == "my_data_file"
 
+    def test_transliterates_non_ascii_letters(self):
+        assert get_file_name_slug("/data/données.csv") == "donnees"
+        assert get_file_name_slug("/data/Straße.csv") == "strasse"
+        assert get_file_name_slug("/data/данные.csv") == "dannye"
+
+    def test_splits_camel_case_after_digits(self):
+        assert get_file_name_slug("/data/post2024Data.csv") == "post2024_data"
+
     def test_returns_none_for_empty_string(self):
         assert get_file_name_slug("") is None
 

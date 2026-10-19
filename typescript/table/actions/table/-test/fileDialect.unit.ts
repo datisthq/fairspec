@@ -6,48 +6,43 @@ describe("joinHeaderRows", () => {
   it("should join two header rows with default space separator", async () => {
     const table = pl
       .DataFrame({
-        col1: ["first", "name", "header3", "Alice", "Bob"],
-        col2: ["last", "name", "header3", "Smith", "Jones"],
-        col3: ["contact", "email", "header3", "alice@example.com", "bob@example.com"],
+        column_1: ["first", "name", "Alice", "Bob"],
+        column_2: ["last", "name", "Smith", "Jones"],
+        column_3: ["contact", "email", "alice@example.com", "bob@example.com"],
       })
       .lazy()
 
     const result = await joinHeaderRows(table, {
       format: "csv",
-      headerRows: [2, 3],
+      headerRows: [1, 2],
     })
 
     const collected = await result.collect()
-    expect(collected.columns).toEqual(["col1 first", "col2 last", "col3 contact"])
-    expect(collected.height).toBe(4)
-    expect(collected.row(0)).toEqual(["name", "name", "email"])
-    expect(collected.row(1)).toEqual(["header3", "header3", "header3"])
-    expect(collected.row(2)).toEqual(["Alice", "Smith", "alice@example.com"])
-    expect(collected.row(3)).toEqual(["Bob", "Jones", "bob@example.com"])
+    expect(collected.columns).toEqual(["first name", "last name", "contact email"])
+    expect(collected.rows()).toEqual([
+      ["Alice", "Smith", "alice@example.com"],
+      ["Bob", "Jones", "bob@example.com"],
+    ])
   })
 
   it("should join two header rows with custom separator", async () => {
     const table = pl
       .DataFrame({
-        col1: ["user", "first", "header3", "Alice", "Bob"],
-        col2: ["user", "last", "header3", "Smith", "Jones"],
-        col3: ["meta", "created", "header3", "2023-01-01", "2023-01-02"],
+        column_1: ["user", "first", "Alice"],
+        column_2: ["user", "last", "Smith"],
+        column_3: ["meta", "created", "2023-01-01"],
       })
       .lazy()
 
     const result = await joinHeaderRows(table, {
       format: "csv",
-      headerRows: [2, 3],
+      headerRows: [1, 2],
       headerJoin: "_",
     })
 
     const collected = await result.collect()
-    expect(collected.columns).toEqual(["col1_user", "col2_user", "col3_meta"])
-    expect(collected.height).toBe(4)
-    expect(collected.row(0)).toEqual(["first", "last", "created"])
-    expect(collected.row(1)).toEqual(["header3", "header3", "header3"])
-    expect(collected.row(2)).toEqual(["Alice", "Smith", "2023-01-01"])
-    expect(collected.row(3)).toEqual(["Bob", "Jones", "2023-01-02"])
+    expect(collected.columns).toEqual(["user_first", "user_last", "meta_created"])
+    expect(collected.rows()).toEqual([["Alice", "Smith", "2023-01-01"]])
   })
 
   it("should return table unchanged when only one header row", async () => {
@@ -87,12 +82,12 @@ describe("joinHeaderRows", () => {
     expect(collected.height).toBe(2)
   })
 
-  it("should join three header rows", async () => {
+  it("should join three header rows after skipped rows", async () => {
     const table = pl
       .DataFrame({
-        col1: ["person", "user", "first", "header4", "Alice", "Bob"],
-        col2: ["person", "user", "last", "header4", "Smith", "Jones"],
-        col3: ["location", "address", "city", "header4", "NYC", "LA"],
+        column_1: ["person", "user", "first", "Alice"],
+        column_2: ["person", "user", "last", "Smith"],
+        column_3: ["location", "address", "city", "NYC"],
       })
       .lazy()
 
@@ -103,38 +98,30 @@ describe("joinHeaderRows", () => {
 
     const collected = await result.collect()
     expect(collected.columns).toEqual([
-      "col1 person user",
-      "col2 person user",
-      "col3 location address",
+      "person user first",
+      "person user last",
+      "location address city",
     ])
-    expect(collected.height).toBe(4)
-    expect(collected.row(0)).toEqual(["first", "last", "city"])
-    expect(collected.row(1)).toEqual(["header4", "header4", "header4"])
-    expect(collected.row(2)).toEqual(["Alice", "Smith", "NYC"])
-    expect(collected.row(3)).toEqual(["Bob", "Jones", "LA"])
+    expect(collected.rows()).toEqual([["Alice", "Smith", "NYC"]])
   })
 
-  it("should handle empty strings in header rows", async () => {
+  it("should carry a label forward across empty header cells", async () => {
     const table = pl
       .DataFrame({
-        col1: ["person", "", "header3", "Alice", "Bob"],
-        col2: ["", "name", "header3", "Smith", "Jones"],
-        col3: ["location", "city", "header3", "NYC", "LA"],
+        column_1: ["person", "first", "Alice"],
+        column_2: [null, "last", "Smith"],
+        column_3: ["location", "city", "NYC"],
       })
       .lazy()
 
     const result = await joinHeaderRows(table, {
       format: "csv",
-      headerRows: [2, 3],
+      headerRows: [1, 2],
     })
 
     const collected = await result.collect()
-    expect(collected.columns).toEqual(["col1 person", "col2 ", "col3 location"])
-    expect(collected.height).toBe(4)
-    expect(collected.row(0)).toEqual(["", "name", "city"])
-    expect(collected.row(1)).toEqual(["header3", "header3", "header3"])
-    expect(collected.row(2)).toEqual(["Alice", "Smith", "NYC"])
-    expect(collected.row(3)).toEqual(["Bob", "Jones", "LA"])
+    expect(collected.columns).toEqual(["person first", "person last", "location city"])
+    expect(collected.rows()).toEqual([["Alice", "Smith", "NYC"]])
   })
 })
 

@@ -1,0 +1,70 @@
+[
+  {
+    "description": "columnNames for a headerless file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false,
+      "columnNames": ["id", "name", "price"]
+    },
+    "tests": [
+      {
+        "description": "the names are used for the columns",
+        "data": "1,apple,1.5\n2,orange,2.0\n",
+        "expected": {
+          "columns": ["id", "name", "price"],
+          "rows": [
+            [1, "apple", 1.5],
+            [2, "orange", 2.0]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames for a tsv file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "headerRows": false,
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "the names are used for the columns",
+        "data": "1\tapple\n2\torange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames instead of the header row",
+    "comment": "columnNames are used instead of deriving names from the file; the header row is still not data",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1],
+      "columnNames": ["key", "label"]
+    },
+    "tests": [
+      {
+        "description": "the names replace the header",
+        "data": "id,name\n1,apple\n2,orange\n",
+        "expected": {
+          "columns": ["key", "label"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  }
+]

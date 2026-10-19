@@ -1,0 +1,78 @@
+[
+  {
+    "description": "textual true",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "textual": true,
+    "tests": [
+      { "description": "ascii is valid", "data": "id,name\n1,alice\n", "valid": true },
+      {
+        "description": "utf-8 with non-ascii characters is valid",
+        "data": "id,name\n1,中文\n",
+        "valid": true
+      },
+      { "description": "an empty file is valid", "data": "", "valid": true },
+      {
+        "description": "latin-1 bytes are a file/textual error",
+        "data": { "base64": "Q2Fm6SBy6XN1bekgbmHvdmUg4CBQYXJpcy4=" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "binary bytes are a file/textual error",
+        "data": { "base64": "/9j/4AA=" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      }
+    ]
+  },
+  {
+    "description": "textual false",
+    "comment": "false makes no claim about the encoding, so nothing is checked",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "textual": false,
+    "tests": [
+      { "description": "utf-8 is valid", "data": "id,name\n1,alice\n", "valid": true },
+      {
+        "description": "latin-1 bytes are valid",
+        "data": { "base64": "Q2Fm6SBy6XN1bekgbmHvdmUg4CBQYXJpcy4=" },
+        "valid": true
+      },
+      {
+        "description": "binary bytes are valid",
+        "data": { "base64": "/9j/4AA=" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "textual and integrity together",
+    "comment": "both checks run; the spec does not order the errors, textual before integrity is the order both libraries share",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#textual",
+      "https://fairspec.org/specs/dataset/#integrity"
+    ],
+    "textual": true,
+    "integrity": { "type": "md5", "hash": "8b1a9953c4611296a827abf8c47804d7" },
+    "tests": [
+      {
+        "description": "utf-8 with a matching hash is valid",
+        "data": "Hello",
+        "valid": true
+      },
+      {
+        "description": "binary bytes with a different hash are both errors",
+        "data": { "base64": "/9j/4AA=" },
+        "valid": false,
+        "errors": [
+          { "type": "file/textual" },
+          {
+            "type": "file/integrity",
+            "hashType": "md5",
+            "expectedHash": "8b1a9953c4611296a827abf8c47804d7",
+            "actualHash": "214cba70917653c3950ee51aa05a4214"
+          }
+        ]
+      }
+    ]
+  }
+]

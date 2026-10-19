@@ -1,0 +1,33 @@
+[
+  {
+    "description": "tsv file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
+    "format": "tsv",
+    "tests": [
+      {
+        "description": "cells are split on tabs",
+        "data": "id\tname\n1\tapple, red\n2\torange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple, red"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "tsv file with an explicit dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
+    "format": "tsv",
+    "fileDialect": { "format": "tsv", "headerRows": [1] },
+    "tests": [
+      {
+        "description": "commas are not delimiters",
+        "data": "id\tname\n1\ta,b\n",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "a,b"]] }
+      }
+    ]
+  }
+]

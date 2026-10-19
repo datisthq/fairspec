@@ -1,0 +1,184 @@
+[
+  {
+    "description": "multipart csv records",
+    "comment": "the records of a multipart resource are the records of each part in order, each part carrying its own header row; row numbers count records of the whole resource",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv", "headerRows": [1] },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } },
+            "primaryKey": ["id"]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "valid parts are valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n2,bob\n" },
+        "valid": true
+      },
+      {
+        "description": "a part with only its header row is valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n" },
+        "valid": true
+      },
+      {
+        "description": "a bad cell in the second part is numbered across parts",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\nx,bob\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      },
+      {
+        "description": "a key repeated across parts is a row/primaryKey error",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n1,bob\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "resourceName": "people",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart sha256 integrity",
+    "comment": "the hash of id,name\\n1,alice\\n followed by id,name\\n2,bob\\n",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "integrity": {
+            "type": "sha256",
+            "hash": "06bd3d00621d6422d6807efc6e5c2a5a72f94f5d0481b300be805b195cf2105f"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the concatenation of the parts in order is valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n2,bob\n" },
+        "valid": true
+      },
+      {
+        "description": "swapped parts are a file/integrity error",
+        "data": { "part1.csv": "id,name\n2,bob\n", "part2.csv": "id,name\n1,alice\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "sha256",
+            "expectedHash": "06bd3d00621d6422d6807efc6e5c2a5a72f94f5d0481b300be805b195cf2105f",
+            "actualHash": "dec2c6fa712fbd61e72c773b583809f3ed45dd257db11be6bb64d901743bbda8"
+          }
+        ]
+      },
+      {
+        "description": "the hash of the first part alone does not cover the resource",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "sha256",
+            "expectedHash": "06bd3d00621d6422d6807efc6e5c2a5a72f94f5d0481b300be805b195cf2105f",
+            "actualHash": "2b19eb0a580a952891021da1cb7fcca130eadd486130eb565605fc655b6a350b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart md5 integrity",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "integrity": { "type": "md5", "hash": "2fcee919838eb41afd5b2047d79b0b62" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the concatenation of the parts in order is valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n2,bob\n" },
+        "valid": true
+      },
+      {
+        "description": "swapped parts are a file/integrity error",
+        "data": { "part1.csv": "id,name\n2,bob\n", "part2.csv": "id,name\n1,alice\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "md5",
+            "expectedHash": "2fcee919838eb41afd5b2047d79b0b62",
+            "actualHash": "bcad3e7ab87608883b66e2bac1a71c32"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart textual",
+    "comment": "textual requires utf-8, and the content of a multipart resource is every part, so a non-utf-8 part anywhere fails it",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#textual",
+      "https://fairspec.org/specs/dataset/#data"
+    ],
+    "dataset": {
+      "resources": [
+        { "name": "notes", "data": ["part1.txt", "part2.txt"], "textual": true }
+      ]
+    },
+    "tests": [
+      {
+        "description": "utf-8 parts are valid",
+        "data": { "part1.txt": "Hello\n", "part2.txt": "中文\n" },
+        "valid": true
+      },
+      {
+        "description": "a latin-1 first part is a file/textual error",
+        "data": {
+          "part1.txt": { "base64": "Q2Fm6SBy6XN1bekgbmHvdmUg4CBQYXJpcy4=" },
+          "part2.txt": "Hello\n"
+        },
+        "valid": false,
+        "errors": [{ "type": "file/textual", "resourceName": "notes" }]
+      },
+      {
+        "description": "a latin-1 second part is a file/textual error",
+        "data": {
+          "part1.txt": "Hello\n",
+          "part2.txt": { "base64": "Q2Fm6SBy6XN1bekgbmHvdmUg4CBQYXJpcy4=" }
+        },
+        "valid": false,
+        "errors": [{ "type": "file/textual", "resourceName": "notes" }]
+      }
+    ]
+  }
+]

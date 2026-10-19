@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fairspec_table.helpers import get_header_rows
+from fairspec_table.helpers import get_header_rows, join_header_labels
 from fairspec_table.models import (
     DataRecord,
     DataRow,
@@ -98,21 +98,15 @@ def _get_labels_from_header(
     if not header:
         return None
 
-    labels = [str(v) for v in header[0]]
+    if len(header) == 1:
+        return [str(v) for v in header[0]]
+
     header_join = (
         file_dialect.headerJoin
         if file_dialect is not None and file_dialect.headerJoin is not None
         else " "
     )
-
-    for row in header[1:]:
-        for index, label in enumerate(row):
-            prefix = labels[index] if index < len(labels) else ""
-            labels[index] = header_join.join(
-                str(part) for part in [prefix, label] if part
-            )
-
-    return labels
+    return join_header_labels(header, header_join)
 
 
 def _get_is_commented_row(

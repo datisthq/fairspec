@@ -10,15 +10,34 @@ from ..infer import infer_data_schema
 
 class TestInferDataSchema:
     def test_should_infer_schema_from_inline_data(self):
-        resource = Resource(data={"name": "test", "age": 25})
+        resource = Resource(data={"name": "test", "age": 25, "active": True})
         schema = infer_data_schema(resource)
-        assert schema is not None
-        assert schema.get("type") == "object"
+        assert schema == {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "age": {"type": "integer"},
+                "active": {"type": "boolean"},
+            },
+        }
 
     def test_should_infer_schema_from_inline_array(self):
         resource = Resource(data=[{"id": 1}, {"id": 2}])
         schema = infer_data_schema(resource)
-        assert schema is not None
+        assert schema == {
+            "type": "array",
+            "items": {"type": "object", "properties": {"id": {"type": "integer"}}},
+        }
+
+    def test_should_leave_items_out_when_items_differ(self):
+        resource = Resource(data=[{"a": 1}, {"a": "x"}])
+        schema = infer_data_schema(resource)
+        assert schema == {"type": "array"}
+
+    def test_should_infer_empty_object(self):
+        resource = Resource(data={})
+        schema = infer_data_schema(resource)
+        assert schema == {"type": "object"}
 
     def test_should_infer_schema_from_json_file(self):
         data = {"name": "test", "value": 42}

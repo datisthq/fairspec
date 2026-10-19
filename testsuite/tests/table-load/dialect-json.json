@@ -1,0 +1,168 @@
+[
+  {
+    "description": "jsonPointer to a nested array",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": { "format": "json", "jsonPointer": "/data/items" },
+    "tests": [
+      {
+        "description": "rows are read from the pointed array",
+        "data": "{\"metadata\":{\"version\":\"1.0\"},\"data\":{\"items\":[{\"id\":1,\"name\":\"apple\"},{\"id\":2,\"name\":\"orange\"}]}}",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer to a top-level property",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": { "format": "json", "jsonPointer": "/items" },
+    "tests": [
+      {
+        "description": "rows are read from the pointed array",
+        "data": "{\"items\":[{\"id\":1,\"name\":\"apple\"}]}",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+      }
+    ]
+  },
+  {
+    "description": "rowType array with a header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": { "format": "json", "rowType": "array" },
+    "tests": [
+      {
+        "description": "the first array names the columns",
+        "data": [
+          ["id", "name"],
+          [1, "apple"],
+          [2, "orange"]
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "rowType array with columnNames",
+    "comment": "The spec's own rowType example: headerless arrays named by columnNames",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": false,
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "every array is a row",
+        "data": [
+          [1, "apple"],
+          [2, "orange"]
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "rowType object",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": { "format": "json", "rowType": "object" },
+    "tests": [
+      {
+        "description": "every object is a row",
+        "data": [
+          { "id": 1, "name": "apple" },
+          { "id": 2, "name": "orange" }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl rowType array",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "array" },
+    "tests": [
+      {
+        "description": "the first line names the columns",
+        "data": "[\"id\",\"name\"]\n[1,\"apple\"]\n[2,\"orange\"]\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl rowType object",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "object" },
+    "tests": [
+      {
+        "description": "every line is a row",
+        "data": "{\"id\":1,\"name\":\"apple\"}\n{\"id\":2,\"name\":\"orange\"}\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl columnNames",
+    "comment": "columnNames select and order the columns of object rows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "columnNames": ["name", "id"] },
+    "tests": [
+      {
+        "description": "the names pick the keys",
+        "data": "{\"id\":1,\"name\":\"apple\"}\n",
+        "expected": { "columns": ["name", "id"], "rows": [["apple", 1]] }
+      }
+    ]
+  }
+]

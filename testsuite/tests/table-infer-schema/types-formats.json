@@ -1,0 +1,104 @@
+[
+  {
+    "description": "string formats",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#duration",
+      "https://fairspec.org/specs/table-schema/#email",
+      "https://fairspec.org/specs/table-schema/#url",
+      "https://fairspec.org/specs/table-schema/#hex",
+      "https://fairspec.org/specs/table-schema/#wkt"
+    ],
+    "tests": [
+      {
+        "description": "ISO 8601 durations",
+        "data": "id,d\n1,PT1H30M\n2,P1DT12H\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "d": {
+              "type": "string",
+              "format": "duration"
+            }
+          }
+        }
+      },
+      {
+        "description": "email addresses",
+        "data": "id,e\n1,alice@example.com\n2,bob@company.org\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "e": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        }
+      },
+      {
+        "description": "http and https URLs",
+        "data": "id,u\n1,https://example.com\n2,http://example.org/page\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "u": {
+              "type": "string",
+              "format": "url"
+            }
+          }
+        }
+      },
+      {
+        "description": "hex strings of eight bytes or more",
+        "data": "id,h\n1,0123456789abcdef\n2,FEDCBA9876543210\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "h": {
+              "type": "string",
+              "format": "hex"
+            }
+          }
+        }
+      },
+      {
+        "description": "WKT geometries",
+        "data": "id,g\n1,\"POINT (30 10)\"\n2,\"LINESTRING (30 10, 10 30)\"\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "g": {
+              "type": "string",
+              "format": "wkt"
+            }
+          }
+        }
+      },
+      {
+        "description": "plain words stay strings",
+        "data": "id,s\n1,alpha\n2,beta\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "s": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 from fairspec_library import infer_dataset
 from fairspec_metadata import Dataset
 
+from fairspec_terminal.helpers.table_schema import create_infer_table_schema_options
 from fairspec_terminal.params import (
     ArrayType,
     ColumnTypes,
@@ -52,10 +53,29 @@ def infer(
 ) -> None:
     """Infer a dataset from local or remote file paths."""
     session = Session(debug=debug, json=json)
+    options = create_infer_table_schema_options(
+        sample_rows=sample_rows,
+        confidence=confidence,
+        comma_decimal=comma_decimal,
+        month_first=month_first,
+        keep_strings=keep_strings,
+        column_types=column_types,
+        missing_values=missing_values,
+        decimal_char=decimal_char,
+        group_char=group_char,
+        true_values=true_values,
+        false_values=false_values,
+        datetime_format=datetime_format,
+        date_format=date_format,
+        time_format=time_format,
+        array_type=array_type,
+        list_delimiter=list_delimiter,
+        list_item_type=list_item_type,
+    )
 
     def _infer() -> Dataset:
         dataset = Dataset(resources=[{"data": data} for data in paths])  # type: ignore[list-item]
-        return infer_dataset(dataset)
+        return infer_dataset(dataset, **options)
 
     dataset = session.task("Inferring dataset", _infer)
 

@@ -291,7 +291,7 @@ describe("getRecordsFromRows", () => {
     })
 
     expect(result).toEqual([
-      { "person first": "Alice", last: "Smith", "location city": "NYC" },
+      { "person first": "Alice", "person last": "Smith", "location city": "NYC" },
     ])
   })
 

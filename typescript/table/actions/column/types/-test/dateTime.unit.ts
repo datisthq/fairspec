@@ -4,10 +4,15 @@ import { describe, expect, it } from "vite-plus/test"
 import { denormalizeTable } from "../../../../actions/table/denormalize.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
 
-describe.skip("parseDatetimeColumn", () => {
+describe("parseDatetimeColumn", () => {
   it.each([
     ["2014-01-01T06:00:00", new Date(Date.UTC(2014, 0, 1, 6, 0, 0))],
     ["2014-01-01T06:00:00Z", new Date(Date.UTC(2014, 0, 1, 6, 0, 0))],
+    ["2014-01-01T06:00:00.25", new Date(Date.UTC(2014, 0, 1, 6, 0, 0, 250))],
+    ["2014-01-01T06:00:00-05:00", new Date(Date.UTC(2014, 0, 1, 6, 0, 0))],
+    ["2014-01-01T06:00:00x", null],
+    ["2014-01-01T06:00", null],
+    ["2014-01-01", null],
     ["Mon 1st Jan 2014 9 am", null],
     ["invalid", null],
     ["", null],
@@ -30,7 +35,8 @@ describe.skip("parseDatetimeColumn", () => {
   })
 
   it.each([
-    ["21/11/2006 16:30", new Date(2006, 10, 21, 16, 30)],
+    ["21/11/2006 16:30", new Date(Date.UTC(2006, 10, 21, 16, 30))],
+    ["21/11/2006 16:30:00", null],
     ["16:30 21/11/06", null],
     ["invalid", null],
     ["", null],

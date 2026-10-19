@@ -13,6 +13,7 @@ import {
   NUMBER_COLUMN_NAME,
 } from "../../settings.ts"
 import { createRowKeyChecks } from "./checks/key.ts"
+import { mergeMissingValues } from "./-shared/helpers.ts"
 
 export async function inspectTable(
   table: Table,
@@ -72,7 +73,8 @@ async function inspectColumns(
       return
     }
 
-    const columnMapping = { source: polarsColumn, target: column }
+    const mergedColumn = mergeMissingValues(column, mapping.target)
+    const columnMapping = { source: polarsColumn, target: mergedColumn }
     const fieldErrors = await inspectColumn(columnMapping, table, {
       maxErrors: maxColumnErrors,
     })

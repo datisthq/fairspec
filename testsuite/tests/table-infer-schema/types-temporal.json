@@ -1,0 +1,376 @@
+[
+  {
+    "description": "date formats",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tests": [
+      {
+        "description": "slashed year-first dates",
+        "data": "id,day\n1,2024/01/15\n2,2024/02/20\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%Y/%m/%d"
+            }
+          }
+        }
+      },
+      {
+        "description": "slashed day-first dates",
+        "data": "id,day\n1,15/01/2024\n2,20/02/2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%d/%m/%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "dashed day-first dates",
+        "data": "id,day\n1,15-01-2024\n2,20-02-2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%d-%m-%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "dotted day-first dates",
+        "data": "id,day\n1,15.01.2024\n2,20.02.2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%d.%m.%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "ambiguous slashed dates read day first",
+        "data": "id,day\n1,01/02/2024\n2,03/04/2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%d/%m/%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "an empty cell makes a formatted date nullable",
+        "data": "id,day\n1,15/01/2024\n2,\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": ["string", "null"],
+              "format": "date",
+              "temporalFormat": "%d/%m/%Y"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "month-first dates",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "options": {
+      "monthFirst": true
+    },
+    "tests": [
+      {
+        "description": "ambiguous slashed dates read month first",
+        "data": "id,day\n1,01/02/2024\n2,03/04/2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%m/%d/%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "slashed month-first dates",
+        "data": "id,day\n1,01/15/2024\n2,02/20/2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%m/%d/%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "dashed month-first dates",
+        "data": "id,day\n1,01-15-2024\n2,02-20-2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%m-%d-%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "dotted month-first dates",
+        "data": "id,day\n1,01.15.2024\n2,02.20.2024\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%m.%d.%Y"
+            }
+          }
+        }
+      },
+      {
+        "description": "slashed month-first date-times",
+        "data": "id,dt\n1,01/15/2024 14:30:00\n2,02/20/2024 09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time",
+              "temporalFormat": "%m/%d/%Y %H:%M:%S"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "explicit date format",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "options": {
+      "dateFormat": "%Y-%m-%d"
+    },
+    "tests": [
+      {
+        "description": "the format is written out even when it is ISO 8601",
+        "data": "id,day\n1,2024-01-15\n2,2024-02-20\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "day": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%Y-%m-%d"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "time formats",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tests": [
+      {
+        "description": "ISO 8601 times need no format",
+        "data": "id,t\n1,14:30:00\n2,09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string",
+              "format": "time"
+            }
+          }
+        }
+      },
+      {
+        "description": "times without seconds",
+        "data": "id,t\n1,14:30\n2,09:45\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string",
+              "format": "time",
+              "temporalFormat": "%H:%M"
+            }
+          }
+        }
+      },
+      {
+        "description": "12-hour times",
+        "data": "id,t\n1,2:30 PM\n2,9:45 AM\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string",
+              "format": "time",
+              "temporalFormat": "%I:%M %p"
+            }
+          }
+        }
+      },
+      {
+        "description": "12-hour times with seconds",
+        "data": "id,t\n1,2:30:15 PM\n2,9:45:00 AM\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string",
+              "format": "time",
+              "temporalFormat": "%I:%M:%S %p"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "date-time formats",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tests": [
+      {
+        "description": "ISO 8601 date-times need no format",
+        "data": "id,dt\n1,2024-01-15T14:30:00\n2,2024-02-20T09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "UTC date-times need no format",
+        "data": "id,dt\n1,2024-01-15T14:30:00Z\n2,2024-02-20T09:45:30Z\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "space-separated date-times",
+        "data": "id,dt\n1,2024-01-15 14:30:00\n2,2024-02-20 09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time",
+              "temporalFormat": "%Y-%m-%d %H:%M:%S"
+            }
+          }
+        }
+      },
+      {
+        "description": "day-first date-times without seconds",
+        "data": "id,dt\n1,15/01/2024 14:30\n2,20/02/2024 09:45\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time",
+              "temporalFormat": "%d/%m/%Y %H:%M"
+            }
+          }
+        }
+      }
+    ]
+  }
+]

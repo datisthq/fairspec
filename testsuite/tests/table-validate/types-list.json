@@ -1,0 +1,278 @@
+[
+  {
+    "description": "list column",
+    "specification": ["https://fairspec.org/specs/table-schema/#list"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "comma-delimited items are valid",
+        "data": "id,x\n1,\"a,b,c\"\n2,single\n",
+        "valid": true
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,\"a,b\"\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable list column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#list"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "list"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,\"a,b\"\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "list column of integers",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "integer items are valid",
+        "data": "id,x\n1,\"1,2,3\"\n2,4\n",
+        "valid": true
+      },
+      {
+        "description": "a word item is a cell/type error",
+        "data": "id,x\n1,\"1,2\"\n2,\"1,x\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,x"
+          }
+        ]
+      },
+      {
+        "description": "a decimal item is a cell/type error",
+        "data": "id,x\n1,\"1,2\"\n2,\"1,2.5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,2.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of numbers",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "number"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "number items are valid",
+        "data": "id,x\n1,\"1.5,2.3,4\"\n",
+        "valid": true
+      },
+      {
+        "description": "a word item is a cell/type error",
+        "data": "id,x\n1,\"1.5,2\"\n2,\"1.5,abc\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1.5,abc"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of booleans",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "boolean"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "boolean items are valid",
+        "data": "id,x\n1,\"true,false\"\n",
+        "valid": true
+      },
+      {
+        "description": "a word item is a cell/type error",
+        "data": "id,x\n1,\"true,false\"\n2,\"true,maybe\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "true,maybe"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of dates",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "date"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "date items are valid",
+        "data": "id,x\n1,\"2024-01-15,2024-02-20\"\n",
+        "valid": true
+      },
+      {
+        "description": "a word item is a cell/type error",
+        "data": "id,x\n1,\"2024-01-15,2024-02-20\"\n2,\"2024-01-15,yesterday\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15,yesterday"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column with a delimiter",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#delimiter",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "semicolon-delimited integers are valid",
+        "data": "id,x\n1,1;2;3\n2,4\n",
+        "valid": true
+      },
+      {
+        "description": "comma-delimited integers are a cell/type error",
+        "data": "id,x\n1,1;2\n2,\"1,2\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,2"
+          }
+        ]
+      }
+    ]
+  }
+]

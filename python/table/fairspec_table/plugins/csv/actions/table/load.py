@@ -43,6 +43,11 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
             file_dialect = inferred
 
     scan_options = _get_scan_options(file_dialect)
+    column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
+    header_rows = get_header_rows(file_dialect)  # type: ignore[arg-type]
+    is_multi_header = len(header_rows) > 1 and not column_names
+    if is_multi_header:
+        scan_options["schema"] = _get_headerless_schema(paths[0], scan_options)
 
     tables: list[Table] = []
     for path in paths:
@@ -52,8 +57,7 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     result = pl.concat(tables)
 
     has_header = scan_options.get("has_header", True)
-    column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
-    if not has_header and not column_names:
+    if not has_header and not column_names and not is_multi_header:
         result = result.rename(
             {
                 name: name.replace("column_", "column")
@@ -61,8 +65,7 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
             }
         )
 
-    header_rows = get_header_rows(file_dialect)  # type: ignore[arg-type]
-    if len(header_rows) >= 2:
+    if len(header_rows) > 1:
         result = join_header_rows(result, file_dialect)  # type: ignore[arg-type]
     if getattr(file_dialect, "commentRows", None):
         result = skip_comment_rows(result, file_dialect)  # type: ignore[arg-type]
@@ -86,9 +89,14 @@ def _get_scan_options(
         "truncate_ragged_lines": True,
     }
 
+    column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
+
     options["skip_rows"] = header_rows[0] - 1 if header_rows else 0
-    options["has_header"] = len(header_rows) > 0
-    options["eol_char"] = getattr(file_dialect, "lineTerminator", None) or "\n"
+    options["has_header"] = len(header_rows) == 1 or (
+        len(header_rows) > 1 and bool(column_names)
+    )
+    # Polars takes a single eol character and drops the "\r" before a "\n" itself
+    options["eol_char"] = (getattr(file_dialect, "lineTerminator", None) or "\n")[-1]
 
     is_csv = getattr(file_dialect, "format", "csv") == "csv"
     if is_csv:
@@ -106,12 +114,18 @@ def _get_scan_options(
     if comment_prefix is not None:
         options["comment_prefix"] = comment_prefix
 
-    column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
     if column_names:
         options["schema"] = {name: pl.String for name in column_names}
-        options["has_header"] = False
 
     return options
+
+
+# Header rows are joined from the data, so every column is read as text and the
+# widest of the first rows sets the width: a first header row may be shorter
+def _get_headerless_schema(path: str, options: dict[str, object]) -> dict[str, object]:
+    scan_options = {**options, "infer_schema_length": 100}
+    names = pl.scan_csv(path, **scan_options).collect_schema().names()  # type: ignore[arg-type]
+    return {name: pl.String for name in names}
 
 
 def _dialect_has_only_format(dialect: FileDialect) -> bool:

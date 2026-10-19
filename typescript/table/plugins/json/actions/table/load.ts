@@ -5,12 +5,19 @@ import { loadFile, prefetchFiles } from "@fairspec/dataset"
 import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
+import { getRecordsFromRows } from "../../../../actions/data/fileDialect.ts"
+import { getIsObject } from "../../../../helpers/general.ts"
 import type { Table } from "../../../../models/table.ts"
 import * as pl from "nodejs-polars"
 import { decodeJsonBuffer } from "../../actions/buffer/decode.ts"
+import { parseJsonPointer } from "../../helpers/pointer.ts"
 import { getSupportedFileDialect } from "@fairspec/metadata"
 import { inferJsonFileDialect } from "../fileDialect/infer.ts"
 
+/**
+ * Load a JSON or JSONL file as a table, or `undefined` when the rows it points
+ * at are not an array (a JSON file whose top level is an object is not a table)
+ */
 export async function loadJsonTable(resource: Resource, options?: LoadTableOptions) {
   let fileDialect = await getSupportedFileDialect(resource, ["json", "jsonl"])
   if (!fileDialect) {
@@ -27,10 +34,13 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
   if (!fileDialect || Object.keys(fileDialect).length <= 1) {
     fileDialect = await inferJsonFileDialect({ ...resource, data: paths[0] })
   }
+  if (!fileDialect) {
+    throw new Error("Resource data is not compatible")
+  }
 
-  const isLines = fileDialect?.format === "jsonl"
+  const isLines = fileDialect.format === "jsonl"
   const isDefault =
-    Object.keys(fileDialect ?? {}).filter(
+    Object.keys(fileDialect).filter(
       key => !["type", "title", "description"].includes(key),
     ).length === 0
 
@@ -43,12 +53,10 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
     }
 
     const buffer = await loadFile(path)
-    let data = decodeJsonBuffer(buffer, { isLines })
-    if (!isDefault) {
-      data = processData(data, fileDialect)
-    }
+    const records = getRecordsFromJson(decodeJsonBuffer(buffer, { isLines }), fileDialect)
+    if (!records) return undefined
 
-    const table = pl.DataFrame(data).lazy()
+    const table = pl.DataFrame(records).lazy()
     tables.push(table)
   }
 
@@ -63,29 +71,41 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
   return table
 }
 
-// TODO: Make data unkonwn not any!
-function processData(data: any, dialect?: JsonFileDialect | JsonlFileDialect) {
-  if (dialect?.format === "json" && dialect?.jsonPointer) {
-    data = data[dialect.jsonPointer]
+function getRecordsFromJson(
+  document: unknown,
+  dialect: JsonFileDialect | JsonlFileDialect,
+) {
+  const data =
+    dialect.format === "json" && dialect.jsonPointer !== undefined
+      ? getJsonPointerValue(document, dialect.jsonPointer)
+      : document
+  if (!Array.isArray(data)) return undefined
+
+  const rowType = dialect.rowType ?? (Array.isArray(data[0]) ? "array" : "object")
+  if (rowType === "array") {
+    return getRecordsFromRows(data.filter(Array.isArray), dialect)
   }
 
-  if (dialect?.rowType === "array") {
-    const keys = data[0]
+  const records = data.filter(getIsObject)
+  const columnNames = dialect.columnNames
+  if (!columnNames) return records
 
-    data = data
-      .slice(1)
-      .map((row: any) =>
-        Object.fromEntries(keys.map((key: any, index: number) => [key, row[index]])),
-      )
+  return records.map(row =>
+    Object.fromEntries(columnNames.map(name => [name, row[name]])),
+  )
+}
+
+function getJsonPointerValue(document: unknown, pointer: string) {
+  let value = document
+  for (const token of parseJsonPointer(pointer)) {
+    if (Array.isArray(value)) {
+      value = value[Number(token)]
+    } else if (getIsObject(value) && Object.hasOwn(value, token)) {
+      value = value[token]
+    } else {
+      return undefined
+    }
   }
 
-  if (dialect?.columnNames) {
-    const columnNames = dialect.columnNames
-
-    data = data.map((row: any) =>
-      Object.fromEntries(columnNames.map((name: any) => [name, row[name]])),
-    )
-  }
-
-  return data
+  return value
 }

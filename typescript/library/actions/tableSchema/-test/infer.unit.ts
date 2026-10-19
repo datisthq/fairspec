@@ -18,6 +18,13 @@ describe("inferTableSchema", () => {
     })
   })
 
+  it("should not infer a schema for a top-level JSON object", async () => {
+    const path = await writeTempFile('{"id": 1}', { format: "json" })
+
+    const tableSchema = await inferTableSchema({ data: path })
+    expect(tableSchema).toBeUndefined()
+  })
+
   it("should infer field types correctly", async () => {
     const path = await writeTempFile("id,name,score\n1,alice,95.5\n2,bob,87.3")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }

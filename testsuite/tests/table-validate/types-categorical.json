@@ -1,0 +1,211 @@
+[
+  {
+    "description": "string categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "categorical",
+          "categories": ["low", "high"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories are valid",
+        "data": "id,x\n1,low\n2,high\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/type error",
+        "data": "id,x\n1,low\n2,medium\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "medium"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,low\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#categorical"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "categorical",
+          "categories": ["low", "high"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,low\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "string categorical column with labels",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "categorical",
+          "categories": [
+            {
+              "value": "L",
+              "label": "Low"
+            },
+            {
+              "value": "H",
+              "label": "High"
+            }
+          ]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "id,x\n1,L\n2,H\n",
+        "valid": true
+      },
+      {
+        "description": "a label is not a value and is a cell/type error",
+        "data": "id,x\n1,L\n2,Low\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "Low"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories are valid",
+        "data": "id,x\n1,1\n2,3\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted integer is a cell/type error",
+        "data": "id,x\n1,1\n2,4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "4"
+          }
+        ]
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,1\n2,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "unknown column",
+    "comment": "A column without a type constrains nothing, so a missing value is allowed",
+    "specification": ["https://fairspec.org/specs/table-schema/#unknown"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "title": "Column"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "any text is valid",
+        "data": "id,x\n1,a\n2,1\n3,false\n",
+        "valid": true
+      },
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,a\n2,\n",
+        "valid": true
+      }
+    ]
+  }
+]

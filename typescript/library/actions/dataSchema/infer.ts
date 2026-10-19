@@ -4,7 +4,7 @@ import { loadData } from "../../actions/data/load.ts"
 
 export async function inferDataSchema(resource: Resource) {
   const data = await loadData(resource)
-  if (!data) {
+  if (data === undefined) {
     return undefined
   }
 

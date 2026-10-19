@@ -119,6 +119,29 @@ describe("inspectColumn", () => {
       const errors = await inspectTable(table, { tableSchema })
       expect(errors).toHaveLength(0)
     })
+
+    it("should accept an integer column declared number", async () => {
+      const table = pl.DataFrame([pl.Series("id", [1, 2, 3], pl.Int64)]).lazy()
+      const tableSchema: TableSchema = { properties: { id: { type: "number" } } }
+
+      const errors = await inspectTable(table, { tableSchema })
+      expect(errors).toEqual([])
+    })
+
+    it("should report an integer column declared boolean as integer", async () => {
+      const table = pl.DataFrame([pl.Series("id", [1, 0], pl.Int64)]).lazy()
+      const tableSchema: TableSchema = { properties: { id: { type: "boolean" } } }
+
+      const errors = await inspectTable(table, { tableSchema })
+      expect(errors).toEqual([
+        {
+          type: "column/type",
+          columnName: "id",
+          expectedColumnType: "boolean",
+          actualColumnType: "integer",
+        },
+      ])
+    })
   })
 
   describe("column named 'number'", () => {

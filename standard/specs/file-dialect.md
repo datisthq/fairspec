@@ -163,7 +163,7 @@ Format properties:
 
 #### JSON
 
-A format for JSON array files. It `MUST` have [`format`](#format) set to `"json"`.
+A format for JSON array files. It `MUST` have [`format`](#format) set to `"json"`. The rows are the items of the array at [`jsonPointer`](#jsonpointer), or of the whole document without it. A JSON file whose top-level value is an object, read without a `jsonPointer`, is not a table.
 
 Metadata example:
 
@@ -480,7 +480,7 @@ For example:
 {
   "fileDialect": {
     "format": "csv",
-    "nullSequence": "\N"
+    "nullSequence": "\\N"
   }
 }
 ```
@@ -490,8 +490,8 @@ For a file like:
 ```
 id,name,notes
 1,apple,fresh
-2,orange,NA
-3,banana,N/A
+2,orange,\N
+3,banana,\N
 ```
 
 #### `headerRows`
@@ -534,6 +534,8 @@ id,name,price
 
 This would produce headers: "fruit id", "fruit name", "fruit price"
 
+With several header rows, a label carries forward to the empty cells to its right in the same header row; the labels of each column are then joined across the header rows with [`headerJoin`](#headerjoin).
+
 For example with no headers:
 
 ```json
@@ -550,7 +552,7 @@ For example with no headers:
 > [!NOTE]
 > Supported formats: **csv**, **tsv**, **json**, **jsonl**, **xlsx**, **ods**
 
-It `MUST` be a string. This property specifies how multiline-header files have to join the resulting header rows.
+It `MUST` be a string. This property specifies how multiline-header files have to join the resulting header rows. It defaults to a single space (`" "`).
 
 For example:
 
@@ -558,7 +560,7 @@ For example:
 {
   "fileDialect": {
     "format": "csv",
-    "headerRows": [0, 1],
+    "headerRows": [1, 2],
     "headerJoin": "_"
   }
 }
@@ -664,7 +666,7 @@ For a file without headers:
 > [!NOTE]
 > Supported formats: **json**
 
-It `MUST` be a string in [JSON Pointer format (RFC 6901)](https://datatracker.ietf.org/doc/html/rfc6901). This property specifies where a data is located in the document.
+It `MUST` be a string in [JSON Pointer format (RFC 6901)](https://datatracker.ietf.org/doc/html/rfc6901). This property specifies where a data is located in the document. The empty string `""` points to the whole document, and a key containing `~` or `/` is written with `~0` or `~1` in their place.
 
 For example:
 

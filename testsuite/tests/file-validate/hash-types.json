@@ -1,0 +1,105 @@
+[
+  {
+    "description": "md5 integrity of Hello",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": { "type": "md5", "hash": "8b1a9953c4611296a827abf8c47804d7" },
+    "tests": [
+      { "description": "matching content is valid", "data": "Hello", "valid": true },
+      {
+        "description": "different content is a file/integrity error",
+        "data": "Goodbye",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "md5",
+            "expectedHash": "8b1a9953c4611296a827abf8c47804d7",
+            "actualHash": "6fc422233a40a75a1f028e11c3cd1140"
+          }
+        ]
+      },
+      {
+        "description": "an empty file is a file/integrity error",
+        "data": "",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "md5",
+            "expectedHash": "8b1a9953c4611296a827abf8c47804d7",
+            "actualHash": "d41d8cd98f00b204e9800998ecf8427e"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "sha1 integrity of Hello",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": { "type": "sha1", "hash": "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0" },
+    "tests": [
+      { "description": "matching content is valid", "data": "Hello", "valid": true },
+      {
+        "description": "different content is a file/integrity error",
+        "data": "Goodbye",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha1",
+            "expectedHash": "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0",
+            "actualHash": "b5b29c53e3c71cb9c6581ab053d7758fab8ca24d"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "sha512 integrity of Hello",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": {
+      "type": "sha512",
+      "hash": "3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315"
+    },
+    "tests": [
+      { "description": "matching content is valid", "data": "Hello", "valid": true },
+      {
+        "description": "different content is a file/integrity error",
+        "data": "Goodbye",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha512",
+            "expectedHash": "3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315",
+            "actualHash": "db8051af2e1400f8b4bb7a4afd7bcffdcd924ebd61d5b10ebdcc1a9dcd8e40fcd8e0f6f0aebb3209bd0c4908f68b68e1854f22984adaa1b23a4b4345c6b56a91"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a hash of another type does not match",
+    "comment": "the sha256 hash of Hello declared as md5: the type selects the algorithm, so the md5 of the content is compared",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": {
+      "type": "md5",
+      "hash": "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969"
+    },
+    "tests": [
+      {
+        "description": "is a file/integrity error",
+        "data": "Hello",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "md5",
+            "expectedHash": "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+            "actualHash": "8b1a9953c4611296a827abf8c47804d7"
+          }
+        ]
+      }
+    ]
+  }
+]

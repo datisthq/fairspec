@@ -6,6 +6,7 @@ from fairspec_metadata import (
     DataError,
     FairspecError,
     Report,
+    ResourceTypeError,
     create_report,
     inspect_json,
     resolve_data_schema,
@@ -26,7 +27,9 @@ def validate_data(resource: Resource) -> Report:
 
     data = load_data(resource)
     if data is None:
-        return create_report()
+        return create_report(
+            [ResourceTypeError(type="resource/type", expectedResourceType="data")]
+        )
 
     notes = inspect_json(data, json_schema=data_schema)
     for note in notes:

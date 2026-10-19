@@ -14,6 +14,21 @@ describe("inferResource", () => {
     expect(typeof target.name).toBe("string")
   })
 
+  it("should name an inline resource by its position", async () => {
+    const target = await inferResource({ data: [{ id: 1 }] }, { resourceNumber: 2 })
+
+    expect(target.name).toBe("resource2")
+  })
+
+  it("should keep a declared textual false", async () => {
+    const path = await writeTempFile("id,name\n1,alice\n2,bob")
+    const source: Resource = { data: path, textual: false }
+
+    const target = await inferResource(source)
+
+    expect(target.textual).toBe(false)
+  })
+
   it("should infer format from file extension", async () => {
     const path = await writeTempFile("id,name\n1,alice\n2,bob", {
       format: "csv",

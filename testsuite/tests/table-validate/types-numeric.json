@@ -1,0 +1,270 @@
+[
+  {
+    "description": "number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "number"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "decimals, negatives and integers are valid",
+        "data": "id,x\n1,1.5\n2,-2.25\n3,3\n",
+        "valid": true
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,1.5\n2,abc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "abc"
+          }
+        ]
+      },
+      {
+        "description": "a decimal comma without decimalChar is a cell/type error",
+        "data": "id,x\n1,1.5\n2,\"1,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1,5"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,1.5\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#number"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,1.5\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "decimal column",
+    "specification": ["https://fairspec.org/specs/table-schema/#decimal"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "decimal"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "decimal strings are valid",
+        "data": "id,x\n1,19.99\n2,5.50\n3,-3\n",
+        "valid": true
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,19.99\n2,abc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "decimal",
+            "rowNumber": 2,
+            "cell": "abc"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,19.99\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "decimal"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,19.99\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "nullable integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#integer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,1\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "nullable boolean column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#boolean"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,true\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "nullable string column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#string"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,a\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "type with null listed first",
+    "comment": "The spec makes the null in a type union order insensitive",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,1.5\n2,\n",
+        "valid": true
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,1.5\n2,abc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "abc"
+          }
+        ]
+      }
+    ]
+  }
+]

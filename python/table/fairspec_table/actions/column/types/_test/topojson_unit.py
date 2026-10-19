@@ -84,6 +84,7 @@ class TestInspectTopojsonColumn:
         column = TopojsonColumn(
             name="topology",
             type="topojson",
+            nullable=True,
             property=TopojsonColumnProperty(),
         )
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Union
 
-from pydantic import Field
+from pydantic import Discriminator, Field, Tag
 
 from .array import ArrayColumn, ArrayColumnProperty
 from .base64 import Base64Column, Base64ColumnProperty
@@ -113,7 +113,7 @@ ObjectColumnPropertyWithFormat = Annotated[
     Field(discriminator="format"),
 ]
 
-ColumnProperty = Union[
+TypedColumnProperty = Union[
     BooleanColumnProperty,
     IntegerColumnProperty,
     IntegerCategoricalColumnProperty,
@@ -123,5 +123,24 @@ ColumnProperty = Union[
     ArrayColumnProperty,
     ObjectColumnPropertyWithFormat,
     ObjectColumnProperty,
-    UnknownColumnProperty,
+]
+
+
+# The typed properties default their type, so without this a property with no
+# type would validate as the first of them (boolean) instead of unknown
+def _get_column_property_tag(value: object) -> str:
+    type = (
+        dict(value).get("type")
+        if isinstance(value, dict)
+        else getattr(value, "type", None)
+    )
+    return "unknown" if type is None or type == "null" else "typed"
+
+
+ColumnProperty = Annotated[
+    Union[
+        Annotated[TypedColumnProperty, Tag("typed")],
+        Annotated[UnknownColumnProperty, Tag("unknown")],
+    ],
+    Discriminator(_get_column_property_tag),
 ]

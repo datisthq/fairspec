@@ -1,0 +1,69 @@
+[
+  {
+    "description": "count",
+    "comment": "Querying is a library feature the spec does not define. Aggregates are aliased, since an unaliased aggregate's column name is engine-specific",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT COUNT(*) AS n FROM self",
+    "tests": [
+      {
+        "description": "counts the rows as an integer",
+        "data": "id,name\n1,alice\n2,bob\n3,carol\n",
+        "expected": { "columns": ["n"], "rows": [[3]] }
+      }
+    ]
+  },
+  {
+    "description": "count of a column skips nulls",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT COUNT(name) AS n FROM self",
+    "tests": [
+      {
+        "description": "a missing value is not counted",
+        "data": "id,name\n1,alice\n2,\n3,carol\n",
+        "expected": { "columns": ["n"], "rows": [[2]] }
+      }
+    ]
+  },
+  {
+    "description": "sum",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#integer",
+      "https://fairspec.org/specs/table-schema/#number"
+    ],
+    "tableSchema": {
+      "properties": { "count": { "type": "integer" }, "price": { "type": "number" } }
+    },
+    "query": "SELECT SUM(count) AS total, SUM(price) AS amount FROM self",
+    "tests": [
+      {
+        "description": "an integer sum stays an integer and a number sum a number",
+        "data": "count,price\n1,0.25\n2,1.25\n",
+        "expected": { "columns": ["total", "amount"], "rows": [[3, 1.5]] }
+      }
+    ]
+  },
+  {
+    "description": "group by",
+    "tableSchema": {
+      "properties": { "city": { "type": "string" }, "count": { "type": "integer" } }
+    },
+    "query": "SELECT city, COUNT(*) AS n, SUM(count) AS total FROM self GROUP BY city ORDER BY city",
+    "tests": [
+      {
+        "description": "one row per group",
+        "data": "city,count\nparis,1\nrome,2\nparis,3\n",
+        "expected": {
+          "columns": ["city", "n", "total"],
+          "rows": [
+            ["paris", 2, 4],
+            ["rome", 1, 2]
+          ]
+        }
+      }
+    ]
+  }
+]

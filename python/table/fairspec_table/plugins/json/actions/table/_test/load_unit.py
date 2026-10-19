@@ -9,11 +9,19 @@ from ..load import load_json_table
 
 
 class TestLoadJsonTable:
+    def test_should_return_none_for_top_level_object(self):
+        path = write_temp_file('{"id": 1}')
+
+        table = load_json_table(Resource(data=path, fileDialect=JsonFileDialect()))
+
+        assert table is None
+
     def test_should_load_local_file(self):
         body = '[{"id":1,"name":"english"},{"id":2,"name":"中文"}]'
         path = write_temp_file(body)
 
         table = load_json_table(Resource(data=path, fileDialect=JsonFileDialect()))
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -29,6 +37,7 @@ class TestLoadJsonTable:
         table = load_json_table(
             Resource(data=[path1, path2], fileDialect=JsonFileDialect())
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -38,13 +47,26 @@ class TestLoadJsonTable:
             {"id": 2, "name": "中文"},
         ]
 
+    def test_should_handle_nested_json_pointer(self):
+        body = '{"data": {"a/b": [{"id":1,"name":"english"}]}}'
+        path = write_temp_file(body)
+
+        table = load_json_table(
+            Resource(data=path, fileDialect=JsonFileDialect(jsonPointer="/data/a~1b"))
+        )
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1, "name": "english"}]
+
     def test_should_handle_property(self):
         body = '{"key": [{"id":1,"name":"english"},{"id":2,"name":"中文"}]}'
         path = write_temp_file(body)
 
         table = load_json_table(
-            Resource(data=path, fileDialect=JsonFileDialect(jsonPointer="key"))
+            Resource(data=path, fileDialect=JsonFileDialect(jsonPointer="/key"))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -59,6 +81,7 @@ class TestLoadJsonTable:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonFileDialect(columnNames=["name"]))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -73,6 +96,7 @@ class TestLoadJsonTable:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonFileDialect(rowType=RowType.array))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -87,6 +111,7 @@ class TestLoadJsonTable:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonFileDialect(rowType=RowType.object))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -101,6 +126,7 @@ class TestLoadJsonTableJsonl:
         path = write_temp_file(body)
 
         table = load_json_table(Resource(data=path, fileDialect=JsonlFileDialect()))
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -116,6 +142,7 @@ class TestLoadJsonTableJsonl:
         table = load_json_table(
             Resource(data=[path1, path2], fileDialect=JsonlFileDialect())
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -132,6 +159,7 @@ class TestLoadJsonTableJsonl:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonlFileDialect(columnNames=["name"]))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -146,6 +174,7 @@ class TestLoadJsonTableJsonl:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonlFileDialect(rowType=RowType.array))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
@@ -160,6 +189,7 @@ class TestLoadJsonTableJsonl:
         table = load_json_table(
             Resource(data=path, fileDialect=JsonlFileDialect(rowType=RowType.object))
         )
+        assert table is not None
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [

@@ -32,6 +32,22 @@ class TestCheckCellMultipleOf:
 
         assert result is None
 
+    def test_decimal_multiples_are_exact(self):
+        column = NumberColumn(
+            name="price",
+            type="number",
+            property=NumberColumnProperty(multipleOf=0.01),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+        values = [99.99, 0.07, 1.005]
+        table = pl.DataFrame({"source": values, "target": values}).lazy()
+
+        result = check_cell_multiple_of(column, mapping)
+
+        assert result is not None
+        errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert errors["target"].to_list() == [1.005]
+
     def test_returns_none_for_column_without_multiple_of_field(self):
         column = StringColumn(
             name="name",

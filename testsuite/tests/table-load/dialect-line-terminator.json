@@ -1,0 +1,69 @@
+[
+  {
+    "description": "lineTerminator carriage return",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "fileDialect": { "format": "csv", "lineTerminator": "\r" },
+    "tests": [
+      {
+        "description": "rows end with a carriage return",
+        "data": "id,name\r1,apple\r2,orange\r",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "lineTerminator carriage return in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "format": "tsv",
+    "fileDialect": { "format": "tsv", "lineTerminator": "\r" },
+    "tests": [
+      {
+        "description": "rows end with a carriage return",
+        "data": "id\tname\r1\tapple\r",
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+      }
+    ]
+  },
+  {
+    "description": "lineTerminator crlf",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "fileDialect": { "format": "csv", "lineTerminator": "\r\n" },
+    "tests": [
+      {
+        "description": "rows end with crlf",
+        "data": "id,name\r\n1,apple\r\n2,orange\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "crlf file without a dialect",
+    "comment": "The dialect is inferred; table-infer-dialect infers lineTerminator \\r\\n for this file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "tests": [
+      {
+        "description": "no carriage return is left in the cells",
+        "data": "id,name\r\n1,apple\r\n2,orange\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  }
+]

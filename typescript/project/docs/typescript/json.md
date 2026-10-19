@@ -89,7 +89,7 @@ const table = await loadJsonTable({
   data: "data.json",
   format: {
     name: "json",
-    jsonPointer: "users",
+    jsonPointer: "/users",
   },
 })
 ```
@@ -134,7 +134,7 @@ await saveJsonTable(table, {
   path: "output.json",
   format: {
     name: "json",
-    jsonPointer: "users",
+    jsonPointer: "/users",
   },
 })
 ```

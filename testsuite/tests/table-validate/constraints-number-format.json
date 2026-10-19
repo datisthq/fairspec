@@ -1,0 +1,180 @@
+[
+  {
+    "description": "decimalChar on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#decimalchar"],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "number",
+          "decimalChar": ","
+        }
+      }
+    },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tests": [
+      {
+        "description": "a comma decimal is valid",
+        "data": "price\n\"19,99\"\n\"5,5\"\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "decimalChar and minimum",
+    "comment": "The constraint applies to the parsed number; the error keeps the cell as written",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#decimalchar",
+      "https://fairspec.org/specs/table-schema/#minimum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "number",
+          "decimalChar": ",",
+          "minimum": 1
+        }
+      }
+    },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tests": [
+      {
+        "description": "a parsed value below the minimum is a cell/minimum error",
+        "data": "price\n\"1,5\"\n\"0,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "price",
+            "rowNumber": 2,
+            "cell": "0,5",
+            "minimum": "1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "groupChar on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#groupchar"],
+    "tableSchema": {
+      "properties": {
+        "population": {
+          "type": "integer",
+          "groupChar": ",",
+          "maximum": 999999
+        }
+      }
+    },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tests": [
+      {
+        "description": "grouped integers are valid",
+        "data": "population\n\"890,123\"\n\"45,678\"\n12\n",
+        "valid": true
+      },
+      {
+        "description": "a grouped value above the maximum is a cell/maximum error",
+        "data": "population\n\"1,234,567\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "population",
+            "rowNumber": 1,
+            "cell": "1,234,567",
+            "maximum": "999999"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "groupChar and decimalChar on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#groupchar",
+      "https://fairspec.org/specs/table-schema/#decimalchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "amount": {
+          "type": "number",
+          "groupChar": ".",
+          "decimalChar": ","
+        }
+      }
+    },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tests": [
+      {
+        "description": "European notation is valid",
+        "data": "amount\n\"1.234,5\"\n\"12,25\"\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "withText on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "number",
+          "withText": true,
+          "minimum": 10
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "numbers with surrounding text are valid",
+        "data": "price\n$19.99\n25.50 EUR\n",
+        "valid": true
+      },
+      {
+        "description": "the stripped number is constrained",
+        "data": "price\n$19.99\n$5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "price",
+            "rowNumber": 2,
+            "cell": "$5",
+            "minimum": "10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "weight": {
+          "type": "integer",
+          "withText": true
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "integers with a unit are valid",
+        "data": "weight\n12 kg\n7kg\n",
+        "valid": true
+      }
+    ]
+  }
+]

@@ -29,11 +29,21 @@ libraries both run. It has no `package.json`, ships nothing, and is not a releas
   repo's `eol=lf` never touches it, so hashes and byte counts hold on Windows
 - A file with only a header row is ambiguous to the dialect sniffer. When a test needs an empty
   table, give the resource `"fileDialect": { "format": "csv", "headerRows": [1] }`
+- The only runner-side rules: `data`/`metadata`/`cell/json` errors drop `message` (validator
+  text, not normative), and temporal columns render as ISO text through the library's table
+  query. Anything else that differs is a library divergence
+- Binary inputs are tiny files written once by the Python library and embedded as base64; say
+  how in the group's `comment`. A dataset test can only hold files at its top level, since the
+  runners create no directories
 
 ## Adding a test
 
-1. Find the expected value in the spec (`standard/specs/`), not in either library's output. When
-   the spec is silent, choose the deterministic answer and say so in the group's `comment`
+1. Find the expected value in the spec (`standard/specs/`), not in either library's output. The
+   spec now pins error order (`table-schema.md` and `dataset.md` "Validation"), null foreign keys,
+   exact temporal parsing and RFC 6901 pointers. When it is silent and the answer is normative,
+   ask, then write the decision into the spec as `fix(standard)`; when it is only library shape
+   (inferred dialects, data-schema inference, error field rendering), follow TypeScript and say so
+   in the group's `comment`
 2. Link the spec section in `specification` when one decides the outcome
 3. Run both runners. A test that fails on one side is a divergence to fix in that library
 
@@ -54,3 +64,5 @@ fails the other. Document the operation in the table in `testsuite/README.md`.
   commit together with the test. The suite itself is `chore`
 - A fix that changes behaviour other unit tests asserted means updating those tests too. Check
   whether the other library's unit tests already encode the decision
+- A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
+  unreported. Narrow the run with `-t "<operation>"` until the crash is fixed

@@ -29,9 +29,19 @@
           "type": "string",
           "default": "csv"
         },
+        "inline": {
+          "description": "Pass the test's data to the resource as inline data instead of writing a file",
+          "type": "boolean"
+        },
         "fileDialect": { "type": "object" },
         "tableSchema": { "type": "object" },
+        "dataSchema": { "type": "object" },
         "integrity": { "type": "object" },
+        "textual": { "type": "boolean" },
+        "query": {
+          "description": "SQL run against the loaded table as `self`, for table-query",
+          "type": "string"
+        },
         "dataset": {
           "description": "Dataset descriptor written as dataset.json; each resource's data names a key of the test's data",
           "type": "object"
@@ -58,7 +68,7 @@
         },
         "comment": { "type": "string" },
         "data": {
-          "description": "The file content: exact text, base64 bytes, JSON rows, or for a dataset one entry per file name",
+          "description": "The file content: exact text, base64 bytes, JSON rows, an inline JSON value, or for a dataset one entry per file name",
           "oneOf": [
             { "type": "string" },
             {
@@ -70,8 +80,7 @@
             { "type": "array" },
             {
               "type": "object",
-              "not": { "required": ["base64"] },
-              "additionalProperties": { "type": "string" }
+              "not": { "required": ["base64"] }
             }
           ]
         },

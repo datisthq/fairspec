@@ -1,0 +1,22 @@
+[
+  {
+    "description": "temporal columns with a table schema",
+    "tableSchema": {
+      "properties": {
+        "day": { "type": "string", "format": "date" },
+        "at": { "type": "string", "format": "time" },
+        "stamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "tests": [
+      {
+        "description": "are rendered as ISO 8601 text",
+        "data": "day,at,stamp\n2024-01-15,10:30:00,2024-01-15T10:30:00\n",
+        "expected": {
+          "columns": ["day", "at", "stamp"],
+          "rows": [["2024-01-15", "10:30:00", "2024-01-15T10:30:00"]]
+        }
+      }
+    ]
+  }
+]

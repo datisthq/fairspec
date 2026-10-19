@@ -6,6 +6,7 @@ import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer
 import type { SaveTableOptions, Table } from "../../../../models/table.ts"
 import { decodeJsonBuffer } from "../../actions/buffer/decode.ts"
 import { encodeJsonBuffer } from "../../actions/buffer/encode.ts"
+import { parseJsonPointer } from "../../helpers/pointer.ts"
 import { NATIVE_TYPES } from "../../settings.ts"
 
 export async function saveJsonTable(table: Table, options: SaveTableOptions) {
@@ -64,8 +65,8 @@ function processData(
 
   if (dialect.format === "json") {
     if (dialect.jsonPointer) {
-      // TODO: cover more jsonPointer cases
-      data = { [dialect.jsonPointer]: data }
+      const tokens = parseJsonPointer(dialect.jsonPointer)
+      data = tokens.reduceRight((value, token) => ({ [token]: value }), data)
     }
   }
 

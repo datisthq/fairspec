@@ -52,8 +52,11 @@ A group has a `description` and `tests`. It may also carry:
 - `comment`
 - `specification`: links to the spec sections it exercises
 - the subject of the operation: `format` (the file extension, `csv` by default),
-  `fileDialect`, `tableSchema`, `integrity`, `dataset` and `options`. Options use the camelCase
-  names of the TypeScript API
+  `fileDialect`, `tableSchema`, `dataSchema`, `integrity`, `textual`, `dataset`, `query` and
+  `options`. Options use the camelCase names of the TypeScript API; `file-describe` reads
+  `options.hashType`
+- `inline: true`: pass the test's `data` to the resource as inline data instead of writing a
+  file
 
 A test has a `description`, its `data`, and exactly one outcome:
 
@@ -61,7 +64,8 @@ A test has a `description`, its `data`, and exactly one outcome:
   - **a string**: the exact file content, so `\r\n` stays `\r\n`
   - `{ "base64": "…" }`: binary content
   - **an array**: rows for a JSON format
-  - **an object**: for `dataset-validate`, mapping each file name to its content
+  - **an object**: inline JSON with `inline: true`, or for the dataset operations a map of
+    each file name to its content (a string or `{ "base64": … }`)
 - The outcome is one of:
   - `valid` with optional `errors`, for validate operations. When `valid` is true, or `errors`
     is given, the report must equal `{ valid, errors }` exactly, in order
@@ -72,13 +76,18 @@ A test has a `description`, its `data`, and exactly one outcome:
 
 | operation             | runs                                                                  | compared                                  |
 | --------------------- | --------------------------------------------------------------------- | ----------------------------------------- |
+| `data-infer-schema`   | infer the data schema                                                 | `expected`: the JSON Schema               |
+| `data-validate`       | validate the data against the group's `dataSchema`                    | `valid`, `errors`                         |
+| `dataset-infer`       | write the dataset, infer it, make paths relative again                | `expected`: the dataset                   |
+| `dataset-list`        | write the dataset, list its resource names (inferred when absent)     | `expected`: the names                     |
+| `dataset-validate`    | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
 | `file-describe`       | describe the file written from `data`                                 | `expected`: `{bytes, textual, integrity}` |
-| `file-validate`       | validate a resource with the group's `integrity`                      | `valid`, `errors`                         |
+| `file-validate`       | validate a resource with the group's `integrity` / `textual`          | `valid`, `errors`                         |
 | `table-infer-dialect` | infer the file dialect                                                | `expected`: the dialect                   |
 | `table-infer-schema`  | infer the table schema                                                | `expected`: the schema                    |
 | `table-load`          | load the table                                                        | `expected`: `{columns, rows}`             |
+| `table-query`         | load the table and run the group's `query` against it as `self`       | `expected`: `{columns, rows}`             |
 | `table-validate`      | validate the table                                                    | `valid`, `errors`                         |
-| `dataset-validate`    | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
 
 ## Runners
 
@@ -92,6 +101,15 @@ Each runner:
 3. serialises the result to JSON, with no further normalisation, and compares
 
 A difference in number type (`1` against `1.0`), key presence or order is a failure. Fix it
-in the library, never by loosening a runner.
+in the library, never by loosening a runner. Two rules are fixed in both runners alike:
+
+- Errors of type `data`, `metadata` and `cell/json` are compared without `message`: its text
+  comes from each language's JSON Schema validator and is not normative. Leave `message` out
+  of the expected error
+- Date, time and date-time columns in `{columns, rows}` are rendered as text, `%Y-%m-%d`,
+  `%H:%M:%S` and `%Y-%m-%dT%H:%M:%S`, through the library's own table query
+
+Binary inputs (xlsx, ods, parquet, arrow, sqlite) are tiny files generated once with the Python
+library and embedded as base64; the group's `comment` says how each was made.
 
 Each file is also validated against `test-schema.json` by both runners.

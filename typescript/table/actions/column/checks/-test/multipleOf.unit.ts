@@ -306,7 +306,7 @@ describe("inspectTable (cell/multipleOf)", () => {
     ])
   })
 
-  it.skip("should handle multipleOf for decimal format", async () => {
+  it("should handle multipleOf for decimal format", async () => {
     const table = pl
       .DataFrame({
         amount: ["100.50", "201.00", "301.50"],
@@ -327,7 +327,7 @@ describe("inspectTable (cell/multipleOf)", () => {
     expect(errors).toHaveLength(0)
   })
 
-  it.skip("should handle multipleOf for decimal format and detect errors", async () => {
+  it("should handle multipleOf for decimal format and detect errors", async () => {
     const table = pl
       .DataFrame({
         amount: ["100.50", "150.75", "201.00"],
@@ -376,7 +376,7 @@ describe("inspectTable (cell/multipleOf)", () => {
     expect(errors).toHaveLength(0)
   })
 
-  it.skip("should handle multipleOf 0.1", async () => {
+  it("should handle multipleOf 0.1", async () => {
     const table = pl
       .DataFrame({
         measurement: [1.1, 1.2, 1.3],
@@ -394,5 +394,23 @@ describe("inspectTable (cell/multipleOf)", () => {
 
     const errors = await inspectTable(table, { tableSchema })
     expect(errors).toHaveLength(0)
+  })
+
+  it("should check multipleOf 0.01 on the decimal value as written", async () => {
+    const table = pl.DataFrame({ price: ["99.99", "0.03", "1.005", "1e19"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { price: { type: "number", multipleOf: 0.01 } },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/multipleOf",
+        columnName: "price",
+        multipleOf: 0.01,
+        rowNumber: 3,
+        cell: "1.005",
+      },
+    ])
   })
 })

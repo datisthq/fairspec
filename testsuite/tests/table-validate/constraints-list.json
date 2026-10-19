@@ -1,0 +1,52 @@
+[
+  {
+    "description": "minItems and maxItems on a list column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#minitems",
+      "https://fairspec.org/specs/table-schema/#maxitems"
+    ],
+    "tableSchema": {
+      "properties": {
+        "tags": {
+          "type": "string",
+          "format": "list",
+          "minItems": 2,
+          "maxItems": 3
+        }
+      }
+    },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tests": [
+      {
+        "description": "lists within the bounds are valid",
+        "data": "tags\n\"red,blue\"\n\"red,blue,green\"\n",
+        "valid": true
+      },
+      {
+        "description": "too few and too many items",
+        "data": "tags\nred\n\"a,b\"\n\"a,b,c,d\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minItems",
+            "columnName": "tags",
+            "rowNumber": 1,
+            "cell": "red",
+            "minItems": 2
+          },
+          {
+            "type": "cell/maxItems",
+            "columnName": "tags",
+            "rowNumber": 3,
+            "cell": "a,b,c,d",
+            "maxItems": 3
+          }
+        ]
+      }
+    ]
+  }
+]

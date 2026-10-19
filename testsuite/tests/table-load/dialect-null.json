@@ -1,0 +1,87 @@
+[
+  {
+    "description": "nullSequence in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": { "format": "csv", "nullSequence": "NA" },
+    "tests": [
+      {
+        "description": "the sequence is read as null",
+        "data": "id,name\n1,NA\nNA,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [null, "orange"]
+          ]
+        }
+      },
+      {
+        "description": "the sequence inside a longer value is kept",
+        "data": "id,name\n1,NAN\n2,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "NAN"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "format": "tsv",
+    "fileDialect": { "format": "tsv", "nullSequence": "\\N" },
+    "tests": [
+      {
+        "description": "the sequence is read as null",
+        "data": "id\tname\n1\t\\N\n2\torange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "empty cells in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": { "format": "csv", "headerRows": [1] },
+    "tests": [
+      {
+        "description": "an empty cell is null",
+        "data": "id,name\n1,\n2,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "empty cells in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
+    "format": "tsv",
+    "fileDialect": { "format": "tsv", "headerRows": [1] },
+    "tests": [
+      {
+        "description": "an empty cell is null",
+        "data": "id\tname\n1\t\n2\torange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  }
+]

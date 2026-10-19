@@ -80,9 +80,23 @@ class TestCheckCellMinimum:
 
         assert result is not None
         assert result.error_template.type == "cell/minimum"
-        assert result.error_template.minimum == "10.0"
+        assert result.error_template.minimum == "10"
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 1
+
+    def test_fractional_minimum_renders_as_is(self):
+        column = NumberColumn(
+            name="temperature",
+            type="number",
+            property=NumberColumnProperty(minimum=1.5),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+        check = create_check_cell_minimum()
+
+        result = check(column, mapping)
+
+        assert result is not None
+        assert result.error_template.minimum == "1.5"
 
     def test_exclusive_minimum(self):
         column = NumberColumn(
@@ -100,7 +114,7 @@ class TestCheckCellMinimum:
 
         assert result is not None
         assert result.error_template.type == "cell/exclusiveMinimum"
-        assert result.error_template.minimum == "10.0"
+        assert result.error_template.minimum == "10"
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 2
 

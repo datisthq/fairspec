@@ -33,6 +33,17 @@ class TestInferDataset:
         result = infer_dataset(dataset)
         assert result.resources is None
 
+    def test_should_pass_table_schema_options(self):
+        path = write_temp_file("id,name\n1,english", format="csv")
+        dataset = Dataset(resources=[Resource(data=path)])
+        result = infer_dataset(dataset, keepStrings=True)
+        assert result.resources is not None
+        table_schema = result.resources[0].tableSchema
+        assert not isinstance(table_schema, str)
+        assert table_schema is not None
+        assert table_schema.properties is not None
+        assert table_schema.properties["id"].type == "string"
+
     def test_should_round_trip_inferred_dataset_through_validation(
         self, tmp_path, monkeypatch
     ):

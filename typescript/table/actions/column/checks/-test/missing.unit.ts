@@ -117,4 +117,33 @@ describe("inspectTable (cell/missing)", () => {
       },
     ])
   })
+
+  it("should not report a missing cell in a column without a type", async () => {
+    const table = pl.DataFrame({ id: ["a", null] }).lazy()
+    const tableSchema: TableSchema = { properties: { id: { title: "Id" } } }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([])
+  })
+
+  it("should report a table-level missing value with its text", async () => {
+    const table = pl.DataFrame({ id: ["1", "NA"], score: ["NA", "2"] }).lazy()
+    const tableSchema: TableSchema = {
+      missingValues: ["NA"],
+      properties: {
+        id: { type: "integer" },
+        score: { type: ["integer", "null"] },
+      },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/missing",
+        columnName: "id",
+        rowNumber: 2,
+        cell: "NA",
+      },
+    ])
+  })
 })

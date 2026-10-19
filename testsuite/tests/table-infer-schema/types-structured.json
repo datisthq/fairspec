@@ -1,0 +1,196 @@
+[
+  {
+    "description": "list columns",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tests": [
+      {
+        "description": "pairs of integers",
+        "data": "id,l\n1,\"1,2\"\n2,\"3,4\"\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "l": {
+              "type": "string",
+              "format": "list",
+              "itemType": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "pairs of numbers",
+        "data": "id,l\n1,\"1.5,2.5\"\n2,\"3.5,4.5\"\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "l": {
+              "type": "string",
+              "format": "list",
+              "itemType": "number"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "list columns with a delimiter",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#delimiter",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "options": {
+      "listDelimiter": ";"
+    },
+    "tests": [
+      {
+        "description": "semicolon-delimited integers",
+        "data": "id,l\n1,1;2\n2,3;4\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "l": {
+              "type": "string",
+              "format": "list",
+              "itemType": "integer",
+              "delimiter": ";"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "JSON text columns",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#array",
+      "https://fairspec.org/specs/table-schema/#object"
+    ],
+    "tests": [
+      {
+        "description": "JSON arrays",
+        "data": "id,a\n1,\"[1, 2]\"\n2,[3]\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "a": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      {
+        "description": "JSON objects",
+        "data": "id,o\n1,\"{\"\"a\"\": 1}\"\n2,{}\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "o": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "JSON values",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#array",
+      "https://fairspec.org/specs/table-schema/#object",
+      "https://fairspec.org/specs/table-schema/#unknown"
+    ],
+    "format": "json",
+    "tests": [
+      {
+        "description": "arrays",
+        "data": [
+          {
+            "id": 1,
+            "a": [1, 2]
+          },
+          {
+            "id": 2,
+            "a": [3]
+          }
+        ],
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "a": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      {
+        "description": "objects",
+        "data": [
+          {
+            "id": 1,
+            "o": {
+              "a": 1
+            }
+          },
+          {
+            "id": 2,
+            "o": {
+              "a": 2
+            }
+          }
+        ],
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "o": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      {
+        "description": "a column of only nulls is unknown",
+        "data": [
+          {
+            "id": 1,
+            "u": null
+          },
+          {
+            "id": 2,
+            "u": null
+          }
+        ],
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "u": {}
+          }
+        }
+      }
+    ]
+  }
+]

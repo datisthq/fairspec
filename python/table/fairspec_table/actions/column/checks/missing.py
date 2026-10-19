@@ -16,7 +16,7 @@ class ColumnCheck:
 
 
 def check_cell_missing(column: Column, mapping: CellMapping) -> ColumnCheck | None:
-    if column.nullable:
+    if column.nullable or column.type == "unknown":
         return None
 
     is_error_expr = mapping.target.is_null()

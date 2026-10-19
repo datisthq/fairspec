@@ -58,17 +58,17 @@ function inspectType(mapping: ColumnMapping) {
     Datetime: ["date-time"],
     Float32: ["number", "integer"],
     Float64: ["number", "integer"],
-    Int16: ["integer"],
-    Int32: ["integer"],
-    Int64: ["integer"],
-    Int8: ["integer"],
+    Int16: ["integer", "number"],
+    Int32: ["integer", "number"],
+    Int64: ["integer", "number"],
+    Int8: ["integer", "number"],
     List: ["list"],
     String: ["unknown"],
     Time: ["time"],
-    UInt16: ["integer"],
-    UInt32: ["integer"],
-    UInt64: ["integer"],
-    UInt8: ["integer"],
+    UInt16: ["integer", "number"],
+    UInt32: ["integer", "number"],
+    UInt64: ["integer", "number"],
+    UInt8: ["integer", "number"],
     Utf8: ["unknown"],
   }
 
@@ -102,19 +102,19 @@ async function inspectCells(
   // Types that require non-polars validation
   switch (mapping.target.type) {
     case "duration":
-      return await inspectDurationColumn(mapping.target, table)
+      return await inspectDurationColumn(mapping.target, table, mapping)
     case "wkb":
-      return await inspectWkbColumn(mapping.target, table)
+      return await inspectWkbColumn(mapping.target, table, mapping)
     case "wkt":
-      return await inspectWktColumn(mapping.target, table)
+      return await inspectWktColumn(mapping.target, table, mapping)
     case "array":
-      return await inspectArrayColumn(mapping.target, table)
+      return await inspectArrayColumn(mapping.target, table, mapping)
     case "object":
-      return await inspectObjectColumn(mapping.target, table)
+      return await inspectObjectColumn(mapping.target, table, mapping)
     case "geojson":
-      return await inspectGeojsonColumn(mapping.target, table)
+      return await inspectGeojsonColumn(mapping.target, table, mapping)
     case "topojson":
-      return await inspectTopojsonColumn(mapping.target, table)
+      return await inspectTopojsonColumn(mapping.target, table, mapping)
     default:
       return await inspectCellsInPolars(mapping, table, options)
   }
@@ -141,6 +141,7 @@ async function inspectCellsInPolars(
       pl.col(NUMBER_COLUMN_NAME),
       normalizeColumn(mapping).alias("target"),
       normalizeColumn(mapping, { keepType: true }).alias("source"),
+      pl.col(mapping.source.name).alias("cell"),
       pl.lit(null).cast(pl.UInt8).alias("error"),
     )
 
@@ -181,7 +182,7 @@ async function inspectCellsInPolars(
 
   const columnCheckFrame = await columnCheckTable
     .filter(pl.col("error").isNotNull())
-    .drop(["target"])
+    .drop(["target", "source"])
     .head(maxErrors)
     .collect()
 
@@ -190,7 +191,7 @@ async function inspectCellsInPolars(
     errors.push({
       ...errorTemplate,
       rowNumber: row[NUMBER_COLUMN_NAME],
-      cell: String(row.source ?? ""),
+      cell: String(row.cell ?? ""),
     })
   }
 

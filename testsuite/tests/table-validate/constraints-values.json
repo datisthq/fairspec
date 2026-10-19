@@ -1,0 +1,168 @@
+[
+  {
+    "description": "pattern",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tableSchema": {
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}-[0-9]{4}$"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "matching values are valid",
+        "data": "code\nABC-1234\nXYZ-5678\n",
+        "valid": true
+      },
+      {
+        "description": "a non-matching value is a cell/pattern error",
+        "data": "code\nABC-1234\nabc-1234\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "code",
+            "rowNumber": 2,
+            "cell": "abc-1234",
+            "pattern": "^[A-Z]{3}-[0-9]{4}$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "unanchored pattern",
+    "comment": "Table Schema is structurally compatible with JSON Schema, whose pattern matches anywhere in the value unless anchored",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tableSchema": {
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "[0-9]+"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value containing a match is valid",
+        "data": "code\na1b\n22\n",
+        "valid": true
+      },
+      {
+        "description": "a value without a match is a cell/pattern error",
+        "data": "code\nabc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "code",
+            "rowNumber": 1,
+            "cell": "abc",
+            "pattern": "[0-9]+"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const on a string column",
+    "specification": ["https://fairspec.org/specs/table-schema/#const"],
+    "tableSchema": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "pending"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the constant is valid",
+        "data": "status\npending\npending\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/const error",
+        "data": "status\npending\ndone\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "status",
+            "rowNumber": 2,
+            "cell": "done",
+            "const": "pending"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#const"],
+    "tableSchema": {
+      "properties": {
+        "priority": {
+          "type": "integer",
+          "const": 1
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the constant is valid",
+        "data": "priority\n1\n1\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/const error",
+        "data": "priority\n1\n2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "priority",
+            "rowNumber": 2,
+            "cell": "2",
+            "const": "1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "enum on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#enum"],
+    "tableSchema": {
+      "properties": {
+        "priority": {
+          "type": "integer",
+          "enum": [1, 2, 3]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "priority\n1\n3\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/enum error",
+        "data": "priority\n2\n4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "priority",
+            "rowNumber": 2,
+            "cell": "4",
+            "enum": ["1", "2", "3"]
+          }
+        ]
+      }
+    ]
+  }
+]

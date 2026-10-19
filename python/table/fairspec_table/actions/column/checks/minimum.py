@@ -7,6 +7,7 @@ import polars as pl
 from fairspec_metadata import CellExclusiveMinimumError, CellMinimumError
 from fairspec_metadata import Column
 
+from fairspec_table.helpers import stringify_number
 from fairspec_table.models import CellMapping
 
 
@@ -42,7 +43,7 @@ def create_check_cell_minimum(
             error_template = CellExclusiveMinimumError(
                 type="cell/exclusiveMinimum",
                 columnName=column.name,
-                minimum=str(minimum),
+                minimum=stringify_number(minimum),
                 rowNumber=0,
                 cell="",
             )
@@ -50,7 +51,7 @@ def create_check_cell_minimum(
             error_template = CellMinimumError(
                 type="cell/minimum",
                 columnName=column.name,
-                minimum=str(minimum),
+                minimum=stringify_number(minimum),
                 rowNumber=0,
                 cell="",
             )

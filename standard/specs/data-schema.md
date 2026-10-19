@@ -30,7 +30,7 @@ A Fairspec Data Schema is a [JSON](https://json.org/) resource that `MUST` be an
 
 ## Data Schema
 
-A top-level descriptor object defining a schema of structured data resources. It `MIGHT` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object defining a schema of structured data resources. This includes a JSON file whose top-level value is an object, read without a [`jsonPointer`](../file-dialect#jsonpointer): such a file is not a table, so a Table Schema does not apply to it. It `MIGHT` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 

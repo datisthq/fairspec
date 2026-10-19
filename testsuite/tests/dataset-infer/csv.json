@@ -1,0 +1,113 @@
+[
+  {
+    "description": "one csv resource",
+    "dataset": { "resources": [{ "data": "users.csv" }] },
+    "tests": [
+      {
+        "description": "gets a name, dialect, textual flag, integrity and table schema",
+        "data": { "users.csv": "id,name\n1,alice\n2,bob\n" },
+        "expected": {
+          "resources": [
+            {
+              "data": "users.csv",
+              "name": "users",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "e0af2be21679d859fa60c48fb33da4de8f26582b08fddc711059172ef378af37"
+              },
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ",",
+                "headerRows": [1],
+                "lineTerminator": "\n"
+              },
+              "tableSchema": {
+                "properties": {
+                  "id": { "type": "integer" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "declared properties are kept",
+    "comment": "Inference fills what the descriptor leaves out and never overwrites what it declares, even a declared textual false or a hash that does not match",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#name",
+      "https://fairspec.org/specs/dataset/#textual",
+      "https://fairspec.org/specs/dataset/#integrity",
+      "https://fairspec.org/specs/dataset/#filedialect",
+      "https://fairspec.org/specs/dataset/#tableschema"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": "users.csv",
+          "textual": false,
+          "integrity": { "type": "md5", "hash": "abc" },
+          "fileDialect": { "format": "csv", "delimiter": ";" },
+          "tableSchema": { "properties": { "id": { "type": "string" } } }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "every declared property comes back unchanged",
+        "data": { "users.csv": "id;name\n1;alice\n" },
+        "expected": {
+          "resources": [
+            {
+              "name": "people",
+              "data": "users.csv",
+              "textual": false,
+              "integrity": { "type": "md5", "hash": "abc" },
+              "fileDialect": { "format": "csv", "delimiter": ";" },
+              "tableSchema": { "properties": { "id": { "type": "string" } } }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "declared dialect drives schema inference",
+    "specification": ["https://fairspec.org/specs/dataset/#filedialect"],
+    "dataset": {
+      "resources": [
+        { "data": "users.csv", "fileDialect": { "format": "csv", "delimiter": ";" } }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the dialect is kept and the columns are split on it",
+        "data": { "users.csv": "id;name\n1;alice\n" },
+        "expected": {
+          "resources": [
+            {
+              "data": "users.csv",
+              "name": "users",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "8ecaf863eaa18e324050d2b9a0b2a0f06226f0eb531cc5e5772e6808ff81d5e0"
+              },
+              "fileDialect": { "format": "csv", "delimiter": ";" },
+              "tableSchema": {
+                "properties": {
+                  "id": { "type": "integer" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

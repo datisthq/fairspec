@@ -68,11 +68,14 @@ export async function validateDatasetForeignKeys(
         continue
       }
 
-      const foreignKeyCheckTable = left.select(...foreignKey.columns).join(right, {
-        how: "anti",
-        leftOn: foreignKey.columns,
-        rightOn: foreignKey.reference.columns,
-      })
+      const foreignKeyCheckTable = left
+        .select(...foreignKey.columns)
+        .dropNulls(foreignKey.columns)
+        .join(right, {
+          how: "anti",
+          leftOn: foreignKey.columns,
+          rightOn: foreignKey.reference.columns,
+        })
 
       const foreignKeyCheckFrame = await foreignKeyCheckTable.head(maxErrors).collect()
 

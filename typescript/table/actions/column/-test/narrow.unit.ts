@@ -109,5 +109,32 @@ describe("narrowColumn", () => {
       const actual = frame.toRecords()[0]?.name
       expect(actual).toEqual(expected)
     })
+
+    it.each([
+      ["1", "Low"],
+      ["2", "High"],
+      ["3", null],
+      ["Low", null],
+    ])("integer from text: %s -> %s", async (cell, expected) => {
+      const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+      const tableSchema: TableSchema = {
+        properties: {
+          name: {
+            type: "integer",
+            format: "categorical",
+            categories: [
+              { value: 1, label: "Low" },
+              { value: 2, label: "High" },
+            ],
+          },
+        },
+      }
+
+      const result = await normalizeTable(table, tableSchema)
+      const frame = await result.collect()
+
+      const actual = frame.toRecords()[0]?.name
+      expect(actual).toEqual(expected)
+    })
   })
 })

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing import Unpack
+
 from fairspec_metadata import (
     Resource,
     infer_resource_name,
     resolve_file_dialect,
 )
 from fairspec_dataset import infer_integrity, infer_textual
+from fairspec_table.models.schema import InferTableSchemaOptions
 
 from fairspec_library.actions.data_schema.infer import infer_data_schema
 from fairspec_library.actions.file_dialect.infer import infer_file_dialect
@@ -16,7 +19,7 @@ def infer_resource(
     resource: Resource,
     *,
     resource_number: int | None = None,
-    concurrency: int | None = None,
+    **options: Unpack[InferTableSchemaOptions],
 ) -> Resource:
     resource = resource.model_copy(deep=True)
 
@@ -32,12 +35,14 @@ def infer_resource(
             resource.textual = infer_textual(resource)
 
     if not resource.integrity:
-        resource.integrity = infer_integrity(resource, concurrency=concurrency)
+        resource.integrity = infer_integrity(
+            resource, concurrency=options.get("concurrency")
+        )
 
     if not resource.dataSchema:
         resource.dataSchema = infer_data_schema(resource)
 
     if not resource.tableSchema:
-        resource.tableSchema = infer_table_schema(resource)
+        resource.tableSchema = infer_table_schema(resource, **options)
 
     return resource

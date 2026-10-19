@@ -31,7 +31,7 @@ class TestSaveJsonTable:
         save_json_table(
             TABLE,
             path=path,
-            fileDialect=JsonFileDialect(jsonPointer="key"),
+            fileDialect=JsonFileDialect(jsonPointer="/key"),
         )
 
         with open(path, encoding="utf-8") as f:
@@ -91,6 +91,7 @@ class TestSaveJsonTable:
         save_json_table(source, path=path)
 
         target = load_json_table(Resource(data=path), denormalized=True)
+        assert target is not None
         frame: pl.DataFrame = target.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [

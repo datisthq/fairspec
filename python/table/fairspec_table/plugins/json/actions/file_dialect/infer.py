@@ -9,6 +9,7 @@ from fairspec_metadata.models.file_dialect.json import JsonFileDialect
 from fairspec_metadata.models.file_dialect.jsonl import JsonlFileDialect
 
 from fairspec_table.plugins.json.actions.buffer.decode import decode_json_buffer
+from fairspec_table.plugins.json.helpers.pointer import format_json_pointer
 from fairspec_table.utils.sniffer.sniffer import Sniffer
 
 if TYPE_CHECKING:
@@ -61,7 +62,7 @@ def infer_json_file_dialect(
             for key, value in data.items():
                 if isinstance(value, list):
                     if format == "json":
-                        json_pointer = str(key)
+                        json_pointer = format_json_pointer([str(key)])
                     data = value
                     break
 

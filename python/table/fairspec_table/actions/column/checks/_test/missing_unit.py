@@ -4,6 +4,8 @@ import polars as pl
 from fairspec_metadata import (
     NumberColumn,
     NumberColumnProperty,
+    UnknownColumn,
+    UnknownColumnProperty,
 )
 
 from fairspec_table.models import CellMapping
@@ -36,6 +38,18 @@ class TestCheckCellMissing:
             type="number",
             nullable=True,
             property=NumberColumnProperty(),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+
+        result = check_cell_missing(column, mapping)
+
+        assert result is None
+
+    def test_unknown_column_returns_none(self):
+        column = UnknownColumn(
+            name="id",
+            type="unknown",
+            property=UnknownColumnProperty(),
         )
         mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
 

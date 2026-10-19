@@ -1,0 +1,54 @@
+[
+  {
+    "description": "keep strings",
+    "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
+    "specification": ["https://fairspec.org/specs/table-schema/#string"],
+    "options": {
+      "keepStrings": true
+    },
+    "tests": [
+      {
+        "description": "integers stay strings",
+        "data": "id,n\n1,1\n2,2\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "n": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "dates stay strings",
+        "data": "id,day\n1,2024-01-15\n2,2024-02-20\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "day": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "emails stay strings",
+        "data": "id,e\n1,alice@example.com\n2,bob@company.org\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "e": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  }
+]

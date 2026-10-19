@@ -78,6 +78,15 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **`index.ts` barrels are deliberate and required.** Every package publishes `"exports": "./build/index.js"` (`metadata` adds only the test-only `testing` subpath), and its `index.ts` is a curated list of explicit named re-exports — never `export *`. Adding a public API means adding its line there.
 - Add brief docstrings for exported functions and models (explain what it does)
 - **Polars runs on the streaming engine through `POLARS_FORCE_STREAMING`**, set once in `typescript/table/settings.ts` (listed in `sideEffects`). Async `collect()` takes no engine and its `streaming` option is a dead flag, so call plain `collect()` — never `collect({ streaming: true })`, and never `collectSync` to reach the engine, which blocks the MCP server and the desktop app. Not every expression streams: `Expr.replace` holds the whole column (use an anchored `str.replace`), so one such check makes a validation's memory grow with the file. Judge a memory change by the smallest cgroup cap it survives (`systemd-run --user --scope -p MemoryMax=…`), not peak RSS, which counts the mmap'd source
+- **A table plugin's `loadTable` returns `undefined` when the data is not a table** — a JSON file whose rows (the document, or the value at `jsonPointer`) are not an array, such as a top-level object. Library `inferTableSchema` and `validateTable` read that as "no table", so the resource keeps only its `dataSchema`; never throw for it. `jsonPointer` is always an RFC 6901 pointer (`/items`, `""` for the root) — go through `parseJsonPointer`/`formatJsonPointer` in `typescript/table/plugins/json/helpers/pointer.ts`, never index by the raw string
+- `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
+- **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
+  whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column
+  cannot be collected to JS, so drop it before `toRecords()`; `str.strptime` matches the format
+  anywhere in the text, so temporal parsers go through `keepExactTemporal`
+  (`typescript/table/actions/column/types/-shared/temporal.ts`); `scanCSV` takes a one-character
+  `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
+  Float64
 
 ## Specs
 

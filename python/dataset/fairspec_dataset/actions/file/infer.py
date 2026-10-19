@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from charset_normalizer import from_bytes
 
-from fairspec_metadata import Integrity, get_data_first_path
+from fairspec_metadata import Integrity, get_data_paths
 from fairspec_metadata import IntegrityType
 
 from fairspec_dataset.actions.file.load import load_file
@@ -24,31 +24,11 @@ def infer_textual(
     *,
     sample_bytes: int = 10_000,
 ) -> bool:
-    first_path = get_data_first_path(resource)
-    if not first_path:
+    paths = get_data_paths(resource)
+    if not paths:
         return False
 
-    buffer = load_file(first_path, max_bytes=sample_bytes)
-
-    if len(buffer) == 0:
-        return True
-
-    if _is_binary(buffer):
-        return False
-
-    try:
-        buffer.decode("utf-8")
-        return True
-    except UnicodeDecodeError:
-        pass
-
-    results = from_bytes(buffer)
-    best = results.best()
-    if best is not None:
-        encoding = best.encoding.lower()
-        return encoding in ("utf-8", "ascii")
-
-    return False
+    return all(_get_is_textual(path, sample_bytes=sample_bytes) for path in paths)
 
 
 def infer_integrity(
@@ -92,6 +72,30 @@ def infer_bytes(resource: Resource, *, concurrency: int | None = None) -> int:
         total += os.stat(local_path).st_size
 
     return total
+
+
+def _get_is_textual(path: str, *, sample_bytes: int) -> bool:
+    buffer = load_file(path, max_bytes=sample_bytes)
+
+    if len(buffer) == 0:
+        return True
+
+    if _is_binary(buffer):
+        return False
+
+    try:
+        buffer.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        pass
+
+    results = from_bytes(buffer)
+    best = results.best()
+    if best is not None:
+        encoding = best.encoding.lower()
+        return encoding in ("utf-8", "ascii")
+
+    return False
 
 
 def _is_binary(data: bytes) -> bool:

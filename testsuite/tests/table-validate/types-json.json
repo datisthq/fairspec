@@ -1,0 +1,429 @@
+[
+  {
+    "description": "array column",
+    "specification": ["https://fairspec.org/specs/table-schema/#array"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "array"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "JSON arrays are valid",
+        "data": "id,x\n1,\"[1.5, 2.3]\"\n2,[]\n",
+        "valid": true
+      },
+      {
+        "description": "a JSON object is a cell/type error",
+        "data": "id,x\n1,[]\n2,\"{\"\"a\"\": 1}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "{\"a\": 1}"
+          }
+        ]
+      },
+      {
+        "description": "text that is not JSON is a cell/type error",
+        "data": "id,x\n1,[]\n2,nope\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "nope"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,[]\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable array column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#array"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["array", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,[]\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "array column with a JSON Schema",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#array",
+      "https://fairspec.org/specs/table-schema/#jsonschema"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "number arrays of two or more are valid",
+        "data": "id,x\n1,\"[1.5, 2.3]\"\n",
+        "valid": true
+      },
+      {
+        "description": "a string item is a cell/json error at its index",
+        "data": "id,x\n1,\"[1, \"\"a\"\"]\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": "[1, \"a\"]",
+            "jsonPointer": "/1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "object column",
+    "specification": ["https://fairspec.org/specs/table-schema/#object"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "object"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "JSON objects are valid",
+        "data": "id,x\n1,\"{\"\"author\"\": \"\"Alice\"\", \"\"version\"\": 1}\"\n2,{}\n",
+        "valid": true
+      },
+      {
+        "description": "a JSON array is a cell/type error",
+        "data": "id,x\n1,{}\n2,[1]\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "[1]"
+          }
+        ]
+      },
+      {
+        "description": "text that is not JSON is a cell/type error",
+        "data": "id,x\n1,{}\n2,nope\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "nope"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,{}\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable object column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#object"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["object", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,{}\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "object column with a JSON Schema",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#object",
+      "https://fairspec.org/specs/table-schema/#jsonschema"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "object",
+          "properties": {
+            "author": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "conforming objects are valid",
+        "data": "id,x\n1,\"{\"\"author\"\": \"\"Alice\"\", \"\"version\"\": 1}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a wrong property type is a cell/json error at the property",
+        "data": "id,x\n1,\"{\"\"author\"\": \"\"Bob\"\", \"\"version\"\": \"\"x\"\"}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": "{\"author\": \"Bob\", \"version\": \"x\"}",
+            "jsonPointer": "/version"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "geojson column",
+    "specification": ["https://fairspec.org/specs/table-schema/#geojson"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "object",
+          "format": "geojson"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "GeoJSON geometries are valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n2,\"{\"\"type\"\": \"\"LineString\"\", \"\"coordinates\"\": [[30, 10], [10, 30]]}\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unknown geometry type is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n2,\"{\"\"type\"\": \"\"Circle\"\", \"\"coordinates\"\": [30, 10]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Circle\", \"coordinates\": [30, 10]}"
+          }
+        ]
+      },
+      {
+        "description": "a JSON array is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n2,[1]\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "[1]"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable geojson column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#geojson"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["object", "null"],
+          "format": "geojson"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "topojson column",
+    "specification": ["https://fairspec.org/specs/table-schema/#topojson"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "object",
+          "format": "topojson"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a topology is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [[[0, 0], [1, 1]]], \"\"objects\"\": {\"\"line\"\": {\"\"type\"\": \"\"LineString\"\", \"\"arcs\"\": [0]}}}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a geometry object is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [30, 10]}\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unknown type is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [[[0, 0], [1, 1]]], \"\"objects\"\": {\"\"line\"\": {\"\"type\"\": \"\"LineString\"\", \"\"arcs\"\": [0]}}}\"\n2,\"{\"\"type\"\": \"\"Circle\"\", \"\"coordinates\"\": [30, 10]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "topojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Circle\", \"coordinates\": [30, 10]}"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [[[0, 0], [1, 1]]], \"\"objects\"\": {\"\"line\"\": {\"\"type\"\": \"\"LineString\"\", \"\"arcs\"\": [0]}}}\"\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable topojson column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#topojson"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["object", "null"],
+          "format": "topojson"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [[[0, 0], [1, 1]]], \"\"objects\"\": {\"\"line\"\": {\"\"type\"\": \"\"LineString\"\", \"\"arcs\"\": [0]}}}\"\n2,\n",
+        "valid": true
+      }
+    ]
+  }
+]

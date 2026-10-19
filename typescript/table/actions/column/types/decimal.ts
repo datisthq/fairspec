@@ -37,8 +37,8 @@ export function parseDecimalColumn(column: DecimalColumn, columnExpr: pl.Expr) {
     columnExpr = columnExpr.str.replaceAll("[^\\d\\-.e]", "")
   }
 
-  // Cast to decimal
-  columnExpr = columnExpr.cast(pl.Decimal())
+  // A Decimal without precision and scale panics polars and aborts the process
+  columnExpr = columnExpr.cast(pl.Decimal(38, 18))
   return columnExpr
 }
 

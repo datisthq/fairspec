@@ -10,7 +10,7 @@ export async function validateData(resource: Resource) {
   if (dataSchema) {
     const data = await loadData(resource)
 
-    if (data) {
+    if (data !== undefined) {
       const dataErrors = await inspectJson(data, { jsonSchema: dataSchema })
       errors.push(
         ...dataErrors.map(error => ({
@@ -20,7 +20,7 @@ export async function validateData(resource: Resource) {
       )
     }
 
-    if (!data) {
+    if (data === undefined) {
       errors.push({
         type: "resource/type",
         expectedResourceType: "data",

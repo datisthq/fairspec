@@ -67,7 +67,7 @@ describe("validateObjectColumn", () => {
     const tableSchema: TableSchema = {
       properties: {
         config: {
-          type: "object",
+          type: ["object", "null"],
         },
       },
     }

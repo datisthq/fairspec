@@ -61,6 +61,7 @@ class TestInspectObjectColumn:
         column = ObjectColumn(
             name="config",
             type="object",
+            nullable=True,
             property=ObjectColumnProperty(),
         )
 
@@ -213,11 +214,11 @@ class TestInspectObjectColumn:
         assert json_errors[0].rowNumber == 2
         assert json_errors[0].cell == '{"name":"Jane"}'
         assert json_errors[0].message == "'age' is a required property"
-        assert json_errors[0].jsonPointer == "/"
+        assert json_errors[0].jsonPointer == ""
         assert json_errors[1].rowNumber == 3
         assert json_errors[1].cell == '{"age":25}'
         assert json_errors[1].message == "'name' is a required property"
-        assert json_errors[1].jsonPointer == "/"
+        assert json_errors[1].jsonPointer == ""
         assert json_errors[2].rowNumber == 4
         assert json_errors[2].cell == '{"name":"Bob","age":"invalid"}'
         assert json_errors[2].message == "'invalid' is not of type 'number'"

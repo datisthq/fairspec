@@ -38,9 +38,10 @@ export function narrowColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
   if (mapping.target.type === "categorical") {
     if (ALPHANUMERIC_VARIANTS.includes(variant)) {
       const { values, labels } = getCategoricalValuesAndLabels(mapping.target)
+      const sourceValues = STRING_VARIANTS.includes(variant) ? values.map(String) : values
 
       return values.length
-        ? columnExpr.replaceStrict(values, labels, pl.lit(null), pl.Categorical)
+        ? columnExpr.replaceStrict(sourceValues, labels, pl.lit(null), pl.Categorical)
         : columnExpr
     }
   }

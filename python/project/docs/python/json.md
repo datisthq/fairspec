@@ -84,7 +84,7 @@ from fairspec_metadata import JsonFileDialect
 # Input: {"users": [{"id": 1, "name": "Alice"}]}
 table = load_json_table(Resource(
     data="data.json",
-    fileDialect=JsonFileDialect(jsonPointer="users"),
+    fileDialect=JsonFileDialect(jsonPointer="/users"),
 ))
 ```
 
@@ -128,6 +128,6 @@ from fairspec_metadata import JsonFileDialect
 
 # Output: {"users": [{"id": 1, "name": "Alice"}]}
 save_json_table(table, path="output.json", fileDialect=JsonFileDialect(
-    jsonPointer="users",
+    jsonPointer="/users",
 ))
 ```

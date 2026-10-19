@@ -351,3 +351,30 @@ class TestInspectTableConcurrency:
         ]
 
         assert missing == ["a", "c", "e"]
+
+    def test_should_report_column_errors_before_cell_errors(self):
+        table = pl.DataFrame({"a": ["x"]}).lazy()
+        table_schema = TableSchema(
+            properties={
+                "a": NumberColumnProperty(),
+                "b": StringColumnProperty(),
+            },
+            allRequired=True,
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [error.type for error in errors] == ["column/missing", "cell/type"]
+
+    def test_should_apply_table_level_missing_values(self):
+        table = pl.DataFrame({"id": ["1", "NA"]}).lazy()
+        table_schema = TableSchema(
+            missingValues=["NA"],
+            properties={"id": NumberColumnProperty()},
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [error.model_dump(exclude_none=True) for error in errors] == [
+            {"type": "cell/missing", "columnName": "id", "rowNumber": 2, "cell": "NA"}
+        ]

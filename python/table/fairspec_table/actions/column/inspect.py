@@ -109,19 +109,19 @@ def _inspect_cells(
     target = mapping.target
     match target.type:
         case "duration":
-            return inspect_duration_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_duration_column(target, table, mapping)  # type: ignore[arg-type]
         case "wkb":
-            return inspect_wkb_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_wkb_column(target, table, mapping)  # type: ignore[arg-type]
         case "wkt":
-            return inspect_wkt_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_wkt_column(target, table, mapping)  # type: ignore[arg-type]
         case "array":
-            return inspect_array_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_array_column(target, table, mapping)  # type: ignore[arg-type]
         case "object":
-            return inspect_object_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_object_column(target, table, mapping)  # type: ignore[arg-type]
         case "geojson":
-            return inspect_geojson_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_geojson_column(target, table, mapping)  # type: ignore[arg-type]
         case "topojson":
-            return inspect_topojson_column(target, table)  # type: ignore[arg-type, return-type]
+            return inspect_topojson_column(target, table, mapping)  # type: ignore[arg-type]
         case _:
             return _inspect_cells_in_polars(mapping, table, max_errors=max_errors)
 
@@ -143,6 +143,7 @@ def _inspect_cells_in_polars(
         pl.col(NUMBER_COLUMN_NAME),
         normalize_column(mapping).alias("target"),
         normalize_column(mapping, keep_type=True).alias("source"),
+        pl.col(mapping.source.name).alias("cell"),
         pl.lit(None, dtype=pl.UInt8).alias("error"),
     )
 
@@ -184,7 +185,7 @@ def _inspect_cells_in_polars(
 
     column_check_frame: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         column_check_table.filter(pl.col("error").is_not_null())
-        .drop("target")
+        .drop("target", "source")
         .head(max_errors)
         .collect(engine=QUERY_ENGINE)
     )
@@ -193,7 +194,7 @@ def _inspect_cells_in_polars(
     for row in column_check_frame.to_dicts():
         error_dict = error_templates[row["error"]].model_dump(by_alias=True)
         error_dict["rowNumber"] = row[NUMBER_COLUMN_NAME]
-        error_dict["cell"] = str(row["source"] if row["source"] is not None else "")
+        error_dict["cell"] = str(row["cell"] if row["cell"] is not None else "")
         errors.append(_cell_error_adapter.validate_python(error_dict))
 
     return errors

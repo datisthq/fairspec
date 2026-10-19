@@ -8,6 +8,7 @@ from fairspec_metadata import (
     ForeignKey,
     ForeignKeyError,
     Report,
+    ResourceMissingError,
     create_report,
     resolve_table_schema,
 )
@@ -43,7 +44,7 @@ def _validate_foreign_key(
     foreign_key: ForeignKey,
     dataset: Dataset,
     **options: Unpack[ValidateTableOptions],
-) -> list[ForeignKeyError]:
+) -> list[FairspecError]:
     reference = foreign_key.reference
     columns = foreign_key.columns
     ref_columns = reference.columns
@@ -51,31 +52,40 @@ def _validate_foreign_key(
     if not columns or not ref_columns or len(columns) != len(ref_columns):
         return []
 
-    ref_resource = _find_resource(dataset, reference.resource)
+    ref_resource = (
+        _find_resource(dataset, reference.resource) if reference.resource else resource
+    )
     if not ref_resource:
-        return []
+        return [
+            ResourceMissingError(
+                type="resource/missing",
+                resourceName=reference.resource,
+                referencingResourceName=resource.name or "",
+            )
+        ]
 
-    table = load_table(resource, denormalized=True, **options)
+    table = load_table(resource, **options)
     if table is None:
         return []
 
-    ref_table = load_table(ref_resource, denormalized=True, **options)
+    ref_table = load_table(ref_resource, **options)
     if ref_table is None:
         return []
 
     rename_mapping = dict(zip(ref_columns, columns))
     ref_selected = ref_table.select(
         [pl.col(name).alias(rename_mapping[name]) for name in ref_columns]
-    ).unique()
+    ).unique(maintain_order=True)
 
     violations: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         table.select(columns)
+        .drop_nulls()
         .join(ref_selected, on=columns, how="anti")
-        .unique()
+        .unique(maintain_order=True)
         .collect(engine=QUERY_ENGINE)
     )
 
-    errors: list[ForeignKeyError] = []
+    errors: list[FairspecError] = []
     for row in violations.to_dicts():
         cells = [str(row[c]) for c in columns]
         errors.append(
@@ -90,10 +100,7 @@ def _validate_foreign_key(
     return errors
 
 
-def _find_resource(dataset: Dataset, name: str | None) -> Resource | None:
-    if not name:
-        return None
-
+def _find_resource(dataset: Dataset, name: str) -> Resource | None:
     for resource in dataset.resources or []:
         if resource.name == name:
             return resource

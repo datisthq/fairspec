@@ -21,7 +21,9 @@ describe("saveSqliteTable", () => {
     })
 
     const target = await loadSqliteTable({ data: path, fileDialect: dialect })
-    expect((await target.collect()).toRecords()).toEqual([record1, record2])
+    const frame = await target.collect()
+    expect(frame.toRecords()).toEqual([record1, record2])
+    expect(frame.getColumn("id").dtype).toEqual(pl.Int64)
   })
 
   it("should save/load table with protocol", async () => {

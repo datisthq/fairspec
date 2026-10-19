@@ -1,0 +1,528 @@
+[
+  {
+    "description": "date column",
+    "specification": ["https://fairspec.org/specs/table-schema/#date"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 dates are valid",
+        "data": "id,x\n1,2024-01-15\n2,1990-06-15\n",
+        "valid": true
+      },
+      {
+        "description": "month 13 is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,2024-13-01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-13-01"
+          }
+        ]
+      },
+      {
+        "description": "a day-first date is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,15/01/2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "15/01/2024"
+          }
+        ]
+      },
+      {
+        "description": "a date-time is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,2024-01-15T14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,2024-01-15\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable date column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#date"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "date"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,2024-01-15\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "date column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%m/%d/%Y"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "dates in the format are valid",
+        "data": "id,x\n1,01/15/2024\n2,12/31/2023\n",
+        "valid": true
+      },
+      {
+        "description": "an ISO date is a cell/type error",
+        "data": "id,x\n1,01/15/2024\n2,2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-01-15"
+          }
+        ]
+      },
+      {
+        "description": "day 15 as month is a cell/type error",
+        "data": "id,x\n1,01/15/2024\n2,15/01/2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "15/01/2024"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#time"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 times are valid",
+        "data": "id,x\n1,14:30:00\n2,09:45:30\n",
+        "valid": true
+      },
+      {
+        "description": "hour 25 is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,25:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "25:00:00"
+          }
+        ]
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,noon\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "noon"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,14:30:00\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable time column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#time"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,14:30:00\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "time column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "time",
+          "temporalFormat": "%H:%M"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "times in the format are valid",
+        "data": "id,x\n1,14:30\n2,09:45\n",
+        "valid": true
+      },
+      {
+        "description": "a time with seconds is a cell/type error",
+        "data": "id,x\n1,14:30\n2,14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "14:30:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "date-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#datetime"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 date-times are valid",
+        "data": "id,x\n1,2024-01-15T14:30:00\n",
+        "valid": true
+      },
+      {
+        "description": "a UTC Z suffix is valid",
+        "comment": "The spec's DateTime data example lists 2023-12-01T14:30:00Z",
+        "data": "id,x\n1,2023-12-01T14:30:00Z\n",
+        "valid": true
+      },
+      {
+        "description": "a UTC offset is valid",
+        "comment": "The spec's DateTime data example lists 2024-03-20T18:00:00-05:00",
+        "data": "id,x\n1,2024-03-20T18:00:00-05:00\n",
+        "valid": true
+      },
+      {
+        "description": "a bare date is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15"
+          }
+        ]
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,yesterday\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "yesterday"
+          }
+        ]
+      },
+      {
+        "description": "trailing text is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15T14:30:00x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00x"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable date-time column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#datetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "date-time column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date-time",
+          "temporalFormat": "%Y-%m-%d %H:%M:%S"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "date-times in the format are valid",
+        "data": "id,x\n1,2024-01-15 14:30:00\n",
+        "valid": true
+      },
+      {
+        "description": "an ISO date-time is a cell/type error",
+        "data": "id,x\n1,2024-01-15 14:30:00\n2,2024-01-15T14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "duration column",
+    "specification": ["https://fairspec.org/specs/table-schema/#duration"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 durations are valid",
+        "data": "id,x\n1,PT1H30M\n2,P1DT12H\n3,PT45M30S\n",
+        "valid": true
+      },
+      {
+        "description": "a human duration is a cell/type error",
+        "data": "id,x\n1,PT1H30M\n2,1h30m\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "1h30m"
+          }
+        ]
+      },
+      {
+        "description": "a designator without components is a cell/type error",
+        "data": "id,x\n1,PT1H30M\n2,P\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,PT1H30M\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable duration column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#duration"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "duration"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,PT1H30M\n2,\n",
+        "valid": true
+      }
+    ]
+  }
+]

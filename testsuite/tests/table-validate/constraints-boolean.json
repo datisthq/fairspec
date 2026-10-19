@@ -1,0 +1,39 @@
+[
+  {
+    "description": "trueValues and falseValues",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "trueValues": ["yes", "Y"],
+          "falseValues": ["no", "N"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the listed values are valid",
+        "data": "active\nyes\nno\nY\nN\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/type error",
+        "data": "active\nyes\nmaybe\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "active",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "maybe"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,104 @@
+[
+  {
+    "description": "temporalFormat on a date column",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "collected": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%m/%d/%Y"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "dates in the format are valid",
+        "data": "collected\n01/15/2024\n12/31/2023\n",
+        "valid": true
+      },
+      {
+        "description": "an ISO date is a cell/type error",
+        "data": "collected\n01/15/2024\n2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "collected",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-01-15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "temporalFormat on a time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "time",
+          "temporalFormat": "%H.%M"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "times in the format are valid",
+        "data": "start\n14.30\n09.05\n",
+        "valid": true
+      },
+      {
+        "description": "an ISO time is a cell/type error",
+        "data": "start\n14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "start",
+            "columnType": "time",
+            "rowNumber": 1,
+            "cell": "14:30:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "temporalFormat on a date-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "seen": {
+          "type": "string",
+          "format": "date-time",
+          "temporalFormat": "%d/%m/%Y %H:%M"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "date-times in the format are valid",
+        "data": "seen\n15/01/2024 14:30\n",
+        "valid": true
+      },
+      {
+        "description": "an ISO date-time is a cell/type error",
+        "data": "seen\n2024-01-15T14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "seen",
+            "columnType": "date-time",
+            "rowNumber": 1,
+            "cell": "2024-01-15T14:30:00"
+          }
+        ]
+      }
+    ]
+  }
+]

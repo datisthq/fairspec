@@ -182,4 +182,39 @@ describe("validateDatasetForeignKeys", () => {
       referencingResourceName: "posts",
     })
   })
+
+  it("should skip a key with any null part", async () => {
+    const source: Dataset = {
+      resources: [
+        {
+          name: "tree",
+          data: [
+            { id: 1, sub: 1, parent_id: null, parent_sub: 1 },
+            { id: 2, sub: 1, parent_id: 1, parent_sub: null },
+            { id: 3, sub: 1, parent_id: 9, parent_sub: 9 },
+          ],
+          tableSchema: {
+            properties: {
+              id: { type: "integer" },
+              sub: { type: "integer" },
+              parent_id: { type: ["integer", "null"] },
+              parent_sub: { type: ["integer", "null"] },
+            },
+            foreignKeys: [
+              {
+                columns: ["parent_id", "parent_sub"],
+                reference: { columns: ["id", "sub"] },
+              },
+            ],
+          },
+        },
+      ],
+    }
+
+    const report = await validateDatasetForeignKeys(source)
+
+    expect(report.errors).toEqual([
+      expect.objectContaining({ type: "foreignKey", cells: ["9", "9"] }),
+    ])
+  })
 })

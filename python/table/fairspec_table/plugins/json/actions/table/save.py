@@ -11,6 +11,7 @@ from fairspec_table.actions.table.denormalize import denormalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.plugins.json.actions.buffer.decode import decode_json_buffer
 from fairspec_table.plugins.json.actions.buffer.encode import encode_json_buffer
+from fairspec_table.plugins.json.helpers.pointer import parse_json_pointer
 from fairspec_table.plugins.json.settings import NATIVE_TYPES
 from fairspec_table.settings import QUERY_ENGINE
 
@@ -80,6 +81,7 @@ def _process_data(
     if getattr(dialect, "format", None) == "json":
         json_pointer: str | None = getattr(dialect, "jsonPointer", None)
         if json_pointer:
-            data = {json_pointer: data}
+            for token in reversed(parse_json_pointer(json_pointer)):
+                data = {token: data}
 
     return data

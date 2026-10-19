@@ -220,6 +220,8 @@ For example, with multiple unique constraints:
 
 An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context).
 
+A row in which any of the local `columns` is null is not checked against the reference. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource.
+
 For example, referencing another resource:
 
 ```json
@@ -661,6 +663,7 @@ Metadata example:
   "properties": {
     "severity": {
       "type": "integer",
+      "format": "categorical",
       "categories": [
         { "value": 1, "label": "Low" },
         { "value": 2, "label": "Medium" },
@@ -684,7 +687,7 @@ severity
 Type properties:
 
 - [`categories`](#categories)
-- [`withOrder`](#categoriesordered)
+- [`withOrder`](#withorder)
 
 In addition, type properties if type is `"integer"`:
 
@@ -948,6 +951,8 @@ Type properties:
 
 A column for ISO 8601 date values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date"`.
 
+Without [`temporalFormat`](#temporalformat), a value `MUST` be a calendar date `YYYY-MM-DD` with nothing before or after it.
+
 Metadata example:
 
 ```json
@@ -981,6 +986,8 @@ Type properties:
 
 A column for ISO 8601 time values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"time"`.
 
+Without [`temporalFormat`](#temporalformat), a value `MUST` be a time `HH:MM:SS` with nothing before or after it.
+
 Metadata example:
 
 ```json
@@ -1013,6 +1020,8 @@ Type properties:
 #### DateTime
 
 A column for ISO 8601 date with time values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date-time"`.
+
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits) and then optionally by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it.
 
 Metadata example:
 
@@ -1128,9 +1137,9 @@ Data example:
 
 ```csv
 geometry
-0101000000000000000000000000000000000024400000000000003E40
-0102000000030000000000000000003E400000000000002440
-0103000000010000000500000000000000000024400000000000003E40
+01010000000000000000003E400000000000002440
+0102000000030000000000000000003E40000000000000244000000000000024400000000000003E4000000000000044400000000000004440
+010300000001000000050000000000000000003E4000000000000024400000000000004440000000000000444000000000000034400000000000004440000000000000244000000000000034400000000000003E400000000000002440
 ```
 
 Type properties:
@@ -1323,7 +1332,7 @@ Type properties:
 
 #### Unknown
 
-A column for values of unknown type. It `MUST` have [`type`](#type) not supported by the types above.
+A column for values of unknown type. It `MUST` have [`type`](#type) not supported by the types above. Any value is valid in it, including a missing one.
 
 Metadata example:
 
@@ -1443,7 +1452,7 @@ N
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional minimum value constraint (inclusive). The type `MUST` match the column type.
+An optional minimum value constraint (inclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1472,7 +1481,7 @@ temperature
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional maximum value constraint (inclusive). The type `MUST` match the column type.
+An optional maximum value constraint (inclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1501,7 +1510,7 @@ temperature
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional minimum value constraint (exclusive). The type `MUST` match the column type.
+An optional minimum value constraint (exclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1530,7 +1539,7 @@ probability
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional maximum value constraint (exclusive). The type `MUST` match the column type.
+An optional maximum value constraint (exclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1560,6 +1569,8 @@ probability
 > Supported types: **Integer**, **Number**, **Decimal**
 
 An optional constraint that values `MUST` be a multiple of this number. For integers, it `MUST` be a positive integer. For numbers, it `MUST` be a positive number.
+
+The check `MUST` use exact decimal arithmetic on the value as written, not binary floating point: a value is a multiple when dividing it by `multipleOf` gives an integer, so `99.99` is a multiple of `0.01`.
 
 Metadata example:
 
@@ -1733,7 +1744,7 @@ charlie
 > [!NOTE]
 > Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **DateTime**, **Date**, **Time**, **Duration**, **WKT**, **WKB**
 
-An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regex string.
+An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regex string. As in JSON Schema, the pattern is not anchored: a value matches when the pattern matches any part of it, so a pattern meant for the whole value uses `^` and `$`.
 
 Metadata example:
 
@@ -1771,6 +1782,7 @@ Metadata example:
   "properties": {
     "severity": {
       "type": "integer",
+      "format": "categorical",
       "categories": [
         { "value": 1, "label": "Low" },
         { "value": 2, "label": "Medium" },
@@ -1805,7 +1817,8 @@ Metadata example:
   "properties": {
     "severity": {
       "type": "integer",
-      "categoriesOrdered": true,
+      "format": "categorical",
+      "withOrder": true,
       "categories": [
         { "value": 1, "label": "Low" },
         { "value": 2, "label": "Medium" },
@@ -1951,7 +1964,7 @@ tags
 > [!NOTE]
 > Supported types: **DateTime**, **Date**, **Time**
 
-An optional string specifying the temporal format pattern as per the [Strftime ](https://pubs.opengroup.org/onlinepubs/009696799/functions/strftime.html) specification.
+An optional string specifying the temporal format pattern as per the [Strftime ](https://pubs.opengroup.org/onlinepubs/009696799/functions/strftime.html) specification. A value `MUST` match the whole pattern: a value with text before or after the part the pattern matches is invalid.
 
 Metadata example:
 
@@ -2034,6 +2047,16 @@ metadata
 "{""author"": ""Bob"", ""version"": 2}"
 "{""author"": ""Charlie""}"
 ```
+
+## Validation
+
+A validator that reports the errors of a table `MUST` list them in this order:
+
+1. Column errors, such as a [required](#required) column missing from the data
+2. Cell errors, column by column in the order of [`properties`](#properties), and within a column by row
+3. Row errors: [`primaryKey`](#primarykey) errors, then [`uniqueKeys`](#uniquekeys) errors
+
+[`foreignKeys`](#foreignkeys) errors are dataset-level and follow these, as the [Dataset](../dataset#validation) specification sets out.
 
 ## Common
 

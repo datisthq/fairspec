@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import polars as pl
 
-from fairspec_metadata import GeojsonColumn, GeojsonColumnProperty
+from fairspec_metadata import CellTypeError, GeojsonColumn, GeojsonColumnProperty
 
 from ..geojson import inspect_geojson_column
 
@@ -100,6 +100,7 @@ class TestInspectGeojsonColumn:
         column = GeojsonColumn(
             name="location",
             type="geojson",
+            nullable=True,
             property=GeojsonColumnProperty(),
         )
 
@@ -126,7 +127,7 @@ class TestInspectGeojsonColumn:
         errors = inspect_geojson_column(column, table)
 
         assert len(errors) == 1
-        assert errors[0].type == "cell/type"
+        assert isinstance(errors[0], CellTypeError)
         assert errors[0].columnName == "data"
         assert errors[0].columnType == "geojson"
         assert errors[0].rowNumber == 2

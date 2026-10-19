@@ -32,6 +32,16 @@ class TestInspectJson:
         errors = inspect_json({}, json_schema=SCHEMA)
         assert len(errors) == 1
         assert "name" in errors[0]["message"]
+        assert errors[0]["jsonPointer"] == ""
+
+    def test_escapes_reference_tokens(self):
+        errors = inspect_json(
+            {"a/b": "x", "c~d": "x"},
+            json_schema={
+                "properties": {"a/b": {"type": "integer"}, "c~d": {"type": "integer"}}
+            },
+        )
+        assert sorted(error["jsonPointer"] for error in errors) == ["/a~1b", "/c~0d"]
 
     def test_nested_validation(self):
         errors = inspect_json(

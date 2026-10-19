@@ -1,0 +1,46 @@
+[
+  {
+    "description": "order by an integer column",
+    "comment": "Ordering compares typed values, so 10 sorts after 9",
+    "specification": ["https://fairspec.org/specs/table-schema/#integer"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT id FROM self ORDER BY id",
+    "tests": [
+      {
+        "description": "sorts numerically",
+        "data": "id,name\n10,a\n9,b\n100,c\n",
+        "expected": { "columns": ["id"], "rows": [[9], [10], [100]] }
+      }
+    ]
+  },
+  {
+    "description": "order by descending with a limit",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "query": "SELECT name FROM self ORDER BY id DESC LIMIT 2",
+    "tests": [
+      {
+        "description": "takes the highest rows first",
+        "data": "id,name\n1,alice\n3,carol\n2,bob\n",
+        "expected": { "columns": ["name"], "rows": [["carol"], ["bob"]] }
+      }
+    ]
+  },
+  {
+    "description": "order by a string column",
+    "tableSchema": {
+      "properties": { "name": { "type": "string" } }
+    },
+    "query": "SELECT name FROM self ORDER BY name",
+    "tests": [
+      {
+        "description": "sorts by code point",
+        "data": "name\nbob\nAlice\nalice\n",
+        "expected": { "columns": ["name"], "rows": [["Alice"], ["alice"], ["bob"]] }
+      }
+    ]
+  }
+]
