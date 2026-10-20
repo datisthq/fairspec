@@ -99,6 +99,10 @@ relative import reaches beyond the top-level package.
 - **`__init__.py` barrels are deliberate and required.** Each package's `__init__.py` is a curated list of explicit named re-exports — never `import *` outside the meta-package. Adding a public API means adding its line there.
 - Type checking is `ty` (`pnpm -C python check:types`), configured under `[tool.ty.rules]`
 - Add docstrings only for public APIs and don't use them for files
+- **Schema inference picks the first regex in `_create_regex_mapping` that matches the sample**,
+  each on its own, so a value set two patterns split (integers and decimals) falls to `string`.
+  A number pattern therefore takes an optional fraction and sits after its integer pattern;
+  the TypeScript twin keeps the same keys in the same order
 - **A terminal command that declares the Table Schema inference flags must pass them on**: build them
   with `create_infer_table_schema_options(...)` and splat into the library call
   (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing

@@ -260,22 +260,22 @@ def _create_regex_mapping(
     list_esc = _escape_regex(list_delimiter or ",")
 
     mapping: dict[str, Descriptor] = {
-        "^\\d+$": {"type": "integer", "property": {"type": "integer"}},
+        "^-?\\d+$": {"type": "integer", "property": {"type": "integer"}},
         "^\\d{1,3}(,\\d{3})+$": (
             {"type": "number", "property": {"type": "number"}}
             if effective_comma_decimal
             else {"type": "integer", "property": {"type": "integer", "groupChar": ","}}
         ),
-        "^\\d+\\.\\d+$": (
+        "^-?\\d+(\\.\\d+)?$": (
             {"type": "integer", "property": {"type": "integer", "groupChar": "."}}
             if effective_comma_decimal
             else {"type": "number", "property": {"type": "number"}}
         ),
-        "^\\d{1,3}(,\\d{3})+\\.\\d+$": {
+        "^\\d{1,3}(,\\d{3})+(\\.\\d+)?$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ","},
         },
-        "^\\d{1,3}(\\.\\d{3})+,\\d+$": {
+        "^\\d{1,3}(\\.\\d{3})+(,\\d+)?$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ".", "decimalChar": ","},
         },
@@ -291,7 +291,7 @@ def _create_regex_mapping(
                 "property": {"type": "integer", "groupChar": ",", "withText": True},
             }
         ),
-        "^[\\p{Sc}\\s-]*\\d+\\.\\d+[%\\p{Sc}\\s]*$": (
+        "^[\\p{Sc}\\s-]*\\d+(\\.\\d+)?[%\\p{Sc}\\s]*$": (
             {
                 "type": "integer",
                 "property": {"type": "integer", "groupChar": ".", "withText": True},
@@ -299,11 +299,11 @@ def _create_regex_mapping(
             if effective_comma_decimal
             else {"type": "number", "property": {"type": "number", "withText": True}}
         ),
-        "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+\\.\\d+[%\\p{Sc}\\s]*$": {
+        "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+(\\.\\d+)?[%\\p{Sc}\\s]*$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ",", "withText": True},
         },
-        "^[\\p{Sc}\\s-]*\\d{1,3}(\\.\\d{3})+,\\d+[%\\p{Sc}\\s]*$": {
+        "^[\\p{Sc}\\s-]*\\d{1,3}(\\.\\d{3})+(,\\d+)?[%\\p{Sc}\\s]*$": {
             "type": "number",
             "property": {
                 "type": "number",

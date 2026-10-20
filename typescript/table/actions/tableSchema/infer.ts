@@ -290,18 +290,18 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
   const listEsc = escapeRegex(listDelimiter ?? ",")
 
   const mapping: Record<string, Omit<Column, "name">> = {
-    "^\\d+$": { type: "integer", property: { type: "integer" } },
+    "^-?\\d+$": { type: "integer", property: { type: "integer" } },
     "^\\d{1,3}(,\\d{3})+$": effectiveCommaDecimal
       ? { type: "number", property: { type: "number" } }
       : { type: "integer", property: { type: "integer", groupChar: "," } },
-    "^\\d+\\.\\d+$": effectiveCommaDecimal
+    "^-?\\d+(\\.\\d+)?$": effectiveCommaDecimal
       ? { type: "integer", property: { type: "integer", groupChar: "." } }
       : { type: "number", property: { type: "number" } },
-    "^\\d{1,3}(,\\d{3})+\\.\\d+$": {
+    "^\\d{1,3}(,\\d{3})+(\\.\\d+)?$": {
       type: "number",
       property: { type: "number", groupChar: "," },
     },
-    "^\\d{1,3}(\\.\\d{3})+,\\d+$": {
+    "^\\d{1,3}(\\.\\d{3})+(,\\d+)?$": {
       type: "number",
       property: { type: "number", groupChar: ".", decimalChar: "," },
     },
@@ -316,17 +316,17 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
           type: "integer",
           property: { type: "integer", groupChar: ",", withText: true },
         },
-    "^[\\p{Sc}\\s-]*\\d+\\.\\d+[%\\p{Sc}\\s]*$": effectiveCommaDecimal
+    "^[\\p{Sc}\\s-]*\\d+(\\.\\d+)?[%\\p{Sc}\\s]*$": effectiveCommaDecimal
       ? {
           type: "integer",
           property: { type: "integer", groupChar: ".", withText: true },
         }
       : { type: "number", property: { type: "number", withText: true } },
-    "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+\\.\\d+[%\\p{Sc}\\s]*$": {
+    "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+(\\.\\d+)?[%\\p{Sc}\\s]*$": {
       type: "number",
       property: { type: "number", groupChar: ",", withText: true },
     },
-    "^[\\p{Sc}\\s-]*\\d{1,3}(\\.\\d{3})+,\\d+[%\\p{Sc}\\s]*$": {
+    "^[\\p{Sc}\\s-]*\\d{1,3}(\\.\\d{3})+(,\\d+)?[%\\p{Sc}\\s]*$": {
       type: "number",
       property: {
         type: "number",

@@ -124,6 +124,10 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - An exported function whose inferred type names a `nodejs-polars` type outside `table` fails
   the build with TS2883 ("cannot be named without a reference to … LazyDataFrame"); annotate it
   with the `Table` type (`Promise<Table>`), the one place an explicit return type is required
+- **Schema inference picks the first regex in `createRegexMapping` that matches the sample**,
+  each on its own, so a value set two patterns split (integers and decimals) falls to `string`.
+  A number pattern therefore takes an optional fraction and sits after its integer pattern;
+  the Python twin keeps the same keys in the same order
 - `columnProperties` overrides are zod-parsed, so one without a `type` matches `UnknownColumnProperty`
   and keeps only its annotations (`title`, `description`, `rdfType`); constraints need the `type`
 - **A remote API response is parsed at the service boundary** — a dataset plugin's

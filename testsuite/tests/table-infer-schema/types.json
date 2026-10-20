@@ -36,6 +36,47 @@
             "day": { "type": "string", "format": "date" }
           }
         }
+      },
+      {
+        "description": "numbers mixed with integers",
+        "data": "id,price\n1,1.5\n2,3\n",
+        "expected": {
+          "properties": { "id": { "type": "integer" }, "price": { "type": "number" } }
+        }
+      },
+      {
+        "description": "negative integers",
+        "data": "id,delta\n1,-1\n2,3\n",
+        "expected": {
+          "properties": { "id": { "type": "integer" }, "delta": { "type": "integer" } }
+        }
+      },
+      {
+        "description": "negative numbers mixed with integers",
+        "data": "id,delta\n1,-1.5\n2,3\n",
+        "expected": {
+          "properties": { "id": { "type": "integer" }, "delta": { "type": "number" } }
+        }
+      },
+      {
+        "description": "currency numbers mixed with integers",
+        "data": "id,price\n1,$1.5\n2,$3\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "price": { "type": "number", "withText": true }
+          }
+        }
+      },
+      {
+        "description": "comma-grouped numbers mixed with integers",
+        "data": "id,price\n1,\"1,000.5\"\n2,\"2,000\"\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "price": { "type": "number", "groupChar": "," }
+          }
+        }
       }
     ]
   },
@@ -61,6 +102,16 @@
           "properties": {
             "id": { "type": "integer" },
             "price": { "type": "integer", "groupChar": "." }
+          }
+        }
+      },
+      {
+        "description": "dot-grouped numbers mixed with integers",
+        "data": "id;price\n1;1.000,5\n2;2.000\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "price": { "type": "number", "decimalChar": ",", "groupChar": "." }
           }
         }
       }
