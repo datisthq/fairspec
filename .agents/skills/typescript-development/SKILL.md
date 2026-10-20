@@ -86,6 +86,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   with any tag, takes one global `head(maxErrors)` and expands errors column by column, so the
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
   wkt, array, object, geojson, topojson) and the row key checks keep their own scan
+- **A row key check probes before it locates.** `inspectRows` first runs a `groupBy(key).len()`
+  probe on the key columns alone, and only on a duplicate runs the row-indexed
+  `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
+  while key checks compare partial nulls and skip only all-null keys (`createKeyPresenceExpr`).
+  nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
+  `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently
 - **A table plugin's `loadTable` returns `undefined` when the data is not a table** — a JSON file whose rows (the document, or the value at `jsonPointer`) are not an array, such as a top-level object. Library `inferTableSchema` and `validateTable` read that as "no table", so the resource keeps only its `dataSchema`; never throw for it. `jsonPointer` is always an RFC 6901 pointer (`/items`, `""` for the root) — go through `parseJsonPointer`/`formatJsonPointer` in `typescript/table/plugins/json/helpers/pointer.ts`, never index by the raw string
 - **A terminal command that declares the Table Schema inference flags must pass them on** — commander
   collects them into `options`, so hand that to `loadTable`/`inferTableSchemaFromTable`

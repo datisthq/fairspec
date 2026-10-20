@@ -195,6 +195,70 @@ class TestInspectTableRowUnique:
         assert uk_errors[1].rowNumber == 6
         assert uk_errors[1].columnNames == ["id", "name"]
 
+    def test_should_compare_composite_keys_with_some_null_parts(self):
+        table = pl.DataFrame(
+            {
+                "a": [1, None, None, 1, None],
+                "b": ["x", "y", "y", None, None],
+            }
+        ).lazy()
+        table_schema = TableSchema(
+            properties={
+                "a": IntegerColumnProperty(type=("integer", "null")),
+                "b": StringColumnProperty(type=("string", "null")),
+            },
+            uniqueKeys=[["a", "b"]],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [error.model_dump() for error in errors] == [
+            RowUniqueKeyError(
+                type="row/uniqueKey", columnNames=["a", "b"], rowNumber=3
+            ).model_dump()
+        ]
+
+    def test_should_skip_composite_keys_with_only_null_parts(self):
+        table = pl.DataFrame(
+            {"a": [None, None, 1], "b": [None, None, "z"]},
+            schema={"a": pl.Int64, "b": pl.String},
+        ).lazy()
+        table_schema = TableSchema(
+            properties={
+                "a": IntegerColumnProperty(type=("integer", "null")),
+                "b": StringColumnProperty(type=("string", "null")),
+            },
+            primaryKey=["a", "b"],
+        )
+
+        assert inspect_table(table, table_schema=table_schema) == []
+
+    def test_should_check_a_key_column_named_like_the_probe_count(self):
+        table = pl.DataFrame({"len": [1, 2, 1]}).lazy()
+        table_schema = TableSchema(
+            properties={"len": IntegerColumnProperty()},
+            primaryKey=["len"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        pk_errors = [e for e in errors if isinstance(e, RowPrimaryKeyError)]
+        assert len(errors) == 1
+        assert pk_errors[0].rowNumber == 3
+
+    def test_should_cap_key_errors_per_check(self):
+        table = pl.DataFrame({"id": [1] * 10, "name": ["a"] * 10}).lazy()
+        table_schema = TableSchema(
+            properties={"id": IntegerColumnProperty(), "name": StringColumnProperty()},
+            primaryKey=["id"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema, max_errors=4)
+
+        pk_errors = [e for e in errors if isinstance(e, RowPrimaryKeyError)]
+        assert len(errors) == 2
+        assert [error.rowNumber for error in pk_errors] == [2, 3]
+
 
 class TestInspectTableRowChecksConcurrency:
     def test_should_keep_row_check_order_under_concurrency(self):

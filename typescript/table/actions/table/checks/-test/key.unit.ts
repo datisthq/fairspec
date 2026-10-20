@@ -151,17 +151,10 @@ describe("inspectTable (row/unique)", () => {
     }
 
     const errors = await inspectTable(table, { tableSchema })
-    expect(errors).toHaveLength(2)
-    expect(errors).toContainEqual({
-      type: "row/primaryKey",
-      rowNumber: 4,
-      columnNames: ["id"],
-    })
-    expect(errors).toContainEqual({
-      type: "row/uniqueKey",
-      rowNumber: 5,
-      columnNames: ["email"],
-    })
+    expect(errors).toEqual([
+      { type: "row/primaryKey", rowNumber: 4, columnNames: ["id"] },
+      { type: "row/uniqueKey", rowNumber: 5, columnNames: ["email"] },
+    ])
   })
 
   it("should handle null values in unique keys correctly", async () => {
@@ -181,18 +174,66 @@ describe("inspectTable (row/unique)", () => {
     }
 
     const errors = await inspectTable(table, { tableSchema })
-    console.log(errors)
+    expect(errors).toEqual([
+      { type: "row/uniqueKey", rowNumber: 6, columnNames: ["id"] },
+      { type: "row/uniqueKey", rowNumber: 6, columnNames: ["id", "name"] },
+    ])
+  })
 
-    expect(errors).toHaveLength(2)
-    expect(errors).toContainEqual({
-      type: "row/uniqueKey",
-      rowNumber: 6,
-      columnNames: ["id"],
-    })
-    expect(errors).toContainEqual({
-      type: "row/uniqueKey",
-      rowNumber: 6,
-      columnNames: ["id", "name"],
-    })
+  it("should compare composite keys with some null parts", async () => {
+    const table = pl
+      .DataFrame({ a: [1, null, null, 1, null], b: ["x", "y", "y", null, null] })
+      .lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        a: { type: ["integer", "null"] },
+        b: { type: ["string", "null"] },
+      },
+      uniqueKeys: [["a", "b"]],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      { type: "row/uniqueKey", rowNumber: 3, columnNames: ["a", "b"] },
+    ])
+  })
+
+  it("should skip composite keys with only null parts", async () => {
+    const table = pl.DataFrame({ a: [null, null, 1], b: [null, null, "z"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        a: { type: ["integer", "null"] },
+        b: { type: ["string", "null"] },
+      },
+      primaryKey: ["a", "b"],
+    }
+
+    expect(await inspectTable(table, { tableSchema })).toEqual([])
+  })
+
+  it("should check a key column named like the probe count", async () => {
+    const table = pl.DataFrame({ len: [1, 2, 1] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { len: { type: "integer" } },
+      primaryKey: ["len"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      { type: "row/primaryKey", rowNumber: 3, columnNames: ["len"] },
+    ])
+  })
+
+  it("should cap key errors per check", async () => {
+    const table = pl
+      .DataFrame({ id: Array(10).fill(1), name: Array(10).fill("a") })
+      .lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "integer" }, name: { type: "string" } },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema, maxErrors: 4 })
+    expect(errors.map(error => "rowNumber" in error && error.rowNumber)).toEqual([2, 3])
   })
 })

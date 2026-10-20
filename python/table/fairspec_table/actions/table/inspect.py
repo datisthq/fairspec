@@ -15,13 +15,14 @@ from fairspec_table.actions.column.inspect import inspect_columns
 from fairspec_table.helpers.schema import get_polars_schema
 from fairspec_table.models import ColumnMapping, SchemaMapping, Table
 from fairspec_table.settings import (
+    COUNT_COLUMN_NAME,
     ERROR_COLUMN_NAME,
     NUMBER_COLUMN_NAME,
     QUERY_ENGINE,
 )
 
 from ._shared.helpers import merge_missing_values
-from .checks.key import RowKeyCheck, create_row_key_checks
+from .checks.key import RowKeyCheck, create_key_presence_expr, create_row_key_checks
 
 _row_error_adapter = TypeAdapter(RowError)
 
@@ -102,6 +103,9 @@ def _inspect_rows(
     max_row_errors = math.ceil(max_errors / len(columns)) if columns else max_errors
 
     def inspect(check: RowKeyCheck) -> list[TableError]:
+        if not _get_has_duplicate_key(table, check):
+            return []
+
         # A literal is broadcast to every row, so flag the error with a boolean rather
         # than a JSON template, which would materialize a full-length string column.
         # The check owns a single template, so it is read from the closure below.
@@ -135,3 +139,18 @@ def _inspect_rows(
             break
 
     return errors
+
+
+def _get_has_duplicate_key(table: Table, check: RowKeyCheck) -> bool:
+    # Grouping reads only the key columns and builds no per-row expression, so a clean key
+    # costs a fraction of the locating query, which runs only once a duplicate is known
+    probe: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        table.select(check.key_columns)
+        .filter(create_key_presence_expr(check.key_columns))
+        .group_by(check.key_columns)
+        .len(name=COUNT_COLUMN_NAME)
+        .filter(pl.col(COUNT_COLUMN_NAME) > 1)
+        .head(1)
+        .collect(engine=QUERY_ENGINE)
+    )
+    return probe.height > 0

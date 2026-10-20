@@ -8,11 +8,12 @@ import type { ColumnMapping } from "../../models/column.ts"
 import type { SchemaMapping } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
 import {
+  COUNT_COLUMN_NAME,
   ERROR_COLUMN_NAME,
   INSPECT_ROW_CONCURRENCY,
   NUMBER_COLUMN_NAME,
 } from "../../settings.ts"
-import { createRowKeyChecks } from "./checks/key.ts"
+import { createKeyPresenceExpr, createRowKeyChecks } from "./checks/key.ts"
 import { mergeMissingValues } from "./-shared/helpers.ts"
 
 export async function inspectTable(
@@ -96,7 +97,9 @@ async function inspectRows(
   const abortController = new AbortController()
   const maxRowErrors = Math.ceil(maxErrors / columns.length)
 
-  const collectRowErrors = async (check: any) => {
+  const collectRowErrors = async (check: RowKeyCheck) => {
+    if (!(await getHasDuplicateKey(table, check))) return
+
     // A literal is broadcast to every row, so flag the error with a boolean rather
     // than a JSON template, which would materialize a full-length string column.
     // The check owns a single template, so it is read from the closure below.
@@ -115,7 +118,7 @@ async function inspectRows(
       .head(maxRowErrors)
       .collect()
 
-    const errorTemplate = check.errorTemplate as RowError
+    const errorTemplate: RowError = check.errorTemplate
     for (const row of rowCheckFrame.toRecords() as any[]) {
       errors.push({
         ...errorTemplate,
@@ -139,4 +142,21 @@ async function inspectRows(
   }
 
   return errors
+}
+
+type RowKeyCheck = ReturnType<typeof createRowKeyChecks>[number]
+
+// Grouping reads only the key columns and builds no per-row expression, so a clean key
+// costs a fraction of the locating query, which runs only once a duplicate is known
+async function getHasDuplicateKey(table: Table, check: RowKeyCheck) {
+  const probe = await table
+    .select(check.keyColumns)
+    .filter(createKeyPresenceExpr(check.keyColumns))
+    .groupBy(check.keyColumns)
+    .len(COUNT_COLUMN_NAME)
+    .filter(pl.col(COUNT_COLUMN_NAME).gt(1))
+    .head(1)
+    .collect()
+
+  return probe.height > 0
 }

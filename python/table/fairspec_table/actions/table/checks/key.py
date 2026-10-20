@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class RowKeyCheck:
+    key_columns: list[str]
     is_error_expr: pl.Expr
     error_template: str
 
@@ -31,15 +32,19 @@ def create_row_key_checks(mapping: SchemaMapping) -> list[RowKeyCheck]:
     return checks
 
 
+def create_key_presence_expr(key_columns: list[str]) -> pl.Expr:
+    """A key whose values are all null is never a duplicate."""
+    return pl.any_horizontal([pl.col(name).is_not_null() for name in key_columns])
+
+
 def _create_row_key_check(
     key_columns: list[str],
     *,
     key_type: Literal["primary", "unique"],
 ) -> RowKeyCheck:
-    is_error_expr = (
-        pl.concat_list(key_columns).is_first_distinct().not_()
-        & pl.concat_list(key_columns).list.min().is_not_null()
-    )
+    is_error_expr = pl.struct(
+        key_columns
+    ).is_first_distinct().not_() & create_key_presence_expr(key_columns)
 
     error_model: RowPrimaryKeyError | RowUniqueKeyError
     if key_type == "primary":
@@ -52,6 +57,7 @@ def _create_row_key_check(
         )
 
     return RowKeyCheck(
+        key_columns=key_columns,
         is_error_expr=is_error_expr,
         error_template=error_model.model_dump_json(),
     )

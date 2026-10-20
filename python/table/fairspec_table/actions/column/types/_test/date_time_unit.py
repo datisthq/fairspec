@@ -36,6 +36,10 @@ class TestParseDateTimeColumn:
             ("Mon 1st Jan 2014 9 am", None),
             ("invalid", None),
             ("", None),
+            ("2014-1-01T06:00:00", None),
+            ("2014-01-01T6:00:00", None),
+            (" 2014-01-01T06:00:00", None),
+            ("+2014-01-01T06:00:00", None),
         ],
     )
     def test_default(self, cell: str, expected: datetime.datetime | None):

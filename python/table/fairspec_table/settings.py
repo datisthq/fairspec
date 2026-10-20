@@ -2,6 +2,7 @@ from __future__ import annotations
 
 NUMBER_COLUMN_NAME = "fairspec:number"
 ERROR_COLUMN_NAME = "fairspec:error"
+COUNT_COLUMN_NAME = "fairspec:count"
 
 # The engine polars executes a query plan with, for collects and sinks alike. The
 # in-memory engine holds the whole source while it runs, so peak memory grows with

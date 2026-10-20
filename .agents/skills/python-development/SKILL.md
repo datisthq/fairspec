@@ -116,6 +116,13 @@ relative import reaches beyond the top-level package.
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
   wkt, array, object, geojson, topojson) and the row key checks keep their own scan. Collect
   with `engine=QUERY_ENGINE`
+- **A row key check probes before it locates.** `_inspect_rows` first runs a `group_by(key).len()`
+  probe on the key columns alone, and only on a duplicate runs the row-indexed
+  `pl.struct(key).is_first_distinct()` query; a clean key (the usual case) skips that costly
+  pass. Never locate rows with a join: joins drop null keys, while key checks compare partial
+  nulls and skip only all-null keys (`create_key_presence_expr`)
+- Import heavy optional dependencies (`shapely`, which pulls numpy) inside the function that
+  needs them: everything `fairspec_terminal` reaches at import time is paid on every CLI start
 
 ## MCP server
 

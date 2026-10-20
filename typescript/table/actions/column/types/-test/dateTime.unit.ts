@@ -16,6 +16,10 @@ describe("parseDatetimeColumn", () => {
     ["Mon 1st Jan 2014 9 am", null],
     ["invalid", null],
     ["", null],
+    ["2014-1-01T06:00:00", null],
+    ["2014-01-01T6:00:00", null],
+    [" 2014-01-01T06:00:00", null],
+    ["+2014-01-01T06:00:00", null],
   ])("default: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {
