@@ -139,7 +139,6 @@ async function readDocs() {
       `${section}/CONTRIBUTING.md`,
     ]),
     ...(await readdir(SKILLS)).map(name => `.agents/skills/${name}/SKILL.md`),
-    ".skills/README.md",
     ...(await readSkillNames(USER_SKILLS)).map(name => `.skills/${name}/SKILL.md`),
     ...(await findFiles(join(ROOT, ".humans"), ".md")).map(path => relative(ROOT, path)),
   ]
