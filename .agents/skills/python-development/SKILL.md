@@ -1,6 +1,6 @@
 ---
 name: python-development
-description: Use when working in python/ — the fairspec and fairspec-* PyPI packages and the CLI in the uv workspace. Covers commands, the package DAG, concern-then-entity layout, _test/_shared folders, __init__.py barrels, ty and VCR cassettes.
+description: Use when working in python/ — the fairspec and fairspec-* PyPI packages, the CLI and the MCP server in the uv workspace. Covers commands, the package DAG, concern-then-entity layout, _test/_shared folders, __init__.py barrels, ty and VCR cassettes.
 ---
 
 # Python
@@ -31,24 +31,26 @@ Packages form a strict DAG — `metadata` depends on nothing and everything laye
 Never introduce an edge that reverses this.
 
 ```
-metadata ─► dataset ─► table ─► library ─► terminal ─► fairspec
+metadata ─► dataset ─► table ─► library ─► mcp-server ─► terminal ─► fairspec
 ```
 
 A package may depend on any layer below it, not only the adjacent one — `table` pulls in both
 `dataset` and `metadata`, and `library` pulls in all three.
 
-Each workspace directory `<name>/` holds one import package `<name>/fairspec_<name>/`, except
-the meta-package, which is `python/fairspec/fairspec/`, and `project/`, which ships nothing.
+Each workspace directory `<name>/` holds one import package `<name>/fairspec_<name>/` (a hyphen
+becomes an underscore: `mcp-server/fairspec_mcp_server/`), except the meta-package, which is
+`python/fairspec/fairspec/`, and `project/`, which ships nothing.
 
 - `metadata` — pydantic models (`Resource`, `Dataset`, `TableSchema`, `Column`, `FileDialect`), descriptor load/save, path normalization, JSON Schema profiles. No `fairspec-*` dependencies; the base of the graph.
 - `dataset` — file, folder and stream I/O plus dataset-source plugins: ckan, descriptor, folder, github, zenodo, zip.
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlsx.
 - `library` — the plugin registry and the facade actions every consumer calls: `load_table`, `save_table`, `load_dataset`, `save_dataset`, `validate_*`, `infer_*`.
+- `mcp-server` — MCP tools over the library actions (the `mcp` SDK's `MCPServer`), served over stdio as `fairspec mcp`.
 - `terminal` — the `fairspec` CLI (typer), one command group per entity.
 - `fairspec` — umbrella package re-exporting `fairspec_library` and shipping the CLI binary.
 - `project` — the documentation site in `python/project/docs/`. Not a uv workspace member and nothing imports it.
 
-Unlike `typescript/`, this section has no `mcp-server` and no `extension` package.
+Unlike `typescript/`, this section has no `extension` package.
 
 ## Code structure
 
@@ -58,7 +60,7 @@ model, a command), then subgroup by the entity it acts on.
 - `actions/<entity>/<verb>.py` — the operations everything else wraps (`actions/table/save.py`, `actions/column/create.py`).
 - `models/<entity>.py` — pydantic models and their derived types.
 - `plugins/<name>/` — a self-contained plugin: `plugin.py` (the class), `settings.py`, `__init__.py`, and its own `actions/` tree.
-- `commands/<entity>/<verb>.py` (terminal) — CLI commands.
+- `commands/<entity>/<verb>.py` (terminal) — CLI commands. `tools/<entity>/<verb>.py` (mcp-server) — MCP tools.
 - `helpers/<name>.py` — small supporting functions. `utils/<name>/` — heavier self-contained modules (e.g. `python/table/fairspec_table/utils/sniffer/`).
 - `services/`, `profiles/`, `schemas/`, `params/` — external clients, JSON Schema profiles, bundled schemas, CLI option definitions.
 - `python/metadata/fairspec_metadata/profiles/` is a copy of `standard/profiles/` written by `pnpm sync:profiles`; never edit it by hand, edit the standard and sync (the root guard fails while they differ)
@@ -102,6 +104,14 @@ relative import reaches beyond the top-level package.
   instead of reaching for a near-equivalent PyPI package; the shared testsuite compares both
   outputs exactly
 
+## MCP server
+
+- A tool is a plain sync function returning a `ToolResult` model: `MCPServer` runs sync tools on a worker thread and derives the input and output schemas from the annotations
+- Register it in `server.py` under the **name the TypeScript server puts on the wire** — the key in `typescript/mcp-server/server.ts` (`inferTableSchemaTool`), not the tool's `id` — so client configs and allowlists carry across
+- Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
+- Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing
+- `fairspec mcp` imports `fairspec_mcp_server` inside the command, so the rest of the CLI does not load the MCP stack
+
 ## Specs
 
 - Unit tests are pytest, named `*_unit.py`, in collocated `_test` folders
@@ -115,7 +125,7 @@ relative import reaches beyond the top-level package.
 ## Releases
 
 This section is the `python` release-please component: tags `python-vX.Y.Z`, its own Release
-PR, published to PyPI by `release.yaml`. All six packages are lock-stepped to one version via
+PR, published to PyPI by `release.yaml`. All seven packages are lock-stepped to one version via
 `extra-files`. Only changes to the published packages use `feat` or `fix`; tests, the docs in
 `python/project/`, READMEs and tooling are `chore` or `docs`. PyPI never lets a version be
 re-uploaded.

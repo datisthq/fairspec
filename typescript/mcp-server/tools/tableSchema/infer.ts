@@ -20,7 +20,6 @@ export const inferTableSchemaTool = createTool({
   }),
   execute: async input => {
     const tableSchema = await inferTableSchema(input.resource, input.options)
-    console.log(tableSchema)
     return { tableSchema }
   },
 })

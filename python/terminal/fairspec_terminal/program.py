@@ -35,6 +35,7 @@ def register_commands() -> None:
     import fairspec_terminal.commands.file.describe  # noqa: F401
     import fairspec_terminal.commands.file.copy  # noqa: F401
     import fairspec_terminal.commands.file.validate  # noqa: F401
+    import fairspec_terminal.commands.general.mcp  # noqa: F401
     from fairspec_terminal.commands.file_dialect.infer import create_infer_dialect_command
 
     create_infer_dialect_command(table_program)

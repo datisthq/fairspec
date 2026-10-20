@@ -8,7 +8,7 @@ This repository holds every part of the project:
 | section                      | what                                                     |
 | ---------------------------- | -------------------------------------------------------- |
 | [`standard/`](standard/)     | the specification, its JSON Schema profiles and examples |
-| [`python/`](python/)         | the Python framework and CLI, published to PyPI          |
+| [`python/`](python/)         | the Python framework, CLI and MCP server, on PyPI        |
 | [`typescript/`](typescript/) | the TypeScript framework, CLI and MCP server, on npm     |
 | [`desktop/`](desktop/)       | the desktop application for macOS, Windows and Linux     |
 | [`catalog/`](catalog/)       | reserved for the catalog application                     |

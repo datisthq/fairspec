@@ -38,7 +38,7 @@ metadata ─┬─► dataset ───┐
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlxs.
 - `extension` — renderers turning a `TableSchema` into markdown or HTML.
 - `library` — the plugin registry (`system.ts`) and the facade actions every consumer calls: `loadTable`, `saveTable`, `loadDataset`, `saveDataset`, `validate*`, `infer*`.
-- `mcp-server` — MCP tools over the library actions, served over stdio as `fairspec mcp`.
+- `mcp-server` — MCP tools over the library actions, served over stdio as `fairspec mcp`. Clients see each tool under its key in `server.ts` (`inferTableSchemaTool`), not its `id`; the Python server registers the same names, so renaming a key renames it for both.
 - `terminal` — the `fairspec` CLI (commander), one command group per entity.
 - `fairspec` — umbrella package re-exporting `@fairspec/library` and shipping the CLI binary.
 - `project` — the documentation site in `typescript/project/docs/`. Private and outside the DAG: nothing depends on it.

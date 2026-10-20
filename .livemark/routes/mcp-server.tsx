@@ -190,17 +190,38 @@ const tk = {
   body: "text-[#4c4f69] dark:text-[#cdd6f4]",
 }
 
-function BashAgentAdd({ agent }: { agent: "claude" | "codex" }) {
+type Runtime = "node" | "python"
+
+const runtimes: { id: Runtime; label: string }[] = [
+  { id: "node", label: "Node.js" },
+  { id: "python", label: "Python" },
+]
+
+const runners: Record<Runtime, string> = { node: "npx", python: "uvx" }
+
+function BashAgentAdd({
+  agent,
+  runtime,
+}: {
+  agent: "claude" | "codex"
+  runtime: Runtime
+}) {
   return (
     <code className={tk.body}>
       <span className={tk.cmd}>{agent}</span> mcp add{" "}
-      <span className={tk.str}>fairspec</span> <span className={tk.punct}>--</span> npx{" "}
-      <span className={tk.str}>fairspec@latest</span> mcp
+      <span className={tk.str}>fairspec</span> <span className={tk.punct}>--</span>{" "}
+      {runners[runtime]} <span className={tk.str}>fairspec@latest</span> mcp
     </code>
   )
 }
 
-function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
+function McpServersJson({
+  rootKey,
+  runtime,
+}: {
+  rootKey: "mcpServers" | "servers"
+  runtime: Runtime
+}) {
   return (
     <code className={tk.body}>
       <span className={tk.punct}>{"{"}</span>
@@ -212,7 +233,8 @@ function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
       <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
       {"\n      "}
       <span className={tk.key}>"command"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"npx"</span>
+      <span className={tk.punct}>:</span>{" "}
+      <span className={tk.str}>"{runners[runtime]}"</span>
       <span className={tk.punct}>,</span>
       {"\n      "}
       <span className={tk.key}>"args"</span>
@@ -233,7 +255,7 @@ function McpServersJson({ rootKey }: { rootKey: "mcpServers" | "servers" }) {
 interface Assistant {
   name: string
   description: ReactNode
-  snippet: ReactNode
+  snippet: (runtime: Runtime) => ReactNode
 }
 
 const assistants: Assistant[] = [
@@ -244,12 +266,12 @@ const assistants: Assistant[] = [
         Add to your <code>claude_desktop_config.json</code>:
       </>
     ),
-    snippet: <McpServersJson rootKey="mcpServers" />,
+    snippet: runtime => <McpServersJson rootKey="mcpServers" runtime={runtime} />,
   },
   {
     name: "Claude Code",
     description: <>Add the server with one command in any project directory.</>,
-    snippet: <BashAgentAdd agent="claude" />,
+    snippet: runtime => <BashAgentAdd agent="claude" runtime={runtime} />,
   },
   {
     name: "Codex",
@@ -259,7 +281,7 @@ const assistants: Assistant[] = [
         extension — they share the same MCP configuration.
       </>
     ),
-    snippet: <BashAgentAdd agent="codex" />,
+    snippet: runtime => <BashAgentAdd agent="codex" runtime={runtime} />,
   },
   {
     name: "Gemini CLI",
@@ -268,12 +290,13 @@ const assistants: Assistant[] = [
         Add to <code>~/.gemini/settings.json</code>:
       </>
     ),
-    snippet: <McpServersJson rootKey="mcpServers" />,
+    snippet: runtime => <McpServersJson rootKey="mcpServers" runtime={runtime} />,
   },
 ]
 
 function Installation() {
   const [active, setActive] = useState(0)
+  const [runtime, setRuntime] = useState<Runtime>("node")
   const assistant = assistants[active] ?? assistants[0]
   if (!assistant) return null
   return (
@@ -285,40 +308,63 @@ function Installation() {
               Installation
             </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Wire up the Fairspec MCP server in your favorite AI assistant.
+              Wire up the Fairspec MCP server in your favorite AI assistant. It ships with
+              both the TypeScript and the Python package — pick the runtime you have.
             </p>
           </div>
         </Reveal>
         <Reveal>
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div
-              role="tablist"
-              className="flex flex-wrap border-b border-border bg-muted/40"
-            >
-              {assistants.map((a, i) => (
-                <button
-                  key={a.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                    i === active
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {a.name}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border bg-muted/40">
+              <div role="tablist" className="flex flex-wrap">
+                {assistants.map((a, i) => (
+                  <button
+                    key={a.name}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === active}
+                    onClick={() => setActive(i)}
+                    className={cn(
+                      "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                      i === active
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+              <div
+                role="radiogroup"
+                aria-label="Runtime"
+                className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
+              >
+                {runtimes.map(r => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={r.id === runtime}
+                    onClick={() => setRuntime(r.id)}
+                    className={cn(
+                      "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                      r.id === runtime
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="p-6">
               <p className="text-sm text-muted-foreground mb-4">
                 {assistant.description}
               </p>
               <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-                {assistant.snippet}
+                {assistant.snippet(runtime)}
               </pre>
             </div>
           </div>

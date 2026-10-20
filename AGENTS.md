@@ -9,7 +9,7 @@ conventions live in its skill (see **Skills**) — load it before working there.
 | section       | what                                                              | released as                  |
 | ------------- | ----------------------------------------------------------------- | ---------------------------- |
 | `standard/`   | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
-| `python/`     | uv workspace: `fairspec` and `fairspec-*` packages                | PyPI                         |
+| `python/`     | uv workspace: `fairspec` and `fairspec-*`, incl. the MCP server   | PyPI                         |
 | `typescript/` | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
 | `desktop/`    | Electron application                                              | installers on GitHub release |
 | `catalog/`    | reserved for the catalog application                              | —                            |
@@ -152,7 +152,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | skill                    | when                                                                   |
 | ------------------------ | ---------------------------------------------------------------------- |
 | `typescript-development` | the npm packages, CLI or MCP server in `typescript/`                   |
-| `python-development`     | the PyPI packages or CLI in `python/`                                  |
+| `python-development`     | the PyPI packages, CLI or MCP server in `python/`                      |
 | `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
 | `testsuite-development`  | the shared test suite in `testsuite/` and its two runners              |
 | `monorepo-layout`        | adding a section, a root script, a workflow job or a release component |

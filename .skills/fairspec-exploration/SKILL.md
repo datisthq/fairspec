@@ -12,7 +12,7 @@ shows the delimiter, header and type problems those steps would trip on.
 ## Surfaces
 
 Install with `npm install fairspec` or `pip install fairspec`. Both ship a `fairspec` binary with the
-same commands and flags, and `fairspec mcp` (TypeScript only) serves the MCP tools.
+same commands and flags, and `fairspec mcp` serves the MCP tools.
 
 | task                | CLI                                          | MCP tool         | TypeScript / Python                                  |
 | ------------------- | -------------------------------------------- | ---------------- | ---------------------------------------------------- |

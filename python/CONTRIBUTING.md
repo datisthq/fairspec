@@ -10,6 +10,7 @@ Project is a monorepo with the following packages:
 - `fairspec-dataset`: File, folder and stream I/O plus dataset source plugins
 - `fairspec-table`: Polars-backed table engine plus file format plugins
 - `fairspec-library`: All the above functionality behind one plugin registry
+- `fairspec-mcp-server`: MCP tools over the library actions
 - `fairspec-terminal`: Terminal interface
 - `fairspec`: Meta-package that re-exports the underlying functionality
 

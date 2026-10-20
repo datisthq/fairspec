@@ -12,7 +12,7 @@ review it before anyone relies on it. Then check the data against it with
 ## Surfaces
 
 Install with `npm install fairspec` or `pip install fairspec`. Both ship a `fairspec` binary with the
-same commands and flags, and `fairspec mcp` (TypeScript only) serves the MCP tools. Add `--json` to get
+same commands and flags, and `fairspec mcp` serves the MCP tools. Add `--json` to get
 machine-readable output on stdout, then redirect it to save a descriptor.
 
 | infer              | CLI                                          | MCP tool               | TypeScript (async)           | Python                         |

@@ -19,6 +19,7 @@ source = [
   "fairspec_dataset",
   "fairspec_table",
   "fairspec_library",
+  "fairspec_mcp_server",
   "fairspec_terminal",
 ]
 omit = ["*/_test/*"]
@@ -37,12 +38,21 @@ dev-dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["dataset", "fairspec", "library", "metadata", "table", "terminal"]
+members = [
+  "dataset",
+  "fairspec",
+  "library",
+  "mcp-server",
+  "metadata",
+  "table",
+  "terminal",
+]
 
 [tool.uv.sources]
 fairspec = { workspace = true }
 fairspec-dataset = { workspace = true }
 fairspec-library = { workspace = true }
+fairspec-mcp-server = { workspace = true }
 fairspec-metadata = { workspace = true }
 fairspec-table = { workspace = true }
 fairspec-terminal = { workspace = true }

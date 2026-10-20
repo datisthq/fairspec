@@ -12,8 +12,8 @@ Use the dataset only when foreign keys or several resources matter.
 ## Surfaces
 
 Install with `npm install fairspec` (TypeScript CLI, library and MCP server) or
-`pip install fairspec` (Python CLI and library). Both ship a `fairspec` binary with the same
-commands and flags. `fairspec mcp` (TypeScript only) starts the MCP server on stdio.
+`pip install fairspec` (Python CLI, library and MCP server). Both ship a `fairspec` binary
+with the same commands and flags. `fairspec mcp` starts the MCP server on stdio.
 
 | target       | CLI                                         | MCP tool                  | TypeScript (async)         | Python                       |
 | ------------ | ------------------------------------------- | ------------------------- | -------------------------- | ---------------------------- |
