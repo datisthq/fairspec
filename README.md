@@ -13,6 +13,7 @@ This repository holds every part of the project:
 | [`desktop/`](desktop/)       | the desktop application for macOS, Windows and Linux     |
 | [`catalog/`](catalog/)       | reserved for the catalog application                     |
 | [`testsuite/`](testsuite/)   | the test suite every implementation runs                 |
+| [`benchmark/`](benchmark/)   | speed and memory against other validators                |
 
 ## Development
 

@@ -1,0 +1,6 @@
+{
+  "description": "Validate ten columns of mixed types, one of each common constraint",
+  "profile": "simple",
+  "sizes": [10000, 1000000, 10000000],
+  "faults": 10
+}

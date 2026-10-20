@@ -5,7 +5,7 @@ description: Where things live in the Fairspec monorepo and how root scripts, se
 
 # Monorepo layout
 
-One repo, six sections, one site. The root owns everything shared; a section owns only what
+One repo, seven sections, one site. The root owns everything shared; a section owns only what
 is specific to it.
 
 ## Root vs section

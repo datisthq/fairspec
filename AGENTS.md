@@ -13,7 +13,7 @@ conventions live in its skill (see **Skills**) — load it before working there.
 | `typescript/` | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
 | `desktop/`    | Electron application                                              | installers on GitHub release |
 | `catalog/`    | reserved for the catalog application                              | —                            |
-| `benchmark/`  | reserved for benchmarks                                           | —                            |
+| `benchmark/`  | speed and memory of both CLIs against other validators            | —                            |
 | `testsuite/`  | language-neutral test suite both libraries run                    | —                            |
 
 The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
@@ -175,6 +175,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | `python-development`     | the PyPI packages, CLI or MCP server in `python/`                      |
 | `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
 | `testsuite-development`  | the shared test suite in `testsuite/` and its two runners              |
+| `benchmark-development`  | the benchmark in `benchmark/`: generated data, rival validators        |
 | `monorepo-layout`        | adding a section, a root script, a workflow job or a release component |
 | `human-documentation`    | a report for people under `.humans/`, and the docs pass before a merge |
 | `landing-screenshots`    | the landing heroes' terminal screenshots: what they show, re-rendering |

@@ -1,0 +1,20 @@
+{
+  "name": "@fairspec/benchmark",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:types": "tsgo --noEmit",
+    "generate:data": "node @generate.ts",
+    "measure": "node @measure.ts",
+    "setup:rivals": "node @setup.ts",
+    "show:report": "node @report.ts",
+    "test": "pnpm check:types && pnpm test:unit",
+    "test:unit": "vp test"
+  },
+  "devDependencies": {
+    "@fairspec/metadata": "workspace:*",
+    "@types/node": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -34,6 +34,7 @@ Measured on a laptop, warm, 2026-10-16:
 | `pnpm -C python check:types`                                | ~2 s  | `ty` over the workspace                   |
 | `pnpm -C python test:unit <dir or file>`                    | 4+ s  | the tests named                           |
 | `pnpm -C python test:unit`                                  | ~16 s | every Python test                         |
+| `pnpm -C benchmark test`                                    | ~3 s  | the benchmark harness types and tests     |
 | `pnpm check:lint`                                           | ~3 s  | fmt + oxlint + ruff over the whole tree   |
 
 All of these run from the repo root. Paths after `pnpm -C typescript test:unit` are relative to
@@ -58,7 +59,8 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    types (`pnpm -F ./typescript/<pkg> run check:types`, or `pnpm -C python check:types`). A new or changed test is
    run on its own first, and fails before the fix. TypeScript packages type-check against each
    other's `build/`, so rebuild (`pnpm -C typescript build`) when the diff changed an export another
-   package uses.
+   package uses. A change in `benchmark/` runs `pnpm -C benchmark test`, plus a `measure` of the
+   smallest sizes for the tools it touches (**`benchmark-development`**).
 4. **A lower package**: `metadata`, `dataset` or `table`, whose consumers layer above it.
    `pnpm -C typescript build`, then `pnpm -C typescript check:types`, then `pnpm -C desktop check:types` (the app consumes
    `@fairspec/library` and `@fairspec/metadata`), and the consumer tests the change can reach.

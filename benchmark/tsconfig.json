@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["${configDir}/*.ts", "${configDir}/**/*.ts"],
+  "exclude": ["${configDir}/.cache", "${configDir}/rivals", "${configDir}/node_modules"]
+}

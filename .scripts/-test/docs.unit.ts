@@ -6,7 +6,15 @@ import { describe, expect, it } from "vite-plus/test"
 const ROOT = resolve(import.meta.dirname, "..", "..")
 const SKILLS = join(ROOT, ".agents", "skills")
 const USER_SKILLS = join(ROOT, ".skills")
-const SECTIONS = ["catalog", "desktop", "python", "standard", "testsuite", "typescript"]
+const SECTIONS = [
+  "benchmark",
+  "catalog",
+  "desktop",
+  "python",
+  "standard",
+  "testsuite",
+  "typescript",
+]
 
 const GENERATED = ["build", ".target"]
 
