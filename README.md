@@ -30,6 +30,12 @@ Every command runs from the root: `pnpm <verb>` covers all sections, and
 `pnpm -C desktop start`. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details. Coding agents
 read [`AGENTS.md`](AGENTS.md) and the skills in `.agents/skills/`.
 
+## Agent skills
+
+[`.skills/`](.skills/) holds skills that teach coding agents to validate, infer and explore data
+with Fairspec: `fairspec-validation`, `fairspec-inference` and `fairspec-exploration`. Copy one
+into your agent's skills directory to use it.
+
 ## License
 
 MIT — see [`LICENSE.md`](LICENSE.md).

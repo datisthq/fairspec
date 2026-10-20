@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs"
 import { readFile, readdir, readlink } from "node:fs/promises"
-import { dirname, join, relative, resolve } from "node:path"
+import { basename, dirname, join, relative, resolve } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 
 const ROOT = resolve(import.meta.dirname, "..", "..")
 const SKILLS = join(ROOT, ".agents", "skills")
+const USER_SKILLS = join(ROOT, ".skills")
 const SECTIONS = ["catalog", "desktop", "python", "standard", "testsuite", "typescript"]
 
 const ROOTED = [
@@ -16,6 +17,7 @@ const ROOTED = [
   ".livemark",
   ".release",
   ".scripts",
+  ".skills",
 ]
 
 const UNWALKED = [
@@ -88,8 +90,13 @@ describe("docs", () => {
 
   it("gives every skill a name, a description, and provenance when vendored", async () => {
     const problems: string[] = []
-    for (const name of await readdir(SKILLS)) {
-      const path = join(SKILLS, name, "SKILL.md")
+    const directories = [
+      ...(await readdir(SKILLS)).map(name => join(SKILLS, name)),
+      ...(await readSkillNames(USER_SKILLS)).map(name => join(USER_SKILLS, name)),
+    ]
+    for (const directory of directories) {
+      const name = basename(directory)
+      const path = join(directory, "SKILL.md")
       if (!existsSync(path)) {
         problems.push(`${name}: no SKILL.md`)
         continue
@@ -132,6 +139,8 @@ async function readDocs() {
       `${section}/CONTRIBUTING.md`,
     ]),
     ...(await readdir(SKILLS)).map(name => `.agents/skills/${name}/SKILL.md`),
+    ".skills/README.md",
+    ...(await readSkillNames(USER_SKILLS)).map(name => `.skills/${name}/SKILL.md`),
     ...(await findFiles(join(ROOT, ".humans"), ".md")).map(path => relative(ROOT, path)),
   ]
 
@@ -190,6 +199,12 @@ async function findFiles(directory: string, suffix: string): Promise<string[]> {
     }
   }
   return paths
+}
+
+async function readSkillNames(directory: string) {
+  if (!existsSync(directory)) return []
+  const entries = await readdir(directory, { withFileTypes: true })
+  return entries.filter(entry => entry.isDirectory()).map(entry => entry.name)
 }
 
 async function getIsDirectory(path: string) {

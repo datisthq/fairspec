@@ -21,7 +21,8 @@ The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
 
 Dot-directories hold non-product code: `.agents/` skills, `.humans/` reports for people (HTML
 by default), `.scripts/` repo-wide guards and scripts, `.release/` release-please config,
-`.livemark/` the website.
+`.livemark/` the website, `.skills/` the user-facing `fairspec-*` skills for agents that use
+Fairspec (changes to them are `docs`).
 
 ## General
 

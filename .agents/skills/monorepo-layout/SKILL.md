@@ -16,9 +16,14 @@ is specific to it.
 | one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution)      |
 | `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` block only         |
 | `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`              |
-| `.github/`, `.release/`, `.agents/`, `.humans/`, `.scripts/`                | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`    |
+| `.github/`, `.release/`, `.agents/`, `.humans/`, `.scripts/`, `.skills/`    | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`    |
 | the one `AGENTS.md`                                                         | its `<section>-development` skill (in `.agents/`) |
 | the site: `livemark.config.ts`, `.livemark/`, `worker.ts`, `wrangler.jsonc` | the Markdown the site includes                    |
+
+Skills come in two kinds. `.agents/skills/` teaches agents to develop this repo; only it is
+symlinked into `.claude/skills` and listed in `AGENTS.md`. `.skills/` holds the `fairspec-*`
+skills users install to work with Fairspec. Every command, flag and API name in them must match
+both CLIs' `--help` and both libraries, so a change to either surface checks them too.
 
 vite-plus reads `fmt` and `lint` from the root config only; a nested block is silently
 ignored, so path-specific lint rules go in the root `overrides` with a section prefix
