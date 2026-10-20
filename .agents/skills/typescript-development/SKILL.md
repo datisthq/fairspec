@@ -92,6 +92,13 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   while key checks compare partial nulls and skip only all-null keys (`createKeyPresenceExpr`).
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently
+- **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
+  row condition and one select per condition kind for the aggregates. Whether a check is a row
+  or a table check comes from running it on two typed null rows (one row back means an
+  aggregate); never guess it from the expression, or a broadcast aggregate fails every row
+- **A zod model an MCP tool publishes holds only what JSON carries.** `z.custom` makes the
+  server fail to list its tools ("Custom types cannot be represented in JSON Schema"), so
+  `TableCheck` keeps `condition: z.string()` and widens its TypeScript type to accept `pl.Expr`
 - **A table plugin's `loadTable` returns `undefined` when the data is not a table** — a JSON file whose rows (the document, or the value at `jsonPointer`) are not an array, such as a top-level object. Library `inferTableSchema` and `validateTable` read that as "no table", so the resource keeps only its `dataSchema`; never throw for it. `jsonPointer` is always an RFC 6901 pointer (`/items`, `""` for the root) — go through `parseJsonPointer`/`formatJsonPointer` in `typescript/table/plugins/json/helpers/pointer.ts`, never index by the raw string
 - **A terminal command that declares the Table Schema inference flags must pass them on** — commander
   collects them into `options`, so hand that to `loadTable`/`inferTableSchemaFromTable`
@@ -114,6 +121,9 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   (`typescript/table/actions/column/types/-shared/temporal.ts`); `scanCSV` takes a one-character
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
   Float64
+- nodejs-polars has no `sqlExpr`: a SQL condition joins a frame as
+  `SQLContext({ self }).execute("SELECT *, (…) AS … FROM self")`, and `execute` returns a frame
+  wrapping a SQL error in `_ldf` instead of throwing it — check `result._ldf instanceof Error`
 
 ## MCP server
 

@@ -140,6 +140,37 @@ const tableSchema: TableSchema = {
 const report = await validateTable({ data: "users.csv", tableSchema })
 ```
 
+### Custom Checks
+
+`checks` adds rules a Table Schema cannot express. Each check has a `name` and a `condition`: a [Polars SQL](https://docs.pola.rs/api/python/stable/reference/sql/index.html) condition or a nodejs-polars expression. A row fails when its condition is `false`; `null` passes, as in a SQL `CHECK` constraint. Conditions see the values typed by the schema.
+
+```ts
+import * as pl from "nodejs-polars"
+import { validateTable } from "fairspec"
+
+const report = await validateTable(
+  { data: "orders.csv" },
+  {
+    checks: [
+      { name: "end-after-start", condition: '"end" >= start' },
+      { name: "positive-price", condition: pl.col("price").gt(0), columnName: "price" },
+      {
+        name: "repeat-customer",
+        condition: "count(*) OVER (PARTITION BY customer) >= 2",
+      },
+      { name: "not-empty", condition: "count(*) > 0", message: "The export is empty" },
+    ],
+  },
+)
+```
+
+- A condition that reduces to one value, such as `count(*) > 0`, checks the whole table and reports `table/check`
+- Any other condition reports `row/check` for each failing row, or `cell/check` with the cell value when the check names a `columnName`
+- A window (`OVER (PARTITION BY …)` in SQL, `.over(…)` in Polars) checks each row against its group
+- `message` is carried on every error the check reports
+- A check that cannot run (an unknown column, a syntax error, a condition that is not boolean) reports `check`, and the other checks still run
+- Quote column names that are SQL keywords: `"end" >= start`
+
 ## Describing a Table
 
 A loaded `Table` is a Polars `LazyDataFrame`, so describe-style summaries use Polars' `.describe()` directly after collecting.

@@ -35,6 +35,7 @@ from .path import VariadicPaths as VariadicPaths
 from .session import Debug as Debug
 from .session import Json as Json
 from .session import Silent as Silent
+from .table import Check as Check
 from .table import Overwrite as Overwrite
 from .table import Query as Query
 from .table_schema import ArrayType as ArrayType

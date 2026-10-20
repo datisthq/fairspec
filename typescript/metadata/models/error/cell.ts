@@ -87,6 +87,12 @@ export const CellMaxItemsError = BaseCellError.extend({
   maxItems: z.number().describe("The maximum number of items allowed"),
 })
 
+export const CellCheckError = BaseCellError.extend({
+  type: z.literal("cell/check").describe("Error type identifier"),
+  checkName: z.string().describe("The name of the check that failed"),
+  message: z.string().optional().describe("The message of the check that failed"),
+})
+
 export const CellError = z.discriminatedUnion("type", [
   CellTypeError,
   CellMissingError,
@@ -104,6 +110,7 @@ export const CellError = z.discriminatedUnion("type", [
   CellConstError,
   CellEnumError,
   CellJsonError,
+  CellCheckError,
 ])
 
 export type CellTypeError = z.infer<typeof CellTypeError>
@@ -122,4 +129,5 @@ export type CellUniqueError = z.infer<typeof CellUniqueError>
 export type CellConstError = z.infer<typeof CellConstError>
 export type CellEnumError = z.infer<typeof CellEnumError>
 export type CellJsonError = z.infer<typeof CellJsonError>
+export type CellCheckError = z.infer<typeof CellCheckError>
 export type CellError = z.infer<typeof CellError>

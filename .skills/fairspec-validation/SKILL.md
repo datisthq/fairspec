@@ -49,6 +49,21 @@ report = validate_table(Resource(data="sales.csv", tableSchema="schema.json"))
 - Validate a hand-written schema (`validate-schema`) before validating data against it. Otherwise
   a typo in the schema shows up as confusing data errors
 
+## Custom checks
+
+Rules a schema cannot express (one column against another, a count per group, a table total)
+are named checks on table validation. A `condition` is a Polars SQL condition: a row fails when
+it is false and null passes. One that reduces to one value (`count(*) > 0`) checks the whole
+table, and a window (`count(*) OVER (PARTITION BY zip) >= 2`) checks each row against its group.
+
+- CLI: `--check 'end-after-start="end" >= start'`, repeatable, split at the first `=`
+- MCP: `validateTableTool` with `options.checks: [{ name, condition, columnName?, message? }]`
+- TypeScript: `validateTable(resource, { checks: [...] })`; a condition may also be a nodejs-polars expression
+- Python: `validate_table(resource, checks=[{"name": ..., "condition": ...}])`; a condition may also be a `pl.Expr`
+
+Quote column names that are SQL keywords (`"end"`). Conditions see values typed by the schema,
+so a value that fails its type passes the check and is reported once, as `cell/type`.
+
 ## Reading the report
 
 Each error has a `type`, plus `resourceName` within a dataset. Cell errors add `columnName`,
@@ -64,6 +79,8 @@ Each error has a `type`, plus `resourceName` within a dataset. Cell errors add `
 | `column/missing`, `column/type`                               | header vs schema mismatch                | rename the header or the schema property; check `headerRows` in the dialect   |
 | `file/integrity`, `file/textual`                              | hash or encoding mismatch                | the file changed since it was described: re-hash (`fairspec file describe`)   |
 | `resource/missing`, `resource/type`, `metadata`               | the descriptor itself is malformed       | fix the descriptor; validate it before the data                               |
+| `row/check`, `cell/check`, `table/check`                      | a custom check failed (`checkName`)      | fix the rows, or the condition if the rule is wrong                           |
+| `check`                                                       | a custom check cannot run (`message`)    | fix the condition: column name, SQL syntax, a boolean result                  |
 
 The MCP validate tools return at most `maxErrors` errors (default 100, up to 1000), fewer when
 they would exceed ~50k characters; `truncated: true` means the report left some out, while

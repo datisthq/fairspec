@@ -67,6 +67,39 @@ describe("table validate", () => {
     expect(data).toHaveProperty("valid")
   })
 
+  it("should report rows failing a check", async () => {
+    const csvContent = "id,start,end\n1,1,2\n2,3,2"
+    const csvPath = await writeTempFile(csvContent, { format: "csv" })
+
+    const text: string[] = []
+    vi.spyOn(process.stdout, "write").mockImplementation((msg: string | Uint8Array) => {
+      text.push(typeof msg === "string" ? msg : msg.toString())
+      return true
+    })
+
+    const command = new Command().addCommand(validateTableCommand).configureOutput({
+      writeOut: () => {},
+      writeErr: () => {},
+    })
+
+    await command.parseAsync([
+      "node",
+      "test",
+      "validate",
+      csvPath,
+      "--check",
+      'end-after-start="end" >= start',
+      "--check",
+      "two-rows=count(*) = 2",
+      "--json",
+    ])
+
+    const data = JSON.parse(text[0] ?? "")
+    expect(data.errors).toEqual([
+      { type: "row/check", checkName: "end-after-start", rowNumber: 2 },
+    ])
+  })
+
   it("should keep a zero exit code for a valid table", async () => {
     const csvContent = "id,name,age\n1,alice,25\n2,bob,30"
     const csvPath = await writeTempFile(csvContent, { format: "csv" })

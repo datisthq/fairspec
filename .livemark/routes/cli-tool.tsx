@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  ListChecks,
   Package,
   PlayCircle,
   Sliders,
@@ -413,6 +414,7 @@ const examples: Example[] = [
   { command: "fairspec table preview data.csv" },
   { command: 'fairspec table query data.csv "SELECT * FROM self WHERE age > 25"' },
   { command: "fairspec table validate data.csv --json" },
+  { command: 'fairspec table validate data.csv --check "positive-price=price > 0"' },
   { command: "fairspec file describe data.csv --hash-type sha256" },
   { command: "fairspec mcp" },
 ]
@@ -431,6 +433,17 @@ const scriptPoints: Point[] = [
       <>
         Add <code className="font-mono text-foreground">--json</code> and the result is
         data your script or CI job can read, not prose.
+      </>
+    ),
+  },
+  {
+    icon: ListChecks,
+    title: "Custom checks",
+    description: (
+      <>
+        Add rules the schema cannot express with{" "}
+        <code className="font-mono text-foreground">--check name=condition</code>: a SQL
+        condition every row must meet, or an aggregate over the whole table.
       </>
     ),
   },

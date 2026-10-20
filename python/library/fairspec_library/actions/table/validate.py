@@ -27,12 +27,13 @@ def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) 
 
     no_infer = options.get("noInfer", False)
     max_errors = options.get("maxErrors", 1000)
+    checks = options.get("checks")
 
     table_schema = resolve_table_schema(resource.tableSchema)
     if not table_schema and not no_infer:
         table_schema = infer_table_schema(resource, **options)
 
-    if not table_schema:
+    if not table_schema and not checks:
         return create_report()
 
     table = load_table(resource, denormalized=True, **options)
@@ -44,6 +45,7 @@ def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) 
     errors = inspect_table(
         table,
         table_schema=table_schema,
+        checks=checks,
         max_errors=max_errors,
         concurrency=options.get("concurrency"),
     )

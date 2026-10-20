@@ -6,7 +6,7 @@ import type { ValidateTableOptions } from "../../models/table.ts"
 import { loadTable } from "./load.ts"
 
 export async function validateTable(resource: Resource, options?: ValidateTableOptions) {
-  const { maxErrors } = options ?? {}
+  const { maxErrors, checks } = options ?? {}
   const errors: FairspecError[] = []
 
   let tableSchema = await resolveTableSchema(resource.tableSchema)
@@ -14,11 +14,11 @@ export async function validateTable(resource: Resource, options?: ValidateTableO
     tableSchema = await inferTableSchema(resource, options)
   }
 
-  if (tableSchema) {
+  if (tableSchema || checks?.length) {
     const table = await loadTable(resource, { denormalized: true })
 
     if (table) {
-      const tableErrors = await inspectTable(table, { tableSchema, maxErrors })
+      const tableErrors = await inspectTable(table, { tableSchema, checks, maxErrors })
       errors.push(...tableErrors)
     }
 

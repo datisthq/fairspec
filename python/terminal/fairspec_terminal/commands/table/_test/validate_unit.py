@@ -62,3 +62,38 @@ class TestTableValidateExitCode:
 
         assert result.exit_code != 0
         assert json.loads(result.stdout)["valid"] is False
+
+    def test_should_report_rows_failing_a_check(self, monkeypatch):
+        register_commands()
+        folder = get_temp_folder_path()
+        with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
+            file.write("id,start,end\n1,1,2\n2,3,2")
+        monkeypatch.chdir(folder)
+
+        result = CliRunner().invoke(
+            table_program,
+            [
+                "validate",
+                "data.csv",
+                "--check",
+                'end-after-start="end" >= start',
+                "--check",
+                "two-rows=count(*) = 2",
+                "--json",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert json.loads(result.stdout)["errors"] == [
+            {"type": "row/check", "checkName": "end-after-start", "rowNumber": 2}
+        ]
+
+    def test_should_reject_a_check_without_a_name(self):
+        register_commands()
+
+        result = CliRunner().invoke(
+            table_program, ["validate", "data.csv", "--check", "=count(*) = 2"]
+        )
+
+        assert result.exit_code == 2
+        assert "name=condition" in result.output

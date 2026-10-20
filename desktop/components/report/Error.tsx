@@ -6,6 +6,8 @@ export function Error(props: { error: fairspec.FairspecError }) {
   const { error } = props
 
   switch (error.type) {
+    case "cell/check":
+      return <CellCheckError error={error} />
     case "cell/const":
       return <CellConstError error={error} />
     case "cell/enum":
@@ -38,6 +40,8 @@ export function Error(props: { error: fairspec.FairspecError }) {
       return <CellTypeError error={error} />
     case "cell/unique":
       return <CellUniqueError error={error} />
+    case "check":
+      return <CheckError error={error} />
     case "column/missing":
       return <ColumnMissingError error={error} />
     case "column/type":
@@ -60,10 +64,33 @@ export function Error(props: { error: fairspec.FairspecError }) {
       return <RowPrimaryKeyError error={error} />
     case "row/uniqueKey":
       return <RowUniqueError error={error} />
+    case "row/check":
+      return <RowCheckError error={error} />
+    case "table/check":
+      return <TableCheckError error={error} />
   }
 }
 
 // Cell Errors
+
+function CellCheckError(props: { error: fairspec.CellCheckError }) {
+  const { error } = props
+
+  const cell = <Code>{error.cell}</Code>
+  const columnName = <Code>{error.columnName}</Code>
+  const rowNumber = <Code>{error.rowNumber}</Code>
+  const checkName = <Code>{error.checkName}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  return (
+    <div>
+      <Trans>Value of the cell</Trans> {cell} <Trans>in column</Trans> {columnName}{" "}
+      <Trans>of row</Trans> {rowNumber} <Trans>fails check</Trans> {checkName}
+      <CheckMessage message={error.message} />
+      {inResource}
+    </div>
+  )
+}
 
 function CellConstError(props: { error: fairspec.CellConstError }) {
   const { error } = props
@@ -354,6 +381,22 @@ function CellUniqueError(props: { error: fairspec.CellUniqueError }) {
   )
 }
 
+// Check Errors
+
+function CheckError(props: { error: fairspec.CheckError }) {
+  const { error } = props
+
+  const checkName = <Code>{error.checkName}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  return (
+    <div>
+      <Trans>Check</Trans> {checkName} <Trans>cannot be evaluated</Trans>
+      {inResource}: {error.message}
+    </div>
+  )
+}
+
 // Column Errors
 
 function ColumnMissingError(props: { error: fairspec.ColumnMissingError }) {
@@ -541,7 +584,50 @@ function RowUniqueError(props: { error: fairspec.RowUniqueKeyError }) {
   )
 }
 
+function RowCheckError(props: { error: fairspec.RowCheckError }) {
+  const { error } = props
+
+  const rowNumber = <Code>{error.rowNumber}</Code>
+  const checkName = <Code>{error.checkName}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  return (
+    <div>
+      <Trans>Row</Trans> {rowNumber} <Trans>fails check</Trans> {checkName}
+      <CheckMessage message={error.message} />
+      {inResource}
+    </div>
+  )
+}
+
+// Table Errors
+
+function TableCheckError(props: { error: fairspec.TableCheckError }) {
+  const { error } = props
+
+  const checkName = <Code>{error.checkName}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  return (
+    <div>
+      <Trans>Table</Trans> <Trans>fails check</Trans> {checkName}
+      <CheckMessage message={error.message} />
+      {inResource}
+    </div>
+  )
+}
+
 // Internal
+
+function CheckMessage(props: { message: string | undefined }) {
+  const { message } = props
+
+  if (!message) {
+    return null
+  }
+
+  return <span> ({message})</span>
+}
 
 function InResource(props: { resourceName: string | undefined }) {
   const { resourceName } = props

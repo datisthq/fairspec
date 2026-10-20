@@ -11,6 +11,18 @@ class TestValidateTableTool:
 
         assert result.report.valid is True
 
+    def test_should_report_rows_failing_a_check(self):
+        resource = Resource(data=[{"start": 1, "end": 2}, {"start": 3, "end": 2}])
+
+        result = validate_table_tool(
+            resource,
+            {"checks": [{"name": "end-after-start", "condition": '"end" >= start'}]},
+        )
+
+        assert result.model_dump(mode="json", by_alias=True)["report"]["errors"] == [
+            {"type": "row/check", "checkName": "end-after-start", "rowNumber": 2}
+        ]
+
     def test_should_detect_invalid_table(self):
         path = write_temp_file("id,age\n1,200\n2,300\n", format="csv")
         schema = TableSchema.model_validate(

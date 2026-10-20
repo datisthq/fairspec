@@ -107,6 +107,10 @@ msgstr "Builds a dataset descriptor from a tabular file, inferring the resource,
 msgid "Built by"
 msgstr "Built by"
 
+#: components/report/Error.tsx
+msgid "cannot be evaluated"
+msgstr "cannot be evaluated"
+
 #: components/layout/Language.tsx
 msgid "Change Language"
 msgstr "Change Language"
@@ -114,6 +118,10 @@ msgstr "Change Language"
 #: components/layout/Theme.tsx
 msgid "Change Theme"
 msgstr "Change Theme"
+
+#: components/report/Error.tsx
+msgid "Check"
+msgstr "Check"
 
 #: routes/data/index.tsx
 msgid "Check data values against schema specifications for quality, consistency, and constraint violations"
@@ -276,6 +284,10 @@ msgstr "Failed to Infer Schema"
 #: routes/table/preview.tsx
 msgid "Failed to Load Preview"
 msgstr "Failed to Load Preview"
+
+#: components/report/Error.tsx
+msgid "fails check"
+msgstr "fails check"
 
 #: helpers/help.ts
 msgid "Failures are grouped by error type, so the problem that dominates is visible at a glance"
@@ -608,6 +620,7 @@ msgid "Supply a dialect when the delimiter or header row of the file are being m
 msgstr "Supply a dialect when the delimiter or header row of the file are being misdetected"
 
 #: components/layout/Menu.tsx
+#: components/report/Error.tsx
 #: helpers/help.ts
 #: routes/index.tsx
 #: routes/table/index.tsx

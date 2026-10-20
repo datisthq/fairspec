@@ -10,6 +10,7 @@ from fairspec_terminal.helpers.resource import select_resource
 from fairspec_terminal.helpers.table_schema import create_infer_table_schema_options
 from fairspec_terminal.params import (
     ArrayType,
+    Check,
     ColumnNamesParam,
     ColumnProperties,
     ColumnTypes,
@@ -96,6 +97,7 @@ def validate(
     array_type: ArrayType = None,
     list_delimiter: ListDelimiter = None,
     list_item_type: ListItemType = None,
+    check: Check = None,
 ) -> None:
     """Validate a table from a local or remote path."""
     session = Session(debug=debug, json=json)
@@ -172,7 +174,7 @@ def validate(
         )
 
     def _validate() -> Report:
-        errors = list(inspect_table(table, table_schema=table_schema))
+        errors = list(inspect_table(table, table_schema=table_schema, checks=check))
         return create_report(errors)  # type: ignore[arg-type]
 
     report = session.task("Validating table", _validate)

@@ -1,3 +1,4 @@
+from .actions.check.inspect import inspect_table_checks
 from .actions.table.denormalize import denormalize_table
 from .actions.table.inspect import inspect_table
 from .actions.table.normalize import normalize_table
@@ -6,6 +7,7 @@ from .actions.table_schema.infer import (
     infer_table_schema_from_sample,
     infer_table_schema_from_table,
 )
+from .models.check import SqlTableCheck, TableCheck
 from .models.column import ColumnMapping, DenormalizeColumnOptions, PolarsColumn
 from .models.data import DataRecord, DataRow
 from .models.frame import Frame
@@ -15,7 +17,7 @@ from .models.schema import (
     SchemaMapping,
     TableSchemaOptions,
 )
-from .models.table import Table
+from .models.table import LoadTableOptions, Table
 from .plugin import TablePlugin
 from .plugins.arrow import ArrowPlugin, load_arrow_table, save_arrow_table
 from .plugins.inline import InlinePlugin, load_inline_table
@@ -51,12 +53,15 @@ __all__ = [
     "InferTableSchemaOptions",
     "InlinePlugin",
     "JsonPlugin",
+    "LoadTableOptions",
     "ParquetPlugin",
     "PolarsColumn",
     "PolarsSchema",
     "SchemaMapping",
+    "SqlTableCheck",
     "SqlitePlugin",
     "Table",
+    "TableCheck",
     "TablePlugin",
     "TableSchemaOptions",
     "denormalize_table",
@@ -65,6 +70,7 @@ __all__ = [
     "infer_table_schema_from_table",
     "infer_json_file_dialect",
     "inspect_table",
+    "inspect_table_checks",
     "load_arrow_table",
     "load_csv_table",
     "load_inline_table",

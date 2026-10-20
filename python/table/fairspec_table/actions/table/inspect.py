@@ -11,9 +11,10 @@ from fairspec_metadata import RowError
 from fairspec_metadata import TableSchema
 from pydantic import TypeAdapter
 
+from fairspec_table.actions.check.inspect import inspect_table_checks
 from fairspec_table.actions.column.inspect import inspect_columns
 from fairspec_table.helpers.schema import get_polars_schema
-from fairspec_table.models import ColumnMapping, SchemaMapping, Table
+from fairspec_table.models import ColumnMapping, SchemaMapping, Table, TableCheck
 from fairspec_table.settings import (
     COUNT_COLUMN_NAME,
     ERROR_COLUMN_NAME,
@@ -31,11 +32,13 @@ def inspect_table(
     table: Table,
     *,
     table_schema: TableSchema | None = None,
+    checks: list[TableCheck] | None = None,
     sample_rows: int = 100,
     max_errors: int = 1000,
     concurrency: int | None = None,
 ) -> list[TableError]:
     errors: list[TableError] = []
+    mapping: SchemaMapping | None = None
 
     if table_schema:
         sample: pl.DataFrame = table.head(sample_rows).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
@@ -49,6 +52,12 @@ def inspect_table(
             mapping, table, max_errors=max_errors, concurrency=concurrency
         )
         errors.extend(row_errors)
+
+    if checks and len(errors) < max_errors:
+        check_errors = inspect_table_checks(
+            table, checks, mapping=mapping, max_errors=max_errors
+        )
+        errors.extend(check_errors)
 
     return errors[:max_errors]
 

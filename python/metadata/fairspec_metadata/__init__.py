@@ -180,6 +180,7 @@ from .models.dataset import (
 from .models.descriptor import Descriptor
 from .models.error.base import BaseError
 from .models.error.cell import (
+    CellCheckError,
     CellConstError,
     CellEnumError,
     CellError,
@@ -198,6 +199,7 @@ from .models.error.cell import (
     CellTypeError,
     CellUniqueError,
 )
+from .models.error.check import CheckError, TableCheckError
 from .models.error.column import ColumnError, ColumnMissingError, ColumnTypeError
 from .models.error.data import DataError
 from .models.error.error import FairspecError
@@ -209,7 +211,12 @@ from .models.error.resource import (
     ResourceMissingError,
     ResourceTypeError,
 )
-from .models.error.row import RowError, RowPrimaryKeyError, RowUniqueKeyError
+from .models.error.row import (
+    RowCheckError,
+    RowError,
+    RowPrimaryKeyError,
+    RowUniqueKeyError,
+)
 from .models.error.table import TableError
 from .models.exception import FairspecException
 from .models.file_dialect.common import RowType
@@ -328,6 +335,7 @@ __all__ = [
     "Catalog",
     "CatalogDataset",
     "CategoricalColumn",
+    "CellCheckError",
     "CellConstError",
     "CellEnumError",
     "CellError",
@@ -345,6 +353,7 @@ __all__ = [
     "CellPatternError",
     "CellTypeError",
     "CellUniqueError",
+    "CheckError",
     "Column",
     "ColumnError",
     "ContentTypeGeneral",
@@ -467,6 +476,7 @@ __all__ = [
     "ResourceTypeError",
     "Rights",
     "RightsList",
+    "RowCheckError",
     "RowError",
     "RowPrimaryKeyError",
     "RowType",
@@ -479,6 +489,7 @@ __all__ = [
     "StringColumnProperty",
     "Subject",
     "Subjects",
+    "TableCheckError",
     "TableError",
     "TableSchema",
     "TableSchemaMissingValueItem",

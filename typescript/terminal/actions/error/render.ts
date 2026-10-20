@@ -1,4 +1,5 @@
 import type {
+  CellCheckError,
   CellConstError,
   CellEnumError,
   CellExclusiveMaximumError,
@@ -15,6 +16,7 @@ import type {
   CellPatternError,
   CellTypeError,
   CellUniqueError,
+  CheckError,
   ColumnMissingError,
   ColumnTypeError,
   DataError,
@@ -24,8 +26,10 @@ import type {
   MetadataError,
   ResourceMissingError,
   ResourceTypeError,
+  RowCheckError,
   RowPrimaryKeyError,
   RowUniqueKeyError,
+  TableCheckError,
   TextualError,
 } from "@fairspec/library"
 import pc from "picocolors"
@@ -64,6 +68,10 @@ export function renderError(error: FairspecError) {
       return renderCellMinItemsError(error)
     case "cell/maxItems":
       return renderCellMaxItemsError(error)
+    case "cell/check":
+      return renderCellCheckError(error)
+    case "check":
+      return renderCheckError(error)
     case "column/missing":
       return renderColumnMissingError(error)
     case "column/type":
@@ -82,6 +90,10 @@ export function renderError(error: FairspecError) {
       return renderRowPrimaryKeyError(error)
     case "row/uniqueKey":
       return renderRowUniqueKeyError(error)
+    case "row/check":
+      return renderRowCheckError(error)
+    case "table/check":
+      return renderTableCheckError(error)
     case "resource/missing":
       return renderResourceMissingError(error)
     case "resource/type":
@@ -248,6 +260,26 @@ export function renderCellMaxItemsError(error: CellMaxItemsError) {
   return `Value of the cell ${cell} in column ${columnName} of row ${rowNumber} has more than ${maxItems} items${inResource}`
 }
 
+export function renderCellCheckError(error: CellCheckError) {
+  const cell = pc.bold(error.cell)
+  const columnName = pc.bold(error.columnName)
+  const rowNumber = pc.bold(error.rowNumber)
+  const checkName = pc.bold(error.checkName)
+  const message = renderCheckMessage(error.message)
+  const inResource = renderInResource(error.resourceName)
+
+  return `Value of the cell ${cell} in column ${columnName} of row ${rowNumber} fails check ${checkName}${message}${inResource}`
+}
+
+// Check
+
+export function renderCheckError(error: CheckError) {
+  const checkName = pc.bold(error.checkName)
+  const inResource = renderInResource(error.resourceName)
+
+  return `Check ${checkName} cannot be evaluated${inResource}: ${error.message}`
+}
+
 // Column
 
 export function renderColumnMissingError(error: ColumnMissingError) {
@@ -346,7 +378,30 @@ export function renderRowUniqueKeyError(error: RowUniqueKeyError) {
   return `Row ${rowNumber} violates unique key constraint on columns ${columnNames}${inResource}`
 }
 
+export function renderRowCheckError(error: RowCheckError) {
+  const rowNumber = pc.bold(error.rowNumber)
+  const checkName = pc.bold(error.checkName)
+  const message = renderCheckMessage(error.message)
+  const inResource = renderInResource(error.resourceName)
+
+  return `Row ${rowNumber} fails check ${checkName}${message}${inResource}`
+}
+
+// Table
+
+export function renderTableCheckError(error: TableCheckError) {
+  const checkName = pc.bold(error.checkName)
+  const message = renderCheckMessage(error.message)
+  const inResource = renderInResource(error.resourceName)
+
+  return `Table fails check ${checkName}${message}${inResource}`
+}
+
 // Internal
+
+function renderCheckMessage(message?: string) {
+  return message ? ` (${message})` : ""
+}
 
 function renderInResource(resourceName?: string) {
   return resourceName ? ` in resource ${pc.bold(resourceName)}` : ""

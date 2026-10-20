@@ -107,6 +107,10 @@ msgstr "Construit un descripteur de jeu de données à partir d'un fichier tabul
 msgid "Built by"
 msgstr "Développé par"
 
+#: components/report/Error.tsx
+msgid "cannot be evaluated"
+msgstr "{'de': 'kann nicht ausgewertet werden', 'es': 'no se puede evaluar', 'fr': 'ne peut pas être évaluée', 'it': 'non può essere valutato', 'pt': 'não pode ser avaliada', 'ru': 'не может быть вычислена', 'uk': 'не може бути обчислена'}"
+
 #: components/layout/Language.tsx
 msgid "Change Language"
 msgstr "Changer de langue"
@@ -114,6 +118,10 @@ msgstr "Changer de langue"
 #: components/layout/Theme.tsx
 msgid "Change Theme"
 msgstr "Changer de thème"
+
+#: components/report/Error.tsx
+msgid "Check"
+msgstr "{'de': 'Prüfung', 'es': 'Comprobación', 'fr': 'Vérification', 'it': 'Controllo', 'pt': 'Verificação', 'ru': 'Проверка', 'uk': 'Перевірка'}"
 
 #: routes/data/index.tsx
 msgid "Check data values against schema specifications for quality, consistency, and constraint violations"
@@ -276,6 +284,10 @@ msgstr "Échec de l'inférence du schéma"
 #: routes/table/preview.tsx
 msgid "Failed to Load Preview"
 msgstr "Échec du chargement de l’aperçu"
+
+#: components/report/Error.tsx
+msgid "fails check"
+msgstr "{'de': 'verletzt die Prüfung', 'es': 'no supera la comprobación', 'fr': 'échoue à la vérification', 'it': 'non supera il controllo', 'pt': 'falha na verificação', 'ru': 'не проходит проверку', 'uk': 'не проходить перевірку'}"
 
 #: helpers/help.ts
 msgid "Failures are grouped by error type, so the problem that dominates is visible at a glance"
@@ -608,6 +620,7 @@ msgid "Supply a dialect when the delimiter or header row of the file are being m
 msgstr "Fournissez un dialecte lorsque le délimiteur ou la ligne d'en-tête du fichier sont mal détectés"
 
 #: components/layout/Menu.tsx
+#: components/report/Error.tsx
 #: helpers/help.ts
 #: routes/index.tsx
 #: routes/table/index.tsx

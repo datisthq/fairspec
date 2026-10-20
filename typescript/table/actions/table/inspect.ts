@@ -2,8 +2,10 @@ import type { RowError, TableError, TableSchema } from "@fairspec/metadata"
 import { getColumns } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import pAll from "p-all"
+import { inspectTableChecks } from "../../actions/check/inspect.ts"
 import { inspectColumns } from "../../actions/column/inspect.ts"
 import { getPolarsSchema } from "../../helpers/schema.ts"
+import type { TableCheck } from "../../models/check.ts"
 import type { ColumnMapping } from "../../models/column.ts"
 import type { SchemaMapping } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
@@ -20,23 +22,30 @@ export async function inspectTable(
   table: Table,
   options?: {
     tableSchema?: TableSchema
+    checks?: TableCheck[]
     sampleRows?: number
     maxErrors?: number
   },
 ) {
-  const { tableSchema, sampleRows = 100, maxErrors = 1000 } = options ?? {}
+  const { tableSchema, checks = [], sampleRows = 100, maxErrors = 1000 } = options ?? {}
   const errors: TableError[] = []
+  let mapping: SchemaMapping | undefined
 
   if (tableSchema) {
     const sample = await table.head(sampleRows).collect()
     const polarsSchema = getPolarsSchema(sample.schema)
-    const mapping = { source: polarsSchema, target: tableSchema }
+    mapping = { source: polarsSchema, target: tableSchema }
 
     const columnErrors = await inspectSchemaColumns(mapping, table, { maxErrors })
     errors.push(...columnErrors)
 
     const rowErrors = await inspectRows(mapping, table, { maxErrors })
     errors.push(...rowErrors)
+  }
+
+  if (checks.length && errors.length < maxErrors) {
+    const checkErrors = await inspectTableChecks(table, checks, { mapping, maxErrors })
+    errors.push(...checkErrors)
   }
 
   return errors.slice(0, maxErrors)

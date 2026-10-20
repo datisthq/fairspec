@@ -1,4 +1,5 @@
 from .cell import CellMapping
+from .check import SqlTableCheck, TableCheck
 from .column import ColumnMapping, DenormalizeColumnOptions, PolarsColumn
 from .data import DataRecord, DataRow
 from .file_dialect import FileDialectWithHeaderAndCommentRows
@@ -25,6 +26,8 @@ __all__ = [
     "PolarsSchema",
     "SaveTableOptions",
     "SchemaMapping",
+    "SqlTableCheck",
     "Table",
+    "TableCheck",
     "TableSchemaOptions",
 ]

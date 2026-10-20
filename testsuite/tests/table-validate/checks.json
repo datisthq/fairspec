@@ -1,0 +1,149 @@
+[
+  {
+    "description": "row check",
+    "comment": "Checks are a library feature outside the standard, so this follows TypeScript",
+    "tableSchema": {
+      "properties": { "start": { "type": "integer" }, "end": { "type": "integer" } }
+    },
+    "options": {
+      "checks": [{ "name": "end-after-start", "condition": "\"end\" >= start" }]
+    },
+    "tests": [
+      {
+        "description": "rows meeting the condition are valid",
+        "data": "start,end\n1,2\n3,3\n",
+        "valid": true
+      },
+      {
+        "description": "a row failing the condition is a row/check error",
+        "data": "start,end\n1,2\n3,2\n",
+        "valid": false,
+        "errors": [
+          { "type": "row/check", "checkName": "end-after-start", "rowNumber": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "cell check with a message",
+    "tableSchema": { "properties": { "price": { "type": "number" } } },
+    "options": {
+      "checks": [
+        {
+          "name": "positive-price",
+          "condition": "price > 0",
+          "columnName": "price",
+          "message": "Price must be positive"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a failing row reports the cell as written",
+        "data": "price\n10\n-1.50\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/check",
+            "checkName": "positive-price",
+            "columnName": "price",
+            "rowNumber": 2,
+            "cell": "-1.50",
+            "message": "Price must be positive"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "conditions see typed values and null passes",
+    "tableSchema": { "properties": { "amount": { "type": ["integer", "null"] } } },
+    "options": { "checks": [{ "name": "small-amount", "condition": "amount < 10" }] },
+    "tests": [
+      {
+        "description": "values compare as numbers, a missing value passes and a bad value is reported once",
+        "data": "amount\n9\n10\n\nbad\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "amount",
+            "columnType": "integer",
+            "rowNumber": 4,
+            "cell": "bad"
+          },
+          { "type": "row/check", "checkName": "small-amount", "rowNumber": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "table check",
+    "tableSchema": { "properties": { "id": { "type": "integer" } } },
+    "options": { "checks": [{ "name": "three-rows", "condition": "count(*) >= 3" }] },
+    "tests": [
+      {
+        "description": "an aggregate meeting the condition is valid",
+        "data": "id\n1\n2\n3\n",
+        "valid": true
+      },
+      {
+        "description": "an aggregate failing the condition is one table/check error",
+        "data": "id\n1\n2\n",
+        "valid": false,
+        "errors": [{ "type": "table/check", "checkName": "three-rows" }]
+      }
+    ]
+  },
+  {
+    "description": "window check",
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "zip": { "type": "string" } }
+    },
+    "options": {
+      "checks": [
+        { "name": "shared-zip", "condition": "count(*) OVER (PARTITION BY zip) >= 2" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "each row of a group failing the condition is reported",
+        "data": "id,zip\n1,a\n2,a\n3,b\n",
+        "valid": false,
+        "errors": [{ "type": "row/check", "checkName": "shared-zip", "rowNumber": 3 }]
+      }
+    ]
+  },
+  {
+    "description": "checks that cannot run",
+    "comment": "Only messages Fairspec writes itself are compared; Polars error text differs between bindings",
+    "tableSchema": { "properties": { "price": { "type": "integer" } } },
+    "options": {
+      "checks": [
+        { "name": "not-boolean", "condition": "price + 1" },
+        { "name": "unknown-column", "condition": "price > 0", "columnName": "missing" },
+        { "name": "positive-price", "condition": "price > 0" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "each is a check error and the other checks still run",
+        "data": "price\n5\n-1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "check",
+            "checkName": "not-boolean",
+            "message": "Condition is Int64 instead of Boolean"
+          },
+          {
+            "type": "check",
+            "checkName": "unknown-column",
+            "message": "Column \"missing\" is not found"
+          },
+          { "type": "row/check", "checkName": "positive-price", "rowNumber": 2 }
+        ]
+      }
+    ]
+  }
+]

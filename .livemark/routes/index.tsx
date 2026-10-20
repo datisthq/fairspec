@@ -316,7 +316,7 @@ const tools: Point[] = [
     icon: Code,
     title: "Python",
     description:
-      "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames.",
+      "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames and custom checks in SQL or Polars.",
     link: { to: "/$", splat: "python/getting-started" },
   },
   {

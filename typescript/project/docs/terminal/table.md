@@ -110,7 +110,12 @@ fairspec table validate --from-dataset dataset.json --from-resource users
 
 # Output validation report as JSON
 fairspec table validate data.csv --table-schema schema.json --json
+
+# Add named SQL checks every row, or the whole table, must satisfy
+fairspec table validate data.csv --check 'end-after-start="end" >= start' --check "not-empty=count(*) > 0"
 ```
+
+A check is `name=condition`, split at the first `=`. A row fails when its condition is false; null passes. A condition that reduces to one value, such as `count(*) > 0`, checks the whole table. Failures are reported as `row/check` or `table/check` errors, and a condition that cannot run as a `check` error.
 
 ### Validation Report
 
@@ -144,6 +149,7 @@ Example validation errors:
 ### Options
 
 - `--table-schema <path>` - Path to Table Schema file
+- `--check <name=condition>` - Named SQL condition to check (repeatable)
 - `--from-dataset <path>` - Load table from dataset descriptor
 - `--from-resource <name>` - Specify resource name from dataset
 - `--debug` - Show debug information

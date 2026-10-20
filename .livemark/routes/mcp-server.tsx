@@ -514,7 +514,7 @@ const tools: Point[] = [
     icon: CheckCircle2,
     title: "Validate Table",
     description:
-      "Checks that a table descriptor is well-formed and that the referenced data matches the declared schema. Reports mismatches between expected and observed field types, missing values, and constraint violations.",
+      "Checks that a table descriptor is well-formed and that the referenced data matches the declared schema. Reports mismatches between expected and observed field types, missing values, and constraint violations, plus any named SQL checks you add.",
   },
   {
     icon: Search,

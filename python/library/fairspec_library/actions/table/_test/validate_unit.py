@@ -4,6 +4,7 @@ from fairspec_dataset import write_temp_file
 from fairspec_metadata import (
     IntegerColumnProperty,
     Resource,
+    RowCheckError,
     StringColumnProperty,
     TableSchema,
 )
@@ -45,4 +46,30 @@ class TestValidateTable:
         path = write_temp_file("id,name\n1,english", format="csv")
         resource = Resource(data=path)
         report = validate_table(resource)
+        assert report.valid is True
+
+    def test_should_report_rows_failing_a_check(self):
+        path = write_temp_file("id,start,end\n1,1,2\n2,3,2", format="csv")
+        resource = Resource(data=path)
+
+        report = validate_table(
+            resource,
+            checks=[{"name": "end-after-start", "condition": '"end" >= start'}],
+        )
+
+        assert report.valid is False
+        assert report.errors == [
+            RowCheckError(type="row/check", checkName="end-after-start", rowNumber=2)
+        ]
+
+    def test_should_run_checks_when_schema_inference_is_skipped(self):
+        path = write_temp_file("id,start,end\n1,1,2\n2,3,2", format="csv")
+        resource = Resource(data=path)
+
+        report = validate_table(
+            resource,
+            noInfer=True,
+            checks=[{"name": "two-rows", "condition": "count(*) = 2"}],
+        )
+
         assert report.valid is True

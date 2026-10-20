@@ -123,6 +123,14 @@ relative import reaches beyond the top-level package.
   nulls and skip only all-null keys (`create_key_presence_expr`)
 - Import heavy optional dependencies (`shapely`, which pulls numpy) inside the function that
   needs them: everything `fairspec_terminal` reaches at import time is paid on every CLI start
+- **Custom table checks** (`python/table/fairspec_table/actions/check/inspect.py`) turn a SQL
+  condition into an expression with `pl.sql_expr`, which takes aggregates and `OVER (…)` windows,
+  so SQL and Polars conditions share one select. A check is a row or a table check by running it
+  on two typed null rows (one row back means an aggregate); probe errors are
+  `pl.exceptions.PolarsError`
+- **An options TypedDict holding a `pl.Expr` cannot be an MCP parameter**: pydantic builds no
+  JSON schema for it. The tool takes a string-only twin (`SqlTableCheck` for `TableCheck`)
+- A typer option parsed with `parser=` shows the parser's name as its metavar; set `metavar=`
 
 ## MCP server
 

@@ -113,6 +113,32 @@ if not report.valid:
 
 The returned `Report` has `valid: bool` and `errors: list[FairspecError]`. Each error carries context such as `rowNumber`, `propertyName`, `cellValue`, and a `type` discriminator (for example, `cell/type`, `row/primary-key`, `column/missing`).
 
+### Custom Checks
+
+`checks` adds rules a Table Schema cannot express. Each check has a `name` and a `condition`: a [Polars SQL](https://docs.pola.rs/api/python/stable/reference/sql/index.html) condition or a Polars expression. A row fails when its condition is `False`; `None` passes, as in a SQL `CHECK` constraint. Conditions see the values typed by the schema.
+
+```python
+import polars as pl
+from fairspec import Resource, validate_table
+
+report = validate_table(
+    Resource(data="orders.csv"),
+    checks=[
+        {"name": "end-after-start", "condition": '"end" >= start'},
+        {"name": "positive-price", "condition": pl.col("price") > 0, "columnName": "price"},
+        {"name": "repeat-customer", "condition": "count(*) OVER (PARTITION BY customer) >= 2"},
+        {"name": "not-empty", "condition": "count(*) > 0", "message": "The export is empty"},
+    ],
+)
+```
+
+- A condition that reduces to one value, such as `count(*) > 0`, checks the whole table and reports `table/check`
+- Any other condition reports `row/check` for each failing row, or `cell/check` with the cell value when the check names a `columnName`
+- A window (`OVER (PARTITION BY …)` in SQL, `.over(…)` in Polars) checks each row against its group
+- `message` is carried on every error the check reports
+- A check that cannot run (an unknown column, a syntax error, a condition that is not boolean) reports `check`, and the other checks still run
+- Quote column names that are SQL keywords: `"end" >= start`
+
 For an already-loaded table, use `inspect_table` to collect errors against an in-memory schema:
 
 ```python

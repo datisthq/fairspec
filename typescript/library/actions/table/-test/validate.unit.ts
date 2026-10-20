@@ -68,4 +68,36 @@ describe("validateTable", () => {
       expectedResourceType: "table",
     })
   })
+
+  it("should report rows failing a check", async () => {
+    const path = await writeTempFile("id,start,end\n1,1,2\n2,3,2")
+    const resource: Resource = {
+      data: path,
+      fileDialect: { format: "csv" },
+    }
+
+    const report = await validateTable(resource, {
+      checks: [{ name: "end-after-start", condition: '"end" >= start' }],
+    })
+
+    expect(report.valid).toBe(false)
+    expect(report.errors).toEqual([
+      { type: "row/check", checkName: "end-after-start", rowNumber: 2 },
+    ])
+  })
+
+  it("should run checks when schema inference is skipped", async () => {
+    const path = await writeTempFile("id,start,end\n1,1,2\n2,3,2")
+    const resource: Resource = {
+      data: path,
+      fileDialect: { format: "csv" },
+    }
+
+    const report = await validateTable(resource, {
+      noInfer: true,
+      checks: [{ name: "two-rows", condition: "count(*) = 2" }],
+    })
+
+    expect(report.valid).toBe(true)
+  })
 })

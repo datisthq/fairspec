@@ -33,6 +33,24 @@ describe("validateTableTool", () => {
     expect(result.report.errors).toHaveLength(0)
   })
 
+  it("reports rows failing a check", async () => {
+    const resource: Resource = {
+      data: [
+        { start: 1, end: 2 },
+        { start: 3, end: 2 },
+      ],
+    }
+
+    const result = await validateTableTool.execute({
+      resource,
+      options: { checks: [{ name: "end-after-start", condition: '"end" >= start' }] },
+    })
+
+    expect(result.report.errors).toEqual([
+      { type: "row/check", checkName: "end-after-start", rowNumber: 2 },
+    ])
+  })
+
   it("detects invalid data in table", async () => {
     const invalidResource: Resource = {
       data: [

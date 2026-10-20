@@ -40,6 +40,10 @@ def render_error(error: FairspecError) -> str:
             return _render_cell_min_items_error(error)
         case "cell/maxItems":
             return _render_cell_max_items_error(error)
+        case "cell/check":
+            return _render_cell_check_error(error)
+        case "check":
+            return _render_check_error(error)
         case "column/missing":
             return _render_column_missing_error(error)
         case "column/type":
@@ -58,6 +62,10 @@ def render_error(error: FairspecError) -> str:
             return _render_row_primary_key_error(error)
         case "row/uniqueKey":
             return _render_row_unique_key_error(error)
+        case "row/check":
+            return _render_row_check_error(error)
+        case "table/check":
+            return _render_table_check_error(error)
         case "resource/missing":
             return _render_resource_missing_error(error)
         case "resource/type":
@@ -72,6 +80,10 @@ def _b(value: object) -> str:
 
 def _in_resource(resource_name: str | None) -> str:
     return f" in resource {_b(resource_name)}" if resource_name else ""
+
+
+def _check_message(message: str | None) -> str:
+    return f" ({message})" if message else ""
 
 
 def _render_cell_type_error(error: object) -> str:
@@ -140,6 +152,14 @@ def _render_cell_max_items_error(error: object) -> str:
     return f"Value of the cell {_b(error.cell)} in column {_b(error.columnName)} of row {_b(error.rowNumber)} has more than {_b(error.maxItems)} items{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
 
 
+def _render_cell_check_error(error: object) -> str:
+    return f"Value of the cell {_b(error.cell)} in column {_b(error.columnName)} of row {_b(error.rowNumber)} fails check {_b(error.checkName)}{_check_message(error.message)}{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
+
+
+def _render_check_error(error: object) -> str:
+    return f"Check {_b(error.checkName)} cannot be evaluated{_in_resource(error.resourceName)}: {error.message}"  # type: ignore[union-attr]
+
+
 def _render_column_missing_error(error: object) -> str:
     return f"Required column {_b(error.columnName)} is missing{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
 
@@ -179,6 +199,14 @@ def _render_row_primary_key_error(error: object) -> str:
 def _render_row_unique_key_error(error: object) -> str:
     column_names = ", ".join(_b(c) for c in error.columnNames)  # type: ignore[union-attr]
     return f"Row {_b(error.rowNumber)} violates unique key constraint on columns {column_names}{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
+
+
+def _render_row_check_error(error: object) -> str:
+    return f"Row {_b(error.rowNumber)} fails check {_b(error.checkName)}{_check_message(error.message)}{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
+
+
+def _render_table_check_error(error: object) -> str:
+    return f"Table fails check {_b(error.checkName)}{_check_message(error.message)}{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
 
 
 def _render_resource_missing_error(error: object) -> str:

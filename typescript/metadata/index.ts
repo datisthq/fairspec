@@ -159,6 +159,7 @@ export {
 export { Descriptor } from "./models/descriptor.ts"
 export { BaseError } from "./models/error/base.ts"
 export {
+  CellCheckError,
   CellConstError,
   CellEnumError,
   CellError,
@@ -177,6 +178,7 @@ export {
   CellTypeError,
   CellUniqueError,
 } from "./models/error/cell.ts"
+export { CheckError, TableCheckError } from "./models/error/check.ts"
 export {
   ColumnError,
   ColumnMissingError,
@@ -192,7 +194,12 @@ export {
   ResourceMissingError,
   ResourceTypeError,
 } from "./models/error/resource.ts"
-export { RowError, RowPrimaryKeyError, RowUniqueKeyError } from "./models/error/row.ts"
+export {
+  RowCheckError,
+  RowError,
+  RowPrimaryKeyError,
+  RowUniqueKeyError,
+} from "./models/error/row.ts"
 export { TableError } from "./models/error/table.ts"
 export { FairspecException } from "./models/exception.ts"
 export { ArrowFileDialect } from "./models/fileDialect/arrow.ts"

@@ -23,7 +23,16 @@ class RowUniqueKeyError(BaseError):
     )
 
 
+class RowCheckError(BaseError):
+    type: Literal["row/check"] = Field(description="Error type identifier")
+    rowNumber: int = Field(description="The row number where the error occurred")
+    checkName: str = Field(description="The name of the check that failed")
+    message: str | None = Field(
+        default=None, description="The message of the check that failed"
+    )
+
+
 RowError = Annotated[
-    Union[RowPrimaryKeyError, RowUniqueKeyError],
+    Union[RowPrimaryKeyError, RowUniqueKeyError, RowCheckError],
     Field(discriminator="type"),
 ]

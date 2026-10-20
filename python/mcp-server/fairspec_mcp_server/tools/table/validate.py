@@ -1,8 +1,10 @@
 from typing import Annotated
 
 from fairspec_library import (
+    LoadTableOptions,
     Report,
     Resource,
+    SqlTableCheck,
     ValidateTableOptions,
     infer_table_schema,
     resolve_table_schema,
@@ -15,6 +17,15 @@ from ...models.tool import ToolResult
 from .._shared.schemas import MaxErrors, Truncated
 
 
+class ValidateTableToolOptions(LoadTableOptions, total=False):
+    noInfer: bool
+    maxErrors: int
+    checks: Annotated[
+        list[SqlTableCheck],
+        Field(description="Conditions every row, or the whole table, must satisfy"),
+    ]
+
+
 class ValidateTableResult(ToolResult):
     report: Report
     truncated: Truncated
@@ -23,7 +34,7 @@ class ValidateTableResult(ToolResult):
 def validate_table_tool(
     resource: Annotated[Resource, Field(description="The table resource to validate")],
     options: Annotated[
-        ValidateTableOptions | None, Field(description="Validation options")
+        ValidateTableToolOptions | None, Field(description="Validation options")
     ] = None,
     maxErrors: MaxErrors = None,
 ) -> ValidateTableResult:

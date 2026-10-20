@@ -63,6 +63,9 @@ export const validateTableCommand = new Command()
   .addOption(params.monthFirst)
   .addOption(params.keepStrings)
 
+  .optionsGroup("Checks")
+  .addOption(params.check)
+
   .action(async (path, options) => {
     const session = new Session({
       debug: options.debug,
@@ -94,7 +97,7 @@ export const validateTableCommand = new Command()
     }
 
     const report = await session.task("Validating table", async () => {
-      const errors = await inspectTable(table, { tableSchema })
+      const errors = await inspectTable(table, { tableSchema, checks: options.check })
       return createReport(errors)
     })
 

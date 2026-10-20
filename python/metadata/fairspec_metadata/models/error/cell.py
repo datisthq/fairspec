@@ -93,6 +93,14 @@ class CellMaxItemsError(BaseCellError):
     maxItems: int = Field(description="The maximum number of items allowed")
 
 
+class CellCheckError(BaseCellError):
+    type: Literal["cell/check"] = Field(description="Error type identifier")
+    checkName: str = Field(description="The name of the check that failed")
+    message: str | None = Field(
+        default=None, description="The message of the check that failed"
+    )
+
+
 CellError = Annotated[
     Union[
         CellTypeError,
@@ -111,6 +119,7 @@ CellError = Annotated[
         CellConstError,
         CellEnumError,
         CellJsonError,
+        CellCheckError,
     ],
     Field(discriminator="type"),
 ]
