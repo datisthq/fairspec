@@ -118,14 +118,25 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   parent path, so a README at `/python/` would swallow the whole sidebar. The language READMEs
   live at `/<lang>/getting-started/`, and `worker.ts` 301s the bare `/<lang>/` there
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `cli-tool.tsx`,
-  `mcp-server.tsx`, `desktop.tsx`), each a `type: "custom"` section in `livemark.config.ts`
-  in that nav order. A landing that covers both languages (`cli-tool.tsx`) puts a
-  Python/TypeScript switch over the install-method tabs and shows only commands that run
+  `mcp-server.tsx`, `agent-skills.tsx`, `desktop.tsx`), each a `type: "custom"` section in
+  `livemark.config.ts` in that nav order. A landing that covers both languages (`cli-tool.tsx`)
+  puts a Python/TypeScript switch over the install-method tabs and shows only commands that run
   unchanged on both CLIs — check each against both `--help` outputs, since the language
   docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
-- A new route blanks on hydration under `pnpm start:site` until a hard reload: livemark's
-  target lives in `node_modules`, so Vite serves `routeTree.gen.ts?v=<hash>` as `immutable`
-  and the browser keeps the tree without the route. Not a bug in the route; builds are fine
+- Landings follow livemark.dev's own landing (livemark's `livemark-landing` skill). A custom
+  route renders bare, so each one draws its chrome: `<Banner />`, `<Header />`, `<main>`,
+  `<BackToTop />`. Their shared pieces (`Hero`, `LandingSection`, `WindowCard`, `Reveal`, `tk`,
+  `Datist`…) live in `.livemark/components/Landing.tsx`, imported relatively: a new file under
+  `.livemark/components/` must not take a livemark component's name (`Section.tsx` would
+  replace livemark's), and `livemark/components/<new>` resolves in the build but not for `tsgo`
+- `.livemark/.target/` is livemark's generated mount, gitignored and excluded from types and
+  fmt. `.livemark/styles/general.css` is an escape of livemark's: when a livemark upgrade adds
+  tokens (the build fails on an unknown utility such as `bg-positive/15`), re-copy it from
+  `node_modules/livemark/source/styles/general.css` and keep only the bordered `.prose table`
+  rules at its end
+- The `fairspec-*` skills in `.skills/` are published by the site (`skills:` in
+  `livemark.config.ts`) under `/.well-known/agent-skills/`, so `npx skills add https://fairspec.org`
+  installs them; `/agent-skills/` is their landing
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages

@@ -10,6 +10,7 @@
   "exclude": [
     "${configDir}/**/build/",
     "${configDir}/.livemark/build/",
+    "${configDir}/.livemark/.target/",
     "${configDir}/node_modules"
   ],
 
@@ -19,7 +20,7 @@
     "moduleResolution": "NodeNext",
 
     "lib": ["ESNext", "DOM"],
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "jsx": "react-jsx",
 
     "strict": true,

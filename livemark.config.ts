@@ -22,6 +22,7 @@ export default defineConfig({
     "typescript/CHANGELOG.md",
     "CONTRIBUTING.md",
   ],
+  skills: ".skills/*/SKILL.md",
   sections: [
     {
       title: "Standard",
@@ -49,6 +50,12 @@ export default defineConfig({
       title: "MCP Server",
       url: "/mcp-server/",
       icon: "sparkles",
+    },
+    {
+      type: "custom",
+      title: "Agent Skills",
+      url: "/agent-skills/",
+      icon: "bot",
     },
     {
       type: "custom",

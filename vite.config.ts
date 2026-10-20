@@ -6,6 +6,7 @@ const ignorePatterns = [
   "**/*.gen.*",
   "**/generated/**",
   "**/.livemark/build/**",
+  "**/.livemark/.target/**",
   "**/.livemark/public/profiles/**",
   "**/.tanstack/**",
   "**/.venv/**",

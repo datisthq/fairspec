@@ -1,18 +1,32 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   ArrowRight,
+  BookOpen,
+  Bot,
   Braces,
   Database,
   ExternalLink,
   FileText,
+  Sparkles,
   SquareTerminal,
   Table2,
 } from "lucide-react"
 import type { ComponentType, ReactNode, SVGProps } from "react"
 import { useState } from "react"
-import { buttonVariants } from "livemark/elements/button"
-import { useInView } from "livemark/hooks/in-view"
+import { BackToTop } from "livemark/components/BackToTop"
+import { Banner } from "livemark/components/Banner"
+import { Header } from "livemark/components/Header"
 import { cn } from "cn"
+import {
+  Datist,
+  FinalCta,
+  Hero,
+  LandingSection,
+  Reveal,
+  WindowCard,
+  actionClass,
+  tk,
+} from "../components/Landing.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/cli-tool/")({
@@ -38,44 +52,23 @@ const languages: { key: Language; name: string }[] = [
 function CliToolPage() {
   const [language, setLanguage] = useState<Language>("python")
   return (
-    <div className="flex flex-col">
-      <Hero />
-      <Installation language={language} onLanguageChange={setLanguage} />
-      <Usage language={language} />
-      <Commands language={language} />
-    </div>
-  )
-}
-
-/* ─────────────────────────── Hero ─────────────────────────── */
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden border-b border-border flex items-center min-h-[calc(100vh-4rem)]">
-      <BackgroundGrid />
-      <div className="relative w-full mx-auto max-w-7xl px-6 py-16 md:py-24 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-6">
-              <SquareTerminal className="size-3.5 text-primary" />
-              Python and TypeScript
-            </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-              Fairspec CLI Tool
-            </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground">
+    <>
+      <Banner />
+      <Header />
+      <main className="flex flex-col">
+        <Hero
+          eyebrow="Python and TypeScript"
+          title="Fairspec CLI Tool"
+          lede={
+            <>
               Bring the <strong className="text-foreground">Fairspec</strong> data
               management framework to your shell. Validate datasets, infer schemas, and
               query tables — from scripts, CI pipelines, or an interactive terminal.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <a
-                href="#installation"
-                className={cn(
-                  buttonVariants({ variant: "default", size: "lg" }),
-                  "px-5 no-underline",
-                )}
-              >
+            </>
+          }
+          actions={
+            <>
+              <a href="#installation" className={actionClass("default")}>
                 Install
                 <ArrowRight className="size-4" />
               </a>
@@ -83,42 +76,70 @@ function Hero() {
                 href="https://github.com/datisthq/fairspec"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "px-5 no-underline",
-                )}
+                className={actionClass("outline")}
               >
                 View on GitHub
                 <ExternalLink className="size-4" />
               </a>
-            </div>
-          </div>
-          <Transcript />
-        </div>
-      </div>
-    </section>
+            </>
+          }
+          visual={<Transcript />}
+        />
+        <Installation language={language} onLanguageChange={setLanguage} />
+        <Usage language={language} />
+        <Commands language={language} />
+        <FinalCta
+          title={
+            <>
+              Script your data. <span className="text-primary">Check it in CI.</span>
+            </>
+          }
+          lede="Read the full command reference, or hand the same commands to your AI assistant."
+          actions={
+            <>
+              <Link
+                to="/$"
+                params={{ _splat: `${language}/terminal` }}
+                className={actionClass("default")}
+              >
+                <BookOpen className="size-4" />
+                Read the CLI docs
+              </Link>
+              <Link to="/mcp-server/" className={actionClass("ghost")}>
+                <Sparkles className="size-4" />
+                Try the MCP server
+              </Link>
+              <Link to="/agent-skills/" className={actionClass("ghost")}>
+                <Bot className="size-4" />
+                Add agent skills
+              </Link>
+            </>
+          }
+        />
+        <Datist />
+      </main>
+      <BackToTop />
+    </>
   )
 }
 
+/* ─────────────────────────── Hero ─────────────────────────── */
+
 function Transcript() {
   return (
-    <div className="rounded-xl border border-primary/20 bg-card overflow-hidden text-left">
-      <div className="flex items-center gap-2 border-b border-primary/20 px-4 py-2 bg-muted/50">
-        <div className="size-2.5 rounded-full bg-red-400/60" />
-        <div className="size-2.5 rounded-full bg-yellow-400/60" />
-        <div className="size-2.5 rounded-full bg-green-400/60" />
-        <span className="ml-2 text-xs font-mono text-muted-foreground">Terminal</span>
-      </div>
+    <WindowCard label="terminal">
       <div className="p-5 space-y-4 font-mono text-sm leading-relaxed overflow-x-auto">
         <div className="flex items-start gap-2">
           <span className="text-primary shrink-0 select-none">$</span>
-          <Shell command="fairspec table infer-schema members.csv --json" />
+          <div className="min-w-0">
+            <Shell command="fairspec table infer-schema members.csv --json" />
+          </div>
         </div>
         <pre className="rounded-md border border-border bg-background p-4 overflow-x-auto">
           <TableSchemaSample />
         </pre>
       </div>
-    </div>
+    </WindowCard>
   )
 }
 
@@ -166,34 +187,7 @@ function TableSchemaSample() {
   )
 }
 
-function BackgroundGrid() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="absolute inset-0 [background-image:repeating-linear-gradient(90deg,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_8px)] opacity-25 [mask-image:linear-gradient(to_top,black_10%,transparent_85%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute -bottom-40 -left-40 h-[36rem] w-[36rem] rounded-full bg-blue-400/30 dark:bg-blue-500/25 blur-[110px] pointer-events-none"
-      />
-      <div
-        aria-hidden
-        className="absolute -top-32 -right-32 h-[32rem] w-[32rem] rounded-full bg-sky-400/25 dark:bg-sky-500/20 blur-[110px] pointer-events-none"
-      />
-    </>
-  )
-}
-
 /* ─────────────────────────── Installation ─────────────────────────── */
-
-const tk = {
-  punct: "text-[#7c7f93] dark:text-[#9399b2]",
-  key: "text-[#1e66f5] dark:text-[#89b4fa]",
-  str: "text-[#40a02b] dark:text-[#a6e3a1]",
-  cmd: "text-[#8839ef] dark:text-[#cba6f7]",
-  body: "text-[#4c4f69] dark:text-[#cdd6f4]",
-}
 
 function Shell({ command }: { command: string }) {
   const parts = command.match(/"[^"]*"|\s+|\S+/g) ?? []
@@ -291,20 +285,18 @@ function Installation(props: {
   const method = methods[active] ?? methods[0]
   if (!method) return null
   return (
-    <section id="installation" className="border-b border-border scroll-mt-16">
-      <div className="mx-auto max-w-5xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Installation
-            </h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Both implementations ship the same <code>fairspec</code> command. Pick the
-              ecosystem you already use.
-            </p>
-          </div>
-        </Reveal>
-        <Reveal>
+    <LandingSection
+      id="installation"
+      title="Installation"
+      lede={
+        <>
+          Both implementations ship the same <code>fairspec</code> command. Pick the
+          ecosystem you already use.
+        </>
+      }
+    >
+      <Reveal>
+        <div className="mx-auto max-w-4xl">
           <div className="flex justify-center mb-6">
             <div
               role="tablist"
@@ -332,7 +324,7 @@ function Installation(props: {
               ))}
             </div>
           </div>
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-card border border-border bg-card overflow-hidden">
             <div
               role="tablist"
               className="flex flex-wrap border-b border-border bg-muted/40"
@@ -366,9 +358,9 @@ function Installation(props: {
             Need only the command line, without the library? Install{" "}
             <code>{terminalPackages[props.language]}</code> instead.
           </p>
-        </Reveal>
-      </div>
-    </section>
+        </div>
+      </Reveal>
+    </LandingSection>
   )
 }
 
@@ -392,41 +384,39 @@ const examples: Example[] = [
 
 function Usage(props: { language: Language }) {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Usage</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Every command takes local paths or URLs and prints JSON with{" "}
-              <code>--json</code>. Try one of these.
-            </p>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {examples.map((e, i) => (
-            <Reveal key={e.command} delayMs={i * 40}>
-              <div
-                className={cn(
-                  "rounded-xl border border-border bg-card p-4 flex items-start gap-3 transition-opacity",
-                  e.only && e.only !== props.language && "opacity-50",
-                )}
-              >
-                <SquareTerminal className="size-4 mt-0.5 text-primary shrink-0" />
-                <pre className="flex-1 min-w-0 overflow-x-auto text-sm font-mono leading-relaxed">
-                  <Shell command={e.command} />
-                </pre>
-                {e.only && (
-                  <span className="shrink-0 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
-                    {e.only === "python" ? "Python" : "TypeScript"} only
-                  </span>
-                )}
-              </div>
-            </Reveal>
-          ))}
-        </div>
+    <LandingSection
+      tinted
+      title="Usage"
+      lede={
+        <>
+          Every command takes local paths or URLs and prints JSON with <code>--json</code>
+          . Try one of these.
+        </>
+      }
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {examples.map((e, i) => (
+          <Reveal key={e.command} delayMs={i * 40}>
+            <div
+              className={cn(
+                "rounded-card border border-border bg-card p-4 flex flex-wrap items-start gap-3 transition-opacity",
+                e.only && e.only !== props.language && "opacity-50",
+              )}
+            >
+              <SquareTerminal className="size-4 mt-0.5 text-primary shrink-0" />
+              <pre className="flex-1 min-w-0 overflow-x-auto text-sm font-mono leading-relaxed">
+                <Shell command={e.command} />
+              </pre>
+              {e.only && (
+                <span className="shrink-0 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
+                  {e.only === "python" ? "Python" : "TypeScript"} only
+                </span>
+              )}
+            </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </LandingSection>
   )
 }
 
@@ -487,35 +477,28 @@ const commandGroups: CommandGroup[] = [
 
 function Commands(props: { language: Language }) {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Commands</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Commands are grouped by what they operate on: datasets, tables, JSON data,
-              and files.
-            </p>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {commandGroups.map((g, i) => (
-            <Reveal key={g.entity} delayMs={i * 40}>
-              <CommandCard group={g} language={props.language} />
-            </Reveal>
-          ))}
-        </div>
+    <LandingSection
+      title="Commands"
+      lede="Commands are grouped by what they operate on: datasets, tables, JSON data, and files."
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {commandGroups.map((g, i) => (
+          <Reveal key={g.entity} delayMs={i * 40}>
+            <CommandCard group={g} language={props.language} />
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </LandingSection>
   )
 }
 
 function CommandCard(props: { group: CommandGroup; language: Language }) {
   const { icon: Icon, entity, title, verbs, description } = props.group
   return (
-    <a
-      href={`/${props.language}/terminal/${entity}/`}
-      className="group block h-full relative rounded-xl border border-border bg-card p-6 no-underline transition-colors hover:border-primary/40"
+    <Link
+      to="/$"
+      params={{ _splat: `${props.language}/terminal/${entity}` }}
+      className="group block h-full relative rounded-card border border-border bg-card p-6 no-underline transition-colors hover:border-primary/40"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
@@ -535,25 +518,7 @@ function CommandCard(props: { group: CommandGroup; language: Language }) {
           </code>
         ))}
       </div>
-    </a>
-  )
-}
-
-/* ─────────────────────────── Reveal helper ─────────────────────────── */
-
-function Reveal(props: { children: ReactNode; delayMs?: number }) {
-  const { ref, isVisible } = useInView()
-  return (
-    <div
-      ref={ref as (node: HTMLDivElement | null) => void}
-      style={{ transitionDelay: `${props.delayMs ?? 0}ms` }}
-      className={cn(
-        "transition-all duration-700 ease-out",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-      )}
-    >
-      {props.children}
-    </div>
+    </Link>
   )
 }
 

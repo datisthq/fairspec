@@ -3,16 +3,27 @@ import {
   ArrowRight,
   CheckCircle2,
   ExternalLink,
+  Github,
   History,
   ListOrdered,
   Search,
-  Sparkles,
 } from "lucide-react"
-import type { ComponentType, ReactNode, SVGProps } from "react"
+import type { ReactNode } from "react"
 import { useState } from "react"
-import { buttonVariants } from "livemark/elements/button"
-import { useInView } from "livemark/hooks/in-view"
+import { BackToTop } from "livemark/components/BackToTop"
+import { Banner } from "livemark/components/Banner"
+import { Header } from "livemark/components/Header"
 import { cn } from "cn"
+import {
+  Datist,
+  FeatureGrid,
+  Hero,
+  LandingSection,
+  type Point,
+  Reveal,
+  WindowCard,
+  actionClass,
+} from "../components/Landing.tsx"
 
 // Livemark generates its route tree at build time, so this route id
 // is not known to the checker here.
@@ -33,43 +44,23 @@ export const Route = createFileRoute("/desktop/")({
 
 function ApplicationPage() {
   return (
-    <div className="flex flex-col">
-      <Hero />
-      <Tools />
-      <Downloads />
-    </div>
-  )
-}
-
-/* ─────────────────────────── Hero ─────────────────────────── */
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden border-b border-border flex items-center min-h-[calc(100vh-4rem)]">
-      <BackgroundGrid />
-      <div className="relative w-full mx-auto max-w-7xl px-6 py-16 md:py-24 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-6">
-              <Sparkles className="size-3.5 text-primary" />
-              Technical preview
-            </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-              Fairspec Desktop
-            </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground">
+    <>
+      <Banner />
+      <Header />
+      <main className="flex flex-col">
+        <Hero
+          eyebrow="Technical preview"
+          title="Fairspec Desktop"
+          lede={
+            <>
               Visual tool for validating and inferring{" "}
               <strong className="text-foreground">Fairspec</strong> descriptors. Point it
               at your data and get a report — no code required.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <a
-                href="#download"
-                className={cn(
-                  buttonVariants({ variant: "default", size: "lg" }),
-                  "px-5 no-underline",
-                )}
-              >
+            </>
+          }
+          actions={
+            <>
+              <a href="#download" className={actionClass("default")}>
                 Download
                 <ArrowRight className="size-4" />
               </a>
@@ -77,79 +68,46 @@ function Hero() {
                 href="https://github.com/datisthq/fairspec/tree/main/desktop"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "px-5 no-underline",
-                )}
+                className={actionClass("outline")}
               >
+                <Github className="size-4" />
                 View on GitHub
-                <ExternalLink className="size-4" />
               </a>
               <a
                 href="https://github.com/datisthq/fairspec/blob/main/desktop/CHANGELOG.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "px-5 no-underline",
-                )}
+                className={actionClass("outline")}
               >
-                Changelog
                 <History className="size-4" />
+                Changelog
               </a>
-            </div>
-          </div>
-          <div className="rounded-xl border border-primary/20 bg-card overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-primary/20 px-4 py-2 bg-muted/50">
-              <div className="size-2.5 rounded-full bg-red-400/60" />
-              <div className="size-2.5 rounded-full bg-yellow-400/60" />
-              <div className="size-2.5 rounded-full bg-green-400/60" />
-              <span className="ml-2 text-xs font-mono text-muted-foreground">
-                Fairspec Application
-              </span>
-            </div>
-            <img
-              src="/application.webp"
-              width={1200}
-              height={750}
-              alt="The Fairspec Application with dataset, table, data and file tools in the sidebar"
-              className="block w-full"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function BackgroundGrid() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="absolute inset-0 [background-image:repeating-linear-gradient(90deg,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_8px)] opacity-25 [mask-image:linear-gradient(to_top,black_10%,transparent_85%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute -bottom-40 -left-40 h-[36rem] w-[36rem] rounded-full bg-blue-400/30 dark:bg-blue-500/25 blur-[110px] pointer-events-none"
-      />
-      <div
-        aria-hidden
-        className="absolute -top-32 -right-32 h-[32rem] w-[32rem] rounded-full bg-sky-400/25 dark:bg-sky-500/20 blur-[110px] pointer-events-none"
-      />
+            </>
+          }
+          visual={
+            <WindowCard label="Fairspec Application">
+              <img
+                src="/application.webp"
+                width={1200}
+                height={750}
+                alt="The Fairspec Application with dataset, table, data and file tools in the sidebar"
+                className="block w-full h-auto"
+              />
+            </WindowCard>
+          }
+        />
+        <Tools />
+        <Downloads />
+        <Datist />
+      </main>
+      <BackToTop />
     </>
   )
 }
 
 /* ─────────────────────────── Tools ─────────────────────────── */
 
-interface Tool {
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-  title: string
-  description: string
-}
-
-const tools: Tool[] = [
+const tools: Point[] = [
   {
     icon: CheckCircle2,
     title: "Validate Dataset",
@@ -208,40 +166,12 @@ const tools: Tool[] = [
 
 function Tools() {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tools</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Nine tools across the four Fairspec surfaces the application covers:
-              datasets, tables, data, and files.
-            </p>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tools.map((t, i) => (
-            <Reveal key={t.title} delayMs={i * 40}>
-              <ToolCard {...t} />
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ToolCard({ icon: Icon, title, description }: Tool) {
-  return (
-    <div className="block h-full relative rounded-xl border border-border bg-card p-6">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
+    <LandingSection
+      title="Tools"
+      lede="Nine tools across the four Fairspec surfaces the application covers: datasets, tables, data, and files."
+    >
+      <FeatureGrid features={tools} />
+    </LandingSection>
   )
 }
 
@@ -295,79 +225,54 @@ function Downloads() {
   const platform = platforms[active] ?? platforms[0]
   if (!platform) return null
   return (
-    <section id="download" className="border-b border-border scroll-mt-16">
-      <div className="mx-auto max-w-5xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Download</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Install the desktop application. All nine tools run locally, on your own
-              machine.
-            </p>
+    <LandingSection
+      id="download"
+      tinted
+      title="Download"
+      lede="Install the desktop application. All nine tools run locally, on your own machine."
+    >
+      <Reveal>
+        <div className="mx-auto max-w-3xl rounded-card border border-border bg-card overflow-hidden">
+          <div
+            role="tablist"
+            className="flex flex-wrap border-b border-border bg-muted/40"
+          >
+            {platforms.map((p, i) => (
+              <button
+                key={p.name}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                onClick={() => setActive(i)}
+                className={cn(
+                  "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                  i === active
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {p.name}
+              </button>
+            ))}
           </div>
-        </Reveal>
-        <Reveal>
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div
-              role="tablist"
-              className="flex flex-wrap border-b border-border bg-muted/40"
-            >
-              {platforms.map((p, i) => (
-                <button
-                  key={p.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                    i === active
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                {platform.description}
-              </p>
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              {platform.description}
+            </p>
+            <div className="flex flex-wrap gap-3">
               <a
                 href={platform.action.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "default", size: "lg" }),
-                  "px-5 no-underline",
-                )}
+                className={actionClass("default")}
               >
                 {platform.action.label}
                 <ExternalLink className="size-4" />
               </a>
             </div>
           </div>
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
-/* ─────────────────────────── Reveal helper ─────────────────────────── */
-
-function Reveal(props: { children: ReactNode; delayMs?: number }) {
-  const { ref, isVisible } = useInView()
-  return (
-    <div
-      ref={ref as (node: HTMLDivElement | null) => void}
-      style={{ transitionDelay: `${props.delayMs ?? 0}ms` }}
-      className={cn(
-        "transition-all duration-700 ease-out",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-      )}
-    >
-      {props.children}
-    </div>
+        </div>
+      </Reveal>
+    </LandingSection>
   )
 }

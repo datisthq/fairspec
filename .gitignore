@@ -60,6 +60,7 @@ pids
 .wrangler/
 build/
 .livemark/build/
+.livemark/.target/
 .tanstack/
 compile/
 dist/

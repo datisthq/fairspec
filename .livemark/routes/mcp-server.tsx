@@ -1,20 +1,35 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import {
-  ArrowRight,
+  Bot,
   CheckCircle2,
   ChevronRight,
   Eye,
-  ExternalLink,
+  Github,
   ListOrdered,
+  Rocket,
   Search,
   Sparkles,
+  SquareTerminal,
   Wrench,
 } from "lucide-react"
-import type { ComponentType, ReactNode, SVGProps } from "react"
+import type { ReactNode } from "react"
 import { useState } from "react"
-import { buttonVariants } from "livemark/elements/button"
-import { useInView } from "livemark/hooks/in-view"
+import { BackToTop } from "livemark/components/BackToTop"
+import { Banner } from "livemark/components/Banner"
+import { Header } from "livemark/components/Header"
 import { cn } from "cn"
+import {
+  Datist,
+  FeatureGrid,
+  FinalCta,
+  Hero,
+  LandingSection,
+  type Point,
+  Reveal,
+  WindowCard,
+  actionClass,
+  tk,
+} from "../components/Landing.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/mcp-server/")({
@@ -32,82 +47,82 @@ export const Route = createFileRoute("/mcp-server/")({
 
 function McpServerPage() {
   return (
-    <div className="flex flex-col">
-      <Hero />
-      <Installation />
-      <Usage />
-      <Tools />
-    </div>
-  )
-}
-
-/* ─────────────────────────── Hero ─────────────────────────── */
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden border-b border-border flex items-center min-h-[calc(100vh-4rem)]">
-      <BackgroundGrid />
-      <div className="relative w-full mx-auto max-w-7xl px-6 py-16 md:py-24 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground mb-6">
-              <Sparkles className="size-3.5 text-primary" />
-              Technical preview
-            </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-              Fairspec MCP Server
-            </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground">
+    <>
+      <Banner />
+      <Header />
+      <main className="flex flex-col">
+        <Hero
+          eyebrow="Technical preview"
+          title="Fairspec MCP Server"
+          lede={
+            <>
               Connect AI assistants to the{" "}
               <strong className="text-foreground">Fairspec</strong> data management
               framework. Validate datasets, infer schemas, and query tables — directly
               from your editor or chat.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <a
-                href="#installation"
-                className={cn(
-                  buttonVariants({ variant: "default", size: "lg" }),
-                  "px-5 no-underline",
-                )}
-              >
+            </>
+          }
+          actions={
+            <>
+              <a href="#installation" className={actionClass("default")}>
+                <Rocket className="size-4" />
                 Install
-                <ArrowRight className="size-4" />
               </a>
               <a
                 href="https://github.com/datisthq/fairspec"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "px-5 no-underline",
-                )}
+                className={actionClass("outline")}
               >
-                View on GitHub
-                <ExternalLink className="size-4" />
+                <Github className="size-4" />
+                View source
               </a>
-            </div>
-          </div>
-          <Transcript />
-        </div>
-      </div>
-    </section>
+            </>
+          }
+          visual={<Transcript />}
+        />
+        <Installation />
+        <Usage />
+        <Tools />
+        <FinalCta
+          title={
+            <>
+              Ask in plain language.{" "}
+              <span className="text-primary">Get FAIR data back.</span>
+            </>
+          }
+          lede="Pair the server with the agent skills so your coding agent knows when to reach for each tool, or script the same operations from the CLI."
+          actions={
+            <>
+              <Link to="/agent-skills/" className={actionClass("default")}>
+                <Bot className="size-4" />
+                Add agent skills
+              </Link>
+              <Link to="/cli-tool/" className={actionClass("ghost")}>
+                <SquareTerminal className="size-4" />
+                Use the CLI tool
+              </Link>
+            </>
+          }
+        />
+        <Datist />
+      </main>
+      <BackToTop />
+    </>
   )
 }
 
+/* ─────────────────────────── Hero ─────────────────────────── */
+
 function Transcript() {
   return (
-    <div className="rounded-xl border border-primary/20 bg-card overflow-hidden text-left">
-      <div className="flex items-center gap-2 border-b border-primary/20 px-4 py-2 bg-muted/50">
-        <div className="size-2.5 rounded-full bg-red-400/60" />
-        <div className="size-2.5 rounded-full bg-yellow-400/60" />
-        <div className="size-2.5 rounded-full bg-green-400/60" />
-        <span className="ml-2 text-xs font-mono text-muted-foreground">AI Assistant</span>
-      </div>
+    <WindowCard label="AI Assistant">
       <div className="p-5 space-y-4 font-mono text-sm leading-relaxed overflow-x-auto">
         <div className="flex items-start gap-2">
           <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />
-          <span className="text-foreground">Infer the schema for members.csv</span>
+          <span className="min-w-0 text-foreground">
+            Infer the schema for members.csv
+          </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2 py-1 text-muted-foreground">
@@ -119,77 +134,11 @@ function Transcript() {
           <TableSchemaSample />
         </pre>
       </div>
-    </div>
-  )
-}
-
-function TableSchemaSample() {
-  return (
-    <code className={tk.body}>
-      <span className={tk.punct}>{"{"}</span>
-      {"\n  "}
-      <span className={tk.key}>"id"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"integer"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"name"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"joined"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>,</span> <span className={tk.key}>"format"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"date"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"score"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"number"</span>
-      <span className={tk.punct}>{" }"}</span>
-      {"\n"}
-      <span className={tk.punct}>{"}"}</span>
-    </code>
-  )
-}
-
-function BackgroundGrid() {
-  return (
-    <>
-      <div
-        aria-hidden
-        className="absolute inset-0 [background-image:repeating-linear-gradient(90deg,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_8px)] opacity-25 [mask-image:linear-gradient(to_top,black_10%,transparent_85%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute -bottom-40 -left-40 h-[36rem] w-[36rem] rounded-full bg-blue-400/30 dark:bg-blue-500/25 blur-[110px] pointer-events-none"
-      />
-      <div
-        aria-hidden
-        className="absolute -top-32 -right-32 h-[32rem] w-[32rem] rounded-full bg-sky-400/25 dark:bg-sky-500/20 blur-[110px] pointer-events-none"
-      />
-    </>
+    </WindowCard>
   )
 }
 
 /* ─────────────────────────── Installation ─────────────────────────── */
-
-const tk = {
-  punct: "text-[#7c7f93] dark:text-[#9399b2]",
-  key: "text-[#1e66f5] dark:text-[#89b4fa]",
-  str: "text-[#40a02b] dark:text-[#a6e3a1]",
-  cmd: "text-[#8839ef] dark:text-[#cba6f7]",
-  body: "text-[#4c4f69] dark:text-[#cdd6f4]",
-}
 
 type Runtime = "node" | "python"
 
@@ -301,77 +250,67 @@ function Installation() {
   const assistant = assistants[active] ?? assistants[0]
   if (!assistant) return null
   return (
-    <section id="installation" className="border-b border-border scroll-mt-16">
-      <div className="mx-auto max-w-5xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Installation
-            </h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Wire up the Fairspec MCP server in your favorite AI assistant. It ships with
-              both the TypeScript and the Python package — pick the runtime you have.
-            </p>
-          </div>
-        </Reveal>
-        <Reveal>
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border bg-muted/40">
-              <div role="tablist" className="flex flex-wrap">
-                {assistants.map((a, i) => (
-                  <button
-                    key={a.name}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === active}
-                    onClick={() => setActive(i)}
-                    className={cn(
-                      "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                      i === active
-                        ? "border-primary text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {a.name}
-                  </button>
-                ))}
-              </div>
-              <div
-                role="radiogroup"
-                aria-label="Runtime"
-                className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
-              >
-                {runtimes.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={r.id === runtime}
-                    onClick={() => setRuntime(r.id)}
-                    className={cn(
-                      "rounded-md px-3 py-1 text-xs font-medium transition-colors",
-                      r.id === runtime
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
+    <LandingSection
+      id="installation"
+      tinted
+      title="Installation"
+      lede="Wire up the Fairspec MCP server in your favorite AI assistant. It ships with both the TypeScript and the Python package — pick the runtime you have."
+    >
+      <Reveal>
+        <div className="max-w-4xl mx-auto rounded-card border border-border bg-card overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border bg-muted/40">
+            <div role="tablist" className="flex flex-wrap">
+              {assistants.map((a, i) => (
+                <button
+                  key={a.name}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === active}
+                  onClick={() => setActive(i)}
+                  className={cn(
+                    "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                    i === active
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {a.name}
+                </button>
+              ))}
             </div>
-            <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-4">
-                {assistant.description}
-              </p>
-              <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-                {assistant.snippet(runtime)}
-              </pre>
+            <div
+              role="radiogroup"
+              aria-label="Runtime"
+              className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
+            >
+              {runtimes.map(r => (
+                <button
+                  key={r.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={r.id === runtime}
+                  onClick={() => setRuntime(r.id)}
+                  className={cn(
+                    "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                    r.id === runtime
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {r.label}
+                </button>
+              ))}
             </div>
           </div>
-        </Reveal>
-      </div>
-    </section>
+          <div className="min-w-0 p-6">
+            <p className="text-sm text-muted-foreground mb-4">{assistant.description}</p>
+            <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
+              {assistant.snippet(runtime)}
+            </pre>
+          </div>
+        </div>
+      </Reveal>
+    </LandingSection>
   )
 }
 
@@ -390,40 +329,27 @@ const prompts: string[] = [
 
 function Usage() {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Usage</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Just ask in natural language. Try one of these prompts.
-            </p>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
-          {prompts.map((p, i) => (
-            <Reveal key={p} delayMs={i * 40}>
-              <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
-                <Sparkles className="size-4 mt-0.5 text-primary shrink-0" />
-                <p className="text-sm text-foreground leading-relaxed">{p}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+    <LandingSection
+      title="Usage"
+      lede="Just ask in natural language. Try one of these prompts."
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {prompts.map((p, i) => (
+          <Reveal key={p} delayMs={i * 40}>
+            <div className="h-full rounded-card border border-border bg-card p-4 flex items-start gap-3">
+              <Sparkles className="size-4 mt-0.5 text-primary shrink-0" />
+              <p className="min-w-0 text-sm text-foreground leading-relaxed">{p}</p>
+            </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </LandingSection>
   )
 }
 
 /* ─────────────────────────── Tools ─────────────────────────── */
 
-interface Tool {
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-  title: string
-  description: string
-}
-
-const tools: Tool[] = [
+const tools: Point[] = [
   {
     icon: CheckCircle2,
     title: "Validate Data",
@@ -500,57 +426,53 @@ const tools: Tool[] = [
 
 function Tools() {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tools</h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              Twelve tools organized around core Fairspec concepts: data, data schemas,
-              datasets, files, file dialects, tables, and table schemas.
-            </p>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tools.map((t, i) => (
-            <Reveal key={t.title} delayMs={i * 40}>
-              <ToolCard {...t} />
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ToolCard({ icon: Icon, title, description }: Tool) {
-  return (
-    <div className="block h-full relative rounded-xl border border-border bg-card p-6">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-/* ─────────────────────────── Reveal helper ─────────────────────────── */
-
-function Reveal(props: { children: ReactNode; delayMs?: number }) {
-  const { ref, isVisible } = useInView()
-  return (
-    <div
-      ref={ref as (node: HTMLDivElement | null) => void}
-      style={{ transitionDelay: `${props.delayMs ?? 0}ms` }}
-      className={cn(
-        "transition-all duration-700 ease-out",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-      )}
+    <LandingSection
+      tinted
+      title="Tools"
+      lede="Twelve tools organized around core Fairspec concepts: data, data schemas, datasets, files, file dialects, tables, and table schemas."
     >
-      {props.children}
-    </div>
+      <FeatureGrid features={tools} />
+    </LandingSection>
+  )
+}
+
+/* ─────────────────────────── Samples ─────────────────────────── */
+
+function TableSchemaSample() {
+  return (
+    <code className={tk.body}>
+      <span className={tk.punct}>{"{"}</span>
+      {"\n  "}
+      <span className={tk.key}>"id"</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
+      <span className={tk.key}>"type"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"integer"</span>
+      <span className={tk.punct}>{" }"}</span>
+      <span className={tk.punct}>,</span>
+      {"\n  "}
+      <span className={tk.key}>"name"</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
+      <span className={tk.key}>"type"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
+      <span className={tk.punct}>{" }"}</span>
+      <span className={tk.punct}>,</span>
+      {"\n  "}
+      <span className={tk.key}>"joined"</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
+      <span className={tk.key}>"type"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
+      <span className={tk.punct}>,</span> <span className={tk.key}>"format"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"date"</span>
+      <span className={tk.punct}>{" }"}</span>
+      <span className={tk.punct}>,</span>
+      {"\n  "}
+      <span className={tk.key}>"score"</span>
+      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
+      <span className={tk.key}>"type"</span>
+      <span className={tk.punct}>:</span> <span className={tk.str}>"number"</span>
+      <span className={tk.punct}>{" }"}</span>
+      {"\n"}
+      <span className={tk.punct}>{"}"}</span>
+    </code>
   )
 }
