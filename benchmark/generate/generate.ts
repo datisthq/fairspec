@@ -41,7 +41,9 @@ export async function generateDataset(options: {
 
   if (existsSync(manifestPath) && existsSync(csvPath)) {
     const dataset: Dataset = JSON.parse(await readFile(manifestPath, "utf8"))
-    if ((await stat(csvPath)).size === dataset.bytes) return dataset
+    // the stored paths go stale when the cache moves, as it does with a removed worktree
+    if ((await stat(csvPath)).size === dataset.bytes)
+      return { ...dataset, csvPath, schemaPath }
   }
 
   const rows = countRows(profile, size, seed)

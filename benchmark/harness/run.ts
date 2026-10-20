@@ -69,12 +69,19 @@ export async function runCommand(
   child.stderr.on("data", chunk => (stderr = keepTail(stderr + chunk)))
 
   let timedOut = false
+  let spawnFailed = false
   const timer = setTimeout(() => {
     timedOut = true
     if (child.pid) process.kill(-child.pid, "SIGKILL")
   }, options.timeoutMs)
 
+  // a process that never starts (a missing cwd or binary) emits only `error`, never `close`
   const exitCode = await new Promise<number | null>(resolve => {
+    child.on("error", error => {
+      spawnFailed = true
+      stderr += String(error)
+      resolve(null)
+    })
     child.on("close", code => resolve(code))
   })
   clearTimeout(timer)
@@ -88,7 +95,12 @@ export async function runCommand(
   await rm(directory, { recursive: true, force: true })
 
   const run: Run = {
-    outcome: classifyOutcome({ timedOut, exitCode, capped: Boolean(options.memoryMax) }),
+    outcome: classifyOutcome({
+      timedOut,
+      spawnFailed,
+      exitCode,
+      capped: Boolean(options.memoryMax),
+    }),
     wallMs,
     peakMemoryMb,
     peakRssMb: maxRssKb ? Number(maxRssKb) / 1024 : undefined,
@@ -102,12 +114,16 @@ export async function runCommand(
 
 function classifyOutcome(options: {
   timedOut: boolean
+  spawnFailed: boolean
   exitCode: number | null
   capped: boolean
 }) {
-  const { timedOut, exitCode, capped } = options
+  const { timedOut, spawnFailed, exitCode, capped } = options
   if (timedOut) return "timeout"
-  if (exitCode === 137 || (capped && exitCode === 143)) return "oom"
+  if (spawnFailed) return "crash"
+  // a cgroup OOM kill can take the whole scope, `time` included, so no exit code survives
+  const isCappedKill = capped && (exitCode === 143 || exitCode === null)
+  if (exitCode === 137 || isCappedKill) return "oom"
   if (exitCode === 0 || exitCode === 1) return "ok"
   return "crash"
 }

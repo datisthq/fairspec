@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 import { generateDataset } from "../generate/generate.ts"
 import { measureTool } from "../harness/measure.ts"
@@ -7,6 +9,7 @@ import type { Tool } from "../tools/types.ts"
 import { useTempDirectory } from "./helpers.ts"
 
 const node = (script: string) => ({ file: process.execPath, args: ["-e", script] })
+const hasSystemdRun = existsSync("/usr/bin/systemd-run")
 
 describe.skipIf(process.platform !== "linux")("runCommand", () => {
   const directory = useTempDirectory()
@@ -34,6 +37,29 @@ describe.skipIf(process.platform !== "linux")("runCommand", () => {
       timeoutMs: 300,
     })
     expect(run.outcome).toBe("timeout")
+  })
+
+  it.skipIf(!hasSystemdRun)(
+    "reports a run killed at its memory cap as out of memory",
+    async () => {
+      const script =
+        "const kept = Buffer.alloc(400 * 1024 * 1024, 1); setTimeout(() => {}, 5000)"
+      const run = await runCommand(node(script), {
+        cwd: directory(),
+        timeoutMs: 20000,
+        memoryMax: "100M",
+      })
+      expect(run.outcome).toBe("oom")
+    },
+  )
+
+  it("reports a command that cannot start as a crash instead of waiting", async () => {
+    const run = await runCommand(node("process.exit(0)"), {
+      cwd: join(directory(), "missing"),
+      timeoutMs: 10000,
+    })
+    expect(run.outcome).toBe("crash")
+    expect(run.stderr).toContain("ENOENT")
   })
 
   it("reports any other exit code as a crash", async () => {

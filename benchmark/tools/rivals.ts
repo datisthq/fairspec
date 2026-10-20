@@ -58,7 +58,10 @@ export const greatExpectationsTool = createRivalTool({
   title: "Great Expectations (pandas)",
   distribution: "great-expectations",
   unsupported: ["type"],
-  caveats: [TYPE_CAVEAT, "the whole table is loaded into pandas"],
+  caveats: [
+    TYPE_CAVEAT,
+    "the whole table is loaded into pandas, its default engine; on Spark it ran 1.8x faster at 1GB with 2.6x the memory",
+  ],
 })
 
 function createRivalTool(options: {

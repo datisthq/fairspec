@@ -30,7 +30,9 @@ user reference; this skill is how to change it without making the numbers lie.
 - `@*.ts` are the scripts' entry points; `generate/` the seeded generator, `profiles/` the data
   shapes, `cases/` what `measure` runs, `harness/` running and the gate, `tools/` one `Tool`
   per validator, `report/` the HTML, `rivals/` the Python adapters and their uv project
-- Everything generated lives in `.cache/` (gitignored repo-wide): data, results, the report, qsv
+- Everything generated lives in `.cache/` (gitignored repo-wide): data, results, the report, qsv. A manifest's
+  stored paths are recomputed on reuse, so the cache can move (or be symlinked into a worktree)
+  without regenerating 16GB
 
 ## Faults and the gate
 
@@ -78,8 +80,9 @@ repo's seven-day quarantine, and a downloaded binary is pinned to a release at l
 - GNU `time` prefixes "Command exited with non-zero status" when a tool exits 1 for invalid data,
   or "Command terminated by signal N" (exiting 128 + N) when the kernel kills it; the figures are
   on the last line
-- Under `--memory-max`, an out-of-memory kill can take the whole systemd scope with SIGTERM
-  (exit 143), `time` included, so the run has no `time` figures at all
+- Under `--memory-max`, an out-of-memory kill can take the whole systemd scope, `time`
+  included: the run exits 143 or with no code at all, and has no `time` figures. The runner
+  counts both as `oom` under a cap; only a process that never started is a `crash`
 - Peak RSS lies for mmap readers: polars and qsv map the input, once per concurrent scan, so a
   16GB file showed 52GB RSS inside a 12GB cap. The reported memory is peak `RssAnon` summed over
   the tool's process tree, sampled every 50 ms; `peakRssMb` stays in the results only for

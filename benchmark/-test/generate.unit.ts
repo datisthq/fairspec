@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises"
-import { join } from "node:path"
+import { readFile, rename } from "node:fs/promises"
+import { basename, join } from "node:path"
 import { describe, expect, it } from "vite-plus/test"
 import { generateDataset } from "../generate/generate.ts"
 import { createRandom } from "../generate/random.ts"
@@ -67,6 +67,22 @@ describe("generateDataset", () => {
       const value = simpleProfile.faults.find(item => item.column === fault.column)?.value
       expect(cells[header.indexOf(fault.column)]).toBe(value)
     }
+  })
+
+  it("reuses a moved dataset with paths in its new directory", async () => {
+    const first = await generateDataset({
+      profile: simpleProfile,
+      size: 100,
+      directory: join(directory(), "old"),
+    })
+    await rename(join(directory(), "old"), join(directory(), "new"))
+    const moved = await generateDataset({
+      profile: simpleProfile,
+      size: 100,
+      directory: join(directory(), "new"),
+    })
+    expect(moved.bytes).toBe(first.bytes)
+    expect(moved.csvPath).toBe(join(directory(), "new", basename(first.csvPath)))
   })
 
   it("aims a byte target within a few percent", async () => {

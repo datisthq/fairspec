@@ -3,6 +3,7 @@ import { join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 import type { Result } from "./harness/measure.ts"
 import { type Report, renderReport } from "./report/render.ts"
+import { TOOLS } from "./tools/index.ts"
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -30,5 +31,12 @@ if (!report)
   throw new Error(`No results in ${RESULTS}; run pnpm -C benchmark measure first`)
 
 const out = resolve(values.out ?? join(import.meta.dirname, ".cache", "report.html"))
-await writeFile(out, renderReport({ ...report, results: [...latest.values()] }))
+// caveats describe the adapters, so the current ones win over those a result was stored with
+const results = [...latest.values()].map(result => {
+  const tool = TOOLS.find(item => item.name === result.tool)
+  return tool
+    ? { ...result, caveats: tool.caveats, unsupported: tool.unsupported }
+    : result
+})
+await writeFile(out, renderReport({ ...report, results }))
 console.log(out)

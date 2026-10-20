@@ -194,9 +194,12 @@ function renderMethod() {
     outside an enum, and a pattern mismatch.</li>
     <li>A tool is <em>correct</em> when it reports exactly the bad cells it is able to detect.
     A fast wrong answer is not a result.</li>
+    <li>Every column type in the schema is one Fairspec checks inside polars. Types it parses row
+    by row (durations, geometries, JSON) would be slower, and are not measured here.</li>
     <li>Every tool runs as its own process from a warm file cache. Time is wall clock. Memory is
     the peak anonymous memory of the tool's processes, sampled every 50 ms: memory-mapped pages
-    of the input file are excluded, since the kernel can drop them at any time.</li>
+    of the input file are excluded, since the kernel can drop them at any time. Each tool is
+    capped at the memory the report header names; the machine was shared with other work.</li>
     <li>Reproduce: <code>pnpm -C benchmark setup:rivals</code>, then
     <code>pnpm -C benchmark measure --case nyc-311</code> and <code>pnpm -C benchmark show:report</code>.</li>
   </ul>
