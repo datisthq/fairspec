@@ -38,6 +38,13 @@ ColumnTypes = Annotated[
         help="a list of comma-separated column name:type pairs to use for the schema",
     ),
 ]
+ColumnProperties = Annotated[
+    str | None,
+    typer.Option(
+        "--column-properties",
+        help="a JSON object of column name to column property to use for the schema",
+    ),
+]
 MissingValues = Annotated[
     str | None,
     typer.Option("--missing-values", help="comma-separated values to treat as missing"),

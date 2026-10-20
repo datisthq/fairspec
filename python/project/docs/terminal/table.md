@@ -172,7 +172,8 @@ fairspec table infer-schema data.csv --sample-rows 1000 --confidence 0.95
 - `--sample-rows <number>` - Number of rows to sample for inference (default: 100)
 - `--confidence <number>` - Confidence threshold for type detection (0-1, default: 0.9)
 - `--keep-strings` - Keep original string types instead of inferring
-- `--column-types <json>` - Override types for specific columns
+- `--column-types <pairs>` - Override types for specific columns (e.g., `id:integer,name:string`)
+- `--column-properties <json>` - Give column properties up front and infer the rest (e.g., `{"id":{"type":"string"},"price":{"title":"Price"}}`); a property without `type` keeps the inferred type and adds only `title`, `description` or `rdfType`
 - `--comma-decimal` - Treat comma as decimal separator
 - `--month-first` - Parse dates as month-first (MM/DD/YYYY)
 
@@ -413,7 +414,8 @@ All table commands support these schema-related options:
 - `--sample-rows <number>` - Sample size for type inference
 - `--confidence <number>` - Confidence threshold (0-1)
 - `--keep-strings` - Don't infer types, keep as strings
-- `--column-types <json>` - Override types (e.g., `{"age":"integer"}`)
+- `--column-types <pairs>` - Override types (e.g., `age:integer`)
+- `--column-properties <json>` - Override column properties (e.g., `{"age":{"type":"integer","maximum":150}}`)
 
 ### Value Parsing
 

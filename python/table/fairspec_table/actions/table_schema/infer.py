@@ -59,6 +59,7 @@ def infer_table_schema_from_sample(
 ) -> TableSchema:
     confidence = options.get("confidence") or 0.9
     column_types = options.get("columnTypes")
+    column_properties = options.get("columnProperties") or {}
     keep_strings = options.get("keepStrings")
     effective_missing_values = (
         options["missingValues"]
@@ -72,6 +73,10 @@ def infer_table_schema_from_sample(
     polars_schema = get_polars_schema(sample.schema)
     column_names = options.get("columnNames") or [c.name for c in polars_schema.columns]
 
+    for name in column_properties:
+        if name not in column_names:
+            raise ValueError(f'Column "{name}" not found in the table')
+
     failure_threshold = (sample.height - math.floor(sample.height * confidence)) or 1
 
     columns: list[Column] = []
@@ -79,6 +84,11 @@ def infer_table_schema_from_sample(
         polars_column = next((c for c in polars_schema.columns if c.name == name), None)
         if not polars_column:
             raise ValueError(f'Column "{name}" not found in the table')
+
+        override = column_properties.get(name)
+        if override and override.get("type") is not None:
+            columns.append(create_column_from_property(name, override))
+            continue
 
         col_type = (
             (column_types.get(name) if column_types else None)
@@ -151,6 +161,9 @@ def infer_table_schema_from_sample(
         if is_nullable:
             set_property_nullable(column)
         _enhance_column(column, **options)
+        if override:
+            inferred = column.property.model_dump(exclude_none=True, by_alias=True)
+            column = create_column_from_property(name, {**inferred, **override})
         columns.append(column)
 
     table_schema = TableSchema(properties=get_column_properties(columns))

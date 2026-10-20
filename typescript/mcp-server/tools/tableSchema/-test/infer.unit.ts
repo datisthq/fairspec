@@ -191,6 +191,33 @@ describe("inferTableSchemaTool", () => {
     expect(result.tableSchema?.properties?.value?.type).toBe("integer")
   })
 
+  it("respects columnProperties option", async () => {
+    const resource: Resource = {
+      data: [
+        { id: 1, name: "alice" },
+        { id: 2, name: "bob" },
+      ],
+    }
+
+    const result = await inferTableSchemaTool.execute?.(
+      {
+        resource,
+        options: {
+          columnProperties: { id: { type: "string" }, name: { title: "Name" } },
+        },
+      },
+      {},
+    )
+
+    expect.assert(result)
+    expect.assert(!("error" in result))
+
+    expect(result.tableSchema?.properties).toEqual({
+      id: { type: "string" },
+      name: { type: "string", title: "Name" },
+    })
+  })
+
   it("handles time fields", async () => {
     const resource: Resource = {
       data: [

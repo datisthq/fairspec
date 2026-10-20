@@ -239,7 +239,21 @@ const schema = await inferTableSchemaFromTable(table, {
   keepStrings: false,
   columnTypes: {
     id: "integer",
-    status: "categorical",
+  },
+})
+```
+
+`columnProperties` gives part of the schema up front and infers the rest. A property with a `type`
+replaces the inferred one as written; one without a `type` only adds `title`, `description` or
+`rdfType` to the inferred property, so give the `type` to add constraints. It takes precedence over `columnTypes`, and naming a column the
+table lacks throws. A resource's own `tableSchema` still replaces inference entirely.
+
+```ts
+const schema = await inferTableSchemaFromTable(table, {
+  columnProperties: {
+    id: { type: "string" },
+    status: { type: "string", format: "categorical", categories: ["open", "closed"] },
+    price: { title: "Price" },
   },
 })
 ```

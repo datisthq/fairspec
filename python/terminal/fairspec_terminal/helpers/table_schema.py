@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from fairspec_metadata import Descriptor
     from fairspec_table.models.schema import InferTableSchemaOptions
 
 ARRAY_TYPES: tuple[Literal["array", "list"], ...] = ("array", "list")
@@ -19,6 +21,7 @@ def create_infer_table_schema_options(
     month_first: bool = False,
     keep_strings: bool = False,
     column_types: str | None = None,
+    column_properties: str | None = None,
     missing_values: str | None = None,
     decimal_char: str | None = None,
     group_char: str | None = None,
@@ -45,6 +48,8 @@ def create_infer_table_schema_options(
         options["keepStrings"] = True
     if column_types:
         options["columnTypes"] = _parse_column_types(column_types)
+    if column_properties:
+        options["columnProperties"] = _parse_column_properties(column_properties)
     if missing_values:
         options["missingValues"] = missing_values.split(",")
     if decimal_char:
@@ -79,4 +84,11 @@ def _parse_column_types(value: str) -> dict[str, str]:
         name, _, type = pair.partition(":")
         if name and type:
             result[name] = type
+    return result
+
+
+def _parse_column_properties(value: str) -> dict[str, Descriptor]:
+    result = json.loads(value)
+    if not isinstance(result, dict):
+        raise ValueError("--column-properties must be a JSON object")
     return result

@@ -820,3 +820,60 @@ describe("inferTableSchemaFromTable (options steer detection)", () => {
     })
   })
 })
+
+describe("inferTableSchemaFromTable (columnProperties)", () => {
+  it("should use a typed override verbatim and skip refinement", async () => {
+    const table = pl.DataFrame({ id: ["1", "2", "NA"], name: ["a", "b", "c"] }).lazy()
+
+    const result = await inferTableSchemaFromTable(table, {
+      columnProperties: { id: { type: "string", format: "categorical" } },
+    })
+
+    expect(result).toEqual({
+      properties: {
+        id: { type: "string", format: "categorical" },
+        name: { type: "string" },
+      },
+    })
+  })
+
+  it("should merge an untyped override over the inferred property", async () => {
+    const table = pl.DataFrame({ id: ["1", "", "3"] }).lazy()
+
+    const result = await inferTableSchemaFromTable(table, {
+      columnProperties: { id: { title: "Identifier", description: "Row id" } },
+    })
+
+    expect(result).toEqual({
+      properties: {
+        id: {
+          type: ["integer", "null"],
+          title: "Identifier",
+          description: "Row id",
+        },
+      },
+      missingValues: [""],
+    })
+  })
+
+  it("should take precedence over columnTypes", async () => {
+    const table = pl.DataFrame({ id: [1, 2] }).lazy()
+
+    const result = await inferTableSchemaFromTable(table, {
+      columnTypes: { id: "number" },
+      columnProperties: { id: { type: "string" } },
+    })
+
+    expect(result).toEqual({ properties: { id: { type: "string" } } })
+  })
+
+  it("should throw for a column not in the table", async () => {
+    const table = pl.DataFrame({ id: [1, 2] }).lazy()
+
+    await expect(
+      inferTableSchemaFromTable(table, {
+        columnProperties: { missing: { type: "string" } },
+      }),
+    ).rejects.toThrow('Column "missing" not found in the table')
+  })
+})

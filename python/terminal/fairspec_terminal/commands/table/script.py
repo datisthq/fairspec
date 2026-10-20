@@ -13,6 +13,7 @@ from fairspec_terminal.helpers.resource import select_resource
 from fairspec_terminal.params import (
     ArrayType,
     ColumnNamesParam,
+    ColumnProperties,
     ColumnTypes,
     CommaDecimal,
     CommentPrefix,
@@ -83,6 +84,7 @@ def script(
     month_first: MonthFirst = False,
     keep_strings: KeepStrings = False,
     column_types: ColumnTypes = None,
+    column_properties: ColumnProperties = None,
     missing_values: MissingValues = None,
     decimal_char: DecimalChar = None,
     group_char: GroupChar = None,

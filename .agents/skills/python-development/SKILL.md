@@ -99,6 +99,9 @@ relative import reaches beyond the top-level package.
 - **`__init__.py` barrels are deliberate and required.** Each package's `__init__.py` is a curated list of explicit named re-exports — never `import *` outside the meta-package. Adding a public API means adding its line there.
 - Type checking is `ty` (`pnpm -C python check:types`), configured under `[tool.ty.rules]`
 - Add docstrings only for public APIs and don't use them for files
+- **A terminal command that declares the Table Schema inference flags must pass them on**: build them
+  with `create_infer_table_schema_options(...)` and splat into the library call
+  (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing
 - Where Python must produce what a TypeScript dependency produces (resource-name slugs from
   `@sindresorhus/slugify`, data schema inference from `json-schema-it`), port that behaviour
   instead of reaching for a near-equivalent PyPI package; the shared testsuite compares both

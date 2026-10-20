@@ -1,0 +1,53 @@
+[
+  {
+    "description": "column properties override inference",
+    "comment": "Inference options are library shape, not normative; outcomes follow the TypeScript library",
+    "options": {
+      "columnProperties": {
+        "id": { "type": "string" },
+        "price": { "title": "Price" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a typed property replaces the inferred one",
+        "data": "id,price\n001,9.5\n002,7.25\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "string" },
+            "price": { "type": "number", "title": "Price" }
+          }
+        }
+      },
+      {
+        "description": "an untyped property keeps the inferred nullable type",
+        "data": "id,price\n001,9.5\n002,\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "string" },
+            "price": { "type": ["number", "null"], "title": "Price" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "a typed column property skips refinement",
+    "comment": "Inference options are library shape, not normative; outcomes follow the TypeScript library",
+    "options": {
+      "columnProperties": { "status": { "type": "string", "format": "categorical" } }
+    },
+    "tests": [
+      {
+        "description": "missing values are not detected for the overridden column",
+        "data": "id,status\n1,open\n2,NA\n",
+        "expected": {
+          "properties": {
+            "id": { "type": "integer" },
+            "status": { "type": "string", "format": "categorical" }
+          }
+        }
+      }
+    ]
+  }
+]

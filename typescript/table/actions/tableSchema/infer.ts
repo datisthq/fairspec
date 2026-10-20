@@ -1,5 +1,9 @@
 import type { Column, TableSchema } from "@fairspec/metadata"
-import { getColumnProperties } from "@fairspec/metadata"
+import {
+  ColumnProperty,
+  createColumnFromProperty,
+  getColumnProperties,
+} from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import { getPolarsSchema } from "../../helpers/schema.ts"
 import type { InferTableSchemaOptions } from "../../models/schema.ts"
@@ -21,7 +25,7 @@ export function inferTableSchemaFromSample(
   sample: pl.DataFrame,
   options?: Exclude<InferTableSchemaOptions, "sampleRows">,
 ) {
-  const { confidence = 0.9, columnTypes, keepStrings } = options ?? {}
+  const { confidence = 0.9, columnTypes, columnProperties, keepStrings } = options ?? {}
   const effectiveMissingValues = options?.missingValues ?? DEFAULT_MISSING_VALUES
   const detectedMissingValues = new Set<string>()
 
@@ -31,6 +35,12 @@ export function inferTableSchemaFromSample(
   const polarsSchema = getPolarsSchema(sample.schema)
   const columnNames = options?.columnNames ?? polarsSchema.columns.map(f => f.name)
 
+  for (const name of Object.keys(columnProperties ?? {})) {
+    if (!columnNames.includes(name)) {
+      throw new Error(`Column "${name}" not found in the table`)
+    }
+  }
+
   const failureThreshold = sample.height - Math.floor(sample.height * confidence) || 1
 
   const columns: Column[] = []
@@ -38,6 +48,12 @@ export function inferTableSchemaFromSample(
     const polarsColumn = polarsSchema.columns.find(f => f.name === name)
     if (!polarsColumn) {
       throw new Error(`Column "${name}" not found in the table`)
+    }
+
+    const override = columnProperties?.[name]
+    if (override?.type !== undefined) {
+      columns.push(createColumnFromProperty(name, override))
+      continue
     }
 
     // TODO: Remove this workaround once the issue is fixed
@@ -168,6 +184,10 @@ export function inferTableSchemaFromSample(
       makePropertyNullable(column)
     }
     enhanceColumn(column, options)
+    if (override) {
+      const property = ColumnProperty.parse({ ...column.property, ...override })
+      column = createColumnFromProperty(name, property)
+    }
     columns.push(column)
   }
 

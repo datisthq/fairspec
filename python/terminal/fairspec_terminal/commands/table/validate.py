@@ -7,9 +7,11 @@ from fairspec_terminal.helpers.file_dialect import (
     create_file_dialect_from_path_and_options,
 )
 from fairspec_terminal.helpers.resource import select_resource
+from fairspec_terminal.helpers.table_schema import create_infer_table_schema_options
 from fairspec_terminal.params import (
     ArrayType,
     ColumnNamesParam,
+    ColumnProperties,
     ColumnTypes,
     CommaDecimal,
     CommentPrefix,
@@ -82,6 +84,7 @@ def validate(
     month_first: MonthFirst = False,
     keep_strings: KeepStrings = False,
     column_types: ColumnTypes = None,
+    column_properties: ColumnProperties = None,
     missing_values: MissingValues = None,
     decimal_char: DecimalChar = None,
     group_char: GroupChar = None,
@@ -96,6 +99,26 @@ def validate(
 ) -> None:
     """Validate a table from a local or remote path."""
     session = Session(debug=debug, json=json)
+    options = create_infer_table_schema_options(
+        sample_rows=sample_rows,
+        confidence=confidence,
+        comma_decimal=comma_decimal,
+        month_first=month_first,
+        keep_strings=keep_strings,
+        column_types=column_types,
+        column_properties=column_properties,
+        missing_values=missing_values,
+        decimal_char=decimal_char,
+        group_char=group_char,
+        true_values=true_values,
+        false_values=false_values,
+        datetime_format=datetime_format,
+        date_format=date_format,
+        time_format=time_format,
+        array_type=array_type,
+        list_delimiter=list_delimiter,
+        list_item_type=list_item_type,
+    )
 
     file_dialect = (
         (
@@ -145,7 +168,7 @@ def validate(
     if not table_schema:
         table_schema = session.task(
             "Inferring schema",
-            lambda: infer_table_schema_from_table(table),
+            lambda: infer_table_schema_from_table(table, **options),
         )
 
     def _validate() -> Report:

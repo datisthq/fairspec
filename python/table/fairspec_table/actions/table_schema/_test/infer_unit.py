@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import polars as pl
+import pytest
 
 from ..infer import infer_table_schema_from_table
 
@@ -724,3 +725,53 @@ class TestInferTableSchemaFromTableOptionsSteerDetection:
                 },
             },
         }
+
+
+class TestInferTableSchemaFromTableColumnProperties:
+    def test_should_use_a_typed_override_verbatim_and_skip_refinement(self):
+        table = pl.DataFrame({"id": ["1", "2", "NA"], "name": ["a", "b", "c"]}).lazy()
+        result = infer_table_schema_from_table(
+            table,
+            columnProperties={"id": {"type": "string", "format": "categorical"}},
+        )
+        assert result.model_dump(by_alias=True, exclude_none=True) == {
+            "properties": {
+                "id": {"type": "string", "format": "categorical"},
+                "name": {"type": "string"},
+            },
+        }
+
+    def test_should_merge_an_untyped_override_over_the_inferred_property(self):
+        table = pl.DataFrame({"id": ["1", "", "3"]}).lazy()
+        result = infer_table_schema_from_table(
+            table,
+            columnProperties={"id": {"title": "Identifier", "description": "Row id"}},
+        )
+        assert result.model_dump(by_alias=True, exclude_none=True) == {
+            "properties": {
+                "id": {
+                    "type": ("integer", "null"),
+                    "title": "Identifier",
+                    "description": "Row id",
+                },
+            },
+            "missingValues": [""],
+        }
+
+    def test_should_take_precedence_over_column_types(self):
+        table = pl.DataFrame({"id": [1, 2]}).lazy()
+        result = infer_table_schema_from_table(
+            table,
+            columnTypes={"id": "number"},
+            columnProperties={"id": {"type": "string"}},
+        )
+        assert result.model_dump(by_alias=True, exclude_none=True) == {
+            "properties": {"id": {"type": "string"}},
+        }
+
+    def test_should_throw_for_a_column_not_in_the_table(self):
+        table = pl.DataFrame({"id": [1, 2]}).lazy()
+        with pytest.raises(ValueError, match='Column "missing" not found in the table'):
+            infer_table_schema_from_table(
+                table, columnProperties={"missing": {"type": "string"}}
+            )

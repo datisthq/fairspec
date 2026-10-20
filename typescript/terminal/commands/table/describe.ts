@@ -39,6 +39,7 @@ export const describeTableCommand = new Command()
   .optionsGroup("Table Schema")
   .addOption(params.tableSchema)
   .addOption(params.columnTypes)
+  .addOption(params.columnProperties)
   .addOption(params.missingValues)
   .addOption(params.decimalChar)
   .addOption(params.groupChar)
@@ -71,7 +72,7 @@ export const describeTableCommand = new Command()
       : await selectResource(session, options)
 
     const table = await session.task("Loading table", async () => {
-      const table = await loadTable(resource)
+      const table = await loadTable(resource, options)
       if (!table) throw new Error("Could not load table")
       return table
     })

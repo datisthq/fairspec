@@ -4,6 +4,7 @@ from fairspec_metadata import Dataset
 from fairspec_terminal.helpers.table_schema import create_infer_table_schema_options
 from fairspec_terminal.params import (
     ArrayType,
+    ColumnProperties,
     ColumnTypes,
     CommaDecimal,
     Confidence,
@@ -39,6 +40,7 @@ def infer(
     month_first: MonthFirst = False,
     keep_strings: KeepStrings = False,
     column_types: ColumnTypes = None,
+    column_properties: ColumnProperties = None,
     missing_values: MissingValues = None,
     decimal_char: DecimalChar = None,
     group_char: GroupChar = None,
@@ -60,6 +62,7 @@ def infer(
         month_first=month_first,
         keep_strings=keep_strings,
         column_types=column_types,
+        column_properties=column_properties,
         missing_values=missing_values,
         decimal_char=decimal_char,
         group_char=group_char,

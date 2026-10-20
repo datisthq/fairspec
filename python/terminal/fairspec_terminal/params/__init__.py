@@ -36,6 +36,7 @@ from .session import Silent as Silent
 from .table import Overwrite as Overwrite
 from .table import Query as Query
 from .table_schema import ArrayType as ArrayType
+from .table_schema import ColumnProperties as ColumnProperties
 from .table_schema import ColumnTypes as ColumnTypes
 from .table_schema import CommaDecimal as CommaDecimal
 from .table_schema import Confidence as Confidence

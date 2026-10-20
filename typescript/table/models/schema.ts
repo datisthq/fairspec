@@ -1,4 +1,5 @@
 import type { TableSchema } from "@fairspec/metadata"
+import { ColumnProperty } from "@fairspec/metadata"
 import { z } from "zod"
 import type { PolarsColumn } from "./column.ts"
 
@@ -14,6 +15,7 @@ export interface SchemaMapping {
 export const TableSchemaOptions = z.object({
   columnNames: z.array(z.string()).optional(),
   columnTypes: z.record(z.string(), z.string()).optional(),
+  columnProperties: z.record(z.string(), ColumnProperty).optional(),
   missingValues: z.array(z.string()).optional(),
   decimalChar: z.string().optional(),
   groupChar: z.string().optional(),

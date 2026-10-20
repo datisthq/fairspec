@@ -45,6 +45,7 @@ export const validateTableCommand = new Command()
   .optionsGroup("Table Schema")
   .addOption(params.tableSchema)
   .addOption(params.columnTypes)
+  .addOption(params.columnProperties)
   .addOption(params.missingValues)
   .addOption(params.decimalChar)
   .addOption(params.groupChar)
@@ -88,7 +89,7 @@ export const validateTableCommand = new Command()
 
     if (!tableSchema) {
       tableSchema = await session.task("Inferring schema", () =>
-        inferTableSchemaFromTable(table),
+        inferTableSchemaFromTable(table, options),
       )
     }
 

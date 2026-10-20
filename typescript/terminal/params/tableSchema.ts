@@ -1,4 +1,5 @@
 import type { Column, ListColumn } from "@fairspec/library"
+import { TableSchemaOptions } from "@fairspec/library"
 import { Option } from "commander"
 
 export const tableSchema = new Option(
@@ -42,6 +43,13 @@ export const columnTypes = new Option(
   })
   return result
 })
+
+export const columnProperties = new Option(
+  "--column-properties <columnProperties>",
+  "a JSON object of column name to column property to use for the schema",
+).argParser((value: string) =>
+  TableSchemaOptions.shape.columnProperties.parse(JSON.parse(value)),
+)
 
 export const missingValues = new Option(
   "--missing-values <missingValues>",

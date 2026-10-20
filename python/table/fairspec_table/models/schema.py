@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Literal, TypedDict
 
 from fairspec_dataset import ConcurrencyOptions
-from fairspec_metadata import TableSchema
+from fairspec_metadata import Descriptor, TableSchema
 
 from .column import PolarsColumn
 
@@ -23,6 +23,7 @@ class SchemaMapping:
 class TableSchemaOptions(TypedDict, total=False):
     columnNames: list[str]
     columnTypes: dict[str, str]
+    columnProperties: dict[str, Descriptor]
     missingValues: list[str]
     decimalChar: str
     groupChar: str

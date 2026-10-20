@@ -151,10 +151,26 @@ from fairspec import Resource, infer_table_schema, infer_table_schema_from_table
 schema = infer_table_schema(Resource(data="data.csv"))
 
 # From an already-loaded Table
-schema = infer_table_schema_from_table(table, sample_rows=100, confidence=0.9)
+schema = infer_table_schema_from_table(table, sampleRows=100, confidence=0.9)
 ```
 
-`InferTableSchemaOptions` includes `sampleRows`, `confidence`, `keepStrings`, `columnTypes`, `missingValues`, `commaDecimal`, `monthFirst`, and date/time format strings. Use these to bias inference when defaults pick the wrong type.
+`InferTableSchemaOptions` includes `sampleRows`, `confidence`, `keepStrings`, `columnTypes`, `columnProperties`, `missingValues`, `commaDecimal`, `monthFirst`, and date/time format strings. Use these to bias inference when defaults pick the wrong type.
+
+`columnProperties` gives part of the schema up front and infers the rest. A property with a `type`
+replaces the inferred one as written; one without a `type` keeps the inferred type and adds
+`title`, `description` or `rdfType` to it, so give the `type` to add constraints. It takes precedence over `columnTypes`, and
+naming a column the table lacks raises. A resource's own `tableSchema` still replaces inference
+entirely.
+
+```python
+schema = infer_table_schema(
+    Resource(data="data.csv"),
+    columnProperties={
+        "id": {"type": "string"},
+        "price": {"title": "Price"},
+    },
+)
+```
 
 The inferred schema detects:
 

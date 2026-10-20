@@ -41,3 +41,24 @@ class TestTableValidateExitCode:
 
         assert result.exit_code != 0
         assert json.loads(result.stdout)["valid"] is False
+
+    def test_should_apply_column_properties_without_a_schema(self, monkeypatch):
+        register_commands()
+        folder = get_temp_folder_path()
+        with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
+            file.write("id,age\n1,200\n")
+        monkeypatch.chdir(folder)
+
+        result = CliRunner().invoke(
+            table_program,
+            [
+                "validate",
+                "data.csv",
+                "--column-properties",
+                '{"age": {"type": "integer", "maximum": 150}}',
+                "--json",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert json.loads(result.stdout)["valid"] is False

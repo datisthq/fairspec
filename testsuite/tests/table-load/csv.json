@@ -37,5 +37,23 @@
         }
       }
     ]
+  },
+  {
+    "description": "csv with column properties",
+    "comment": "Inference options are library shape, not normative; outcomes follow the TypeScript library",
+    "options": { "columnProperties": { "id": { "type": "string" } } },
+    "tests": [
+      {
+        "description": "a typed column property keeps leading zeros",
+        "data": "id,name\n001,alice\n002,bob\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["001", "alice"],
+            ["002", "bob"]
+          ]
+        }
+      }
+    ]
   }
 ]

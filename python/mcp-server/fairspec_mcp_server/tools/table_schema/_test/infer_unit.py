@@ -25,3 +25,18 @@ class TestInferTableSchemaTool:
 
         dump = result.model_dump(mode="json", by_alias=True)
         assert dump["tableSchema"]["properties"]["id"] == {"type": "string"}
+
+    def test_should_forward_column_properties(self):
+        path = write_temp_file("id,name\n1,alice\n2,bob\n", format="csv")
+
+        result = infer_table_schema_tool(
+            Resource(data=path),
+            {"columnProperties": {"id": {"type": "string"}, "name": {"title": "Name"}}},
+        )
+
+        dump = result.model_dump(mode="json", by_alias=True)
+        assert dump["tableSchema"]["properties"]["id"] == {"type": "string"}
+        assert dump["tableSchema"]["properties"]["name"] == {
+            "type": "string",
+            "title": "Name",
+        }

@@ -97,4 +97,37 @@ describe("schema infer", () => {
     expect(data.properties.active.type).toBe("boolean")
     expect(data.properties.count.type).toBe("integer")
   })
+
+  it("should apply column properties over the inferred schema", async () => {
+    const csvPath = await writeTempFile("id,price\n1,9.5\n2,7.25", { format: "csv" })
+
+    const text: string[] = []
+    vi.spyOn(process.stdout, "write").mockImplementation((msg: string | Uint8Array) => {
+      text.push(typeof msg === "string" ? msg : msg.toString())
+      return true
+    })
+
+    const command = new Command().addCommand(inferTableSchemaCommand).configureOutput({
+      writeOut: () => {},
+      writeErr: () => {},
+    })
+
+    try {
+      await command.parseAsync([
+        "node",
+        "test",
+        "infer",
+        csvPath,
+        "--column-properties",
+        '{"id":{"type":"string"},"price":{"title":"Price"}}',
+        "--json",
+      ])
+    } catch {}
+
+    const data = JSON.parse(text[0] ?? "")
+    expect(data.properties).toEqual({
+      id: { type: "string" },
+      price: { type: "number", title: "Price" },
+    })
+  })
 })

@@ -38,6 +38,7 @@ export const inferTableSchemaCommand = new Command()
 
   .optionsGroup("Table Schema")
   .addOption(params.columnTypes)
+  .addOption(params.columnProperties)
   .addOption(params.missingValues)
   .addOption(params.decimalChar)
   .addOption(params.groupChar)
