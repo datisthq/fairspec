@@ -118,17 +118,22 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   parent path, so a README at `/python/` would swallow the whole sidebar. The language READMEs
   live at `/<lang>/getting-started/`, and `worker.ts` 301s the bare `/<lang>/` there
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `cli-tool.tsx`,
-  `mcp-server.tsx`, `agent-skills.tsx`, `desktop.tsx`), each a `type: "custom"` section in
+  `mcp-server.tsx`, `desktop.tsx`), each a `type: "custom"` section in
   `livemark.config.ts` in that nav order. A landing that covers both languages (`cli-tool.tsx`)
   puts a Python/TypeScript switch over the install-method tabs and shows only commands that run
   unchanged on both CLIs — check each against both `--help` outputs, since the language
   docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
 - Landings follow livemark.dev's own landing (livemark's `livemark-landing` skill). A custom
   route renders bare, so each one draws its chrome: `<Banner />`, `<Header />`, `<main>`,
-  `<BackToTop />`. Their shared pieces (`Hero`, `LandingSection`, `WindowCard`, `Reveal`, `tk`,
-  `Datist`…) live in `.livemark/components/Landing.tsx`, imported relatively: a new file under
-  `.livemark/components/` must not take a livemark component's name (`Section.tsx` would
-  replace livemark's), and `livemark/components/<new>` resolves in the build but not for `tsgo`
+  `<BackToTop />`. Every hero is a `HeroCarousel` of slides, each a rendered pane (terminal,
+  code, assistant chat, the Desktop screenshot) with a source chip naming its input. The
+  shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
+  panes and sample files), imported relatively: a new file under `.livemark/components/` must
+  not take a livemark component's name (`Section.tsx` would replace livemark's), and
+  `livemark/components/<new>` resolves in the build but not for `tsgo`
+- Pane output is real: rerun the command or snippet on the sample `members.csv`/`broken.csv`
+  shown in the chips and paste what it prints. The home page advertises every part: the
+  standard, the libraries, CLI, MCP server, agent skills and Desktop
 - `.livemark/.target/` is livemark's generated mount, gitignored and excluded from types and
   fmt. `.livemark/styles/general.css` is an escape of livemark's: when a livemark upgrade adds
   tokens (the build fails on an unknown utility such as `bg-positive/15`), re-copy it from
@@ -136,7 +141,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   rules at its end
 - The `fairspec-*` skills in `.skills/` are published by the site (`skills:` in
   `livemark.config.ts`) under `/.well-known/agent-skills/`, so `npx skills add https://fairspec.org`
-  installs them; `/agent-skills/` is their landing
+  installs them; their docs are the `Agent Skills` article in the Python and TypeScript
+  sidebars (`<lang>/project/docs/agent-skills.md`, `order: 5`), not a header section
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages

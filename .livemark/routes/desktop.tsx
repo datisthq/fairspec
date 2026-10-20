@@ -21,9 +21,17 @@ import {
   LandingSection,
   type Point,
   Reveal,
-  WindowCard,
+  type Slide,
   actionClass,
 } from "../components/Landing.tsx"
+import {
+  BrokenCsv,
+  DesktopPane,
+  MembersCsv,
+  Pane,
+  TableSchemaSample,
+  ValidationErrors,
+} from "../components/Panes.tsx"
 
 // Livemark generates its route tree at build time, so this route id
 // is not known to the checker here.
@@ -84,17 +92,7 @@ function ApplicationPage() {
               </a>
             </>
           }
-          visual={
-            <WindowCard label="Fairspec Application">
-              <img
-                src="/application.webp"
-                width={1200}
-                height={750}
-                alt="The Fairspec Application with dataset, table, data and file tools in the sidebar"
-                className="block w-full h-auto"
-              />
-            </WindowCard>
-          }
+          slides={slides}
         />
         <Tools />
         <Downloads />
@@ -106,6 +104,43 @@ function ApplicationPage() {
 }
 
 /* ─────────────────────────── Tools ─────────────────────────── */
+
+const slides: Slide[] = [
+  {
+    id: "app",
+    title: "Application",
+    pane: <DesktopPane />,
+    source: {
+      eyebrow: "No code required",
+      file: "macOS · Windows · Linux",
+      code: <>Your files never leave your machine.</>,
+    },
+  },
+  {
+    id: "validate",
+    title: "Validate",
+    pane: (
+      <Pane label="Validate Table">
+        <pre>
+          <ValidationErrors />
+        </pre>
+      </Pane>
+    ),
+    source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
+  },
+  {
+    id: "infer",
+    title: "Infer",
+    pane: (
+      <Pane label="Infer Table Schema">
+        <pre>
+          <TableSchemaSample />
+        </pre>
+      </Pane>
+    ),
+    source: { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> },
+  },
+]
 
 const tools: Point[] = [
   {

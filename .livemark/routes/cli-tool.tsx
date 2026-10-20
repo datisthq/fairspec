@@ -23,10 +23,18 @@ import {
   Hero,
   LandingSection,
   Reveal,
-  WindowCard,
+  type Slide,
   actionClass,
   tk,
 } from "../components/Landing.tsx"
+import {
+  BrokenCsv,
+  InferPane,
+  MembersCsv,
+  PreviewPane,
+  QueryPane,
+  ValidatePane,
+} from "../components/Panes.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/cli-tool/")({
@@ -83,7 +91,7 @@ function CliToolPage() {
               </a>
             </>
           }
-          visual={<Transcript />}
+          slides={slides}
         />
         <Installation language={language} onLanguageChange={setLanguage} />
         <Usage language={language} />
@@ -109,7 +117,11 @@ function CliToolPage() {
                 <Sparkles className="size-4" />
                 Try the MCP server
               </Link>
-              <Link to="/agent-skills/" className={actionClass("ghost")}>
+              <Link
+                to="/$"
+                params={{ _splat: `${language}/agent-skills` }}
+                className={actionClass("ghost")}
+              >
                 <Bot className="size-4" />
                 Add agent skills
               </Link>
@@ -125,67 +137,19 @@ function CliToolPage() {
 
 /* ─────────────────────────── Hero ─────────────────────────── */
 
-function Transcript() {
-  return (
-    <WindowCard label="terminal">
-      <div className="p-5 space-y-4 font-mono text-sm leading-relaxed overflow-x-auto">
-        <div className="flex items-start gap-2">
-          <span className="text-primary shrink-0 select-none">$</span>
-          <div className="min-w-0">
-            <Shell command="fairspec table infer-schema members.csv --json" />
-          </div>
-        </div>
-        <pre className="rounded-md border border-border bg-background p-4 overflow-x-auto">
-          <TableSchemaSample />
-        </pre>
-      </div>
-    </WindowCard>
-  )
-}
+const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> }
 
-function TableSchemaSample() {
-  return (
-    <code className={tk.body}>
-      <span className={tk.punct}>{"{"}</span>
-      {"\n  "}
-      <span className={tk.key}>"properties"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{"}</span>
-      {"\n    "}
-      <span className={tk.key}>"id"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"integer"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n    "}
-      <span className={tk.key}>"name"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n    "}
-      <span className={tk.key}>"joined"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>,</span> <span className={tk.key}>"format"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"date"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n    "}
-      <span className={tk.key}>"score"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"number"</span>
-      <span className={tk.punct}>{" }"}</span>
-      {"\n  "}
-      <span className={tk.punct}>{"}"}</span>
-      {"\n"}
-      <span className={tk.punct}>{"}"}</span>
-    </code>
-  )
-}
+const slides: Slide[] = [
+  { id: "infer", title: "Infer", pane: <InferPane />, source: membersCsv },
+  {
+    id: "validate",
+    title: "Validate",
+    pane: <ValidatePane />,
+    source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
+  },
+  { id: "preview", title: "Preview", pane: <PreviewPane />, source: membersCsv },
+  { id: "query", title: "Query", pane: <QueryPane />, source: membersCsv },
+]
 
 /* ─────────────────────────── Installation ─────────────────────────── */
 

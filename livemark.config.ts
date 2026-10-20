@@ -53,12 +53,6 @@ export default defineConfig({
     },
     {
       type: "custom",
-      title: "Agent Skills",
-      url: "/agent-skills/",
-      icon: "bot",
-    },
-    {
-      type: "custom",
       title: "Desktop",
       url: "/desktop/",
       icon: "app-window",

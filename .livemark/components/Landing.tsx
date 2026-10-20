@@ -1,7 +1,20 @@
 import { buttonVariants } from "livemark/elements/button"
 import { useInView } from "livemark/hooks/in-view"
-import type { ComponentType, ReactNode, SVGProps } from "react"
+import {
+  type ComponentType,
+  type ReactNode,
+  type SVGProps,
+  useRef,
+  useState,
+} from "react"
 import { cn } from "cn"
+
+export interface Slide {
+  id: string
+  title: string
+  pane: ReactNode
+  source: { eyebrow: string; file: string; code: ReactNode }
+}
 
 export interface Point {
   icon: ComponentType<SVGProps<SVGSVGElement>>
@@ -33,7 +46,7 @@ export function Hero(props: {
   title: ReactNode
   lede: ReactNode
   actions: ReactNode
-  visual: ReactNode
+  slides: Slide[]
 }) {
   return (
     <section className="relative overflow-hidden border-b border-border">
@@ -52,10 +65,143 @@ export function Hero(props: {
           <div className="mt-8 flex flex-wrap gap-3 sm:mt-10">{props.actions}</div>
         </div>
         <div className="mt-12 min-w-0 lg:mt-0 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out motion-reduce:animate-none">
-          {props.visual}
+          <HeroCarousel slides={props.slides} />
         </div>
       </div>
     </section>
+  )
+}
+
+// Every slide is in the prerendered HTML, stacked in one grid cell; only the active
+// one is visible and reachable, and the tallest sets the height, so nothing jumps.
+export function HeroCarousel(props: { slides: Slide[] }) {
+  const [active, setActive] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [stopped, setStopped] = useState(false)
+  // A bar can finish in the same frame as the click that stops it; its end event
+  // still holds the old closure, so it checks this instead of `stopped`.
+  const stoppedRef = useRef(false)
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <figure className="overflow-hidden rounded-card border border-border bg-card shadow-xl">
+        <div className="flex items-center gap-5 border-b border-border bg-muted/50 px-4 py-2">
+          <span aria-hidden className="hidden gap-1.5 sm:flex">
+            <span className="size-2.5 rounded-full bg-border" />
+            <span className="size-2.5 rounded-full bg-border" />
+            <span className="size-2.5 rounded-full bg-border" />
+          </span>
+          <div
+            role="tablist"
+            className="flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:none]"
+          >
+            {props.slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                role="tab"
+                aria-selected={index === active}
+                aria-controls={`hero-slide-${slide.id}`}
+                onClick={() => {
+                  stoppedRef.current = true
+                  setActive(index)
+                  setStopped(true)
+                }}
+                className={cn(
+                  "relative flex shrink-0 cursor-pointer items-center gap-2 overflow-hidden rounded-control px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
+                  index === active
+                    ? "bg-card font-medium text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span
+                  className={cn("font-mono text-xs", index === active && "text-primary")}
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className={cn(
+                    index !== active && "hidden",
+                    index !== active && props.slides.length <= 4 && "sm:inline",
+                  )}
+                >
+                  {slide.title}
+                </span>
+                {index === active ? (
+                  <span
+                    key={stopped ? "stopped" : active}
+                    aria-hidden
+                    className={cn(
+                      "absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-primary/70",
+                      !stopped && "hero-carousel-progress",
+                    )}
+                    style={{ animationPlayState: paused ? "paused" : "running" }}
+                    onAnimationEnd={() => {
+                      if (stoppedRef.current) return
+                      setActive(current => (current + 1) % props.slides.length)
+                    }}
+                  />
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid">
+          {props.slides.map((slide, index) => (
+            <div
+              key={slide.id}
+              id={`hero-slide-${slide.id}`}
+              role="tabpanel"
+              aria-hidden={index !== active}
+              inert={index !== active}
+              className={cn(
+                "min-w-0 [grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
+                index === active ? "opacity-100" : "pointer-events-none opacity-0",
+              )}
+            >
+              {slide.pane}
+            </div>
+          ))}
+        </div>
+      </figure>
+      <div className="relative mt-4 grid grid-cols-1 lg:-mt-6 lg:-mr-8 lg:ml-auto lg:w-[20rem]">
+        {props.slides.map((slide, index) => (
+          <div
+            key={slide.id}
+            aria-hidden={index !== active}
+            inert={index !== active}
+            className={cn(
+              "min-w-0 self-end [grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
+              index === active ? "opacity-100" : "pointer-events-none opacity-0",
+            )}
+          >
+            <SourceChip source={slide.source} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SourceChip(props: { source: Slide["source"] }) {
+  return (
+    <figure className="rounded-card border border-primary/25 bg-card p-4 shadow-lg">
+      <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
+        {props.source.eyebrow}
+      </p>
+      <figcaption className="mt-1 font-mono text-xs text-muted-foreground">
+        {props.source.file}
+      </figcaption>
+      <pre className="mt-2 font-mono text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+        <code className={tk.body}>{props.source.code}</code>
+      </pre>
+    </figure>
   )
 }
 
@@ -324,6 +470,20 @@ const HERO_BACKGROUND_CSS = `
   animation: hero-drift 18s ease-in-out infinite;
 }
 
+@keyframes hero-carousel-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hero-carousel-progress {
+  transform-origin: left;
+  animation: hero-carousel-progress 6s linear;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-scan-x,
   .hero-scan-y {
@@ -331,7 +491,8 @@ const HERO_BACKGROUND_CSS = `
     opacity: 0;
   }
   .strata-drift,
-  .hero-drift {
+  .hero-drift,
+  .hero-carousel-progress {
     animation: none;
   }
 }

@@ -2,7 +2,6 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   Bot,
   CheckCircle2,
-  ChevronRight,
   Eye,
   Github,
   ListOrdered,
@@ -10,7 +9,6 @@ import {
   Search,
   Sparkles,
   SquareTerminal,
-  Wrench,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useState } from "react"
@@ -26,10 +24,18 @@ import {
   LandingSection,
   type Point,
   Reveal,
-  WindowCard,
+  type Slide,
   actionClass,
   tk,
 } from "../components/Landing.tsx"
+import {
+  BrokenCsv,
+  ChatPane,
+  MembersCsv,
+  QueryRecords,
+  TableSchemaSample,
+  ValidationReport,
+} from "../components/Panes.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/mcp-server/")({
@@ -79,7 +85,7 @@ function McpServerPage() {
               </a>
             </>
           }
-          visual={<Transcript />}
+          slides={slides}
         />
         <Installation />
         <Usage />
@@ -94,7 +100,11 @@ function McpServerPage() {
           lede="Pair the server with the agent skills so your coding agent knows when to reach for each tool, or script the same operations from the CLI."
           actions={
             <>
-              <Link to="/agent-skills/" className={actionClass("default")}>
+              <Link
+                to="/$"
+                params={{ _splat: "python/agent-skills" }}
+                className={actionClass("default")}
+              >
                 <Bot className="size-4" />
                 Add agent skills
               </Link>
@@ -114,29 +124,43 @@ function McpServerPage() {
 
 /* ─────────────────────────── Hero ─────────────────────────── */
 
-function Transcript() {
-  return (
-    <WindowCard label="AI Assistant">
-      <div className="p-5 space-y-4 font-mono text-sm leading-relaxed overflow-x-auto">
-        <div className="flex items-start gap-2">
-          <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />
-          <span className="min-w-0 text-foreground">
-            Infer the schema for members.csv
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2 py-1 text-muted-foreground">
-            <Wrench className="size-3 text-primary" />
-            inferTableSchemaTool
-          </span>
-        </div>
-        <pre className="rounded-md border border-border bg-background p-4 overflow-x-auto">
-          <TableSchemaSample />
-        </pre>
-      </div>
-    </WindowCard>
-  )
-}
+const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> }
+
+const slides: Slide[] = [
+  {
+    id: "validate",
+    title: "Validate",
+    pane: (
+      <ChatPane prompt="Check broken.csv against schema.json" tool="validateTableTool">
+        <ValidationReport />
+      </ChatPane>
+    ),
+    source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
+  },
+  {
+    id: "infer",
+    title: "Infer",
+    pane: (
+      <ChatPane prompt="Infer the schema for members.csv" tool="inferTableSchemaTool">
+        <TableSchemaSample />
+      </ChatPane>
+    ),
+    source: membersCsv,
+  },
+  {
+    id: "query",
+    title: "Query",
+    pane: (
+      <ChatPane
+        prompt="Who in members.csv scored above 80, best first?"
+        tool="queryTableTool"
+      >
+        <QueryRecords />
+      </ChatPane>
+    ),
+    source: membersCsv,
+  },
+]
 
 /* ─────────────────────────── Installation ─────────────────────────── */
 
@@ -433,46 +457,5 @@ function Tools() {
     >
       <FeatureGrid features={tools} />
     </LandingSection>
-  )
-}
-
-/* ─────────────────────────── Samples ─────────────────────────── */
-
-function TableSchemaSample() {
-  return (
-    <code className={tk.body}>
-      <span className={tk.punct}>{"{"}</span>
-      {"\n  "}
-      <span className={tk.key}>"id"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"integer"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"name"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"joined"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"string"</span>
-      <span className={tk.punct}>,</span> <span className={tk.key}>"format"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"date"</span>
-      <span className={tk.punct}>{" }"}</span>
-      <span className={tk.punct}>,</span>
-      {"\n  "}
-      <span className={tk.key}>"score"</span>
-      <span className={tk.punct}>:</span> <span className={tk.punct}>{"{ "}</span>
-      <span className={tk.key}>"type"</span>
-      <span className={tk.punct}>:</span> <span className={tk.str}>"number"</span>
-      <span className={tk.punct}>{" }"}</span>
-      {"\n"}
-      <span className={tk.punct}>{"}"}</span>
-    </code>
   )
 }

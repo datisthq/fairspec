@@ -8,6 +8,8 @@ const SKILLS = join(ROOT, ".agents", "skills")
 const USER_SKILLS = join(ROOT, ".skills")
 const SECTIONS = ["catalog", "desktop", "python", "standard", "testsuite", "typescript"]
 
+const GENERATED = ["build", ".target"]
+
 const ROOTED = [
   ...SECTIONS,
   ".agents",
@@ -163,7 +165,8 @@ async function resolveRepoPath(span: string, section?: string) {
 
   const segments = span.replace(/\/$/, "").split("/")
   const [first] = segments
-  if (!first || segments.length < 2 || segments.includes("build")) return undefined
+  if (!first || segments.length < 2) return undefined
+  if (segments.some(segment => GENERATED.includes(segment))) return undefined
 
   if (ROOTED.includes(first)) return join(ROOT, span)
   if (section && (await getIsDirectory(join(ROOT, section, first)))) {

@@ -15,7 +15,7 @@ import {
   Sparkles,
   SquareTerminal,
 } from "lucide-react"
-import type { ComponentType, ReactNode, SVGProps } from "react"
+import type { ComponentType, SVGProps } from "react"
 import { BackToTop } from "livemark/components/BackToTop"
 import { Banner } from "livemark/components/Banner"
 import { Header } from "livemark/components/Header"
@@ -29,10 +29,22 @@ import {
   type Point,
   PointList,
   Reveal,
+  type Slide,
   WindowCard,
   actionClass,
   tk,
 } from "../components/Landing.tsx"
+import {
+  BrokenCsv,
+  ChatPane,
+  DesktopPane,
+  Pane,
+  PythonPane,
+  SkillsPane,
+  TypeScriptPane,
+  ValidatePane,
+  ValidationReport,
+} from "../components/Panes.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/")({
@@ -82,12 +94,12 @@ function Landing() {
               </a>
             </>
           }
-          visual={<SpecPreview />}
+          slides={slides}
         />
-        <Features />
+        <Standard />
         <Showcase />
+        <Tools />
         <Agents />
-        <Implementations />
         <FinalCta
           title={
             <>
@@ -109,7 +121,11 @@ function Landing() {
                 <SquareTerminal className="size-4" />
                 Use the CLI tool
               </Link>
-              <Link to="/agent-skills/" className={actionClass("ghost")}>
+              <Link
+                to="/$"
+                params={{ _splat: "python/agent-skills" }}
+                className={actionClass("ghost")}
+              >
                 <Bot className="size-4" />
                 Add agent skills
               </Link>
@@ -125,30 +141,70 @@ function Landing() {
 
 /* ─────────────────────────── Hero ─────────────────────────── */
 
-function SpecPreview() {
-  return (
-    <WindowCard label="dataset.json">
-      <div className="p-5 space-y-3 font-mono text-sm leading-relaxed overflow-x-auto">
-        <SpecLabel>DataCite compatible metadata</SpecLabel>
-        <pre className="overflow-x-auto">
+const brokenCsv = { eyebrow: "The same input", file: "broken.csv", code: <BrokenCsv /> }
+
+const slides: Slide[] = [
+  {
+    id: "standard",
+    title: "Standard",
+    pane: (
+      <Pane label="dataset.json">
+        <p className="mb-2 text-xs text-muted-foreground">DataCite compatible metadata</p>
+        <pre>
           <DataciteLines />
         </pre>
-        <SpecLabel>JSON Schema compatible data</SpecLabel>
-        <pre className="overflow-x-auto">
+        <p className="mt-4 mb-2 text-xs text-muted-foreground">
+          JSON Schema compatible data
+        </p>
+        <pre>
           <TableSchemaLines />
         </pre>
-      </div>
-    </WindowCard>
-  )
-}
-
-function SpecLabel(props: { children: ReactNode }) {
-  return (
-    <div className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
-      {props.children}
-    </div>
-  )
-}
+      </Pane>
+    ),
+    source: {
+      eyebrow: "Checked by a profile",
+      file: "$schema",
+      code: <span className={tk.url}>fairspec.org/profiles/latest/dataset.json</span>,
+    },
+  },
+  { id: "python", title: "Python", pane: <PythonPane />, source: brokenCsv },
+  { id: "typescript", title: "TypeScript", pane: <TypeScriptPane />, source: brokenCsv },
+  { id: "cli", title: "CLI", pane: <ValidatePane />, source: brokenCsv },
+  {
+    id: "mcp",
+    title: "MCP",
+    pane: (
+      <ChatPane prompt="Check broken.csv against schema.json" tool="validateTableTool">
+        <ValidationReport />
+      </ChatPane>
+    ),
+    source: brokenCsv,
+  },
+  {
+    id: "skills",
+    title: "Skills",
+    pane: <SkillsPane />,
+    source: {
+      eyebrow: "Three agent skills",
+      file: "fairspec.org/.well-known/agent-skills/",
+      code: (
+        <>
+          fairspec-exploration{"\n"}fairspec-inference{"\n"}fairspec-validation
+        </>
+      ),
+    },
+  },
+  {
+    id: "desktop",
+    title: "Desktop",
+    pane: <DesktopPane />,
+    source: {
+      eyebrow: "No code required",
+      file: "macOS · Windows · Linux",
+      code: <>Your files never leave your machine.</>,
+    },
+  },
+]
 
 /* ─────────────────────────── Features ─────────────────────────── */
 
@@ -191,13 +247,37 @@ const features: Point[] = [
   },
 ]
 
-function Features() {
+const specs = [
+  { title: "Catalog", splat: "specs/catalog" },
+  { title: "Dataset", splat: "specs/dataset" },
+  { title: "Table Schema", splat: "specs/table-schema" },
+  { title: "Data Schema", splat: "specs/data-schema" },
+  { title: "File Dialect", splat: "specs/file-dialect" },
+  { title: "Extensions", splat: "extensions" },
+]
+
+function Standard() {
   return (
     <LandingSection
       title="A simple format for FAIR data"
       lede="Built on widely-adopted open standards. Easy to adopt, easy to extend."
     >
       <FeatureGrid features={features} />
+      <Reveal>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 md:mt-12">
+          <span className="mr-2 text-sm text-muted-foreground">Read the specs:</span>
+          {specs.map(spec => (
+            <Link
+              key={spec.splat}
+              to="/$"
+              params={{ _splat: spec.splat }}
+              className="rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-foreground no-underline transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              {spec.title}
+            </Link>
+          ))}
+        </div>
+      </Reveal>
     </LandingSection>
   )
 }
@@ -272,16 +352,17 @@ function Agents() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
         <Reveal>
-          <WindowCard label="terminal">
-            <AgentSession />
-          </WindowCard>
+          <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
+            <SkillsPane />
+          </div>
         </Reveal>
         <PointList points={agentPoints} />
       </div>
       <Reveal>
         <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 md:mt-12">
           <Link
-            to="/agent-skills/"
+            to="/$"
+            params={{ _splat: "python/agent-skills" }}
             className="text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             Install the agent skills →
@@ -298,28 +379,7 @@ function Agents() {
   )
 }
 
-function AgentSession() {
-  return (
-    <pre className="p-5 text-sm leading-relaxed font-mono overflow-x-auto">
-      <code className={tk.body}>
-        <span className={tk.dim}>$ </span>
-        <span className={tk.cmd}>npx</span> skills add{" "}
-        <span className={tk.str}>https://fairspec.org</span>
-        {"\n\n"}
-        <span className={tk.dim}># then ask your agent</span>
-        {"\n"}
-        <span className={tk.key}>{">"}</span> Describe the CSV files in data/ as a{"\n"}
-        {"  "}Fairspec dataset and validate it.
-        {"\n\n"}
-        <span className={tk.dim}>{"  "}loads fairspec-inference</span>
-        {"\n"}
-        <span className={tk.dim}>{"  "}loads fairspec-validation</span>
-      </code>
-    </pre>
-  )
-}
-
-/* ─────────────────────────── Implementations ─────────────────────────── */
+/* ─────────────────────────── Tools ─────────────────────────── */
 
 interface Implementation {
   icon: ComponentType<SVGProps<SVGSVGElement>>
@@ -368,7 +428,7 @@ const implementations: Implementation[] = [
     description:
       "Teach coding agents when and how to explore, infer and validate data with the CLI, MCP server or libraries.",
     command: "npx skills add https://fairspec.org",
-    link: { to: "/agent-skills/" },
+    link: { to: "/$", splat: "python/agent-skills" },
   },
   {
     icon: Laptop,
@@ -380,11 +440,11 @@ const implementations: Implementation[] = [
   },
 ]
 
-function Implementations() {
+function Tools() {
   return (
     <LandingSection
       tinted
-      title="Implementations"
+      title="Tools for every workflow"
       lede="Adopt the standard from your language of choice, your terminal, your AI assistant, or a desktop interface."
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
