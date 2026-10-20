@@ -38,11 +38,8 @@ import {
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
-  InferPane,
   MembersCsv,
-  PreviewPane,
-  QueryPane,
-  ValidatePane,
+  shots,
   ValidationErrors,
   WindowCode,
 } from "../components/Panes.tsx"
@@ -188,15 +185,15 @@ function CliToolPage() {
 const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> }
 
 const slides: Slide[] = [
-  { id: "infer", title: "Infer", pane: <InferPane />, source: membersCsv },
+  { id: "infer", title: "Infer", shot: shots.infer, source: membersCsv },
   {
     id: "validate",
     title: "Validate",
-    pane: <ValidatePane />,
+    shot: shots.validate,
     source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
   },
-  { id: "preview", title: "Preview", pane: <PreviewPane />, source: membersCsv },
-  { id: "query", title: "Query", pane: <QueryPane />, source: membersCsv },
+  { id: "preview", title: "Preview", shot: shots.preview, source: membersCsv },
+  { id: "query", title: "Query", shot: shots.query, source: membersCsv },
 ]
 
 /* ─────────────────────────── Installation ─────────────────────────── */

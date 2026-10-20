@@ -131,16 +131,15 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   custom route renders bare, so each draws its chrome: `<Banner />`, `<Header />`, `<main>`,
   `<BackToTop />`
 - The hero is livemark's: a `HeroCarousel` bleeding to `xl:w-[60rem]`, 16:10 slides, and a
-  source chip over the frame's left edge at 55%. Slides are rendered panes, not screenshots
-  (only Desktop's is an image): from `lg` their text is sized in `cqw` so they scale like
-  images, and each keeps its content in the top half, under the chip is empty space. The home
-  hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
-- Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (panes and
-  sample files), imported relatively: a new file under `.livemark/components/` must not take a
+  source chip over the frame's left edge at 55%. Slides are terminal screenshots rendered from
+  real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself. The
+  home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
+- Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
+  `shots` list and the showcase samples), imported relatively: a new file under `.livemark/components/` must not take a
   livemark component's name (`Section.tsx` would replace livemark's), and
   `livemark/components/<new>` resolves in the build but not for `tsgo`
-- Pane output is real: rerun the command or snippet on the sample `members.csv`/`broken.csv`
-  shown in the chips and paste what it prints
+- Window output on the page (showcases) is real too: rerun the command on the sample
+  `members.csv`/`broken.csv` in `.agents/skills/landing-screenshots/samples/` and paste it
 - `.livemark/.target/` is livemark's generated mount, gitignored and excluded from types and
   fmt. `.livemark/styles/general.css` is an escape of livemark's: when a livemark upgrade adds
   tokens (the build fails on an unknown utility such as `bg-positive/15`), re-copy it from

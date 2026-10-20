@@ -38,12 +38,9 @@ import {
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
-  ChatPane,
   InferredDataset,
   MembersCsv,
-  QueryRecords,
-  TableSchemaSample,
-  ValidationReport,
+  shots,
   WindowCode,
 } from "../components/Panes.tsx"
 
@@ -199,36 +196,11 @@ const slides: Slide[] = [
   {
     id: "validate",
     title: "Validate",
-    pane: (
-      <ChatPane prompt="Check broken.csv against schema.json" tool="validateTableTool">
-        <ValidationReport />
-      </ChatPane>
-    ),
+    shot: shots.mcpValidate,
     source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
   },
-  {
-    id: "infer",
-    title: "Infer",
-    pane: (
-      <ChatPane prompt="Infer the schema for members.csv" tool="inferTableSchemaTool">
-        <TableSchemaSample />
-      </ChatPane>
-    ),
-    source: membersCsv,
-  },
-  {
-    id: "query",
-    title: "Query",
-    pane: (
-      <ChatPane
-        prompt="Who in members.csv scored above 80, best first?"
-        tool="queryTableTool"
-      >
-        <QueryRecords />
-      </ChatPane>
-    ),
-    source: membersCsv,
-  },
+  { id: "infer", title: "Infer", shot: shots.mcpInfer, source: membersCsv },
+  { id: "query", title: "Query", shot: shots.mcpQuery, source: membersCsv },
 ]
 
 /* ─────────────────────────── Installation ─────────────────────────── */

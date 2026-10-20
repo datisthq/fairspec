@@ -32,17 +32,13 @@ import {
   actionClass,
   textLinkClass,
   tk,
+  ShotCard,
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
-  ChatPane,
-  DesktopPane,
   InferredDataset,
   MembersCsv,
-  Pane,
-  SkillsPane,
-  ValidatePane,
-  ValidationReport,
+  shots,
   WindowCode,
 } from "../components/Panes.tsx"
 
@@ -142,11 +138,7 @@ function Landing() {
           title="Ready for AI agents"
           lede="Hand the busywork of describing and checking data to your coding agent or AI assistant."
           points={agentPoints}
-          visual={
-            <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
-              <SkillsPane />
-            </div>
-          }
+          visual={<ShotCard shot={shots.skills} />}
           links={
             <>
               <Link
@@ -209,22 +201,7 @@ const slides: Slide[] = [
   {
     id: "standard",
     title: "Standard",
-    pane: (
-      <Pane label="dataset.json">
-        <p className="mb-[0.5em] text-[0.85em] text-muted-foreground">
-          DataCite compatible metadata
-        </p>
-        <pre>
-          <DataciteLines />
-        </pre>
-        <p className="mt-[1em] mb-[0.5em] text-[0.85em] text-muted-foreground">
-          JSON Schema compatible data
-        </p>
-        <pre>
-          <TableSchemaLines />
-        </pre>
-      </Pane>
-    ),
+    shot: shots.standard,
     source: {
       eyebrow: "Checked by a profile",
       file: "$schema",
@@ -233,21 +210,12 @@ const slides: Slide[] = [
       ),
     },
   },
-  { id: "cli", title: "CLI", pane: <ValidatePane />, source: brokenCsv },
-  {
-    id: "mcp",
-    title: "MCP",
-    pane: (
-      <ChatPane prompt="Check broken.csv against schema.json" tool="validateTableTool">
-        <ValidationReport />
-      </ChatPane>
-    ),
-    source: brokenCsv,
-  },
+  { id: "cli", title: "CLI", shot: shots.validate, source: brokenCsv },
+  { id: "mcp", title: "MCP", shot: shots.mcpValidate, source: brokenCsv },
   {
     id: "skills",
     title: "Skills",
-    pane: <SkillsPane />,
+    shot: shots.skills,
     source: {
       eyebrow: "Three agent skills",
       file: "fairspec.org/.well-known/agent-skills/",
@@ -261,7 +229,7 @@ const slides: Slide[] = [
   {
     id: "desktop",
     title: "Desktop",
-    pane: <DesktopPane />,
+    shot: shots.desktop,
     source: {
       eyebrow: "No code required",
       file: "macOS · Windows · Linux",

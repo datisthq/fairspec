@@ -1,0 +1,9 @@
+{
+  "$schema": "https://fairspec.org/profiles/latest/dataset.json",
+  "doi": "10.5281/zenodo.1234567",
+  "titles": [{ "title": "Club Members 2024" }],
+  "creators": [{ "name": "Ada Lovelace" }],
+  "resources": [
+    { "name": "members", "data": "members.csv", "tableSchema": "schema.json" }
+  ]
+}

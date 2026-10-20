@@ -11,10 +11,16 @@ import {
 } from "react"
 import { cn } from "cn"
 
+export interface Shot {
+  src: string
+  srcDark: string
+  alt: string
+}
+
 export interface Slide {
   id: string
   title: string
-  pane: ReactNode
+  shot: Shot
   source: { eyebrow: string; file: string; code: ReactNode }
 }
 
@@ -79,9 +85,8 @@ export function Hero(props: {
 }
 
 // Every slide is in the prerendered HTML, stacked in one grid cell; only the active
-// one is visible and reachable. From lg every slide is a 16:10 frame whose text scales
-// with its width (cqw), so a pane must keep its content above the chip at 55%.
-export function HeroCarousel(props: { slides: Slide[] }) {
+// one is visible and reachable. All shots share one aspect, so the window never jumps.
+function HeroCarousel(props: { slides: Slide[] }) {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [stopped, setStopped] = useState(false)
@@ -97,7 +102,7 @@ export function HeroCarousel(props: { slides: Slide[] }) {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <figure className="overflow-hidden rounded-card border border-border bg-card shadow-xl [container-type:inline-size]">
+      <figure className="overflow-hidden rounded-card border border-border bg-card shadow-xl">
         <div className="flex items-center gap-5 border-b border-border bg-muted/50 px-4 py-2">
           <span aria-hidden className="hidden gap-1.5 sm:flex">
             <span className="size-2.5 rounded-full bg-border" />
@@ -164,7 +169,7 @@ export function HeroCarousel(props: { slides: Slide[] }) {
                 index === active ? "opacity-100" : "pointer-events-none opacity-0",
               )}
             >
-              <div className="lg:aspect-[16/10] lg:overflow-hidden">{slide.pane}</div>
+              <ShotPicture shot={slide.shot} className="aspect-[16/10] w-full" />
             </div>
           ))}
         </div>
@@ -184,6 +189,35 @@ export function HeroCarousel(props: { slides: Slide[] }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+// Two images, not `<picture media>`: the theme is a class on <html>, which a media
+// query never sees. A lazy image that is `display: none` is never fetched.
+export function ShotPicture(props: { shot: Shot; className?: string }) {
+  return (
+    <>
+      <img
+        src={props.shot.src}
+        alt={props.shot.alt}
+        decoding="async"
+        className={cn("block object-cover object-top dark:hidden", props.className)}
+      />
+      <img
+        src={props.shot.srcDark}
+        alt={props.shot.alt}
+        decoding="async"
+        className={cn("hidden object-cover object-top dark:block", props.className)}
+      />
+    </>
+  )
+}
+
+export function ShotCard(props: { shot: Shot }) {
+  return (
+    <div className="overflow-hidden rounded-card border border-primary/20 bg-card">
+      <ShotPicture shot={props.shot} className="aspect-[16/10] w-full" />
     </div>
   )
 }

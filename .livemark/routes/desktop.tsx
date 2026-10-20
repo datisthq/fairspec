@@ -34,17 +34,9 @@ import {
   WindowCard,
   actionClass,
   textLinkClass,
+  ShotCard,
 } from "../components/Landing.tsx"
-import {
-  BrokenCsv,
-  DesktopPane,
-  MembersCsv,
-  Pane,
-  TableSchemaSample,
-  ValidatePane,
-  ValidationErrors,
-  WindowCode,
-} from "../components/Panes.tsx"
+import { BrokenCsv, shots, ValidationErrors, WindowCode } from "../components/Panes.tsx"
 
 // Livemark generates its route tree at build time, so this route id
 // is not known to the checker here.
@@ -147,11 +139,7 @@ function ApplicationPage() {
           title="Prefer code?"
           lede="The checks the application runs are also commands, library calls and, for most, MCP tools."
           points={codePoints}
-          visual={
-            <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
-              <ValidatePane />
-            </div>
-          }
+          visual={<ShotCard shot={shots.validate} />}
           links={
             <>
               <Link to="/cli-tool/" className={textLinkClass}>
@@ -212,36 +200,12 @@ const slides: Slide[] = [
   {
     id: "app",
     title: "Application",
-    pane: <DesktopPane />,
+    shot: shots.desktop,
     source: {
       eyebrow: "No code required",
       file: "macOS · Windows · Linux",
       code: <>Your files never leave your machine.</>,
     },
-  },
-  {
-    id: "validate",
-    title: "Validate",
-    pane: (
-      <Pane label="Validate Table">
-        <pre>
-          <ValidationErrors />
-        </pre>
-      </Pane>
-    ),
-    source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
-  },
-  {
-    id: "infer",
-    title: "Infer",
-    pane: (
-      <Pane label="Infer Table Schema">
-        <pre>
-          <TableSchemaSample />
-        </pre>
-      </Pane>
-    ),
-    source: { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> },
   },
 ]
 

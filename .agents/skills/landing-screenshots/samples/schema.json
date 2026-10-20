@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "joined": {
+      "type": "string",
+      "format": "date"
+    },
+    "score": {
+      "type": "number"
+    }
+  }
+}
