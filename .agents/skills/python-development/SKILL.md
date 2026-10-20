@@ -121,7 +121,7 @@ relative import reaches beyond the top-level package.
 - Parameters carry their wire names too (`maxErrors`, not `max_errors`): the SDK passes a `Field` alias as the keyword, so an aliased parameter breaks the call
 - A tool returning a list mirrors the TypeScript limits: `limit`/`maxErrors` (default 100, max 1000), one item more fetched, cut with `limit_items`/`limit_report` (`helpers/limit.py`), `truncated` in the result. A tool returning file content takes the same caps as its TypeScript twin in `Field(ge=1, le=…)` (`tools/file/preview.py`)
 - Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
-- Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing
+- Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing. That in-memory `capfd` check is the only guard: while serving stdio the SDK points fd 1 at stderr, so a stray `print` never fails the spawned-process test in `python/terminal/fairspec_terminal/commands/general/_test/mcp_unit.py`
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
   entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
