@@ -161,7 +161,8 @@ async function getHasDuplicateKey(table: Table, check: RowKeyCheck) {
   const probe = await table
     .select(check.keyColumns)
     .filter(createKeyPresenceExpr(check.keyColumns))
-    .groupBy(check.keyColumns)
+    // maintainOrder: nodejs-polars defaults it to true, an ordered aggregate for no reader
+    .groupBy(check.keyColumns, false)
     .len(COUNT_COLUMN_NAME)
     .filter(pl.col(COUNT_COLUMN_NAME).gt(1))
     .head(1)

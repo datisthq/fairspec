@@ -69,3 +69,6 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
+
+patchedDependencies:
+  nodejs-polars@0.26.1: patches/nodejs-polars@0.26.1.patch

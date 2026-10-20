@@ -13,6 +13,7 @@ is specific to it.
 | lives at the root                                                           | lives in a section                                |
 | --------------------------------------------------------------------------- | ------------------------------------------------- |
 | `package.json` scripts, `pnpm-workspace.yaml` + its `catalog:`              | the section's `package.json` and its deps         |
+| `patches/`, the dependency patches `patchedDependencies` lists              |                                                   |
 | one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution)      |
 | `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` block only         |
 | `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`              |

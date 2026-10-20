@@ -13,6 +13,19 @@ export function keepExactTemporal(textExpr: pl.Expr, valueExpr: pl.Expr, format:
     .otherwise(pl.lit(null))
 }
 
+/** The default patterns match only zero-padded fixed-width text, so it compares as is */
+export function keepExactDefaultTemporal(
+  textExpr: pl.Expr,
+  valueExpr: pl.Expr,
+  format: string,
+) {
+  // never for a custom temporalFormat: `%d` accepts `5`, which only normalising compares
+  return pl
+    .when(valueExpr.dt.strftime(format).eq(textExpr))
+    .then(valueExpr)
+    .otherwise(pl.lit(null))
+}
+
 function normalizeTemporalText(textExpr: pl.Expr) {
   return textExpr.str.toLowerCase().str.replaceAll("(^|\\D)0+(\\d)", "${1}${2}")
 }

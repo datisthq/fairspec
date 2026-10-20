@@ -91,7 +91,13 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
   while key checks compare partial nulls and skip only all-null keys (`createKeyPresenceExpr`).
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
-  `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently
+  `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
+  `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read
+- **nodejs-polars is patched** (`patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
+  `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
+  the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every
+  validation. Bumping nodejs-polars means re-creating the patch (`pnpm patch`), or dropping it
+  once upstream builds the wrappers the same way
 - **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
   row condition and one select per condition kind for the aggregates. Whether a check is a row
   or a table check comes from running it on two typed null rows (one row back means an
@@ -116,9 +122,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column
-  cannot be collected to JS, so drop it before `toRecords()`; `str.strptime` matches the format
-  anywhere in the text, so temporal parsers go through `keepExactTemporal`
-  (`typescript/table/actions/column/types/-shared/temporal.ts`); `scanCSV` takes a one-character
+  cannot be collected to JS, so drop it before `toRecords()`; `str.strptime` hardcodes
+  `exact=false`, matching the format anywhere in the text (`2100-02-29` parses as year 0000), so
+  temporal parsers check that the value prints back to its text
+  (`typescript/table/actions/column/types/-shared/temporal.ts`): a custom `temporalFormat` through
+  the normalising `keepExactTemporal`, the zero-padded default patterns through the plain compare
+  of `keepExactDefaultTemporal`, which is about a second cheaper on 1GB of date-times; `scanCSV` takes a one-character
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
   Float64
 - nodejs-polars has no `sqlExpr`: a SQL condition joins a frame as

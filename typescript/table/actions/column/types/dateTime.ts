@@ -1,6 +1,6 @@
 import type { DateTimeColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { keepExactTemporal } from "./-shared/temporal.ts"
+import { keepExactDefaultTemporal, keepExactTemporal } from "./-shared/temporal.ts"
 
 const DEFAULT_FORMAT = "%Y-%m-%dT%H:%M:%S"
 const DEFAULT_PATTERN =
@@ -23,7 +23,7 @@ export function parseDateTimeColumn(column: DateTimeColumn, columnExpr: pl.Expr)
     .concatString([textExpr, fractionExpr], "")
     .str.strptime(pl.Datetime, `${DEFAULT_FORMAT}%.f`)
 
-  return keepExactTemporal(textExpr, valueExpr, DEFAULT_FORMAT)
+  return keepExactDefaultTemporal(textExpr, valueExpr, DEFAULT_FORMAT)
 }
 
 export function stringifyDateTimeColumn(column: DateTimeColumn, columnExpr: pl.Expr) {

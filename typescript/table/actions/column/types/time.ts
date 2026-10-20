@@ -1,6 +1,6 @@
 import type { TimeColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { keepExactTemporal } from "./-shared/temporal.ts"
+import { keepExactDefaultTemporal, keepExactTemporal } from "./-shared/temporal.ts"
 
 const DEFAULT_FORMAT = "%H:%M:%S"
 const DEFAULT_PATTERN = "^\\d{2}:\\d{2}:\\d{2}$"
@@ -16,7 +16,10 @@ export function parseTimeColumn(column: TimeColumn, columnExpr: pl.Expr) {
     .str.strptime(pl.Datetime, `%Y-%m-%dT${format}`)
     .cast(pl.Time)
 
-  return keepExactTemporal(textExpr, valueExpr, format).alias(column.name)
+  const keepExact = column.property.temporalFormat
+    ? keepExactTemporal
+    : keepExactDefaultTemporal
+  return keepExact(textExpr, valueExpr, format).alias(column.name)
 }
 
 export function stringifyTimeColumn(column: TimeColumn, columnExpr: pl.Expr) {

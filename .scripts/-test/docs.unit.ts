@@ -39,6 +39,8 @@ const BUILTIN_COMMANDS = [
   "why",
   "publish",
   "run",
+  "patch",
+  "patch-commit",
 ]
 
 describe("docs", () => {

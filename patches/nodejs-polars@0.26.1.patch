@@ -1,0 +1,61 @@
+diff --git a/bin/lazy/expr/index.js b/bin/lazy/expr/index.js
+index 9c187ae69f43f4a45904bd5ebe1c465812f5193d..2d47756d4d214264f2c7a8f5d346041261b3f92e 100644
+--- a/bin/lazy/expr/index.js
++++ b/bin/lazy/expr/index.js
+@@ -70,14 +70,10 @@ const _Expr = (_expr) => {
+         };
+         return wrap(method, callOpts);
+     };
+-    return {
++    // Computed keys inside this ~200-member literal make each wrapper cost ~300us to build;
++    // assigned afterwards they cost ~10us (fairspec patch, see pola-rs/nodejs-polars)
++    const expr = {
+         _expr,
+-        [Symbol.toStringTag]() {
+-            return "Expr";
+-        },
+-        [utils_1.INSPECT_SYMBOL]() {
+-            return _expr.toString();
+-        },
+         serialize(format) {
+             return _expr.serialize(format);
+         },
+@@ -654,6 +650,13 @@ const _Expr = (_expr) => {
+         neq: wrapExprArg("neq"),
+         notEquals: wrapExprArg("neq"),
+     };
++    expr[Symbol.toStringTag] = function () {
++        return "Expr";
++    };
++    expr[utils_1.INSPECT_SYMBOL] = function () {
++        return _expr.toString();
++    };
++    return expr;
+ };
+ exports._Expr = _Expr;
+ const isExpr = (anyVal) => {
+diff --git a/bin/series/index.js b/bin/series/index.js
+index 139c72a6eb1fcb14c75d5efa663370c741fa9e7e..fc43af8b26299d2e9e16c4930434ca2f7548b1d1 100644
+--- a/bin/series/index.js
++++ b/bin/series/index.js
+@@ -69,9 +69,6 @@ function _Series(_s) {
+         serialize(format) {
+             return _s.serialize(format);
+         },
+-        [Symbol.toStringTag]() {
+-            return "Series";
+-        },
+         get dtype() {
+             return datatypes_1.DataType.deserialize(_s.dtype);
+         },
+@@ -663,6 +660,10 @@ function _Series(_s) {
+             return wrap("zipWith", mask._s, other._s);
+         },
+     };
++    // assigned after the literal, as in Expr: a computed key inside it slows every wrapper
++    series[Symbol.toStringTag] = function () {
++        return "Series";
++    };
+     return new Proxy(series, {
+         get: (target, prop, receiver) => {
+             if (typeof prop !== "symbol" && !Number.isNaN(Number(prop))) {
