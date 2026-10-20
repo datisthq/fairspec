@@ -1,40 +1,34 @@
 import { writeFile } from "node:fs/promises"
 import { renderTableSchemaAs, resolveTableSchema } from "@fairspec/library"
-import { Command, Option } from "commander"
+import { f } from "fireargs"
 import pc from "picocolors"
+import { z } from "zod"
 import { helpConfiguration } from "../../helpers/help.ts"
+import { TextResult } from "../../models/output.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-const toFormat = new Option("--to-format <format>", "target schema format")
-  .choices(["markdown", "html"])
-  .makeOptionMandatory()
-
-export const renderTableSchemaCommand = new Command()
-  .name("render")
-  .description("Render a Table Schema as HTML or Markdown")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.requiredPositionalFilePath)
-  .addOption(toFormat)
-  .addOption(params.toPath)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
-
-    if (!options.toFormat) {
-      throw new Error("--to-format must be specified")
-    }
+export const renderTableSchemaCommand = f
+  .command({
+    description: "Render a Table Schema as HTML or Markdown",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.requiredFilePath,
+      toFormat: z.enum(["markdown", "html"]).describe("target schema format"),
+      toPath: params.toPath,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(TextResult)
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
+    const { toPath } = input
 
     const tableSchema = await session.task("Loading table schema", async () => {
-      return await resolveTableSchema(path)
+      return await resolveTableSchema(input.path)
     })
 
     if (!tableSchema) {
@@ -42,23 +36,18 @@ export const renderTableSchemaCommand = new Command()
     }
 
     const rendered = await session.task("Rendering table schema", async () => {
-      return await renderTableSchemaAs(tableSchema, {
-        format: options.toFormat,
-      })
+      return await renderTableSchemaAs(tableSchema, { format: input.toFormat })
     })
 
-    const isSaved = await session.task("Saving rendered schema", async () => {
-      if (!options.toPath) return false
-      await writeFile(options.toPath, rendered, "utf-8")
-      return true
-    })
-
-    if (!isSaved) {
-      session.renderTextResult(rendered)
-      return
+    if (!toPath) {
+      return session.renderTextResult(rendered)
     }
 
-    session.renderTextResult(`Saved rendered schema to ${pc.bold(options.toPath)}`, {
+    await session.task("Saving rendered schema", async () => {
+      await writeFile(toPath, rendered, "utf-8")
+    })
+
+    return session.renderTextResult(`Saved rendered schema to ${pc.bold(toPath)}`, {
       status: "success",
     })
   })

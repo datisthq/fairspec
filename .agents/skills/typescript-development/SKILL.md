@@ -39,7 +39,7 @@ metadata ─┬─► dataset ───┐
 - `extension` — renderers turning a `TableSchema` into markdown or HTML.
 - `library` — the plugin registry (`system.ts`) and the facade actions every consumer calls: `loadTable`, `saveTable`, `loadDataset`, `saveDataset`, `validate*`, `infer*`.
 - `mcp-server` — MCP tools over the library actions (the official `@modelcontextprotocol/sdk` `McpServer`), served over stdio as `fairspec mcp`. Clients see each tool under its `name` (`inferTableSchemaTool`); the Python server registers the same names, so renaming one renames it for both.
-- `terminal` — the `fairspec` CLI (commander), one command group per entity.
+- `terminal` — the `fairspec` CLI, built with fireargs (zod input/output schemas over commander), one command group per entity.
 - `fairspec` — umbrella package re-exporting `@fairspec/library` and shipping the CLI binary.
 - `project` — the documentation site in `typescript/project/docs/`. Private and outside the DAG: nothing depends on it.
 
@@ -106,9 +106,21 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   server fail to list its tools ("Custom types cannot be represented in JSON Schema"), so
   `TableCheck` keeps `condition: z.string()` and widens its TypeScript type to accept `pl.Expr`
 - **A table plugin's `loadTable` returns `undefined` when the data is not a table** — a JSON file whose rows (the document, or the value at `jsonPointer`) are not an array, such as a top-level object. Library `inferTableSchema` and `validateTable` read that as "no table", so the resource keeps only its `dataSchema`; never throw for it. `jsonPointer` is always an RFC 6901 pointer (`/items`, `""` for the root) — go through `parseJsonPointer`/`formatJsonPointer` in `typescript/table/plugins/json/helpers/pointer.ts`, never index by the raw string
-- **A terminal command that declares the Table Schema inference flags must pass them on** — commander
-  collects them into `options`, so hand that to `loadTable`/`inferTableSchemaFromTable`
-  (`loadTable(resource, { ...options, previewBytes })`); declared-but-dropped flags parse fine and do nothing
+- **A terminal command that declares the Table Schema inference flags must pass them on** — fireargs
+  hands every flag to the handler in `input`, so pass that to `loadTable`/`inferTableSchemaFromTable`
+  (`loadTable(resource, { ...input, previewBytes })`); declared-but-dropped flags parse fine and do nothing
+- **A terminal command is `f.command(...).input(z.object).output(schema).handler((input, ctx) => …)`**
+  (fireargs). Build its `Session` from `{ ...input, json: ctx.json }` and `return` a
+  `session.render*Result(...)`: it prints only in human mode and returns what `--json` writes.
+  Keep the output schema to what `--json` printed before, since `dataset list` and the frame
+  commands print bare arrays; a frame command prints the frame itself and returns `[]` outside
+  `--json`. fireargs parses every output, so the items of a large one (report errors,
+  table rows) stay `z.unknown()` (`terminal/models/output.ts`): a full model costs seconds and a
+  copy at a million errors. Shell syntax (comma lists, `false|1,2`, JSON) goes in `f.option({ parse })`, never
+  `.transform()`, which breaks `--llms`; a repeatable flag such as `--check` is a `z.array(...)` option
+- A fireargs `f.program` registers an action for `--llms`, which drops commander's implicit
+  `help [command]` subcommand; `program.ts` restores it with `helpCommand: { name: "help [command]" }`
+  on every program. `--llms` and JSON input (`--json '<value>'`) exist only in the TypeScript CLI
 - An exported function whose inferred type names a `nodejs-polars` type outside `table` fails
   the build with TS2883 ("cannot be named without a reference to … LazyDataFrame"); annotate it
   with the `Table` type (`Promise<Table>`), the one place an explicit return type is required

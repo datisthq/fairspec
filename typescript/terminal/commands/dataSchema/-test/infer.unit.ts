@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { inferDataSchemaCommand } from "../infer.ts"
 
 describe("dataSchema infer", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -26,13 +24,8 @@ describe("dataSchema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDataSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", jsonPath, "--json"])
+      await inferDataSchemaCommand.parseAsync([jsonPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -59,13 +52,8 @@ describe("dataSchema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDataSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", jsonPath, "--json"])
+      await inferDataSchemaCommand.parseAsync([jsonPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -92,13 +80,8 @@ describe("dataSchema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDataSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", jsonPath, "--json"])
+      await inferDataSchemaCommand.parseAsync([jsonPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

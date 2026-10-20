@@ -1,36 +1,35 @@
 import { validateFile } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 import { helpConfiguration } from "../../helpers/help.ts"
+import { ReportResult } from "../../models/output.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const validateFileCommand = new Command()
-  .name("validate")
-  .description("Validate a file from a local or remote path")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.requiredPositionalFilePath)
-  .addOption(params.hash)
-  .addOption(params.hashType)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
+export const validateFileCommand = f
+  .command({
+    description: "Validate a file from a local or remote path",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.requiredFilePath,
+      hash: params.hash,
+      hashType: params.hashType,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(ReportResult)
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
 
     const report = await session.task("Validating file", async () => {
       return await validateFile({
-        data: path,
-        integrity: options.hash
-          ? { hash: options.hash, type: options.hashType ?? "md5" }
-          : undefined,
+        data: input.path,
+        integrity: input.hash ? { hash: input.hash, type: input.hashType } : undefined,
       })
     })
 
-    session.renderReportResult(report)
+    return session.renderReportResult(report)
   })

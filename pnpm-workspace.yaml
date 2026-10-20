@@ -25,6 +25,7 @@ minimumReleaseAge: 10080
 # compromised, these would sail through. trustPolicy: no-downgrade is the control for that.
 minimumReleaseAgeExclude:
   - "@fairspec/*"
+  - fireargs
   - livemark
 minimumReleaseAgeExcludePrune: true
 

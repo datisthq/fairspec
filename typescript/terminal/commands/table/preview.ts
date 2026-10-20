@@ -1,78 +1,45 @@
 import type { Resource } from "@fairspec/library"
 import { loadTable } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 import { createFileDialectFromPathAndOptions } from "../../helpers/fileDialect.ts"
 import { helpConfiguration } from "../../helpers/help.ts"
 import { selectResource } from "../../helpers/resource.ts"
+import { Records } from "../../models/output.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const previewTableCommand = new Command()
-  .name("preview")
-  .description("Preview a table from a local or remote path")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.positionalTablePath)
-  .addOption(params.fromDataset)
-  .addOption(params.fromResource)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .optionsGroup("Dialect")
-  .addOption(params.dialect)
-  .addOption(params.format)
-  .addOption(params.delimiter)
-  .addOption(params.lineTerminator)
-  .addOption(params.quoteChar)
-  .addOption(params.nullSequence)
-  .addOption(params.headerRows)
-  .addOption(params.headerJoin)
-  .addOption(params.commentRows)
-  .addOption(params.commentPrefix)
-  .addOption(params.columnNames)
-  .addOption(params.jsonPointer)
-  .addOption(params.rowType)
-  .addOption(params.sheetNumber)
-  .addOption(params.sheetName)
-  .addOption(params.tableName)
-
-  .optionsGroup("Table Schema")
-  .addOption(params.tableSchema)
-  .addOption(params.columnTypes)
-  .addOption(params.columnProperties)
-  .addOption(params.missingValues)
-  .addOption(params.decimalChar)
-  .addOption(params.groupChar)
-  .addOption(params.trueValues)
-  .addOption(params.falseValues)
-  .addOption(params.datetimeFormat)
-  .addOption(params.dateFormat)
-  .addOption(params.timeFormat)
-  .addOption(params.arrayType)
-  .addOption(params.listDelimiter)
-  .addOption(params.listItemType)
-  .addOption(params.sampleRows)
-  .addOption(params.confidence)
-  .addOption(params.commaDecimal)
-  .addOption(params.monthFirst)
-  .addOption(params.keepStrings)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      debug: options.debug,
-      json: options.json,
-    })
+export const previewTableCommand = f
+  .command({
+    description: "Preview a table from a local or remote path",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.tablePath,
+      dataset: params.dataset,
+      resource: params.resource,
+      debug: params.debug,
+      ...params.dialectParams,
+      schema: params.tableSchema,
+      ...params.tableSchemaParams,
+    }),
+  )
+  .output(Records)
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
+    const path = input.path
 
     const fileDialect = path
-      ? (options.dialect ?? createFileDialectFromPathAndOptions(path, options))
+      ? (input.dialect ?? createFileDialectFromPathAndOptions(path, input))
       : undefined
 
     const resource: Resource = path
-      ? { data: path, fileDialect, tableSchema: options.schema }
-      : await selectResource(session, options)
+      ? { data: path, fileDialect, tableSchema: input.schema }
+      : await selectResource(session, input)
 
     const table = await session.task("Loading table preview", async () => {
-      const table = await loadTable(resource, { ...options, previewBytes: 10_000 })
+      const table = await loadTable(resource, { ...input, previewBytes: 10_000 })
       if (!table) throw new Error("Could not load table")
       return table
     })
@@ -81,5 +48,5 @@ export const previewTableCommand = new Command()
       return await table.limit(100).collect()
     })
 
-    session.renderFrameResult(frame)
+    return session.renderFrameResult(frame)
   })

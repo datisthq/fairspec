@@ -32,7 +32,7 @@ fairspec table describe data.csv
 fairspec table describe https://example.com/data.csv
 
 # Describe from a dataset
-fairspec table describe --from-dataset dataset.json --from-resource sales
+fairspec table describe --dataset dataset.json --resource sales
 
 # Output as JSON
 fairspec table describe data.csv --json
@@ -52,8 +52,8 @@ Returns statistics for each column including:
 
 ### Options
 
-- `--from-dataset <path>` - Load table from dataset descriptor
-- `--from-resource <name>` - Specify resource name from dataset
+- `--dataset <path>` - Load table from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
 - `--debug` - Show debug information
 - `--json` - Output as JSON
 
@@ -76,7 +76,7 @@ fairspec table query sales.csv "SELECT region, SUM(amount) as total FROM self GR
 fairspec table query users.csv "SELECT name, email FROM self WHERE active = true ORDER BY name"
 
 # Query from dataset resource
-fairspec table query --from-dataset dataset.json --from-resource users \
+fairspec table query --dataset dataset.json --resource users \
   "SELECT * FROM self WHERE created_at > '2024-01-01'"
 ```
 
@@ -89,8 +89,8 @@ fairspec table query --from-dataset dataset.json --from-resource users \
 
 ### Options
 
-- `--from-dataset <path>` - Load table from dataset descriptor
-- `--from-resource <name>` - Specify resource name from dataset
+- `--dataset <path>` - Load table from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
 - `--debug` - Show debug information
 - `--json` - Output as JSON
 
@@ -100,16 +100,16 @@ Validate table data against a Table Schema:
 
 ```bash
 # Validate with explicit schema
-fairspec table validate data.csv --table-schema schema.json
+fairspec table validate data.csv --schema schema.json
 
 # Validate with inferred schema
 fairspec table validate data.csv
 
 # Validate from dataset (uses embedded schema)
-fairspec table validate --from-dataset dataset.json --from-resource users
+fairspec table validate --dataset dataset.json --resource users
 
 # Output validation report as JSON
-fairspec table validate data.csv --table-schema schema.json --json
+fairspec table validate data.csv --schema schema.json --json
 
 # Add named SQL checks every row, or the whole table, must satisfy
 fairspec table validate data.csv --check 'end-after-start="end" >= start' --check "not-empty=count(*) > 0"
@@ -148,10 +148,10 @@ Example validation errors:
 
 ### Options
 
-- `--table-schema <path>` - Path to Table Schema file
+- `--schema <path>` - Path to Table Schema file
 - `--check <name=condition>` - Named SQL condition to check (repeatable)
-- `--from-dataset <path>` - Load table from dataset descriptor
-- `--from-resource <name>` - Specify resource name from dataset
+- `--dataset <path>` - Load table from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
 - `--debug` - Show debug information
 - `--json` - Output as JSON
 
@@ -356,7 +356,7 @@ Start an interactive REPL session with a loaded table:
 fairspec table script data.csv
 
 # Script table from dataset
-fairspec table script --from-dataset dataset.json --from-resource users
+fairspec table script --dataset dataset.json --resource users
 ```
 
 ### Available in Session
@@ -476,14 +476,14 @@ fairspec table validate-schema schema.json
 fairspec table render-schema schema.json --to-format markdown --to-path docs.md
 
 # 4. Validate production data
-fairspec table validate production.csv --table-schema schema.json
+fairspec table validate production.csv --schema schema.json
 ```
 
 ### Data Quality Checks
 
 ```bash
 # Check for data quality issues
-fairspec table validate data.csv --table-schema schema.json
+fairspec table validate data.csv --schema schema.json
 
 # Get detailed statistics
 fairspec table describe data.csv
@@ -558,7 +558,7 @@ fairspec table query sales.csv \
   "SELECT customer, SUM(amount) as total FROM self GROUP BY customer ORDER BY total DESC LIMIT 10"
 
 # Validate data quality
-fairspec table validate sales.csv --table-schema sales-schema.json
+fairspec table validate sales.csv --schema sales-schema.json
 ```
 
 ### Multi-Format Pipeline
@@ -572,7 +572,7 @@ fairspec table query report.xlsx --sheet-name "Q1 Sales" \
   "SELECT region, SUM(revenue) FROM self GROUP BY region"
 
 # Validate against schema
-fairspec table validate report.xlsx --sheet-name "Q1 Sales" --table-schema schema.json
+fairspec table validate report.xlsx --sheet-name "Q1 Sales" --schema schema.json
 ```
 
 ### Remote Data Validation
@@ -582,14 +582,14 @@ fairspec table validate report.xlsx --sheet-name "Q1 Sales" --table-schema schem
 fairspec table infer-schema https://api.example.com/export.csv --json > remote-schema.json
 
 # Validate local data against remote schema
-fairspec table validate local-data.csv --table-schema remote-schema.json
+fairspec table validate local-data.csv --schema remote-schema.json
 ```
 
 ### Database Export Validation
 
 ```bash
 # Validate SQLite export
-fairspec table validate export.db --table-name users --table-schema expected-schema.json
+fairspec table validate export.db --table-name users --schema expected-schema.json
 
 # Get statistics from database
 fairspec table describe export.db --table-name users

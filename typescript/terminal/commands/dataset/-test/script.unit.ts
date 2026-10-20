@@ -1,5 +1,4 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 let mockReplSession: { context: Record<string, unknown> }
@@ -19,7 +18,6 @@ const { scriptDatasetCommand } = await import("../script.ts")
 // the test environment when trying to mock console and streams.
 describe.skip("dataset script", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
@@ -42,13 +40,8 @@ describe.skip("dataset script", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(scriptDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "script", descriptorPath])
+      await scriptDatasetCommand.parseAsync([descriptorPath], { from: "user" })
     } catch {}
 
     expect(replStartMock).toHaveBeenCalledWith({ prompt: "fairspec> " })
@@ -67,13 +60,8 @@ describe.skip("dataset script", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(scriptDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "script", descriptorPath])
+      await scriptDatasetCommand.parseAsync([descriptorPath], { from: "user" })
     } catch {}
 
     expect(replStartMock).toHaveBeenCalled()
@@ -96,13 +84,8 @@ describe.skip("dataset script", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(scriptDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "script", descriptorPath])
+      await scriptDatasetCommand.parseAsync([descriptorPath], { from: "user" })
     } catch {}
 
     expect(replStartMock).toHaveBeenCalledWith({ prompt: "fairspec> " })

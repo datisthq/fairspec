@@ -1,12 +1,10 @@
 import type { TableSchema } from "@fairspec/library"
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { validateTableSchemaCommand } from "../validate.ts"
 
 describe("schema validate", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -30,13 +28,10 @@ describe("schema validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", schemaPath, "--json"])
+      await validateTableSchemaCommand.parseAsync([schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -59,13 +54,10 @@ describe("schema validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", schemaPath, "--json"])
+      await validateTableSchemaCommand.parseAsync([schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -89,13 +81,10 @@ describe("schema validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", schemaPath, "--json"])
+      await validateTableSchemaCommand.parseAsync([schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

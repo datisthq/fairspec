@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { previewTableCommand } from "../preview.ts"
 
 describe("table preview", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -24,13 +22,8 @@ describe("table preview", () => {
       return true
     })
 
-    const command = new Command().addCommand(previewTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "preview", csvPath, "--json"])
+      await previewTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -52,13 +45,8 @@ describe("table preview", () => {
       return true
     })
 
-    const command = new Command().addCommand(previewTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "preview", csvPath, "--json"])
+      await previewTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -77,21 +65,10 @@ describe("table preview", () => {
       return true
     })
 
-    const command = new Command().addCommand(previewTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "preview",
-        csvPath,
-        "--delimiter",
-        "|",
-        "--json",
-      ])
+      await previewTableCommand.parseAsync([csvPath, "--delimiter", "|", "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -113,13 +90,8 @@ describe("table preview", () => {
       return true
     })
 
-    const command = new Command().addCommand(previewTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "preview", csvPath, "--json"])
+      await previewTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

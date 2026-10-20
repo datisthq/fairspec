@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { describeTableCommand } from "../describe.ts"
 
 describe("table describe", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -24,13 +22,8 @@ describe("table describe", () => {
       return true
     })
 
-    const command = new Command().addCommand(describeTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "describe", csvPath, "--json"])
+      await describeTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -49,13 +42,8 @@ describe("table describe", () => {
       return true
     })
 
-    const command = new Command().addCommand(describeTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "describe", csvPath, "--json"])
+      await describeTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -73,13 +61,8 @@ describe("table describe", () => {
       return true
     })
 
-    const command = new Command().addCommand(describeTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "describe", tsvPath, "--json"])
+      await describeTableCommand.parseAsync([tsvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

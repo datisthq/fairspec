@@ -1,109 +1,73 @@
-import type { Column, ListColumn } from "@fairspec/library"
-import { TableSchemaOptions } from "@fairspec/library"
-import { Option } from "commander"
+import { InferTableSchemaOptions } from "@fairspec/library"
+import { f } from "fireargs"
+import { z } from "zod"
 
-export const tableSchema = new Option(
-  "--schema <schema>",
-  "path to a Table Schema descriptor",
-)
+const options = InferTableSchemaOptions.shape
+const option = f.option({ helpGroup: "Table Schema:" })
 
-export const sampleRows = new Option(
-  "--sample-rows <sampleRows>",
-  "number of rows to sample for schema inference",
-).argParser(Number.parseInt)
+export const tableSchema = option
+  .schema(z.string().optional())
+  .describe("path to a Table Schema descriptor")
 
-export const confidence = new Option(
-  "--confidence <confidence>",
-  "confidence threshold for schema inference",
-).argParser(Number.parseFloat)
+export const tableSchemaParams = {
+  columnTypes: f
+    .option({ helpGroup: "Table Schema:", parse: parseColumnTypes })
+    .schema(options.columnTypes)
+    .describe("a list of comma-separated column name:type pairs to use for the schema"),
+  columnProperties: f
+    .option({ helpGroup: "Table Schema:", parse: value => JSON.parse(value) })
+    .schema(options.columnProperties)
+    .describe("a JSON object of column name to column property to use for the schema"),
+  missingValues: f
+    .option({ helpGroup: "Table Schema:", parse: value => value.split(",") })
+    .schema(options.missingValues)
+    .describe("comma-separated values to treat as missing"),
+  decimalChar: option
+    .schema(options.decimalChar)
+    .describe("character to use as decimal separator"),
+  groupChar: option
+    .schema(options.groupChar)
+    .describe("character to use for digit grouping"),
+  trueValues: f
+    .option({ helpGroup: "Table Schema:", parse: value => value.split(",") })
+    .schema(options.trueValues)
+    .describe("values to treat as true"),
+  falseValues: f
+    .option({ helpGroup: "Table Schema:", parse: value => value.split(",") })
+    .schema(options.falseValues)
+    .describe("values to treat as false"),
+  datetimeFormat: option
+    .schema(options.datetimeFormat)
+    .describe("datetime format pattern"),
+  dateFormat: option.schema(options.dateFormat).describe("date format pattern"),
+  timeFormat: option.schema(options.timeFormat).describe("time format pattern"),
+  arrayType: option.schema(options.arrayType).describe("array type (array or list)"),
+  listDelimiter: option
+    .schema(options.listDelimiter)
+    .describe("delimiter for list values"),
+  listItemType: option.schema(options.listItemType).describe("type of items in lists"),
+  sampleRows: option
+    .schema(z.number().int().optional())
+    .describe("number of rows to sample for schema inference"),
+  confidence: option
+    .schema(options.confidence)
+    .describe("confidence threshold for schema inference"),
+  commaDecimal: option
+    .schema(options.commaDecimal)
+    .describe("use comma as decimal separator in schema inference"),
+  monthFirst: option
+    .schema(options.monthFirst)
+    .describe("interpret dates as month-first in schema inference"),
+  keepStrings: option
+    .schema(options.keepStrings)
+    .describe("keep fields as strings instead of inferring types"),
+}
 
-export const commaDecimal = new Option(
-  "--comma-decimal",
-  "use comma as decimal separator in schema inference",
-)
-
-export const monthFirst = new Option(
-  "--month-first",
-  "interpret dates as month-first in schema inference",
-)
-
-export const keepStrings = new Option(
-  "--keep-strings",
-  "keep fields as strings instead of inferring types",
-)
-
-export const columnTypes = new Option(
-  "--column-types <columnTypes>",
-  "a list of comma-separated column name:type pairs to use for the schema",
-).argParser((value: string) => {
-  const result: Record<string, Column["type"]> = {}
-  value.split(",").forEach(pair => {
-    const [key, val] = pair.split(":")
-    if (key && val) result[key] = val as Column["type"]
-  })
+function parseColumnTypes(value: string) {
+  const result: Record<string, string> = {}
+  for (const pair of value.split(",")) {
+    const [key, type] = pair.split(":")
+    if (key && type) result[key] = type
+  }
   return result
-})
-
-export const columnProperties = new Option(
-  "--column-properties <columnProperties>",
-  "a JSON object of column name to column property to use for the schema",
-).argParser((value: string) =>
-  TableSchemaOptions.shape.columnProperties.parse(JSON.parse(value)),
-)
-
-export const missingValues = new Option(
-  "--missing-values <missingValues>",
-  "comma-separated values to treat as missing",
-).argParser((value: string) => value.split(","))
-
-export const decimalChar = new Option(
-  "--decimal-char <decimalChar>",
-  "character to use as decimal separator",
-)
-
-export const groupChar = new Option(
-  "--group-char <groupChar>",
-  "character to use for digit grouping",
-)
-
-export const trueValues = new Option(
-  "--true-values <trueValues>",
-  "values to treat as true",
-).argParser((value: string) => value.split(","))
-
-export const falseValues = new Option(
-  "--false-values <falseValues>",
-  "values to treat as false",
-).argParser((value: string) => value.split(","))
-
-export const datetimeFormat = new Option(
-  "--datetime-format <datetimeFormat>",
-  "datetime format pattern",
-)
-
-export const dateFormat = new Option("--date-format <dateFormat>", "date format pattern")
-
-export const timeFormat = new Option("--time-format <timeFormat>", "time format pattern")
-
-export const arrayType = new Option(
-  "--array-type <arrayType>",
-  "array type (array or list)",
-).choices(["array", "list"])
-
-export const listDelimiter = new Option(
-  "--list-delimiter <listDelimiter>",
-  "delimiter for list values",
-)
-
-export const listItemType = new Option(
-  "--list-item-type <listItemType>",
-  "type of items in lists",
-).choices([
-  "string",
-  "integer",
-  "number",
-  "boolean",
-  "date-time",
-  "date",
-  "time",
-] satisfies ListColumn["property"]["itemType"][])
+}

@@ -1,35 +1,36 @@
 import { loadDataset, saveDataset } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
 import pc from "picocolors"
+import { z } from "zod"
 import { helpConfiguration } from "../../helpers/help.ts"
+import { TextResult } from "../../models/output.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const copyDatasetCommand = new Command()
-  .name("copy")
-  .description("Copy a local or remote dataset to a local folder")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.positionalDescriptorPath)
-  .addOption(params.toPathRequired)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
+export const copyDatasetCommand = f
+  .command({
+    description: "Copy a local or remote dataset to a local folder",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.descriptorPath,
+      toPath: params.toPathRequired,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(TextResult)
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
 
     await session.task(pc.bold("Copy dataset"), async () => {
-      const dataset = await loadDataset(path)
-      await saveDataset(dataset, { target: options.toPath })
+      const dataset = await loadDataset(input.path)
+      await saveDataset(dataset, { target: input.toPath })
     })
 
-    session.renderTextResult(
-      `Copied dataset from ${pc.bold(path)} to ${pc.bold(options.toPath)}`,
+    return session.renderTextResult(
+      `Copied dataset from ${pc.bold(input.path)} to ${pc.bold(input.toPath)}`,
       { status: "success" },
     )
   })

@@ -1,37 +1,40 @@
-import { describeFile } from "@fairspec/library"
-import { Command } from "commander"
+import { describeFile, Integrity } from "@fairspec/library"
+import { f } from "fireargs"
+import { z } from "zod"
 import { selectFile } from "../../helpers/file.ts"
 import { helpConfiguration } from "../../helpers/help.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const describeFileCommand = new Command()
-  .name("describe")
-  .description("Show stats for a local or remote file")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.positionalFilePath)
-  .addOption(params.fromDataset)
-  .addOption(params.fromResource)
-  .addOption(params.hashType)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
-
-    if (!path) {
-      path = await selectFile(session, options)
-    }
+export const describeFileCommand = f
+  .command({
+    description: "Show stats for a local or remote file",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.filePath,
+      dataset: params.dataset,
+      resource: params.resource,
+      hashType: params.hashType,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(
+    z.object({
+      bytes: z.number(),
+      textual: z.boolean(),
+      integrity: Integrity.optional(),
+    }),
+  )
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
+    const path = input.path ?? (await selectFile(session, input))
 
     const stats = await session.task("Describing file", async () => {
-      return await describeFile(path, { hashType: options.hashType })
+      return await describeFile(path, { hashType: input.hashType })
     })
 
-    session.renderDataResult(stats)
+    return session.renderDataResult(stats)
   })

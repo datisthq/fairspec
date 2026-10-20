@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { queryDatasetCommand } from "../query.ts"
 
 describe("dataset query", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -43,20 +41,15 @@ describe("dataset query", () => {
       return true
     })
 
-    const command = new Command().addCommand(queryDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "query",
-        descriptorPath,
-        "SELECT users.name, COUNT(*) AS n FROM posts JOIN users ON posts.user_id = users.id GROUP BY users.name",
-        "--json",
-      ])
+      await queryDatasetCommand.parseAsync(
+        [
+          descriptorPath,
+          "SELECT users.name, COUNT(*) AS n FROM posts JOIN users ON posts.user_id = users.id GROUP BY users.name",
+          "--json",
+        ],
+        { from: "user" },
+      )
     } catch {}
 
     expect(JSON.parse(text[0] ?? "")).toEqual([{ name: "bob", n: 2 }])

@@ -1,35 +1,31 @@
-import { Argument, Option } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 
-export const optionalPositionalDescriptorPath = new Argument(
-  "[path]",
-  "local or remote path to the descriptor",
-)
+export const descriptorPath = f
+  .argument()
+  .string()
+  .describe("local or remote path to the descriptor")
 
-export const positionalDescriptorPath = new Argument(
-  "<path>",
-  "local or remote path to the descriptor",
-)
+export const tablePath = f
+  .argument()
+  .schema(z.string().optional())
+  .describe("local or remote path to the table")
 
-export const positionalTablePath = new Argument(
-  "[path]",
-  "local or remote path to the table",
-)
+export const filePath = f
+  .argument()
+  .schema(z.string().optional())
+  .describe("local or remote path to the file")
 
-export const positionalFilePath = new Argument(
-  "[path]",
-  "local or remote path to the file",
-)
+export const requiredFilePath = f
+  .argument()
+  .string()
+  .describe("local or remote path to the file")
 
-export const requiredPositionalFilePath = new Argument(
-  "<path>",
-  "local or remote path to the file",
-)
+export const filePaths = f
+  .argument({ name: "path" })
+  .array(z.string())
+  .describe("local paths to files")
 
-export const positionalFilePaths = new Argument("<path...>", "local paths to files")
+export const toPath = z.string().optional().describe("a local output path")
 
-export const toPath = new Option("--to-path <toPath>", "a local output path")
-
-export const toPathRequired = new Option(
-  "--to-path <toPath>",
-  "a local output path",
-).makeOptionMandatory()
+export const toPathRequired = z.string().describe("a local output path")

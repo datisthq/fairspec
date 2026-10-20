@@ -52,80 +52,51 @@ export class Session implements SessionOptions {
   }
 
   renderTextResult(text: string, options?: { status?: Status }) {
-    if (this.silent) {
-      return
-    }
-
-    if (this.json) {
-      text = util.stripVTControlCharacters(text)
-      process.stdout.write(JSON.stringify({ result: text }, null, 2))
-      process.stdout.write("\n")
-      return
-    }
-
-    if (!options?.status) {
-      process.stdout.write(text)
-      process.stdout.write("\n")
-      return
-    }
-
-    process.stdout.write(`${renderStatus(options.status)} ${text}`)
-    process.stdout.write("\n")
+    this.renderText(text, options)
+    return { result: util.stripVTControlCharacters(text) }
   }
 
-  renderDataResult(data: string | object) {
-    if (this.silent) {
-      return
-    }
-
-    if (this.json) {
-      process.stdout.write(JSON.stringify(data, null, 2))
+  renderDataResult<T extends string | object>(data: T) {
+    if (!this.silent && !this.json) {
+      process.stdout.write(colorize(data))
       process.stdout.write("\n")
-      return
     }
 
-    process.stdout.write(colorize(data))
-    process.stdout.write("\n")
+    return data
   }
 
   renderFrameResult(frame: Frame) {
-    if (this.silent) {
-      return
-    }
-
     if (this.json) {
-      process.stdout.write(JSON.stringify(frame.toRecords(), null, 2))
-      process.stdout.write("\n")
-      return
+      return frame.toRecords()
     }
 
-    process.stdout.write(frame.toString())
-    process.stdout.write("\n")
+    if (!this.silent) {
+      process.stdout.write(frame.toString())
+      process.stdout.write("\n")
+    }
+
+    return []
   }
 
-  renderReportResult(report: Report) {
+  renderReportResult<T extends Report>(report: T) {
     if (!report.valid) {
       process.exitCode = 1
     }
 
-    if (this.silent) {
-      return
-    }
-
-    if (this.json) {
-      process.stdout.write(JSON.stringify(report, null, 2))
-      process.stdout.write("\n")
-      return
+    if (this.silent || this.json) {
+      return report
     }
 
     if (report.valid) {
       this.renderText("Validation passed", { status: "success" })
-      return
+      return report
     }
 
     for (const error of report.errors) {
       this.renderText(renderError(error), { status: "error" })
     }
+
+    return report
   }
 
   async task<T>(title: string, func: (api: TaskApi) => Promise<T>) {

@@ -3,13 +3,11 @@ import { mkdtemp, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { copyDatasetCommand } from "../copy.ts"
 
 describe("dataset copy", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -34,20 +32,10 @@ describe("dataset copy", () => {
       return true
     })
 
-    const command = new Command().addCommand(copyDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "copy",
-      descriptorPath,
-      "--to-path",
-      targetPath,
-      "--json",
-    ])
+    await copyDatasetCommand.parseAsync(
+      [descriptorPath, "--to-path", targetPath, "--json"],
+      { from: "user" },
+    )
 
     return text
   }
@@ -63,20 +51,10 @@ describe("dataset copy", () => {
       return true
     })
 
-    const command = new Command().addCommand(copyDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "copy",
-      descriptorPath,
-      "--to-path",
-      targetPath,
-      "--json",
-    ])
+    await copyDatasetCommand.parseAsync(
+      [descriptorPath, "--to-path", targetPath, "--json"],
+      { from: "user" },
+    )
 
     return text
   }

@@ -1,26 +1,19 @@
 import { inferResourceName, loadDataset } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 import { helpConfiguration } from "../../helpers/help.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const listDatasetCommand = new Command()
-  .name("list")
-  .description("List Dataset resources")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.positionalDescriptorPath)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      debug: options.debug,
-      json: options.json,
-    })
+export const listDatasetCommand = f
+  .command({ description: "List Dataset resources", configureHelp: helpConfiguration })
+  .input(z.object({ path: params.descriptorPath, debug: params.debug }))
+  .output(z.array(z.string()))
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
 
     const dataset = await session.task("Loading dataset", async () => {
-      const dataset = await loadDataset(path)
+      const dataset = await loadDataset(input.path)
 
       if (!dataset) {
         throw new Error("Could not load dataset")
@@ -33,5 +26,5 @@ export const listDatasetCommand = new Command()
       resource => resource.name ?? inferResourceName(resource),
     )
 
-    session.renderDataResult(resourceNames)
+    return session.renderDataResult(resourceNames)
   })

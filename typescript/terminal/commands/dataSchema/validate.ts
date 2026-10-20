@@ -1,30 +1,28 @@
 import { validateDataSchema } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 import { helpConfiguration } from "../../helpers/help.ts"
+import { ReportResult } from "../../models/output.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const validateDataSchemaCommand = new Command()
-  .name("validate")
-  .description("Validate a Data Schema")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.requiredPositionalFilePath)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
+export const validateDataSchemaCommand = f
+  .command({ description: "Validate a Data Schema", configureHelp: helpConfiguration })
+  .input(
+    z.object({
+      path: params.requiredFilePath,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(ReportResult)
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
 
     const report = await session.task("Validating data", async () => {
-      const { valid, errors } = await validateDataSchema(path)
+      const { valid, errors } = await validateDataSchema(input.path)
       return { valid, errors }
     })
 
-    session.renderReportResult(report)
+    return session.renderReportResult(report)
   })

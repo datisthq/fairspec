@@ -1,11 +1,9 @@
 import { describeFile, writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { validateFileCommand } from "../validate.ts"
 
 describe("file validate", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -27,23 +25,11 @@ describe("file validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "validate",
-        filePath,
-        "--hash",
-        correctHash,
-        "--hash-type",
-        "md5",
-        "--json",
-      ])
+      await validateFileCommand.parseAsync(
+        [filePath, "--hash", correctHash, "--hash-type", "md5", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -62,23 +48,11 @@ describe("file validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "validate",
-        filePath,
-        "--hash",
-        wrongHash,
-        "--hash-type",
-        "md5",
-        "--json",
-      ])
+      await validateFileCommand.parseAsync(
+        [filePath, "--hash", wrongHash, "--hash-type", "md5", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -98,13 +72,8 @@ describe("file validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", filePath, "--json"])
+      await validateFileCommand.parseAsync([filePath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

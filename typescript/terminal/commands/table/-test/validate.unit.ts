@@ -1,5 +1,4 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { validateTableCommand } from "../validate.ts"
 
@@ -9,7 +8,6 @@ describe("table validate", () => {
   beforeEach(() => {
     originalExitCode = process.exitCode
     process.exitCode = undefined
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -29,13 +27,8 @@ describe("table validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", csvPath, "--json"])
+      await validateTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -53,13 +46,8 @@ describe("table validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", csvPath, "--json"])
+      await validateTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -77,22 +65,17 @@ describe("table validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "validate",
-      csvPath,
-      "--check",
-      'end-after-start="end" >= start',
-      "--check",
-      "two-rows=count(*) = 2",
-      "--json",
-    ])
+    await validateTableCommand.parseAsync(
+      [
+        csvPath,
+        "--check",
+        'end-after-start="end" >= start',
+        "--check",
+        "two-rows=count(*) = 2",
+        "--json",
+      ],
+      { from: "user" },
+    )
 
     const data = JSON.parse(text[0] ?? "")
     expect(data.errors).toEqual([
@@ -104,12 +87,7 @@ describe("table validate", () => {
     const csvContent = "id,name,age\n1,alice,25\n2,bob,30"
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
-    await command.parseAsync(["node", "test", "validate", csvPath, "--json"])
+    await validateTableCommand.parseAsync([csvPath, "--json"], { from: "user" })
 
     expect(process.exitCode).toBeFalsy()
   })
@@ -128,20 +106,9 @@ describe("table validate", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
+    await validateTableCommand.parseAsync([csvPath, "--schema", schemaPath, "--json"], {
+      from: "user",
     })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "validate",
-      csvPath,
-      "--schema",
-      schemaPath,
-      "--json",
-    ])
 
     expect(process.exitCode).toBe(1)
   })
@@ -156,13 +123,8 @@ describe("table validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "validate", tsvPath, "--json"])
+      await validateTableCommand.parseAsync([tsvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

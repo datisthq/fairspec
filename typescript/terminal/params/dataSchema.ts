@@ -1,6 +1,5 @@
-import { Option } from "commander"
+import { z } from "zod"
 
-export const dataSchema = new Option(
-  "--schema <dataSchema>",
-  "path to a data schema descriptor (JSON Schema)",
-).makeOptionMandatory()
+export const dataSchema = z
+  .string()
+  .describe("path to a data schema descriptor (JSON Schema)")

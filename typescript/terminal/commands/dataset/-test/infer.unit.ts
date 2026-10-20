@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { inferDatasetCommand } from "../infer.ts"
 
 describe("dataset infer", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -25,13 +23,8 @@ describe("dataset infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csvPath, "--json"])
+      await inferDatasetCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -53,13 +46,10 @@ describe("dataset infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csv1Path, csv2Path, "--json"])
+      await inferDatasetCommand.parseAsync([csv1Path, csv2Path, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -79,13 +69,8 @@ describe("dataset infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferDatasetCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csvPath, "--json"])
+      await inferDatasetCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

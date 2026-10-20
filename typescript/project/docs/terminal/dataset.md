@@ -396,10 +396,10 @@ fairspec dataset list ./local-data/dataset.json
 fairspec dataset validate dataset.json
 
 # 2. If validation fails, check individual resources
-fairspec table validate --from-dataset dataset.json --from-resource users
+fairspec table validate --dataset dataset.json --resource users
 
 # 3. Inspect resource schemas
-fairspec table infer-schema --from-dataset dataset.json --from-resource users
+fairspec table infer-schema --dataset dataset.json --resource users
 
 # 4. Generate schema documentation
 fairspec table render-schema schema.json --to-format markdown --to-path docs/users-schema.md
@@ -548,8 +548,8 @@ fairspec dataset validate ./climate-data/dataset.json
 fairspec dataset list ./climate-data/dataset.json
 
 # Explore specific resource
-fairspec table describe --from-dataset ./climate-data/dataset.json \
-  --from-resource temperature
+fairspec table describe --dataset ./climate-data/dataset.json \
+  --resource temperature
 ```
 
 ### Dataset Testing
@@ -569,7 +569,7 @@ fi
 # 2. Check all resources exist
 for resource in $(fairspec dataset list dataset.json --json | jq -r '.[]'); do
   echo "Checking resource: $resource"
-  if ! fairspec table describe --from-dataset dataset.json --from-resource "$resource" --silent; then
+  if ! fairspec table describe --dataset dataset.json --resource "$resource" --silent; then
     echo "✗ Resource $resource could not be loaded"
     exit 1
   fi
@@ -604,21 +604,21 @@ console.log(dataset.resources[0].tableSchema)
 
 ## Working with Resources
 
-All dataset commands integrate with table commands through the `--from-dataset` and `--from-resource` options:
+All dataset commands integrate with table commands through the `--dataset` and `--resource` options:
 
 ```bash
 # Load resource from dataset
-fairspec table describe --from-dataset dataset.json --from-resource users
+fairspec table describe --dataset dataset.json --resource users
 
 # Query resource
-fairspec table query --from-dataset dataset.json --from-resource orders \
+fairspec table query --dataset dataset.json --resource orders \
   "SELECT * FROM self WHERE status = 'shipped'"
 
 # Validate resource
-fairspec table validate --from-dataset dataset.json --from-resource products
+fairspec table validate --dataset dataset.json --resource products
 
 # Infer resource schema
-fairspec table infer-schema --from-dataset dataset.json --from-resource users
+fairspec table infer-schema --dataset dataset.json --resource users
 ```
 
 This approach allows you to:

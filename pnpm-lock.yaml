@@ -131,10 +131,10 @@ importers:
         version: 24.2.0
       vite-plus:
         specifier: 'catalog:'
-        version: 1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0)
+        version: 1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.1)
       vitest:
         specifier: 'catalog:'
-        version: 5.0.1(@types/node@24.2.0)(@vitest/browser-preview@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1(vitest@5.0.1))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.0))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))
+        version: 5.0.1(@types/node@24.2.0)(@vitest/browser-preview@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1(vitest@5.0.1))(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.2.0)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.1))(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))
 
   desktop:
     dependencies:
@@ -434,8 +434,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       zod:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: ^4.4.1
+        version: 4.6.6
     devDependencies:
       '@types/multistream':
         specifier: 4.1.3
@@ -502,8 +502,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
       zod:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: ^4.4.1
+        version: 4.6.6
 
   typescript/mcp-server:
     dependencies:
@@ -512,10 +512,10 @@ importers:
         version: link:../library
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.1
-        version: 1.32.1(supports-color@10.2.2)(zod@4.2.1)
+        version: 1.32.1(supports-color@10.2.2)(zod@4.6.6)
       zod:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: ^4.4.1
+        version: 4.6.6
 
   typescript/metadata:
     dependencies:
@@ -535,8 +535,8 @@ importers:
         specifier: ^0.16.1
         version: 0.16.1
       zod:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: ^4.4.1
+        version: 4.6.6
     devDependencies:
       '@pollyjs/adapter-fetch':
         specifier: 6.0.6
@@ -580,17 +580,14 @@ importers:
         specifier: 'catalog:'
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: ^4.4.1
+        version: 4.6.6
 
   typescript/terminal:
     dependencies:
       '@bomb.sh/tab':
         specifier: ^0.0.12
-        version: 0.0.12(cac@6.7.14)(commander@14.0.2)
-      '@commander-js/extra-typings':
-        specifier: ^14.0.0
-        version: 14.0.0(commander@14.0.2)
+        version: 0.0.12(cac@6.7.14)(commander@14.0.3)
       '@fairspec/library':
         specifier: workspace:*
         version: link:../library
@@ -598,8 +595,11 @@ importers:
         specifier: workspace:*
         version: link:../mcp-server
       commander:
-        specifier: ^14.0.0
-        version: 14.0.2
+        specifier: ^14.0.3
+        version: 14.0.3
+      fireargs:
+        specifier: ^0.6.0
+        version: 0.6.0(commander@14.0.3)(zod@4.6.6)
       json-colorizer:
         specifier: ^3.0.1
         version: 3.0.1
@@ -609,6 +609,9 @@ importers:
       tasuku:
         specifier: ^2.0.5
         version: 2.0.5
+      zod:
+        specifier: ^4.4.1
+        version: 4.6.6
 
 packages:
 
@@ -986,11 +989,6 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
-
-  '@commander-js/extra-typings@14.0.0':
-    resolution: {integrity: sha512-hIn0ncNaJRLkZrxBIp5AsW/eXEHNKYQBh0aPdoUqNgD+Io3NIykQqpKFyKcuasZhicGaEZJX/JBSIkZ4e5x8Dg==}
-    peerDependencies:
-      commander: ~14.0.0
 
   '@content-collections/core@0.15.3':
     resolution: {integrity: sha512-0tdMU9I6U1wQWh8/TcKbcSKWOzICujaWFpogltiZ7trDh8q7RSAEmO4QOs4+wrd2QtMgRmOcFgmT7P8iElH3jw==}
@@ -5298,10 +5296,6 @@ packages:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
 
-  commander@14.0.2:
-    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
-    engines: {node: '>=20'}
-
   commander@14.0.3:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
@@ -6106,6 +6100,13 @@ packages:
   finalhandler@2.1.1:
     resolution: {integrity: sha512-S8KoZgRZN+a5rNwqTxlZZePjT/4cnm0ROV70LedRHZ0p8u9fRID0hJUZQpkKLzro8LfmC8sx23bY6tVNxv8pQA==}
     engines: {node: '>= 18.0.0'}
+
+  fireargs@0.6.0:
+    resolution: {integrity: sha512-xkX7TgDPDxvknVfQrtWG6TS+2YCibGjE3YBahwjfijGQR5fnogdMY1tKGmgDMENeVsPVp6Twg87pupqPvBOs8Q==}
+    engines: {node: ^24.11.0, pnpm: ^11.0.0}
+    peerDependencies:
+      commander: ^14.0.3
+      zod: ^4.4.1
 
   flatted@3.4.4:
     resolution: {integrity: sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==}
@@ -9296,9 +9297,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
-
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
@@ -9762,10 +9760,10 @@ snapshots:
 
   '@blazediff/core@1.10.0': {}
 
-  '@bomb.sh/tab@0.0.12(cac@6.7.14)(commander@14.0.2)':
+  '@bomb.sh/tab@0.0.12(cac@6.7.14)(commander@14.0.3)':
     optionalDependencies:
       cac: 6.7.14
-      commander: 14.0.2
+      commander: 14.0.3
 
   '@braintree/sanitize-url@7.1.2': {}
 
@@ -9821,10 +9819,6 @@ snapshots:
 
   '@colors/colors@1.5.0':
     optional: true
-
-  '@commander-js/extra-typings@14.0.0(commander@14.0.2)':
-    dependencies:
-      commander: 14.0.2
 
   '@content-collections/core@0.15.3(typescript@5.9.3)':
     dependencies:
@@ -10743,7 +10737,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.2.1)':
+  '@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.6)':
     dependencies:
       '@hono/node-server': 1.19.13(hono@4.12.25)
       ajv: 8.20.0
@@ -10760,8 +10754,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.2.1
-      zod-to-json-schema: 3.25.2(zod@4.2.1)
+      zod: 4.6.6
+      zod-to-json-schema: 3.25.2(zod@4.6.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -14080,8 +14074,6 @@ snapshots:
 
   commander@11.1.0: {}
 
-  commander@14.0.2: {}
-
   commander@14.0.3: {}
 
   commander@15.0.0: {}
@@ -15072,6 +15064,12 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
+
+  fireargs@0.6.0(commander@14.0.3)(zod@4.6.6):
+    dependencies:
+      cn: 0.2.4
+      commander: 14.0.3
+      zod: 4.6.6
 
   flatted@3.4.4: {}
 
@@ -19102,13 +19100,11 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-to-json-schema@3.25.2(zod@4.2.1):
+  zod-to-json-schema@3.25.2(zod@4.6.6):
     dependencies:
-      zod: 4.2.1
+      zod: 4.6.6
 
   zod@3.25.76: {}
-
-  zod@4.2.1: {}
 
   zod@4.3.6: {}
 

@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { inferTableSchemaCommand } from "../infer.ts"
 
 describe("schema infer", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -25,13 +23,8 @@ describe("schema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csvPath, "--json"])
+      await inferTableSchemaCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -53,13 +46,8 @@ describe("schema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csvPath, "--json"])
+      await inferTableSchemaCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -81,13 +69,8 @@ describe("schema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "infer", csvPath, "--json"])
+      await inferTableSchemaCommand.parseAsync([csvPath, "--json"], { from: "user" })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -107,21 +90,16 @@ describe("schema infer", () => {
       return true
     })
 
-    const command = new Command().addCommand(inferTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "infer",
-        csvPath,
-        "--column-properties",
-        '{"id":{"type":"string"},"price":{"title":"Price"}}',
-        "--json",
-      ])
+      await inferTableSchemaCommand.parseAsync(
+        [
+          csvPath,
+          "--column-properties",
+          '{"id":{"type":"string"},"price":{"title":"Price"}}',
+          "--json",
+        ],
+        { from: "user" },
+      )
     } catch {}
 
     const data = JSON.parse(text[0] ?? "")

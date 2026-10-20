@@ -1,81 +1,61 @@
-import { Option } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 
-export const dialect = new Option("--dialect <dialect>", "path to a Dialect descriptor")
+const option = f.option({ helpGroup: "Dialect:" })
 
-export const format = new Option(
-  "--format <format>",
-  "format type (csv, json, xlsx, etc)",
-)
-
-export const delimiter = new Option(
-  "--delimiter <char>",
-  "character used to separate fields in the data",
-)
-
-export const lineTerminator = new Option(
-  "--line-terminator <char>",
-  "character sequence used to terminate rows",
-)
-
-export const quoteChar = new Option(
-  "--quote-char <char>",
-  "character used to quote fields",
-)
-
-export const nullSequence = new Option(
-  "--null-sequence <seq>",
-  "character sequence representing null or missing values",
-)
-
-export const headerRows = new Option(
-  "--header-rows <rows>",
-  "comma-separated row numbers (1-indexed) for headers, or 'false' to disable",
-).argParser((value: string) => {
-  if (value === "false") return false
-  return value.split(",").map(Number)
-})
-
-export const headerJoin = new Option(
-  "--header-join <char>",
-  "character used to join multi-line headers",
-)
-
-export const commentRows = new Option(
-  "--comment-rows <rows>",
-  "comma-separated row numbers (1-indexed) to exclude from data",
-).argParser((value: string) => value.split(",").map(Number))
-
-export const commentPrefix = new Option(
-  "--comment-prefix <prefix>",
-  "character sequence denoting the start of a comment line",
-)
-
-export const columnNames = new Option(
-  "--column-names <names>",
-  "comma-separated list of column names",
-).argParser((value: string) => value.split(","))
-
-export const jsonPointer = new Option(
-  "--json-pointer <pointer>",
-  "JSON pointer to the data array within the JSON document",
-)
-
-export const rowType = new Option(
-  "--row-type <type>",
-  "the type of each row in the data",
-).choices(["array", "object"])
-
-export const sheetNumber = new Option(
-  "--sheet-number <num>",
-  "for spreadsheet data, the sheet number to read (0-indexed)",
-).argParser(Number.parseInt)
-
-export const sheetName = new Option(
-  "--sheet-name <name>",
-  "for spreadsheet data, the sheet name to read",
-)
-
-export const tableName = new Option(
-  "--table-name <name>",
-  "for database sources, the table name to read",
-)
+export const dialectParams = {
+  dialect: option.schema(z.string().optional()).describe("path to a Dialect descriptor"),
+  format: option
+    .schema(z.string().optional())
+    .describe("format type (csv, json, xlsx, etc)"),
+  delimiter: option
+    .schema(z.string().optional())
+    .describe("character used to separate fields in the data"),
+  lineTerminator: option
+    .schema(z.string().optional())
+    .describe("character sequence used to terminate rows"),
+  quoteChar: option
+    .schema(z.string().optional())
+    .describe("character used to quote fields"),
+  nullSequence: option
+    .schema(z.string().optional())
+    .describe("character sequence representing null or missing values"),
+  headerRows: f
+    .option({
+      helpGroup: "Dialect:",
+      parse: value => (value === "false" ? false : value.split(",").map(Number)),
+    })
+    .schema(z.union([z.literal(false), z.array(z.number().int())]).optional())
+    .describe(
+      "comma-separated row numbers (1-indexed) for headers, or 'false' to disable",
+    ),
+  headerJoin: option
+    .schema(z.string().optional())
+    .describe("character used to join multi-line headers"),
+  commentRows: f
+    .option({ helpGroup: "Dialect:", parse: value => value.split(",").map(Number) })
+    .schema(z.array(z.number().int()).optional())
+    .describe("comma-separated row numbers (1-indexed) to exclude from data"),
+  commentPrefix: option
+    .schema(z.string().optional())
+    .describe("character sequence denoting the start of a comment line"),
+  columnNames: f
+    .option({ helpGroup: "Dialect:", parse: value => value.split(",") })
+    .schema(z.array(z.string()).optional())
+    .describe("comma-separated list of column names"),
+  jsonPointer: option
+    .schema(z.string().optional())
+    .describe("JSON pointer to the data array within the JSON document"),
+  rowType: option
+    .schema(z.enum(["array", "object"]).optional())
+    .describe("the type of each row in the data"),
+  sheetNumber: option
+    .schema(z.number().int().optional())
+    .describe("for spreadsheet data, the sheet number to read (0-indexed)"),
+  sheetName: option
+    .schema(z.string().optional())
+    .describe("for spreadsheet data, the sheet name to read"),
+  tableName: option
+    .schema(z.string().optional())
+    .describe("for database sources, the table name to read"),
+}

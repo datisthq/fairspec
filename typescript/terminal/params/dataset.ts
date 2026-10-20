@@ -1,28 +1,19 @@
-import { Argument, Option } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 
-export const withRemote = new Option("--with-remote", "include remote resources")
+export const dataset = f
+  .option({ short: "d" })
+  .schema(z.string().optional())
+  .describe("dataset to select resource from")
 
-export const fromDataset = new Option(
-  "-d --dataset <path>",
-  "dataset to select resource from",
-)
+export const resource = f
+  .option({ short: "r" })
+  .schema(z.string().optional())
+  .describe("resource in provided dataset")
 
-export const fromResource = new Option(
-  "-r --resource <path>",
-  "resource in provided dataset",
-)
-
-export const toFolder = new Option(
-  "--to-folder <toFolder>",
-  "a local output folder path",
-).makeOptionMandatory()
-
-export const toArchive = new Option(
-  "--to-archive <toArchive>",
-  "a local output zip file path",
-).makeOptionMandatory()
-
-export const datasetQuery = new Argument(
-  "<query>",
-  "a SQL query to execute against a dataset (refer to each table by its resource name)",
-)
+export const datasetQuery = f
+  .argument()
+  .string()
+  .describe(
+    "a SQL query to execute against a dataset (refer to each table by its resource name)",
+  )

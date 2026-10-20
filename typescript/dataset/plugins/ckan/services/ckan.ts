@@ -64,7 +64,7 @@ export async function makeCkanApiRequest<S extends z.ZodType>(options: {
 
 const CkanResponse = z.object({
   success: z.boolean(),
-  result: z.unknown(),
+  result: z.unknown().optional(),
   error: z.looseObject({ message: z.string().optional() }).optional(),
 })
 

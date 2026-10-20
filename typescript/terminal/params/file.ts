@@ -1,21 +1,15 @@
-import { Option } from "commander"
+import { z } from "zod"
 
-export const hashType = new Option("--hash-type <type>", "hash type")
-  .choices(["md5", "sha1", "sha256", "sha512"])
+export const hashType = z
+  .enum(["md5", "sha1", "sha256", "sha512"])
   .default("sha256")
+  .describe("hash type")
 
-export const bytes = new Option("--bytes <bytes>", "expected file size in bytes")
+export const sampleBytes = z.number().int().optional().describe("sample size in bytes")
 
-export const sampleBytes = new Option(
-  "--sample-bytes <sampleBytes>",
-  "sample size in bytes",
-).argParser(Number.parseInt)
+export const hash = z
+  .string()
+  .optional()
+  .describe("expected file hash calculated with the specified hash type")
 
-export const hash = new Option(
-  "--hash <hash>",
-  "expected file hash calculated with the specified hash type",
-)
-
-export const lines = new Option("--lines <lines>", "maximum number of lines").argParser(
-  Number.parseInt,
-)
+export const lines = z.number().int().optional().describe("maximum number of lines")

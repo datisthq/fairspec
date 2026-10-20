@@ -1,13 +1,11 @@
 import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import { getTempFilePath, writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { copyFileCommand } from "../copy.ts"
 
 describe("file copy", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -26,21 +24,10 @@ describe("file copy", () => {
       return true
     })
 
-    const command = new Command().addCommand(copyFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "copy",
-        sourcePath,
-        "--to-path",
-        targetPath,
-        "--json",
-      ])
+      await copyFileCommand.parseAsync([sourcePath, "--to-path", targetPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -62,21 +49,10 @@ describe("file copy", () => {
       return true
     })
 
-    const command = new Command().addCommand(copyFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "copy",
-        sourcePath,
-        "--to-path",
-        targetPath,
-        "--json",
-      ])
+      await copyFileCommand.parseAsync([sourcePath, "--to-path", targetPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -96,21 +72,10 @@ describe("file copy", () => {
       return true
     })
 
-    const command = new Command().addCommand(copyFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "copy",
-        sourcePath,
-        "--to-path",
-        targetPath,
-        "--json",
-      ])
+      await copyFileCommand.parseAsync([sourcePath, "--to-path", targetPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

@@ -1,5 +1,4 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { previewFileCommand } from "../preview.ts"
 
@@ -8,7 +7,6 @@ describe("file preview", () => {
 
   beforeEach(() => {
     text = []
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     vi.spyOn(process.stdout, "write").mockImplementation((msg: string | Uint8Array) => {
       text.push(typeof msg === "string" ? msg : msg.toString())
@@ -21,13 +19,8 @@ describe("file preview", () => {
   })
 
   async function runCommand(args: string[]) {
-    const command = new Command().addCommand(previewFileCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "preview", ...args])
+      await previewFileCommand.parseAsync([...args], { from: "user" })
     } catch {}
   }
 

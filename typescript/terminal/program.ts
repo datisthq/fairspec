@@ -1,5 +1,5 @@
 import tab from "@bomb.sh/tab/commander"
-import * as commander from "commander"
+import { f } from "fireargs"
 import { validateDataCommand } from "./commands/data/validate.ts"
 import { inferDataSchemaCommand } from "./commands/dataSchema/infer.ts"
 import { validateDataSchemaCommand } from "./commands/dataSchema/validate.ts"
@@ -26,61 +26,81 @@ import { validateTableSchemaCommand } from "./commands/tableSchema/validate.ts"
 import { helpConfiguration } from "./helpers/help.ts"
 import metadata from "./package.json" with { type: "json" }
 
-const datasetCommand = new commander.Command()
-  .configureHelp(helpConfiguration)
-  .description("Dataset related commands")
+const datasetCommand = f
+  .program({
+    description: "Dataset related commands",
+    configureHelp: helpConfiguration,
+    helpCommand: { name: "help [command]" },
+  })
+  .router({
+    infer: inferDatasetCommand,
+    copy: copyDatasetCommand,
+    validate: validateDatasetCommand,
+    list: listDatasetCommand,
+    query: queryDatasetCommand,
+    script: scriptDatasetCommand,
+  })
 
-  .addCommand(inferDatasetCommand.name("infer"))
-  .addCommand(copyDatasetCommand.name("copy"))
-  .addCommand(validateDatasetCommand.name("validate"))
-  .addCommand(listDatasetCommand.name("list"))
-  .addCommand(queryDatasetCommand.name("query"))
-  .addCommand(scriptDatasetCommand.name("script"))
+const tableCommand = f
+  .program({
+    description: "Table related commands",
+    configureHelp: helpConfiguration,
+    helpCommand: { name: "help [command]" },
+  })
+  .router({
+    describe: describeTableCommand,
+    preview: previewTableCommand,
+    query: queryTableCommand,
+    script: scriptTableCommand,
+    validate: validateTableCommand,
+    "infer-schema": inferTableSchemaCommand,
+    "render-schema": renderTableSchemaCommand,
+    "validate-schema": validateTableSchemaCommand,
+    "infer-dialect": inferFileDialectCommand,
+  })
 
-const tableCommand = new commander.Command()
-  .configureHelp(helpConfiguration)
-  .description("Table related commands")
+const dataCommand = f
+  .program({
+    description: "Data related commands",
+    configureHelp: helpConfiguration,
+    helpCommand: { name: "help [command]" },
+  })
+  .router({
+    validate: validateDataCommand,
+    "infer-schema": inferDataSchemaCommand,
+    "validate-schema": validateDataSchemaCommand,
+    "infer-dialect": inferFileDialectCommand,
+  })
 
-  .addCommand(describeTableCommand.name("describe"))
-  .addCommand(previewTableCommand.name("preview"))
-  .addCommand(queryTableCommand.name("query"))
-  .addCommand(scriptTableCommand.name("script"))
-  .addCommand(validateTableCommand.name("validate"))
-  .addCommand(inferTableSchemaCommand.name("infer-schema"))
-  .addCommand(renderTableSchemaCommand.name("render-schema"))
-  .addCommand(validateTableSchemaCommand.name("validate-schema"))
-  .addCommand(inferFileDialectCommand.name("infer-dialect"))
+const fileCommand = f
+  .program({
+    description: "File related commands",
+    configureHelp: helpConfiguration,
+    helpCommand: { name: "help [command]" },
+  })
+  .router({
+    copy: copyFileCommand,
+    describe: describeFileCommand,
+    preview: previewFileCommand,
+    validate: validateFileCommand,
+    "infer-dialect": inferFileDialectCommand,
+  })
 
-const dataCommand = new commander.Command()
-  .configureHelp(helpConfiguration)
-  .description("Data related commands")
-
-  .addCommand(validateDataCommand.name("validate"))
-  .addCommand(inferDataSchemaCommand.name("infer-schema"))
-  .addCommand(validateDataSchemaCommand.name("validate-schema"))
-  .addCommand(inferFileDialectCommand.name("infer-dialect"))
-
-const fileCommand = new commander.Command()
-  .configureHelp(helpConfiguration)
-  .description("File related commands")
-
-  .addCommand(copyFileCommand.name("copy"))
-  .addCommand(describeFileCommand.name("describe"))
-  .addCommand(previewFileCommand.name("preview"))
-  .addCommand(validateFileCommand.name("validate"))
-  .addCommand(inferFileDialectCommand.name("infer-dialect"))
-
-export const program = commander.program
-  .name("fairspec")
-  .description(metadata.description)
-
-  .version(metadata.version, "-v, --version")
-  .configureHelp(helpConfiguration)
-
-  .addCommand(datasetCommand.name("dataset"))
-  .addCommand(tableCommand.name("table"))
-  .addCommand(dataCommand.name("data"))
-  .addCommand(fileCommand.name("file"))
-  .addCommand(mcpCommand.name("mcp"))
+export const program = f
+  .program({
+    name: "fairspec",
+    description: metadata.description,
+    version: metadata.version,
+    versionOption: { flags: "-v, --version" },
+    configureHelp: helpConfiguration,
+    helpCommand: { name: "help [command]" },
+  })
+  .router({
+    dataset: datasetCommand,
+    table: tableCommand,
+    data: dataCommand,
+    file: fileCommand,
+    mcp: mcpCommand,
+  })
 
 tab(program)

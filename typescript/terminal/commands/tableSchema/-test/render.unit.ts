@@ -2,13 +2,11 @@ import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import type { TableSchema } from "@fairspec/library"
 import { getTempFilePath, writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { renderTableSchemaCommand } from "../render.ts"
 
 describe("schema render", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -32,21 +30,11 @@ describe("schema render", () => {
       return true
     })
 
-    const command = new Command().addCommand(renderTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "render",
-        schemaPath,
-        "--to-format",
-        "markdown",
-        "--json",
-      ])
+      await renderTableSchemaCommand.parseAsync(
+        [schemaPath, "--to-format", "markdown", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -68,23 +56,11 @@ describe("schema render", () => {
 
     vi.spyOn(console, "log").mockImplementation(() => {})
 
-    const command = new Command().addCommand(renderTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "render",
-        schemaPath,
-        "--to-format",
-        "html",
-        "--to-path",
-        outputPath,
-        "--json",
-      ])
+      await renderTableSchemaCommand.parseAsync(
+        [schemaPath, "--to-format", "html", "--to-path", outputPath, "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(existsSync(outputPath)).toBe(true)
@@ -108,21 +84,11 @@ describe("schema render", () => {
       return true
     })
 
-    const command = new Command().addCommand(renderTableSchemaCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "render",
-        schemaPath,
-        "--to-format",
-        "html",
-        "--json",
-      ])
+      await renderTableSchemaCommand.parseAsync(
+        [schemaPath, "--to-format", "html", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

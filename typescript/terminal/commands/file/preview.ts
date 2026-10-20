@@ -1,46 +1,39 @@
 import { previewFile } from "@fairspec/library"
-import { Command } from "commander"
+import { f } from "fireargs"
+import { z } from "zod"
 import { selectFile } from "../../helpers/file.ts"
 import { helpConfiguration } from "../../helpers/help.ts"
 import * as params from "../../params/index.ts"
 import { Session } from "../../session.ts"
 
-export const previewFileCommand = new Command()
-  .name("preview")
-  .description("Show the raw source of a local or remote file")
-  .configureHelp(helpConfiguration)
-
-  .addArgument(params.positionalFilePath)
-  .addOption(params.fromDataset)
-  .addOption(params.fromResource)
-  .addOption(params.lines)
-  .addOption(params.sampleBytes)
-  .addOption(params.silent)
-  .addOption(params.debug)
-  .addOption(params.json)
-
-  .action(async (path, options) => {
-    const session = new Session({
-      silent: options.silent,
-      debug: options.debug,
-      json: options.json,
-    })
-
-    if (!path) {
-      path = await selectFile(session, options)
-    }
+export const previewFileCommand = f
+  .command({
+    description: "Show the raw source of a local or remote file",
+    configureHelp: helpConfiguration,
+  })
+  .input(
+    z.object({
+      path: params.filePath,
+      dataset: params.dataset,
+      resource: params.resource,
+      lines: params.lines,
+      sampleBytes: params.sampleBytes,
+      silent: params.silent,
+      debug: params.debug,
+    }),
+  )
+  .output(z.object({ text: z.string(), truncated: z.boolean() }))
+  .handler(async (input, ctx) => {
+    const session = new Session({ ...input, json: ctx.json })
+    const path = input.path ?? (await selectFile(session, input))
 
     const preview = await session.task("Loading file preview", async () => {
       return await previewFile(path, {
-        maxLines: options.lines,
-        maxBytes: options.sampleBytes,
+        maxLines: input.lines,
+        maxBytes: input.sampleBytes,
       })
     })
 
-    if (options.json) {
-      session.renderDataResult(preview)
-      return
-    }
-
-    session.renderTextResult(preview.text.replace(/\r?\n$/, ""))
+    session.renderText(preview.text.replace(/\r?\n$/, ""))
+    return preview
   })

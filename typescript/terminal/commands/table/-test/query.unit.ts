@@ -1,11 +1,9 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { queryTableCommand } from "../query.ts"
 
 describe("table query", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -24,20 +22,11 @@ describe("table query", () => {
       return true
     })
 
-    const command = new Command().addCommand(queryTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "query",
-        csvPath,
-        "SELECT * FROM self WHERE age > 25",
-        "--json",
-      ])
+      await queryTableCommand.parseAsync(
+        [csvPath, "SELECT * FROM self WHERE age > 25", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -55,20 +44,11 @@ describe("table query", () => {
       return true
     })
 
-    const command = new Command().addCommand(queryTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "query",
-        csvPath,
-        "SELECT name, city FROM self",
-        "--json",
-      ])
+      await queryTableCommand.parseAsync(
+        [csvPath, "SELECT name, city FROM self", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -86,20 +66,11 @@ describe("table query", () => {
       return true
     })
 
-    const command = new Command().addCommand(queryTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "query",
-        csvPath,
-        "SELECT * FROM self ORDER BY score DESC",
-        "--json",
-      ])
+      await queryTableCommand.parseAsync(
+        [csvPath, "SELECT * FROM self ORDER BY score DESC", "--json"],
+        { from: "user" },
+      )
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)

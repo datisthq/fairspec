@@ -1,5 +1,4 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const mockReplSession = { context: {} as Record<string, unknown> }
@@ -19,7 +18,6 @@ const { scriptTableCommand } = await import("../script.ts")
 // the test environment when trying to mock console and streams.
 describe.skip("table script", () => {
   beforeEach(() => {
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
@@ -35,12 +33,7 @@ describe.skip("table script", () => {
     const csvContent = "id,name\n1,alice\n2,bob"
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
 
-    const command = new Command().addCommand(scriptTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
-    await command.parseAsync(["node", "test", "script", csvPath])
+    await scriptTableCommand.parseAsync([csvPath], { from: "user" })
 
     expect(replStartMock).toHaveBeenCalledWith({ prompt: "fairspec> " })
     expect(mockReplSession.context).toHaveProperty("fairspec")
@@ -51,13 +44,8 @@ describe.skip("table script", () => {
     const csvContent = "id,name,age\n1,alice,25\n2,bob,30"
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
 
-    const command = new Command().addCommand(scriptTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "script", csvPath])
+      await scriptTableCommand.parseAsync([csvPath], { from: "user" })
     } catch {}
 
     expect(replStartMock).toHaveBeenCalled()
@@ -69,13 +57,8 @@ describe.skip("table script", () => {
     const tsvContent = "id\tname\tscore\n1\talice\t85\n2\tbob\t90"
     const tsvPath = await writeTempFile(tsvContent, { format: "tsv" })
 
-    const command = new Command().addCommand(scriptTableCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync(["node", "test", "script", tsvPath])
+      await scriptTableCommand.parseAsync([tsvPath], { from: "user" })
     } catch {}
 
     expect(replStartMock).toHaveBeenCalledWith({ prompt: "fairspec> " })

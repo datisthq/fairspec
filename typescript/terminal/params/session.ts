@@ -1,10 +1,8 @@
-import { Option } from "commander"
+import { z } from "zod"
 
-export const json = new Option("--json", "output as JSON")
+export const debug = z
+  .boolean()
+  .optional()
+  .describe("Enable debug mode to print exception details to stderr")
 
-export const debug = new Option(
-  "--debug",
-  "Enable debug mode to print exception details to stderr",
-)
-
-export const silent = new Option("--silent", "suppress all output except errors")
+export const silent = z.boolean().optional().describe("suppress all output except errors")

@@ -40,12 +40,13 @@
   },
   "dependencies": {
     "@bomb.sh/tab": "^0.0.12",
-    "@commander-js/extra-typings": "^14.0.0",
     "@fairspec/library": "workspace:*",
     "@fairspec/mcp-server": "workspace:*",
-    "commander": "^14.0.0",
+    "commander": "^14.0.3",
+    "fireargs": "^0.6.0",
     "json-colorizer": "^3.0.1",
     "picocolors": "^1.1.1",
-    "tasuku": "^2.0.5"
+    "tasuku": "^2.0.5",
+    "zod": "^4.4.1"
   }
 }

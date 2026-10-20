@@ -29,14 +29,14 @@ fairspec file copy data.csv --to-path output.csv
 fairspec file copy https://example.com/data.csv --to-path local-data.csv
 
 # Copy from a dataset resource
-fairspec file copy --from-dataset dataset.json --from-resource users --to-path users.csv
+fairspec file copy --dataset dataset.json --resource users --to-path users.csv
 ```
 
 ### Options
 
 - `--to-path <path>` (required) - Local output path
-- `--from-dataset <path>` - Load file from dataset descriptor
-- `--from-resource <name>` - Specify resource name from dataset
+- `--dataset <path>` - Load file from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
 - `--silent` - Suppress output messages
 - `--debug` - Show debug information
 - `--json` - Output as JSON
@@ -56,7 +56,7 @@ fairspec file describe data.csv --hash-type sha256
 fairspec file describe https://example.com/data.csv
 
 # Describe from a dataset
-fairspec file describe --from-dataset dataset.json --from-resource users
+fairspec file describe --dataset dataset.json --resource users
 ```
 
 ### Output
@@ -71,8 +71,8 @@ The describe command returns:
 
 - `--hash-type <type>` - Hash algorithm to use
   - Choices: `md5`, `sha1`, `sha256` (default), `sha512`
-- `--from-dataset <path>` - Load file from dataset descriptor
-- `--from-resource <name>` - Specify resource name from dataset
+- `--dataset <path>` - Load file from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
 - `--silent` - Suppress output messages
 - `--debug` - Show debug information
 - `--json` - Output as JSON
@@ -203,13 +203,13 @@ All file commands support loading files from dataset descriptors:
 
 ```bash
 # Describe a resource from a dataset
-fairspec file describe --from-dataset dataset.json --from-resource sales-data
+fairspec file describe --dataset dataset.json --resource sales-data
 
 # Copy a resource from a dataset
-fairspec file copy --from-dataset dataset.json --from-resource users --to-path users.csv
+fairspec file copy --dataset dataset.json --resource users --to-path users.csv
 
 # Validate a resource from a dataset
-fairspec file validate --from-dataset dataset.json --from-resource products --hash abc123
+fairspec file validate --dataset dataset.json --resource products --hash abc123
 ```
 
 ## Output Formats
@@ -255,10 +255,10 @@ fairspec file validate local-data.csv --hash <hash-from-describe> --hash-type sh
 
 ```bash
 # Describe all details of a dataset resource
-fairspec file describe --from-dataset dataset.json --from-resource sales
+fairspec file describe --dataset dataset.json --resource sales
 
 # Copy the resource locally
-fairspec file copy --from-dataset dataset.json --from-resource sales --to-path sales.csv
+fairspec file copy --dataset dataset.json --resource sales --to-path sales.csv
 
 # Infer its dialect
 fairspec file infer-dialect sales.csv

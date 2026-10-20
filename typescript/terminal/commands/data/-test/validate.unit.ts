@@ -1,5 +1,4 @@
 import { writeTempFile } from "@fairspec/library"
-import { Command } from "commander"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { validateDataCommand } from "../validate.ts"
 
@@ -9,7 +8,6 @@ describe("data validate", () => {
   beforeEach(() => {
     originalExitCode = process.exitCode
     process.exitCode = undefined
-    vi.spyOn(process, "exit").mockImplementation((() => {}) as () => never)
     vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   })
@@ -43,21 +41,10 @@ describe("data validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateDataCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "validate",
-        jsonPath,
-        "--schema",
-        schemaPath,
-        "--json",
-      ])
+      await validateDataCommand.parseAsync([jsonPath, "--schema", schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -79,20 +66,9 @@ describe("data validate", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(validateDataCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
+    await validateDataCommand.parseAsync([jsonPath, "--schema", schemaPath, "--json"], {
+      from: "user",
     })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "validate",
-      jsonPath,
-      "--schema",
-      schemaPath,
-      "--json",
-    ])
 
     expect(process.exitCode).toBeFalsy()
   })
@@ -111,20 +87,9 @@ describe("data validate", () => {
       format: "json",
     })
 
-    const command = new Command().addCommand(validateDataCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
+    await validateDataCommand.parseAsync([jsonPath, "--schema", schemaPath, "--json"], {
+      from: "user",
     })
-
-    await command.parseAsync([
-      "node",
-      "test",
-      "validate",
-      jsonPath,
-      "--schema",
-      schemaPath,
-      "--json",
-    ])
 
     expect(process.exitCode).toBe(1)
   })
@@ -152,21 +117,10 @@ describe("data validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateDataCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "validate",
-        jsonPath,
-        "--schema",
-        schemaPath,
-        "--json",
-      ])
+      await validateDataCommand.parseAsync([jsonPath, "--schema", schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
@@ -205,21 +159,10 @@ describe("data validate", () => {
       return true
     })
 
-    const command = new Command().addCommand(validateDataCommand).configureOutput({
-      writeOut: () => {},
-      writeErr: () => {},
-    })
-
     try {
-      await command.parseAsync([
-        "node",
-        "test",
-        "validate",
-        jsonPath,
-        "--schema",
-        schemaPath,
-        "--json",
-      ])
+      await validateDataCommand.parseAsync([jsonPath, "--schema", schemaPath, "--json"], {
+        from: "user",
+      })
     } catch {}
 
     expect(text.length).toBeGreaterThan(0)
