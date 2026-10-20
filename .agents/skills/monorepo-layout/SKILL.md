@@ -124,17 +124,23 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   puts a Python/TypeScript switch over the install-method tabs and shows only commands that run
   unchanged on both CLIs — check each against both `--help` outputs, since the language
   docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
-- Landings follow livemark.dev's own landing (livemark's `livemark-landing` skill). A custom
-  route renders bare, so each one draws its chrome: `<Banner />`, `<Header />`, `<main>`,
-  `<BackToTop />`. Every hero is a `HeroCarousel` of slides, each a rendered pane (terminal,
-  code, assistant chat, the Desktop screenshot) with a source chip naming its input. The
-  shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
-  panes and sample files), imported relatively: a new file under `.livemark/components/` must
-  not take a livemark component's name (`Section.tsx` would replace livemark's), and
+- Every landing copies livemark.dev's own landing exactly (livemark's `livemark-landing`
+  skill): Hero → `SplitSection` (points beside a window) → `FeatureGrid` → tinted
+  `ShowcaseSection` (two windows) → `SplitSection reverse` with links → `FinalCta` → `Datist`.
+  Interactive widgets (install tabs, runtime radio, platform tabs) live in the split windows. A
+  custom route renders bare, so each draws its chrome: `<Banner />`, `<Header />`, `<main>`,
+  `<BackToTop />`
+- The hero is livemark's: a `HeroCarousel` bleeding to `xl:w-[60rem]`, 16:10 slides, and a
+  source chip over the frame's left edge at 55%. Slides are rendered panes, not screenshots
+  (only Desktop's is an image): from `lg` their text is sized in `cqw` so they scale like
+  images, and each keeps its content in the top half, under the chip is empty space. The home
+  hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
+- Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (panes and
+  sample files), imported relatively: a new file under `.livemark/components/` must not take a
+  livemark component's name (`Section.tsx` would replace livemark's), and
   `livemark/components/<new>` resolves in the build but not for `tsgo`
 - Pane output is real: rerun the command or snippet on the sample `members.csv`/`broken.csv`
-  shown in the chips and paste what it prints. The home page advertises every part: the
-  standard, the libraries, CLI, MCP server, agent skills and Desktop
+  shown in the chips and paste what it prints
 - `.livemark/.target/` is livemark's generated mount, gitignored and excluded from types and
   fmt. `.livemark/styles/general.css` is an escape of livemark's: when a livemark upgrade adds
   tokens (the build fails on an unknown utility such as `bg-positive/15`), re-copy it from

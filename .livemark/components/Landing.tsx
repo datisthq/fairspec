@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router"
+import { FileText } from "lucide-react"
 import { buttonVariants } from "livemark/elements/button"
 import { useInView } from "livemark/hooks/in-view"
 import {
@@ -20,6 +22,7 @@ export interface Point {
   icon: ComponentType<SVGProps<SVGSVGElement>>
   title: string
   description: ReactNode
+  link?: { to: string; splat?: string }
 }
 
 /** Catppuccin Latte/Mocha token colours for code samples, matching the site's Shiki themes. */
@@ -33,6 +36,9 @@ export const tk = {
   body: "text-[#4c4f69] dark:text-[#cdd6f4]",
   dim: "text-[#9ca0b0] dark:text-[#6c7086]",
 }
+
+export const textLinkClass =
+  "text-sm font-medium text-primary underline-offset-4 hover:underline"
 
 export function actionClass(variant: "default" | "outline" | "ghost") {
   return cn(
@@ -64,7 +70,7 @@ export function Hero(props: {
           </p>
           <div className="mt-8 flex flex-wrap gap-3 sm:mt-10">{props.actions}</div>
         </div>
-        <div className="mt-12 min-w-0 lg:mt-0 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out motion-reduce:animate-none">
+        <div className="mt-12 lg:mt-0 xl:w-[60rem] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out motion-reduce:animate-none">
           <HeroCarousel slides={props.slides} />
         </div>
       </div>
@@ -73,7 +79,8 @@ export function Hero(props: {
 }
 
 // Every slide is in the prerendered HTML, stacked in one grid cell; only the active
-// one is visible and reachable, and the tallest sets the height, so nothing jumps.
+// one is visible and reachable. From lg every slide is a 16:10 frame whose text scales
+// with its width (cqw), so a pane must keep its content above the chip at 55%.
 export function HeroCarousel(props: { slides: Slide[] }) {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -90,17 +97,14 @@ export function HeroCarousel(props: { slides: Slide[] }) {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <figure className="overflow-hidden rounded-card border border-border bg-card shadow-xl">
+      <figure className="overflow-hidden rounded-card border border-border bg-card shadow-xl [container-type:inline-size]">
         <div className="flex items-center gap-5 border-b border-border bg-muted/50 px-4 py-2">
           <span aria-hidden className="hidden gap-1.5 sm:flex">
             <span className="size-2.5 rounded-full bg-border" />
             <span className="size-2.5 rounded-full bg-border" />
             <span className="size-2.5 rounded-full bg-border" />
           </span>
-          <div
-            role="tablist"
-            className="flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:none]"
-          >
+          <div role="tablist" className="flex min-w-0 gap-1">
             {props.slides.map((slide, index) => (
               <button
                 key={slide.id}
@@ -114,7 +118,7 @@ export function HeroCarousel(props: { slides: Slide[] }) {
                   setStopped(true)
                 }}
                 className={cn(
-                  "relative flex shrink-0 cursor-pointer items-center gap-2 overflow-hidden rounded-control px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
+                  "relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-control px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
                   index === active
                     ? "bg-card font-medium text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
@@ -125,12 +129,7 @@ export function HeroCarousel(props: { slides: Slide[] }) {
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span
-                  className={cn(
-                    index !== active && "hidden",
-                    index !== active && props.slides.length <= 4 && "sm:inline",
-                  )}
-                >
+                <span className={index === active ? undefined : "hidden sm:inline"}>
                   {slide.title}
                 </span>
                 {index === active ? (
@@ -165,19 +164,19 @@ export function HeroCarousel(props: { slides: Slide[] }) {
                 index === active ? "opacity-100" : "pointer-events-none opacity-0",
               )}
             >
-              {slide.pane}
+              <div className="lg:aspect-[16/10] lg:overflow-hidden">{slide.pane}</div>
             </div>
           ))}
         </div>
       </figure>
-      <div className="relative mt-4 grid grid-cols-1 lg:-mt-6 lg:-mr-8 lg:ml-auto lg:w-[20rem]">
+      <div className="mt-4 grid grid-cols-1 lg:absolute lg:top-[55%] lg:-left-10 lg:mt-0 lg:w-[22rem]">
         {props.slides.map((slide, index) => (
           <div
             key={slide.id}
             aria-hidden={index !== active}
             inert={index !== active}
             className={cn(
-              "min-w-0 self-end [grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
+              "[grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
               index === active ? "opacity-100" : "pointer-events-none opacity-0",
             )}
           >
@@ -191,16 +190,21 @@ export function HeroCarousel(props: { slides: Slide[] }) {
 
 function SourceChip(props: { source: Slide["source"] }) {
   return (
-    <figure className="rounded-card border border-primary/25 bg-card p-4 shadow-lg">
-      <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
-        {props.source.eyebrow}
-      </p>
-      <figcaption className="mt-1 font-mono text-xs text-muted-foreground">
-        {props.source.file}
-      </figcaption>
-      <pre className="mt-2 font-mono text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
-        <code className={tk.body}>{props.source.code}</code>
-      </pre>
+    <figure className="flex h-full gap-3 rounded-card border border-primary/25 bg-card p-4 shadow-lg">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <FileText className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
+          {props.source.eyebrow}
+        </p>
+        <figcaption className="mt-1 font-mono text-xs text-muted-foreground">
+          {props.source.file}
+        </figcaption>
+        <pre className="mt-2 overflow-x-auto font-mono text-sm leading-relaxed">
+          <code className={tk.body}>{props.source.code}</code>
+        </pre>
+      </div>
     </figure>
   )
 }
@@ -243,23 +247,86 @@ export function LandingSection(props: {
   )
 }
 
-export function FeatureGrid(props: { features: Point[] }) {
+export function FeatureGrid(props: { features: Point[]; columns?: 2 | 3 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      className={cn(
+        "grid grid-cols-1 md:grid-cols-2 gap-4",
+        props.columns !== 2 && "lg:grid-cols-3",
+      )}
+    >
       {props.features.map((f, i) => (
         <Reveal key={f.title} delayMs={i * 60}>
-          <div className="h-full group relative rounded-card border border-border bg-card p-6 transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-            <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary mb-4 group-hover:bg-primary/15 transition-colors">
-              <f.icon className="size-5" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">{f.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              {f.description}
-            </p>
-          </div>
+          <FeatureCard feature={f} />
         </Reveal>
       ))}
     </div>
+  )
+}
+
+export function SplitSection(props: {
+  id?: string
+  title: ReactNode
+  lede: ReactNode
+  points: Point[]
+  visual: ReactNode
+  reverse?: boolean
+  links?: ReactNode
+}) {
+  const visual = <Reveal>{props.visual}</Reveal>
+  return (
+    <section id={props.id} className="scroll-mt-16 border-b border-border">
+      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+        <Reveal>
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              {props.title}
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg">{props.lede}</p>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
+          {props.reverse ? visual : null}
+          <PointList points={props.points} />
+          {props.reverse ? null : visual}
+        </div>
+        {props.links ? (
+          <Reveal>
+            <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 md:mt-12">
+              {props.links}
+            </div>
+          </Reveal>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+export function ShowcaseSection(props: {
+  title: ReactNode
+  lede: ReactNode
+  left: { label: string; content: ReactNode }
+  right: { label: string; content: ReactNode }
+}) {
+  return (
+    <section className="border-b border-border bg-primary/5">
+      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+        <Reveal>
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              {props.title}
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg">{props.lede}</p>
+          </div>
+        </Reveal>
+        <Reveal>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <WindowCard label={props.left.label}>{props.left.content}</WindowCard>
+            <WindowCard label={props.right.label}>{props.right.content}</WindowCard>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   )
 }
 
@@ -371,6 +438,36 @@ export function Reveal(props: { children: ReactNode; delayMs?: number }) {
     >
       {props.children}
     </div>
+  )
+}
+
+function FeatureCard(props: { feature: Point }) {
+  const f = props.feature
+  const body = (
+    <>
+      <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary mb-4 group-hover:bg-primary/15 transition-colors">
+        <f.icon className="size-5" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground">{f.title}</h3>
+      <div className="mt-2 text-sm text-muted-foreground leading-relaxed">
+        {f.description}
+      </div>
+    </>
+  )
+  const className =
+    "block h-full group relative rounded-card border border-border bg-card p-6 no-underline transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+  if (!f.link) return <div className={className}>{body}</div>
+  if (f.link.splat !== undefined) {
+    return (
+      <Link to="/$" params={{ _splat: f.link.splat }} className={className}>
+        {body}
+      </Link>
+    )
+  }
+  return (
+    <Link to={f.link.to} className={className}>
+      {body}
+    </Link>
   )
 }
 

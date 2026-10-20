@@ -7,11 +7,15 @@ import {
   Database,
   ExternalLink,
   FileText,
+  Globe,
+  Package,
+  PlayCircle,
+  Sliders,
   Sparkles,
   SquareTerminal,
   Table2,
 } from "lucide-react"
-import type { ComponentType, ReactNode, SVGProps } from "react"
+import type { ReactNode } from "react"
 import { useState } from "react"
 import { BackToTop } from "livemark/components/BackToTop"
 import { Banner } from "livemark/components/Banner"
@@ -19,12 +23,17 @@ import { Header } from "livemark/components/Header"
 import { cn } from "cn"
 import {
   Datist,
+  FeatureGrid,
   FinalCta,
   Hero,
   LandingSection,
-  Reveal,
+  type Point,
+  ShowcaseSection,
   type Slide,
+  SplitSection,
+  WindowCard,
   actionClass,
+  textLinkClass,
   tk,
 } from "../components/Landing.tsx"
 import {
@@ -34,6 +43,8 @@ import {
   PreviewPane,
   QueryPane,
   ValidatePane,
+  ValidationErrors,
+  WindowCode,
 } from "../components/Panes.tsx"
 
 // @ts-ignore
@@ -93,9 +104,46 @@ function CliToolPage() {
           }
           slides={slides}
         />
-        <Installation language={language} onLanguageChange={setLanguage} />
-        <Usage language={language} />
-        <Commands language={language} />
+        <SplitSection
+          id="installation"
+          title="One command, two runtimes"
+          lede={
+            <>
+              Both implementations ship the same <code>fairspec</code> command. Pick the
+              ecosystem you already use.
+            </>
+          }
+          points={installPoints}
+          visual={<InstallWindow language={language} onLanguageChange={setLanguage} />}
+        />
+        <LandingSection
+          title="Commands"
+          lede="Commands are grouped by what they operate on: datasets, tables, JSON data, and files."
+        >
+          <FeatureGrid columns={2} features={createCommandPoints(language)} />
+        </LandingSection>
+        <ShowcaseSection
+          title="Same command, both runtimes"
+          lede="The Python and TypeScript CLIs take the same arguments and print the same report."
+          left={{ label: "Python", content: <ValidateTranscript /> }}
+          right={{ label: "TypeScript", content: <ValidateTranscript /> }}
+        />
+        <SplitSection
+          reverse
+          title="Built for scripts and CI"
+          lede="Every command takes local paths or URLs and prints JSON with --json."
+          points={scriptPoints}
+          visual={<ExamplesWindow language={language} />}
+          links={
+            <Link
+              to="/$"
+              params={{ _splat: `${language}/terminal` }}
+              className={textLinkClass}
+            >
+              Read the CLI docs →
+            </Link>
+          }
+        />
         <FinalCta
           title={
             <>
@@ -153,16 +201,16 @@ const slides: Slide[] = [
 
 /* ─────────────────────────── Installation ─────────────────────────── */
 
-function Shell({ command }: { command: string }) {
-  const parts = command.match(/"[^"]*"|\s+|\S+/g) ?? []
+function Shell(props: { command: string }) {
+  const parts = props.command.match(/"[^"]*"|\s+|\S+/g) ?? []
   return (
-    <code className={tk.body}>
+    <>
       {parts.map((part, i) => (
         <span key={i} className={shellTokenClass(part, i)}>
           {part}
         </span>
       ))}
-    </code>
+    </>
   )
 }
 
@@ -240,7 +288,49 @@ const terminalPackages: Record<Language, string> = {
   typescript: "@fairspec/terminal",
 }
 
-function Installation(props: {
+const installPoints: Point[] = [
+  {
+    icon: SquareTerminal,
+    title: "The same fairspec command",
+    description:
+      "Python and TypeScript packages install one command with the same subcommands and options.",
+  },
+  {
+    icon: Package,
+    title: "Library or command line only",
+    description: (
+      <>
+        <code className="font-mono text-foreground">fairspec</code> brings the library
+        too; <code className="font-mono text-foreground">fairspec-terminal</code> and{" "}
+        <code className="font-mono text-foreground">@fairspec/terminal</code> ship just
+        the CLI.
+      </>
+    ),
+  },
+  {
+    icon: PlayCircle,
+    title: "Run without installing",
+    description: (
+      <>
+        <code className="font-mono text-foreground">uvx fairspec</code> or{" "}
+        <code className="font-mono text-foreground">npx fairspec@latest</code> runs the
+        latest version on demand.
+      </>
+    ),
+  },
+  {
+    icon: Sparkles,
+    title: "MCP server included",
+    description: (
+      <>
+        <code className="font-mono text-foreground">fairspec mcp</code> starts the MCP
+        server from the same install.
+      </>
+    ),
+  },
+]
+
+function InstallWindow(props: {
   language: Language
   onLanguageChange: (language: Language) => void
 }) {
@@ -249,82 +339,66 @@ function Installation(props: {
   const method = methods[active] ?? methods[0]
   if (!method) return null
   return (
-    <LandingSection
-      id="installation"
-      title="Installation"
-      lede={
-        <>
-          Both implementations ship the same <code>fairspec</code> command. Pick the
-          ecosystem you already use.
-        </>
-      }
-    >
-      <Reveal>
-        <div className="mx-auto max-w-4xl">
-          <div className="flex justify-center mb-6">
-            <div
-              role="tablist"
-              className="inline-flex rounded-lg border border-border bg-muted/40 p-1"
+    <WindowCard label="Install">
+      <div className="flex justify-center border-b border-border px-4 py-3">
+        <div
+          role="tablist"
+          className="inline-flex rounded-lg border border-border bg-muted/40 p-1"
+        >
+          {languages.map(l => (
+            <button
+              key={l.key}
+              type="button"
+              role="tab"
+              aria-selected={l.key === props.language}
+              onClick={() => {
+                props.onLanguageChange(l.key)
+                setActive(0)
+              }}
+              className={cn(
+                "px-4 py-1.5 text-sm font-medium rounded-md transition-colors",
+                l.key === props.language
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              {languages.map(l => (
-                <button
-                  key={l.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={l.key === props.language}
-                  onClick={() => {
-                    props.onLanguageChange(l.key)
-                    setActive(0)
-                  }}
-                  className={cn(
-                    "px-4 py-1.5 text-sm font-medium rounded-md transition-colors",
-                    l.key === props.language
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {l.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-card border border-border bg-card overflow-hidden">
-            <div
-              role="tablist"
-              className="flex flex-wrap border-b border-border bg-muted/40"
-            >
-              {methods.map((m, i) => (
-                <button
-                  key={m.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                    i === active
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {m.name}
-                </button>
-              ))}
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-4">{method.description}</p>
-              <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-                <Shell command={method.command} />
-              </pre>
-            </div>
-          </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Need only the command line, without the library? Install{" "}
-            <code>{terminalPackages[props.language]}</code> instead.
-          </p>
+              {l.name}
+            </button>
+          ))}
         </div>
-      </Reveal>
-    </LandingSection>
+      </div>
+      <div role="tablist" className="flex flex-wrap border-b border-border bg-muted/40">
+        {methods.map((m, i) => (
+          <button
+            key={m.name}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            onClick={() => setActive(i)}
+            className={cn(
+              "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+              i === active
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {m.name}
+          </button>
+        ))}
+      </div>
+      <div className="p-6">
+        <p className="text-sm text-muted-foreground mb-4">{method.description}</p>
+        <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
+          <code className={tk.body}>
+            <Shell command={method.command} />
+          </code>
+        </pre>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Need only the command line, without the library? Install{" "}
+          <code>{terminalPackages[props.language]}</code> instead.
+        </p>
+      </div>
+    </WindowCard>
   )
 }
 
@@ -343,51 +417,96 @@ const examples: Example[] = [
   { command: 'fairspec table query data.csv "SELECT * FROM self WHERE age > 25"' },
   { command: "fairspec table validate data.csv --json" },
   { command: "fairspec file describe data.csv --hash-type sha256" },
-  { command: "fairspec mcp", only: "typescript" },
+  { command: "fairspec mcp" },
 ]
 
-function Usage(props: { language: Language }) {
+const scriptPoints: Point[] = [
+  {
+    icon: Globe,
+    title: "Local paths or URLs",
+    description:
+      "Point any table, file or dataset command at a file on disk or a remote URL.",
+  },
+  {
+    icon: Braces,
+    title: "JSON for pipelines",
+    description: (
+      <>
+        Add <code className="font-mono text-foreground">--json</code> and the result is
+        data your script or CI job can read, not prose.
+      </>
+    ),
+  },
+  {
+    icon: Sliders,
+    title: "Dialects on the command line",
+    description: (
+      <>
+        Override what inference guesses with{" "}
+        <code className="font-mono text-foreground">--delimiter</code>,{" "}
+        <code className="font-mono text-foreground">--header-rows</code> or{" "}
+        <code className="font-mono text-foreground">--sheet-name</code>.
+      </>
+    ),
+  },
+  {
+    icon: PlayCircle,
+    title: "Interactive sessions",
+    description: (
+      <>
+        <code className="font-mono text-foreground">fairspec table script</code> and{" "}
+        <code className="font-mono text-foreground">fairspec dataset script</code> open a
+        scripting session on the loaded data.
+      </>
+    ),
+  },
+]
+
+function ExamplesWindow(props: { language: Language }) {
   return (
-    <LandingSection
-      tinted
-      title="Usage"
-      lede={
-        <>
-          Every command takes local paths or URLs and prints JSON with <code>--json</code>
-          . Try one of these.
-        </>
-      }
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {examples.map((e, i) => (
-          <Reveal key={e.command} delayMs={i * 40}>
-            <div
-              className={cn(
-                "rounded-card border border-border bg-card p-4 flex flex-wrap items-start gap-3 transition-opacity",
-                e.only && e.only !== props.language && "opacity-50",
-              )}
-            >
-              <SquareTerminal className="size-4 mt-0.5 text-primary shrink-0" />
-              <pre className="flex-1 min-w-0 overflow-x-auto text-sm font-mono leading-relaxed">
+    <WindowCard label="examples">
+      <ul className="divide-y divide-border">
+        {examples.map(e => (
+          <li
+            key={e.command}
+            className={cn(
+              "flex flex-wrap items-start gap-3 px-5 py-3 transition-opacity",
+              e.only && e.only !== props.language && "opacity-50",
+            )}
+          >
+            <pre className="flex-1 min-w-0 overflow-x-auto text-sm font-mono leading-relaxed">
+              <code className={tk.body}>
+                <span className="text-primary select-none">$ </span>
                 <Shell command={e.command} />
-              </pre>
-              {e.only && (
-                <span className="shrink-0 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
-                  {e.only === "python" ? "Python" : "TypeScript"} only
-                </span>
-              )}
-            </div>
-          </Reveal>
+              </code>
+            </pre>
+            {e.only && (
+              <span className="shrink-0 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
+                {e.only === "python" ? "Python" : "TypeScript"} only
+              </span>
+            )}
+          </li>
         ))}
-      </div>
-    </LandingSection>
+      </ul>
+    </WindowCard>
+  )
+}
+
+function ValidateTranscript() {
+  return (
+    <WindowCode>
+      <span className="text-primary select-none">$ </span>
+      <Shell command="fairspec table validate broken.csv --schema schema.json" />
+      {"\n\n"}
+      <ValidationErrors />
+    </WindowCode>
   )
 }
 
 /* ─────────────────────────── Commands ─────────────────────────── */
 
 interface CommandGroup {
-  icon: ComponentType<SVGProps<SVGSVGElement>>
+  icon: Point["icon"]
   entity: "dataset" | "table" | "data" | "file"
   title: string
   verbs: string[]
@@ -439,51 +558,27 @@ const commandGroups: CommandGroup[] = [
   },
 ]
 
-function Commands(props: { language: Language }) {
-  return (
-    <LandingSection
-      title="Commands"
-      lede="Commands are grouped by what they operate on: datasets, tables, JSON data, and files."
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {commandGroups.map((g, i) => (
-          <Reveal key={g.entity} delayMs={i * 40}>
-            <CommandCard group={g} language={props.language} />
-          </Reveal>
-        ))}
-      </div>
-    </LandingSection>
-  )
-}
-
-function CommandCard(props: { group: CommandGroup; language: Language }) {
-  const { icon: Icon, entity, title, verbs, description } = props.group
-  return (
-    <Link
-      to="/$"
-      params={{ _splat: `${props.language}/terminal/${entity}` }}
-      className="group block h-full relative rounded-card border border-border bg-card p-6 no-underline transition-colors hover:border-primary/40"
-    >
-      <div className="flex items-center gap-3 mb-3">
-        <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" />
+function createCommandPoints(language: Language) {
+  return commandGroups.map(g => ({
+    icon: g.icon,
+    title: g.title,
+    description: (
+      <>
+        <p>{g.description}</p>
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {g.verbs.map(v => (
+            <code
+              key={v}
+              className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-xs text-foreground"
+            >
+              fairspec {g.entity} {v}
+            </code>
+          ))}
         </div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-        <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {verbs.map(v => (
-          <code
-            key={v}
-            className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-xs text-foreground"
-          >
-            fairspec {entity} {v}
-          </code>
-        ))}
-      </div>
-    </Link>
-  )
+      </>
+    ),
+    link: { to: "/$", splat: `${language}/terminal/${g.entity}` },
+  }))
 }
 
 function shellTokenClass(part: string, index: number) {

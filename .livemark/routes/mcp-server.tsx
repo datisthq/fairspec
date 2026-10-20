@@ -2,13 +2,18 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   Bot,
   CheckCircle2,
+  Cpu,
   Eye,
   Github,
+  Laptop,
   ListOrdered,
+  MessageSquare,
   Rocket,
+  ScrollText,
   Search,
   Sparkles,
   SquareTerminal,
+  Wrench,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useState } from "react"
@@ -23,18 +28,23 @@ import {
   Hero,
   LandingSection,
   type Point,
-  Reveal,
+  ShowcaseSection,
   type Slide,
+  SplitSection,
+  WindowCard,
   actionClass,
+  textLinkClass,
   tk,
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
   ChatPane,
+  InferredDataset,
   MembersCsv,
   QueryRecords,
   TableSchemaSample,
   ValidationReport,
+  WindowCode,
 } from "../components/Panes.tsx"
 
 // @ts-ignore
@@ -87,9 +97,68 @@ function McpServerPage() {
           }
           slides={slides}
         />
-        <Installation />
-        <Usage />
-        <Tools />
+        <SplitSection
+          id="installation"
+          title="Connect in one step"
+          lede="Wire up the Fairspec MCP server in your favorite AI assistant. It ships with both the TypeScript and the Python package — pick the runtime you have."
+          points={connectPoints}
+          visual={
+            <WindowCard label="Install">
+              <Installation />
+            </WindowCard>
+          }
+        />
+        <LandingSection
+          title="Tools"
+          lede="Twelve tools organized around core Fairspec concepts: data, data schemas, datasets, files, file dialects, tables, and table schemas."
+        >
+          <FeatureGrid features={tools} />
+        </LandingSection>
+        <ShowcaseSection
+          title="Files in, a FAIR dataset out"
+          lede="Ask for a dataset and the server describes your files: dialect, schema and integrity, ready to cite and validate."
+          left={{
+            label: "members.csv",
+            content: (
+              <WindowCode>
+                <MembersCsv />
+              </WindowCode>
+            ),
+          }}
+          right={{
+            label: "inferDatasetTool",
+            content: (
+              <WindowCode>
+                <InferredDataset />
+              </WindowCode>
+            ),
+          }}
+        />
+        <SplitSection
+          reverse
+          title="Ask in plain language"
+          lede="Just ask in natural language. Try one of these prompts."
+          points={askPoints}
+          visual={
+            <WindowCard label="prompts">
+              <Prompts />
+            </WindowCard>
+          }
+          links={
+            <>
+              <Link
+                to="/$"
+                params={{ _splat: "python/agent-skills" }}
+                className={textLinkClass}
+              >
+                Install the agent skills →
+              </Link>
+              <Link to="/cli-tool/" className={textLinkClass}>
+                Use the CLI tool →
+              </Link>
+            </>
+          }
+        />
         <FinalCta
           title={
             <>
@@ -268,73 +337,96 @@ const assistants: Assistant[] = [
   },
 ]
 
+const connectPoints: Point[] = [
+  {
+    icon: Cpu,
+    title: "Node.js or Python",
+    description: (
+      <>
+        Run it with <code className="font-mono text-foreground">npx</code> from the
+        TypeScript package or <code className="font-mono text-foreground">uvx</code> from
+        the Python one. Same tools, same names.
+      </>
+    ),
+  },
+  {
+    icon: MessageSquare,
+    title: "Your assistant",
+    description:
+      "Claude Desktop, Claude Code, Codex and Gemini CLI each take one command or one config entry.",
+  },
+  {
+    icon: Laptop,
+    title: "Runs on your machine",
+    description:
+      "The server is a local process your assistant starts, reading the files and URLs you point it at.",
+  },
+  {
+    icon: Wrench,
+    title: "Twelve tools",
+    description:
+      "Validate, infer, preview and query data, schemas, dialects, tables and whole datasets.",
+  },
+]
+
 function Installation() {
   const [active, setActive] = useState(0)
   const [runtime, setRuntime] = useState<Runtime>("node")
   const assistant = assistants[active] ?? assistants[0]
   if (!assistant) return null
   return (
-    <LandingSection
-      id="installation"
-      tinted
-      title="Installation"
-      lede="Wire up the Fairspec MCP server in your favorite AI assistant. It ships with both the TypeScript and the Python package — pick the runtime you have."
-    >
-      <Reveal>
-        <div className="max-w-4xl mx-auto rounded-card border border-border bg-card overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border bg-muted/40">
-            <div role="tablist" className="flex flex-wrap">
-              {assistants.map((a, i) => (
-                <button
-                  key={a.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                    i === active
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {a.name}
-                </button>
-              ))}
-            </div>
-            <div
-              role="radiogroup"
-              aria-label="Runtime"
-              className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border">
+        <div role="tablist" className="flex flex-wrap">
+          {assistants.map((a, i) => (
+            <button
+              key={a.name}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              onClick={() => setActive(i)}
+              className={cn(
+                "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                i === active
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
             >
-              {runtimes.map(r => (
-                <button
-                  key={r.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={r.id === runtime}
-                  onClick={() => setRuntime(r.id)}
-                  className={cn(
-                    "rounded-md px-3 py-1 text-xs font-medium transition-colors",
-                    r.id === runtime
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="min-w-0 p-6">
-            <p className="text-sm text-muted-foreground mb-4">{assistant.description}</p>
-            <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-              {assistant.snippet(runtime)}
-            </pre>
-          </div>
+              {a.name}
+            </button>
+          ))}
         </div>
-      </Reveal>
-    </LandingSection>
+        <div
+          role="radiogroup"
+          aria-label="Runtime"
+          className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
+        >
+          {runtimes.map(r => (
+            <button
+              key={r.id}
+              type="button"
+              role="radio"
+              aria-checked={r.id === runtime}
+              onClick={() => setRuntime(r.id)}
+              className={cn(
+                "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                r.id === runtime
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="min-w-0 p-5">
+        <p className="text-sm text-muted-foreground mb-4">{assistant.description}</p>
+        <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
+          {assistant.snippet(runtime)}
+        </pre>
+      </div>
+    </>
   )
 }
 
@@ -351,23 +443,41 @@ const prompts: string[] = [
   "Show me the first 10 rows of results.csv sorted by date",
 ]
 
-function Usage() {
+const askPoints: Point[] = [
+  {
+    icon: Bot,
+    title: "Skills pick the tool",
+    description:
+      "The Fairspec agent skills tell your coding agent which tool fits a task and how to read what it returns.",
+  },
+  {
+    icon: SquareTerminal,
+    title: "The same operations in the CLI",
+    description:
+      "Every tool has a fairspec command behind it, so a script or CI job can repeat what the assistant did.",
+  },
+  {
+    icon: ScrollText,
+    title: "Docs agents can read",
+    description: (
+      <>
+        Every docs page has a Markdown twin, indexed in{" "}
+        <code className="font-mono text-foreground">/llms.txt</code>.
+      </>
+    ),
+  },
+]
+
+function Prompts() {
   return (
-    <LandingSection
-      title="Usage"
-      lede="Just ask in natural language. Try one of these prompts."
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {prompts.map((p, i) => (
-          <Reveal key={p} delayMs={i * 40}>
-            <div className="h-full rounded-card border border-border bg-card p-4 flex items-start gap-3">
-              <Sparkles className="size-4 mt-0.5 text-primary shrink-0" />
-              <p className="min-w-0 text-sm text-foreground leading-relaxed">{p}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </LandingSection>
+    <ul className="divide-y divide-border">
+      {prompts.map(p => (
+        <li key={p} className="flex items-start gap-3 px-5 py-3">
+          <Sparkles className="size-4 mt-0.5 text-primary shrink-0" />
+          <span className="min-w-0 text-sm text-foreground leading-relaxed">{p}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -447,15 +557,3 @@ const tools: Point[] = [
       "Checks that a table schema descriptor is well-formed and conforms to the Fairspec specification. Ensures that all field definitions, types, and constraints are valid and properly structured.",
   },
 ]
-
-function Tools() {
-  return (
-    <LandingSection
-      tinted
-      title="Tools"
-      lede="Twelve tools organized around core Fairspec concepts: data, data schemas, datasets, files, file dialects, tables, and table schemas."
-    >
-      <FeatureGrid features={tools} />
-    </LandingSection>
-  )
-}

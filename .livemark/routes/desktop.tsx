@@ -1,12 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   ArrowRight,
   CheckCircle2,
+  Code,
+  CodeXml,
   ExternalLink,
   Github,
   History,
   ListOrdered,
+  Monitor,
+  MousePointerClick,
   Search,
+  ShieldCheck,
+  Sparkles,
+  SquareTerminal,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useState } from "react"
@@ -17,12 +24,16 @@ import { cn } from "cn"
 import {
   Datist,
   FeatureGrid,
+  FinalCta,
   Hero,
   LandingSection,
   type Point,
-  Reveal,
+  ShowcaseSection,
   type Slide,
+  SplitSection,
+  WindowCard,
   actionClass,
+  textLinkClass,
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
@@ -30,7 +41,9 @@ import {
   MembersCsv,
   Pane,
   TableSchemaSample,
+  ValidatePane,
   ValidationErrors,
+  WindowCode,
 } from "../components/Panes.tsx"
 
 // Livemark generates its route tree at build time, so this route id
@@ -49,6 +62,8 @@ export const Route = createFileRoute("/desktop/")({
     ],
   }),
 })
+
+const CHANGELOG = "https://github.com/datisthq/fairspec/blob/main/desktop/CHANGELOG.md"
 
 function ApplicationPage() {
   return (
@@ -82,7 +97,7 @@ function ApplicationPage() {
                 View on GitHub
               </a>
               <a
-                href="https://github.com/datisthq/fairspec/blob/main/desktop/CHANGELOG.md"
+                href={CHANGELOG}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={actionClass("outline")}
@@ -94,8 +109,96 @@ function ApplicationPage() {
           }
           slides={slides}
         />
-        <Tools />
-        <Downloads />
+        <SplitSection
+          id="download"
+          title="Private by design"
+          lede="Install the desktop application. All nine tools run locally, on your own machine."
+          points={privacyPoints}
+          visual={<Downloads />}
+        />
+        <LandingSection
+          title="Tools"
+          lede="Nine tools across the four Fairspec surfaces the application covers: datasets, tables, data, and files."
+        >
+          <FeatureGrid features={tools} />
+        </LandingSection>
+        <ShowcaseSection
+          title="The same report, without code"
+          lede="Open a file, pick a tool, and read the problems the way the CLI and the libraries report them."
+          left={{
+            label: "broken.csv",
+            content: (
+              <WindowCode>
+                <BrokenCsv />
+              </WindowCode>
+            ),
+          }}
+          right={{
+            label: "Validate Table",
+            content: (
+              <WindowCode>
+                <ValidationErrors />
+              </WindowCode>
+            ),
+          }}
+        />
+        <SplitSection
+          reverse
+          title="Prefer code?"
+          lede="The checks the application runs are also commands, library calls and, for most, MCP tools."
+          points={codePoints}
+          visual={
+            <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
+              <ValidatePane />
+            </div>
+          }
+          links={
+            <>
+              <Link to="/cli-tool/" className={textLinkClass}>
+                Use the CLI tool →
+              </Link>
+              <Link
+                to="/$"
+                params={{ _splat: "python/getting-started" }}
+                className={textLinkClass}
+              >
+                Python library →
+              </Link>
+              <Link
+                to="/$"
+                params={{ _splat: "typescript/getting-started" }}
+                className={textLinkClass}
+              >
+                TypeScript library →
+              </Link>
+            </>
+          }
+        />
+        <FinalCta
+          title={
+            <>
+              Point it at your data. <span className="text-primary">Get a report.</span>
+            </>
+          }
+          lede="Download the application for macOS, Windows or Linux, or see what changed in the latest release."
+          actions={
+            <>
+              <a href="#download" className={actionClass("default")}>
+                Download
+                <ArrowRight className="size-4" />
+              </a>
+              <a
+                href={CHANGELOG}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={actionClass("ghost")}
+              >
+                <History className="size-4" />
+                Changelog
+              </a>
+            </>
+          }
+        />
         <Datist />
       </main>
       <BackToTop />
@@ -103,7 +206,7 @@ function ApplicationPage() {
   )
 }
 
-/* ─────────────────────────── Tools ─────────────────────────── */
+/* ─────────────────────────── Hero ─────────────────────────── */
 
 const slides: Slide[] = [
   {
@@ -141,6 +244,135 @@ const slides: Slide[] = [
     source: { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> },
   },
 ]
+
+/* ─────────────────────────── Download ─────────────────────────── */
+
+const privacyPoints: Point[] = [
+  {
+    icon: ShieldCheck,
+    title: "Your files stay local",
+    description:
+      "Every tool runs on your own machine. Your files never leave your machine.",
+  },
+  {
+    icon: MousePointerClick,
+    title: "No code required",
+    description: "Point it at your data and get a report.",
+  },
+  {
+    icon: Monitor,
+    title: "macOS, Windows and Linux",
+    description: (
+      <>
+        Installers (<code className="font-mono text-foreground">.dmg</code>,{" "}
+        <code className="font-mono text-foreground">.exe</code>,{" "}
+        <code className="font-mono text-foreground">.AppImage</code>,{" "}
+        <code className="font-mono text-foreground">.deb</code>) on the GitHub releases
+        page.
+      </>
+    ),
+  },
+  {
+    icon: CodeXml,
+    title: "Built on the TypeScript library",
+    description: (
+      <>
+        Runs <code className="font-mono text-foreground">@fairspec/library</code>, the
+        engine behind the TypeScript package and CLI.
+      </>
+    ),
+  },
+]
+
+const RELEASES = "https://github.com/datisthq/fairspec/releases?q=desktop"
+
+interface Platform {
+  name: string
+  description: ReactNode
+  action: { label: string; href: string }
+}
+
+const platforms: Platform[] = [
+  {
+    name: "macOS",
+    description: (
+      <>
+        Download the <code className="font-mono text-foreground">.dmg</code> installer
+        from the latest release and drag the application into your Applications folder.
+        Your files never leave your machine.
+      </>
+    ),
+    action: { label: "Download for macOS", href: RELEASES },
+  },
+  {
+    name: "Windows",
+    description: (
+      <>
+        Download the <code className="font-mono text-foreground">.exe</code> installer
+        from the latest release and run it. Your files never leave your machine.
+      </>
+    ),
+    action: { label: "Download for Windows", href: RELEASES },
+  },
+  {
+    name: "Linux",
+    description: (
+      <>
+        Download the <code className="font-mono text-foreground">.AppImage</code> or{" "}
+        <code className="font-mono text-foreground">.deb</code> package from the latest
+        release and run it. Your files never leave your machine.
+      </>
+    ),
+    action: { label: "Download for Linux", href: RELEASES },
+  },
+]
+
+function Downloads() {
+  const [active, setActive] = useState(0)
+  const platform = platforms[active] ?? platforms[0]
+  if (!platform) return null
+  return (
+    <WindowCard label="Download">
+      <div role="tablist" className="flex flex-wrap border-b border-border bg-muted/40">
+        {platforms.map((p, i) => (
+          <button
+            key={p.name}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            onClick={() => setActive(i)}
+            className={cn(
+              "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+              i === active
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+      <div className="p-6">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+          {platform.description}
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href={platform.action.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={actionClass("default")}
+          >
+            {platform.action.label}
+            <ExternalLink className="size-4" />
+          </a>
+        </div>
+      </div>
+    </WindowCard>
+  )
+}
+
+/* ─────────────────────────── Tools ─────────────────────────── */
 
 const tools: Point[] = [
   {
@@ -199,115 +431,31 @@ const tools: Point[] = [
   },
 ]
 
-function Tools() {
-  return (
-    <LandingSection
-      title="Tools"
-      lede="Nine tools across the four Fairspec surfaces the application covers: datasets, tables, data, and files."
-    >
-      <FeatureGrid features={tools} />
-    </LandingSection>
-  )
-}
+/* ─────────────────────────── Code ─────────────────────────── */
 
-/* ─────────────────────────── Download ─────────────────────────── */
-
-const RELEASES = "https://github.com/datisthq/fairspec/releases?q=desktop"
-
-interface Platform {
-  name: string
-  description: ReactNode
-  action: { label: string; href: string }
-}
-
-const platforms: Platform[] = [
+const codePoints: Point[] = [
   {
-    name: "macOS",
-    description: (
-      <>
-        Download the <code className="font-mono text-foreground">.dmg</code> installer
-        from the latest release and drag the application into your Applications folder.
-        Your files never leave your machine.
-      </>
-    ),
-    action: { label: "Download for macOS", href: RELEASES },
+    icon: SquareTerminal,
+    title: "CLI tool",
+    description:
+      "Validate datasets, infer schemas, and query tables from scripts, CI pipelines, or an interactive terminal.",
   },
   {
-    name: "Windows",
-    description: (
-      <>
-        Download the <code className="font-mono text-foreground">.exe</code> installer
-        from the latest release and run it. Your files never leave your machine.
-      </>
-    ),
-    action: { label: "Download for Windows", href: RELEASES },
+    icon: Code,
+    title: "Python",
+    description:
+      "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames.",
   },
   {
-    name: "Linux",
-    description: (
-      <>
-        Download the <code className="font-mono text-foreground">.AppImage</code> or{" "}
-        <code className="font-mono text-foreground">.deb</code> package from the latest
-        release and run it. Your files never leave your machine.
-      </>
-    ),
-    action: { label: "Download for Linux", href: RELEASES },
+    icon: CodeXml,
+    title: "TypeScript",
+    description:
+      "The same API surface as the Python package, built on Polars, and shipping a terminal CLI alongside the library.",
+  },
+  {
+    icon: Sparkles,
+    title: "MCP server",
+    description:
+      "Connects AI assistants to the framework over the Model Context Protocol, so you can validate and infer in plain language.",
   },
 ]
-
-function Downloads() {
-  const [active, setActive] = useState(0)
-  const platform = platforms[active] ?? platforms[0]
-  if (!platform) return null
-  return (
-    <LandingSection
-      id="download"
-      tinted
-      title="Download"
-      lede="Install the desktop application. All nine tools run locally, on your own machine."
-    >
-      <Reveal>
-        <div className="mx-auto max-w-3xl rounded-card border border-border bg-card overflow-hidden">
-          <div
-            role="tablist"
-            className="flex flex-wrap border-b border-border bg-muted/40"
-          >
-            {platforms.map((p, i) => (
-              <button
-                key={p.name}
-                type="button"
-                role="tab"
-                aria-selected={i === active}
-                onClick={() => setActive(i)}
-                className={cn(
-                  "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                  i === active
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
-          <div className="p-6">
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-              {platform.description}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href={platform.action.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={actionClass("default")}
-              >
-                {platform.action.label}
-                <ExternalLink className="size-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-    </LandingSection>
-  )
-}

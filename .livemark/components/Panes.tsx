@@ -7,8 +7,10 @@ import { tk } from "./Landing.tsx"
 
 export function Pane(props: { label: string; children: ReactNode }) {
   return (
-    <div className="p-5 font-mono text-[13px] leading-relaxed lg:h-[25rem] lg:overflow-hidden">
-      <p className="mb-4 text-xs text-muted-foreground">{props.label}</p>
+    <div className="p-5 font-mono text-[13px] leading-relaxed lg:p-[2.5cqw] lg:text-[1.1cqw]">
+      <p className="mb-4 text-xs text-muted-foreground lg:mb-[1.8cqw] lg:text-[1cqw]">
+        {props.label}
+      </p>
       <div className="overflow-x-auto">{props.children}</div>
     </div>
   )
@@ -32,7 +34,7 @@ export function Shell(props: { command: string }) {
 
 export function Output(props: { children: ReactNode }) {
   return (
-    <pre className="mt-4">
+    <pre className="mt-[1.2em]">
       <code className={tk.body}>{props.children}</code>
     </pre>
   )
@@ -158,16 +160,16 @@ export function TypeScriptPane() {
 export function ChatPane(props: { prompt: string; tool: string; children: ReactNode }) {
   return (
     <Pane label="AI assistant">
-      <div className="space-y-4 whitespace-normal">
+      <div className="space-y-[0.6em] whitespace-normal">
         <div className="flex items-start gap-2">
-          <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />
+          <ChevronRight className="size-[1.1em] mt-[0.25em] text-primary shrink-0" />
           <span className="min-w-0 text-foreground">{props.prompt}</span>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-2 py-1 text-xs text-muted-foreground">
-          <Wrench className="size-3 text-primary" />
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 px-[0.6em] py-[0.3em] text-[0.85em] text-muted-foreground">
+          <Wrench className="size-[0.9em] text-primary" />
           {props.tool}
         </span>
-        <pre className="rounded-md border border-border bg-background p-4 overflow-x-auto">
+        <pre className="rounded-md border border-border bg-background px-[0.9em] py-[0.6em] overflow-x-auto">
           <code className={tk.body}>{props.children}</code>
         </pre>
       </div>
@@ -201,7 +203,7 @@ export function DesktopPane() {
       src="/application.webp"
       alt="Fairspec Desktop showing its dataset, table, data and file tools"
       decoding="async"
-      className="block aspect-[16/10] w-full object-cover object-top lg:aspect-auto lg:h-[25rem]"
+      className="block aspect-[16/10] w-full object-cover object-top"
     />
   )
 }
@@ -278,6 +280,58 @@ export function QueryRecords() {
       <span className={tk.key}>"truncated"</span>: <span className={tk.num}>false</span>
       {"\n"}
       {"}"}
+    </>
+  )
+}
+
+export function WindowCode(props: { children: ReactNode }) {
+  return (
+    <pre className="p-5 text-sm leading-relaxed font-mono overflow-x-auto">
+      <code className={tk.body}>{props.children}</code>
+    </pre>
+  )
+}
+
+export function InferredDataset() {
+  return (
+    <>
+      {"{"}
+      {"\n  "}
+      <span className={tk.key}>"resources"</span>: [{"\n    {"}
+      {"\n      "}
+      <span className={tk.key}>"data"</span>:{" "}
+      <span className={tk.str}>"members.csv"</span>,{"\n      "}
+      <span className={tk.key}>"name"</span>: <span className={tk.str}>"members"</span>,
+      {"\n      "}
+      <span className={tk.key}>"textual"</span>: <span className={tk.num}>true</span>,
+      {"\n      "}
+      <span className={tk.key}>"integrity"</span>: {"{ "}
+      <span className={tk.key}>"type"</span>: <span className={tk.str}>"sha256"</span>,{" "}
+      <span className={tk.key}>"hash"</span>:{" "}
+      <span className={tk.str}>"67c830fe…108a"</span>
+      {" }"},{"\n      "}
+      <span className={tk.key}>"fileDialect"</span>: {"{"}
+      {"\n        "}
+      <span className={tk.key}>"format"</span>: <span className={tk.str}>"csv"</span>,{" "}
+      <span className={tk.key}>"delimiter"</span>: <span className={tk.str}>","</span>,
+      {"\n        "}
+      <span className={tk.key}>"lineTerminator"</span>:{" "}
+      <span className={tk.str}>"\n"</span>, <span className={tk.key}>"headerRows"</span>:
+      [<span className={tk.num}>1</span>]{"\n      },"}
+      {"\n      "}
+      <span className={tk.key}>"tableSchema"</span>: {"{"}
+      {"\n        "}
+      <span className={tk.key}>"properties"</span>: {"{"}
+      {"\n          "}
+      <SchemaProperty name="id" type="integer" />,{"\n          "}
+      <SchemaProperty name="name" type="string" />,{"\n          "}
+      <SchemaProperty name="joined" type="string" format="date" />,{"\n          "}
+      <SchemaProperty name="score" type="number" />
+      {"\n        }"}
+      {"\n      }"}
+      {"\n    }"}
+      {"\n  ]"}
+      {"\n}"}
     </>
   )
 }

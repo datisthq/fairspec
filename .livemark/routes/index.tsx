@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router"
 import {
-  ArrowRight,
   BookOpen,
   Bot,
   Code,
@@ -15,7 +14,6 @@ import {
   Sparkles,
   SquareTerminal,
 } from "lucide-react"
-import type { ComponentType, SVGProps } from "react"
 import { BackToTop } from "livemark/components/BackToTop"
 import { Banner } from "livemark/components/Banner"
 import { Header } from "livemark/components/Header"
@@ -27,23 +25,25 @@ import {
   Highlight,
   LandingSection,
   type Point,
-  PointList,
-  Reveal,
+  ShowcaseSection,
   type Slide,
+  SplitSection,
   WindowCard,
   actionClass,
+  textLinkClass,
   tk,
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
   ChatPane,
   DesktopPane,
+  InferredDataset,
+  MembersCsv,
   Pane,
-  PythonPane,
   SkillsPane,
-  TypeScriptPane,
   ValidatePane,
   ValidationReport,
+  WindowCode,
 } from "../components/Panes.tsx"
 
 // @ts-ignore
@@ -96,10 +96,72 @@ function Landing() {
           }
           slides={slides}
         />
-        <Standard />
-        <Showcase />
-        <Tools />
-        <Agents />
+        <SplitSection
+          title="A simple format for FAIR data"
+          lede="Built on widely-adopted open standards. Easy to adopt, easy to extend."
+          points={standardPoints}
+          visual={
+            <WindowCard label="dataset.json">
+              <DatasetSample />
+            </WindowCard>
+          }
+          links={
+            <Link to="/$" params={{ _splat: "specs" }} className={textLinkClass}>
+              Read the specifications →
+            </Link>
+          }
+        />
+        <LandingSection
+          title="Tools for every workflow"
+          lede="Adopt the standard from your language of choice, your terminal, your AI assistant, or a desktop interface."
+        >
+          <FeatureGrid features={tools} />
+        </LandingSection>
+        <ShowcaseSection
+          title="One command. A FAIR dataset."
+          lede="Point Fairspec at your files and it describes them: dialect, schema and integrity, ready to cite and validate."
+          left={{
+            label: "members.csv",
+            content: (
+              <WindowCode>
+                <MembersCsv />
+              </WindowCode>
+            ),
+          }}
+          right={{
+            label: "fairspec dataset infer members.csv",
+            content: (
+              <WindowCode>
+                <InferredDataset />
+              </WindowCode>
+            ),
+          }}
+        />
+        <SplitSection
+          reverse
+          title="Ready for AI agents"
+          lede="Hand the busywork of describing and checking data to your coding agent or AI assistant."
+          points={agentPoints}
+          visual={
+            <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
+              <SkillsPane />
+            </div>
+          }
+          links={
+            <>
+              <Link
+                to="/$"
+                params={{ _splat: "python/agent-skills" }}
+                className={textLinkClass}
+              >
+                Install the agent skills →
+              </Link>
+              <Link to="/mcp-server/" className={textLinkClass}>
+                Connect the MCP server →
+              </Link>
+            </>
+          }
+        />
         <FinalCta
           title={
             <>
@@ -149,11 +211,13 @@ const slides: Slide[] = [
     title: "Standard",
     pane: (
       <Pane label="dataset.json">
-        <p className="mb-2 text-xs text-muted-foreground">DataCite compatible metadata</p>
+        <p className="mb-[0.5em] text-[0.85em] text-muted-foreground">
+          DataCite compatible metadata
+        </p>
         <pre>
           <DataciteLines />
         </pre>
-        <p className="mt-4 mb-2 text-xs text-muted-foreground">
+        <p className="mt-[1em] mb-[0.5em] text-[0.85em] text-muted-foreground">
           JSON Schema compatible data
         </p>
         <pre>
@@ -164,11 +228,11 @@ const slides: Slide[] = [
     source: {
       eyebrow: "Checked by a profile",
       file: "$schema",
-      code: <span className={tk.url}>fairspec.org/profiles/latest/dataset.json</span>,
+      code: (
+        <span className={tk.url}>{"fairspec.org/profiles/\nlatest/dataset.json"}</span>
+      ),
     },
   },
-  { id: "python", title: "Python", pane: <PythonPane />, source: brokenCsv },
-  { id: "typescript", title: "TypeScript", pane: <TypeScriptPane />, source: brokenCsv },
   { id: "cli", title: "CLI", pane: <ValidatePane />, source: brokenCsv },
   {
     id: "mcp",
@@ -205,102 +269,6 @@ const slides: Slide[] = [
     },
   },
 ]
-
-/* ─────────────────────────── Features ─────────────────────────── */
-
-const features: Point[] = [
-  {
-    icon: Rocket,
-    title: "Lightweight",
-    description:
-      "A few simple JSON-based metadata formats for describing catalogs, datasets, tables, and files. No bespoke vocabularies to learn.",
-  },
-  {
-    icon: BookOpen,
-    title: "Standards-based",
-    description:
-      "Compatible with DataCite Metadata Schema 4.6 for citation and JSON Schema Draft 2020-12 for structural validation.",
-  },
-  {
-    icon: FileText,
-    title: "Format-agnostic",
-    description:
-      "Describes any kind of data — CSV, TSV, JSON, JSONL, Parquet, Arrow, XLSX, ODS, SQLite — through a unified file dialect layer.",
-  },
-  {
-    icon: Globe,
-    title: "FAIR by design",
-    description:
-      "Findable, Accessible, Interoperable, and Reusable. Datasets carry the metadata needed to be properly cited and discovered.",
-  },
-  {
-    icon: Puzzle,
-    title: "Extensible",
-    description:
-      "Domain-specific profiles add custom properties and validation rules while staying compatible with the base specification.",
-  },
-  {
-    icon: Laptop,
-    title: "Software-first",
-    description:
-      "Python and TypeScript implementations out-of-the-box, plus an MCP server and agent skills so AI assistants can work with Fairspec data.",
-  },
-]
-
-const specs = [
-  { title: "Catalog", splat: "specs/catalog" },
-  { title: "Dataset", splat: "specs/dataset" },
-  { title: "Table Schema", splat: "specs/table-schema" },
-  { title: "Data Schema", splat: "specs/data-schema" },
-  { title: "File Dialect", splat: "specs/file-dialect" },
-  { title: "Extensions", splat: "extensions" },
-]
-
-function Standard() {
-  return (
-    <LandingSection
-      title="A simple format for FAIR data"
-      lede="Built on widely-adopted open standards. Easy to adopt, easy to extend."
-    >
-      <FeatureGrid features={features} />
-      <Reveal>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 md:mt-12">
-          <span className="mr-2 text-sm text-muted-foreground">Read the specs:</span>
-          {specs.map(spec => (
-            <Link
-              key={spec.splat}
-              to="/$"
-              params={{ _splat: spec.splat }}
-              className="rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-foreground no-underline transition-colors hover:border-primary/40 hover:text-primary"
-            >
-              {spec.title}
-            </Link>
-          ))}
-        </div>
-      </Reveal>
-    </LandingSection>
-  )
-}
-
-/* ─────────────────────────── Showcase ─────────────────────────── */
-
-function Showcase() {
-  return (
-    <LandingSection
-      tinted
-      title="One JSON file. A FAIR dataset."
-      lede="A Fairspec descriptor carries everything a consumer needs: citation metadata, file dialects, and validated schemas."
-    >
-      <Reveal>
-        <WindowCard label="dataset.json" className="max-w-4xl mx-auto">
-          <DatasetSample />
-        </WindowCard>
-      </Reveal>
-    </LandingSection>
-  )
-}
-
-/* ─────────────────────────── Agents ─────────────────────────── */
 
 const agentPoints: Point[] = [
   {
@@ -344,58 +312,43 @@ const agentPoints: Point[] = [
   },
 ]
 
-function Agents() {
-  return (
-    <LandingSection
-      title="Ready for AI agents"
-      lede="Hand the busywork of describing and checking data to your coding agent or AI assistant."
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
-        <Reveal>
-          <div className="rounded-card border border-primary/20 bg-card overflow-hidden">
-            <SkillsPane />
-          </div>
-        </Reveal>
-        <PointList points={agentPoints} />
-      </div>
-      <Reveal>
-        <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 md:mt-12">
-          <Link
-            to="/$"
-            params={{ _splat: "python/agent-skills" }}
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            Install the agent skills →
-          </Link>
-          <Link
-            to="/mcp-server/"
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            Connect the MCP server →
-          </Link>
-        </div>
-      </Reveal>
-    </LandingSection>
-  )
-}
+/* ─────────────────────────── Standard ─────────────────────────── */
+
+const standardPoints: Point[] = [
+  {
+    icon: BookOpen,
+    title: "Standards-based",
+    description:
+      "Compatible with DataCite Metadata Schema 4.6 for citation and JSON Schema Draft 2020-12 for structural validation.",
+  },
+  {
+    icon: FileText,
+    title: "Format-agnostic",
+    description:
+      "Describes any kind of data — CSV, TSV, JSON, JSONL, Parquet, Arrow, XLSX, ODS, SQLite — through a unified file dialect layer.",
+  },
+  {
+    icon: Globe,
+    title: "FAIR by design",
+    description:
+      "Findable, Accessible, Interoperable, and Reusable. Datasets carry the metadata needed to be properly cited and discovered.",
+  },
+  {
+    icon: Puzzle,
+    title: "Extensible",
+    description:
+      "Domain-specific profiles add custom properties and validation rules while staying compatible with the base specification.",
+  },
+]
 
 /* ─────────────────────────── Tools ─────────────────────────── */
 
-interface Implementation {
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-  title: string
-  description: string
-  command: string
-  link: { to: "/$"; splat: string } | { to: string }
-}
-
-const implementations: Implementation[] = [
+const tools: Point[] = [
   {
     icon: Code,
     title: "Python",
     description:
       "Validate, infer, and query Fairspec descriptors from Python, with first-class support for pandas and Polars DataFrames.",
-    command: "pip install fairspec",
     link: { to: "/$", splat: "python/getting-started" },
   },
   {
@@ -403,7 +356,6 @@ const implementations: Implementation[] = [
     title: "TypeScript",
     description:
       "The same API surface as the Python package, built on Polars, and shipping a terminal CLI alongside the library.",
-    command: "npm install fairspec",
     link: { to: "/$", splat: "typescript/getting-started" },
   },
   {
@@ -411,7 +363,6 @@ const implementations: Implementation[] = [
     title: "CLI Tool",
     description:
       "Validate datasets, infer schemas, and query tables from scripts, CI pipelines, or an interactive terminal.",
-    command: "uv tool install fairspec",
     link: { to: "/cli-tool/" },
   },
   {
@@ -419,7 +370,6 @@ const implementations: Implementation[] = [
     title: "MCP Server",
     description:
       "Connects AI assistants to the framework over the Model Context Protocol, so you can validate and infer in plain language.",
-    command: "npx fairspec@latest mcp",
     link: { to: "/mcp-server/" },
   },
   {
@@ -427,7 +377,6 @@ const implementations: Implementation[] = [
     title: "Agent Skills",
     description:
       "Teach coding agents when and how to explore, infer and validate data with the CLI, MCP server or libraries.",
-    command: "npx skills add https://fairspec.org",
     link: { to: "/$", splat: "python/agent-skills" },
   },
   {
@@ -435,63 +384,9 @@ const implementations: Implementation[] = [
     title: "Desktop",
     description:
       "Validate and infer descriptors through a visual interface, with your files never leaving your machine.",
-    command: "Download for macOS, Windows, Linux",
     link: { to: "/desktop/" },
   },
 ]
-
-function Tools() {
-  return (
-    <LandingSection
-      tinted
-      title="Tools for every workflow"
-      lede="Adopt the standard from your language of choice, your terminal, your AI assistant, or a desktop interface."
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {implementations.map((impl, i) => (
-          <Reveal key={impl.title} delayMs={i * 60}>
-            <ImplementationCard {...impl} />
-          </Reveal>
-        ))}
-      </div>
-    </LandingSection>
-  )
-}
-
-function ImplementationCard(props: Implementation) {
-  const { icon: Icon, title, description, command, link } = props
-  const className =
-    "group flex flex-col h-full rounded-card border border-border bg-card p-6 no-underline transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-  const body = (
-    <>
-      <div className="flex items-center gap-3 mb-3">
-        <div className="inline-flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-        <ArrowRight className="size-4 ml-auto text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-      <div className="mt-auto pt-4">
-        <div className="truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-xs text-muted-foreground">
-          {command}
-        </div>
-      </div>
-    </>
-  )
-  if ("splat" in link) {
-    return (
-      <Link to="/$" params={{ _splat: link.splat }} className={className}>
-        {body}
-      </Link>
-    )
-  }
-  return (
-    <Link to={link.to} className={className}>
-      {body}
-    </Link>
-  )
-}
 
 /* ─────────────────────────── Samples ─────────────────────────── */
 
