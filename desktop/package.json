@@ -22,6 +22,7 @@
     "check:types": "tsgo --noEmit",
     "compile": "electron-builder --publish never",
     "extract": "lingui extract",
+    "measure:coverage": "vp test --run --coverage",
     "preview": "electron-vite preview",
     "show:coverage": "sensible-browser coverage/index.html",
     "start": "electron-vite dev",

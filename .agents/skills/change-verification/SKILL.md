@@ -29,7 +29,7 @@ Measured on a laptop, warm, 2026-10-16:
 | `pnpm -C typescript check:types`                            | ~6 s  | types in every TypeScript package         |
 | `pnpm -F ./typescript/<pkg> run check:types`                | ~2 s  | types in one package                      |
 | `pnpm -C typescript test:unit <dir or file>`                | 3+ s  | the tests named                           |
-| `pnpm -C typescript test:unit`                              | ~32 s | every TypeScript test                     |
+| `pnpm -C typescript test:unit`                              | ~44 s | every TypeScript test                     |
 | `pnpm -C desktop check:types` / `pnpm -C desktop test:unit` | ~3 s  | the app's types / tests                   |
 | `pnpm -C python check:types`                                | ~2 s  | `ty` over the workspace                   |
 | `pnpm -C python test:unit <dir or file>`                    | 4+ s  | the tests named                           |

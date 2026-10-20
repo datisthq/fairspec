@@ -18,6 +18,7 @@ Run from the repo root; `pnpm -C typescript <script>` runs a script of this sect
 - `pnpm -C typescript check:types` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
 - `pnpm -C typescript test:unit` — `vp test` across every package
 - Single test — `pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
+- `pnpm -C typescript measure:coverage` — the unit tests with coverage, which `vp test` leaves off (CI's Linux leg runs it for Codecov); `pnpm -C typescript show:coverage` opens the report
 - `pnpm -C typescript release` — publish every package (CI only)
 - Lint and format are repo-wide: `pnpm check:lint`, `pnpm format`
 

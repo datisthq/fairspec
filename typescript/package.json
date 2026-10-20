@@ -7,6 +7,7 @@
     "build": "pnpm -F \"./*\" run build",
     "check:types": "pnpm -F \"./*\" run check:types",
     "debug": "vp test --no-file-parallelism --test-timeout=0 --inspect-brk --browser run",
+    "measure:coverage": "vp test --run --coverage",
     "release": "pnpm -F \"./*\" publish --access public --ignore-scripts --no-git-checks",
     "show:coverage": "sensible-browser coverage/index.html",
     "test": "pnpm build && pnpm test:unit",

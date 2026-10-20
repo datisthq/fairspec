@@ -17,6 +17,7 @@ Run from the repo root; `pnpm -C desktop <script>` runs a script of this section
 - `pnpm -C desktop check:types` — `tsgo --noEmit`
 - `pnpm -C desktop test` — type + unit
 - `pnpm -C desktop test:unit` — the Vitest tests; `pnpm -C desktop test:unit path/to/test.unit.ts` or `pnpm -C desktop test:unit -t "test name"` for one
+- `pnpm -C desktop measure:coverage` — the unit tests with coverage, which `vp test` leaves off
 - `pnpm -C desktop build` / `pnpm -C desktop compile` — bundle with electron-vite, package with electron-builder into `compile/`
 - `pnpm -C desktop extract` — extract i18n messages
 - Lint and format are repo-wide: `pnpm check:lint`, `pnpm format`
