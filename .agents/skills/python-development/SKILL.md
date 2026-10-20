@@ -121,6 +121,12 @@ relative import reaches beyond the top-level package.
   `pl.struct(key).is_first_distinct()` query; a clean key (the usual case) skips that costly
   pass. Never locate rows with a join: joins drop null keys, while key checks compare partial
   nulls and skip only all-null keys (`create_key_presence_expr`)
+- **A column mapping keeps the dtype's class, not the dtype**: `PolarsColumn.type` is
+  `type(dtype)`, so a Datetime's zone lives in `PolarsColumn.time_zone`. A zoned Datetime is a
+  `date-time`, a naive one a `local-date-time`, a Time either `time` or `local-time`; check the
+  zone wherever a Datetime meets a column type (inspect, inference, stringify)
+- Hand `ruff format` only `*.py` paths: given a JSON file it reformats it, and the synced
+  `profiles/` copies must stay byte-identical to `standard/profiles/`
 - Import heavy optional dependencies (`shapely`, which pulls numpy) inside the function that
   needs them: everything `fairspec_terminal` reaches at import time is paid on every CLI start
 - **Custom table checks** (`python/table/fairspec_table/actions/check/inspect.py`) turn a SQL

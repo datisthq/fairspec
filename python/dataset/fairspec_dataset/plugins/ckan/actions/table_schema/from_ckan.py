@@ -14,7 +14,8 @@ from fairspec_metadata import IntegerColumn, IntegerColumnProperty
 from fairspec_metadata import NumberColumn, NumberColumnProperty
 from fairspec_metadata import ObjectColumn, ObjectColumnProperty
 from fairspec_metadata import StringColumn, StringColumnProperty
-from fairspec_metadata import TimeColumn, TimeColumnProperty
+from fairspec_metadata import LocalDateTimeColumn, LocalDateTimeColumnProperty
+from fairspec_metadata import LocalTimeColumn, LocalTimeColumnProperty
 from fairspec_metadata import TableSchema
 
 if TYPE_CHECKING:
@@ -81,12 +82,22 @@ def _convert_column(ckan_field: CkanField) -> Column:
                 property=DateColumnProperty(type="string", format="date", **base_kwargs),
             )
         case "time":
-            return TimeColumn(
+            return LocalTimeColumn(
                 name=name,
-                type="time",
-                property=TimeColumnProperty(type="string", format="time", **base_kwargs),
+                type="local-time",
+                property=LocalTimeColumnProperty(
+                    type="string", format="local-time", **base_kwargs
+                ),
             )
         case "timestamp" | "datetime":
+            return LocalDateTimeColumn(
+                name=name,
+                type="local-date-time",
+                property=LocalDateTimeColumnProperty(
+                    type="string", format="local-date-time", **base_kwargs
+                ),
+            )
+        case "timestamptz":
             return DateTimeColumn(
                 name=name,
                 type="date-time",

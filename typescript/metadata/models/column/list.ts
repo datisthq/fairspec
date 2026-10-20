@@ -6,7 +6,17 @@ export const ListColumnProperty = BaseStringColumnProperty.extend({
   format: z.literal("list"),
 
   itemType: z
-    .enum(["string", "integer", "number", "boolean", "date-time", "date", "time"])
+    .enum([
+      "string",
+      "integer",
+      "number",
+      "boolean",
+      "date",
+      "time",
+      "local-time",
+      "date-time",
+      "local-date-time",
+    ])
     .optional()
     .describe("An optional type for items in a list column"),
 

@@ -125,11 +125,11 @@ describe("convertTableSchemaToCkan", () => {
     const createdAtField = result.fields.find(f => f.id === "created_at")
     expect(createdAtField).toBeDefined()
     if (createdAtField) {
-      expect(createdAtField.type).toEqual("timestamp")
+      expect(createdAtField.type).toEqual("timestamptz")
       expect(createdAtField.info).toBeDefined()
       expect(createdAtField.info?.label).toEqual("Created At")
       expect(createdAtField.info?.notes).toEqual("Timestamp when record was created")
-      expect(createdAtField.info?.type_override).toEqual("timestamp")
+      expect(createdAtField.info?.type_override).toEqual("timestamptz")
     }
 
     const metadataField = result.fields.find(f => f.id === "metadata")

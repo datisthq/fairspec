@@ -9,8 +9,29 @@ if TYPE_CHECKING:
 
 ARRAY_TYPES: tuple[Literal["array", "list"], ...] = ("array", "list")
 LIST_ITEM_TYPES: tuple[
-    Literal["string", "integer", "number", "boolean", "date-time", "date", "time"], ...
-] = ("string", "integer", "number", "boolean", "date-time", "date", "time")
+    Literal[
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "date",
+        "time",
+        "local-time",
+        "date-time",
+        "local-date-time",
+    ],
+    ...,
+] = (
+    "string",
+    "integer",
+    "number",
+    "boolean",
+    "date",
+    "time",
+    "local-time",
+    "date-time",
+    "local-date-time",
+)
 
 
 def create_infer_table_schema_options(

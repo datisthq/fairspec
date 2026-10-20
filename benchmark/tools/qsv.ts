@@ -21,7 +21,7 @@ export const qsvTool: Tool = {
   title: "qsv",
   unsupported: [],
   caveats: [
-    "date-time is matched by regex, since JSON Schema date-time requires a time zone",
+    "local-date-time is matched by regex, since JSON Schema has no format for it",
     "its copy of the valid rows is written to /dev/null, not to disk",
     "errors are counted once per cell; qsv reports an empty required enum cell twice",
   ],
@@ -75,7 +75,7 @@ export function convertTableSchema(tableSchema: {
     properties[name] = {
       ...rest,
       type: required.has(name) ? types[0] : [...types, "null"],
-      ...(format === "date-time" ? { pattern: DATE_TIME_PATTERN } : {}),
+      ...(format === "local-date-time" ? { pattern: DATE_TIME_PATTERN } : {}),
     }
   }
   return {

@@ -30,6 +30,14 @@ from fairspec_metadata.models.column.geojson import GeojsonColumn, GeojsonColumn
 from fairspec_metadata.models.column.hex import HexColumn, HexColumnProperty
 from fairspec_metadata.models.column.integer import IntegerColumn, IntegerColumnProperty
 from fairspec_metadata.models.column.list import ListColumn, ListColumnProperty
+from fairspec_metadata.models.column.local_date_time import (
+    LocalDateTimeColumn,
+    LocalDateTimeColumnProperty,
+)
+from fairspec_metadata.models.column.local_time import (
+    LocalTimeColumn,
+    LocalTimeColumnProperty,
+)
 from fairspec_metadata.models.column.number import NumberColumn, NumberColumnProperty
 from fairspec_metadata.models.column.object import ObjectColumn, ObjectColumnProperty
 from fairspec_metadata.models.column.string import StringColumn, StringColumnProperty
@@ -62,6 +70,8 @@ _COLUMN_CLASS_MAP: dict[ColumnType, tuple[type[BaseColumn], type[BaseColumnPrope
     ColumnType.hex: (HexColumn, HexColumnProperty),
     ColumnType.integer: (IntegerColumn, IntegerColumnProperty),
     ColumnType.list: (ListColumn, ListColumnProperty),
+    ColumnType.local_date_time: (LocalDateTimeColumn, LocalDateTimeColumnProperty),
+    ColumnType.local_time: (LocalTimeColumn, LocalTimeColumnProperty),
     ColumnType.number: (NumberColumn, NumberColumnProperty),
     ColumnType.object: (ObjectColumn, ObjectColumnProperty),
     ColumnType.string: (StringColumn, StringColumnProperty),
@@ -147,10 +157,14 @@ def _get_column_type(base_type: str | None, format: str | None) -> ColumnType:
                     return ColumnType.url
                 case "date-time":
                     return ColumnType.date_time
+                case "local-date-time":
+                    return ColumnType.local_date_time
                 case "date":
                     return ColumnType.date
                 case "time":
                     return ColumnType.time
+                case "local-time":
+                    return ColumnType.local_time
                 case "duration":
                     return ColumnType.duration
                 case "wkt":

@@ -12,6 +12,8 @@ from fairspec_metadata import (
     HexColumn,
     IntegerColumn,
     ListColumn,
+    LocalDateTimeColumn,
+    LocalTimeColumn,
     NumberColumn,
     TimeColumn,
     UrlColumn,
@@ -28,6 +30,8 @@ from .types.email import parse_email_column
 from .types.hex import parse_hex_column
 from .types.integer import parse_integer_column
 from .types.list import parse_list_column
+from .types.local_date_time import parse_local_date_time_column
+from .types.local_time import parse_local_time_column
 from .types.number import parse_number_column
 from .types.time import parse_time_column
 from .types.url import parse_url_column
@@ -56,6 +60,10 @@ def parse_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
         return parse_integer_column(column, column_expr)
     elif isinstance(column, ListColumn):
         return parse_list_column(column, column_expr)
+    elif isinstance(column, LocalDateTimeColumn):
+        return parse_local_date_time_column(column, column_expr)
+    elif isinstance(column, LocalTimeColumn):
+        return parse_local_time_column(column, column_expr)
     elif isinstance(column, NumberColumn):
         return parse_number_column(column, column_expr)
     elif isinstance(column, TimeColumn):

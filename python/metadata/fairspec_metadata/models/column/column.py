@@ -22,6 +22,8 @@ from .geojson import GeojsonColumn, GeojsonColumnProperty
 from .hex import HexColumn, HexColumnProperty
 from .integer import IntegerColumn, IntegerColumnProperty
 from .list import ListColumn, ListColumnProperty
+from .local_date_time import LocalDateTimeColumn, LocalDateTimeColumnProperty
+from .local_time import LocalTimeColumn, LocalTimeColumnProperty
 from .number import NumberColumn, NumberColumnProperty
 from .object import ObjectColumn, ObjectColumnProperty
 from .string import StringColumn, StringColumnProperty
@@ -47,6 +49,8 @@ Column = Annotated[
         HexColumn,
         IntegerColumn,
         ListColumn,
+        LocalDateTimeColumn,
+        LocalTimeColumn,
         NumberColumn,
         ObjectColumn,
         StringColumn,
@@ -75,6 +79,8 @@ class ColumnType(StrEnum):
     hex = "hex"
     integer = "integer"
     list = "list"
+    local_date_time = "local-date-time"
+    local_time = "local-time"
     number = "number"
     object = "object"
     string = "string"
@@ -94,8 +100,10 @@ StringColumnPropertyWithFormat = Annotated[
         EmailColumnProperty,
         UrlColumnProperty,
         DateTimeColumnProperty,
+        LocalDateTimeColumnProperty,
         DateColumnProperty,
         TimeColumnProperty,
+        LocalTimeColumnProperty,
         DurationColumnProperty,
         WktColumnProperty,
         WkbColumnProperty,

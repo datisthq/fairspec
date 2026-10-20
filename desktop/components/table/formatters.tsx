@@ -31,7 +31,7 @@ function formatNumber(value: any): ReactNode {
 
 function formatDate(value: any): ReactNode {
   try {
-    return new Date(value).toLocaleDateString()
+    return new Date(value).toLocaleDateString(undefined, { timeZone: "UTC" })
   } catch {
     return value
   }
@@ -40,6 +40,15 @@ function formatDate(value: any): ReactNode {
 function formatDateTime(value: any): ReactNode {
   try {
     return new Date(value).toLocaleString()
+  } catch {
+    return value
+  }
+}
+
+// A local date-time arrives as its wall-clock reading in UTC; never shift it to the viewer's zone
+function formatLocalDateTime(value: any): ReactNode {
+  try {
+    return new Date(value).toLocaleString(undefined, { timeZone: "UTC" })
   } catch {
     return value
   }
@@ -84,7 +93,10 @@ export function formatCell(
       return formatDate(value)
     case "date-time":
       return formatDateTime(value)
+    case "local-date-time":
+      return formatLocalDateTime(value)
     case "time":
+    case "local-time":
       return value
     case "list":
       return formatList(value, column)

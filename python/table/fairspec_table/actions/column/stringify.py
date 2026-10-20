@@ -9,6 +9,8 @@ from fairspec_metadata import (
     DecimalColumn,
     IntegerColumn,
     ListColumn,
+    LocalDateTimeColumn,
+    LocalTimeColumn,
     NumberColumn,
     TimeColumn,
     UnknownColumn,
@@ -22,6 +24,8 @@ from .types.date_time import stringify_date_time_column
 from .types.decimal import stringify_decimal_column
 from .types.integer import stringify_integer_column
 from .types.list import stringify_list_column
+from .types.local_date_time import stringify_local_date_time_column
+from .types.local_time import stringify_local_time_column
 from .types.number import stringify_number_column
 from .types.time import stringify_time_column
 from .types.unknown import stringify_unknown_column
@@ -37,6 +41,8 @@ def stringify_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
     elif isinstance(column, DateColumn):
         return stringify_date_column(column, column_expr)
     elif isinstance(column, DateTimeColumn):
+        if mapping.source.time_zone:
+            column_expr = column_expr.dt.convert_time_zone("UTC")
         return stringify_date_time_column(column, column_expr)
     elif isinstance(column, DecimalColumn):
         return stringify_decimal_column(column, column_expr)
@@ -44,6 +50,10 @@ def stringify_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
         return stringify_integer_column(column, column_expr)
     elif isinstance(column, ListColumn):
         return stringify_list_column(column, column_expr)
+    elif isinstance(column, LocalDateTimeColumn):
+        return stringify_local_date_time_column(column, column_expr)
+    elif isinstance(column, LocalTimeColumn):
+        return stringify_local_time_column(column, column_expr)
     elif isinstance(column, NumberColumn):
         return stringify_number_column(column, column_expr)
     elif isinstance(column, TimeColumn):

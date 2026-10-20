@@ -66,11 +66,17 @@ function convertColumn(ckanField: CkanField): Column {
     case "time":
       return {
         name: ckanField.id,
-        type: "time",
-        property: { ...baseProperty, type: "string", format: "time" },
+        type: "local-time",
+        property: { ...baseProperty, type: "string", format: "local-time" },
       }
     case "timestamp":
     case "datetime":
+      return {
+        name: ckanField.id,
+        type: "local-date-time",
+        property: { ...baseProperty, type: "string", format: "local-date-time" },
+      }
+    case "timestamptz":
       return {
         name: ckanField.id,
         type: "date-time",

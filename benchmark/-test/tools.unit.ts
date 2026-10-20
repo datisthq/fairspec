@@ -3,11 +3,11 @@ import { TOOLS, selectTools } from "../tools/index.ts"
 import { convertTableSchema } from "../tools/qsv.ts"
 
 describe("convertTableSchema", () => {
-  it("maps nullability, date-time and the primary key to JSON Schema", () => {
+  it("maps nullability, local-date-time and the primary key to JSON Schema", () => {
     const schema = convertTableSchema({
       properties: {
         id: { type: "integer", minimum: 1 },
-        at: { type: ["string", "null"], format: "date-time" },
+        at: { type: ["string", "null"], format: "local-date-time" },
         zip: { type: ["string", "null"], pattern: "^[0-9]{5}$" },
       },
       required: ["id"],

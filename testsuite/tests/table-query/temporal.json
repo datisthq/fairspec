@@ -4,14 +4,23 @@
     "comment": "Temporal values are parsed by the table schema and rendered as ISO 8601 text by the runner",
     "specification": [
       "https://fairspec.org/specs/table-schema/#date",
-      "https://fairspec.org/specs/table-schema/#time",
-      "https://fairspec.org/specs/table-schema/#datetime"
+      "https://fairspec.org/specs/table-schema/#localtime",
+      "https://fairspec.org/specs/table-schema/#localdatetime"
     ],
     "tableSchema": {
       "properties": {
-        "day": { "type": "string", "format": "date" },
-        "at": { "type": "string", "format": "time" },
-        "stamp": { "type": "string", "format": "date-time" }
+        "day": {
+          "type": "string",
+          "format": "date"
+        },
+        "at": {
+          "type": "string",
+          "format": "local-time"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "local-date-time"
+        }
       }
     },
     "query": "SELECT stamp, day, at FROM self",
@@ -30,7 +39,12 @@
     "description": "order by a date column",
     "specification": ["https://fairspec.org/specs/table-schema/#date"],
     "tableSchema": {
-      "properties": { "day": { "type": "string", "format": "date" } }
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date"
+        }
+      }
     },
     "query": "SELECT day FROM self ORDER BY day",
     "tests": [
@@ -48,24 +62,37 @@
     "description": "max of a date column",
     "specification": ["https://fairspec.org/specs/table-schema/#date"],
     "tableSchema": {
-      "properties": { "day": { "type": "string", "format": "date" } }
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date"
+        }
+      }
     },
     "query": "SELECT MAX(day) AS latest FROM self",
     "tests": [
       {
         "description": "is still a date",
         "data": "day\n2024-03-01\n2023-12-31\n",
-        "expected": { "columns": ["latest"], "rows": [["2024-03-01"]] }
+        "expected": {
+          "columns": ["latest"],
+          "rows": [["2024-03-01"]]
+        }
       }
     ]
   },
   {
     "description": "filter on a datetime column",
-    "specification": ["https://fairspec.org/specs/table-schema/#datetime"],
+    "specification": ["https://fairspec.org/specs/table-schema/#localdatetime"],
     "tableSchema": {
       "properties": {
-        "id": { "type": "integer" },
-        "stamp": { "type": "string", "format": "date-time" }
+        "id": {
+          "type": "integer"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "local-date-time"
+        }
       }
     },
     "query": "SELECT id, stamp FROM self WHERE stamp >= '2024-01-15T12:00:00'",
@@ -73,7 +100,37 @@
       {
         "description": "compares instants, not text",
         "data": "id,stamp\n1,2024-01-15T10:30:00\n2,2024-01-15T13:00:00\n",
-        "expected": { "columns": ["id", "stamp"], "rows": [[2, "2024-01-15T13:00:00"]] }
+        "expected": {
+          "columns": ["id", "stamp"],
+          "rows": [[2, "2024-01-15T13:00:00"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "order by a date-time column",
+    "comment": "Values with an offset are instants, so they sort by the instant and not by their text",
+    "specification": ["https://fairspec.org/specs/table-schema/#datetime"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "query": "SELECT id FROM self ORDER BY stamp",
+    "tests": [
+      {
+        "description": "sorts instants, not text",
+        "data": "id,stamp\n1,2024-01-15T10:00:00+02:00\n2,2024-01-15T09:00:00Z\n3,2024-01-15T08:30:00Z\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1], [3], [2]]
+        }
       }
     ]
   }

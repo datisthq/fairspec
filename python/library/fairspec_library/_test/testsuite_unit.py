@@ -39,9 +39,10 @@ TEST_SCHEMA = os.path.join(SUITE, "test-schema.json")
 UNSPECIFIED_MESSAGE_ERRORS = ("data", "metadata", "cell/json")
 TEMPORAL_FORMATS = (
     (pl.Date, "%Y-%m-%d"),
-    (pl.Time, "%H:%M:%S"),
-    (pl.Datetime, "%Y-%m-%dT%H:%M:%S"),
+    (pl.Time, "%H:%M:%S%.f"),
+    (pl.Datetime, "%Y-%m-%dT%H:%M:%S%.f"),
 )
+ZONED_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S%.f%:z"
 
 type Json = None | bool | int | float | str | list[Json] | dict[str, Json]
 
@@ -270,6 +271,8 @@ def read_rows(table: Table) -> object:
     columns: list[str] = []
     for name, dtype in frame.schema.items():
         format = next((f for t, f in TEMPORAL_FORMATS if isinstance(dtype, t)), None)
+        if isinstance(dtype, pl.Datetime) and dtype.time_zone:
+            format = ZONED_DATETIME_FORMAT
         quoted = f'"{name}"'
         columns.append(
             f"STRFTIME({quoted}, '{format}') AS {quoted}" if format else quoted

@@ -339,7 +339,7 @@ describe("inspectColumn", () => {
         properties: {
           time: {
             type: "string",
-            format: "time",
+            format: "local-time",
           },
         },
       }
@@ -351,21 +351,21 @@ describe("inspectColumn", () => {
         type: "cell/type",
         cell: "2:30pm",
         columnName: "time",
-        columnType: "time",
+        columnType: "local-time",
         rowNumber: 2,
       })
       expect(errors).toContainEqual({
         type: "cell/type",
         cell: "invalid",
         columnName: "time",
-        columnType: "time",
+        columnType: "local-time",
         rowNumber: 3,
       })
       expect(errors).toContainEqual({
         type: "cell/type",
         cell: "14h30",
         columnName: "time",
-        columnType: "time",
+        columnType: "local-time",
         rowNumber: 4,
       })
     })
@@ -374,7 +374,7 @@ describe("inspectColumn", () => {
       const table = pl
         .DataFrame({
           timestamp: [
-            "2023-01-15T14:30:00",
+            "2023-01-15T14:30:00Z",
             "January 15, 2023 2:30 PM",
             "2023-01-15 14:30",
             "not-a-datetime",

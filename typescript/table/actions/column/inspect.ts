@@ -1,5 +1,6 @@
 import type { CellError, Column, ColumnError, TableError } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
+import { getTypeTimeZone } from "../../helpers/type.ts"
 import type { ColumnMapping } from "../../models/column.ts"
 import type { Table } from "../../models/table.ts"
 import { NUMBER_COLUMN_NAME } from "../../settings.ts"
@@ -68,7 +69,9 @@ export async function inspectColumns(
 
 function inspectType(mapping: ColumnMapping) {
   const errors: ColumnError[] = []
-  const variant = mapping.source.type.variant
+  const variant = getTypeTimeZone(mapping.source.type)
+    ? "ZonedDatetime"
+    : mapping.source.type.variant
 
   // TODO: Rebase on proper polars type definition when available
   // https://github.com/pola-rs/nodejs-polars/issues/372
@@ -76,7 +79,7 @@ function inspectType(mapping: ColumnMapping) {
     Bool: ["boolean"],
     Categorical: ["string"],
     Date: ["date"],
-    Datetime: ["date-time"],
+    Datetime: ["local-date-time"],
     Float32: ["number", "integer"],
     Float64: ["number", "integer"],
     Int16: ["integer", "number"],
@@ -85,12 +88,13 @@ function inspectType(mapping: ColumnMapping) {
     Int8: ["integer", "number"],
     List: ["list"],
     String: ["unknown"],
-    Time: ["time"],
+    Time: ["local-time", "time"],
     UInt16: ["integer", "number"],
     UInt32: ["integer", "number"],
     UInt64: ["integer", "number"],
     UInt8: ["integer", "number"],
     Utf8: ["unknown"],
+    ZonedDatetime: ["date-time"],
   }
 
   const compatTypes = compatMapping[variant] ?? []

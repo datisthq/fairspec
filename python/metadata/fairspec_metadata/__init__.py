@@ -159,6 +159,11 @@ from .models.column.geojson import GeojsonColumn, GeojsonColumnProperty
 from .models.column.hex import HexColumn, HexColumnProperty
 from .models.column.integer import IntegerColumn, IntegerColumnProperty
 from .models.column.list import ListColumn, ListColumnProperty
+from .models.column.local_date_time import (
+    LocalDateTimeColumn,
+    LocalDateTimeColumnProperty,
+)
+from .models.column.local_time import LocalTimeColumn, LocalTimeColumnProperty
 from .models.column.number import NumberColumn, NumberColumnProperty
 from .models.column.object import ObjectColumn, ObjectColumnProperty
 from .models.column.string import StringColumn, StringColumnProperty
@@ -439,6 +444,10 @@ __all__ = [
     "Latitude",
     "ListColumn",
     "ListColumnProperty",
+    "LocalDateTimeColumn",
+    "LocalDateTimeColumnProperty",
+    "LocalTimeColumn",
+    "LocalTimeColumnProperty",
     "Longitude",
     "MetadataError",
     "MetadataPlugin",

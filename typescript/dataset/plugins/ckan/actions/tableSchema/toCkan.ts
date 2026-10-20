@@ -49,8 +49,11 @@ function convertType(column: Column): string {
     case "date":
       return "date"
     case "time":
+    case "local-time":
       return "time"
     case "date-time":
+      return "timestamptz"
+    case "local-date-time":
       return "timestamp"
     case "object":
       return "json"

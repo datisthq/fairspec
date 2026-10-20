@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 import polars as pl
 import pytest
 
@@ -20,6 +22,46 @@ class TestInferTableSchemaFromTable:
             "properties": {
                 "integer": {"type": "integer"},
                 "number": {"type": "number"},
+            },
+        }
+
+    def test_should_infer_temporal_formats_from_native_types(self):
+        value = datetime.datetime(2024, 1, 15, 10, 30)
+        table = pl.DataFrame(
+            {
+                "zoned": pl.Series([value], dtype=pl.Datetime("us", "UTC")),
+                "naive": pl.Series([value], dtype=pl.Datetime("us")),
+                "time": pl.Series([datetime.time(10, 30)], dtype=pl.Time),
+            }
+        ).lazy()
+
+        result = infer_table_schema_from_table(table)
+        assert result.model_dump(by_alias=True, exclude_none=True) == {
+            "properties": {
+                "zoned": {"type": "string", "format": "date-time"},
+                "naive": {"type": "string", "format": "local-date-time"},
+                "time": {"type": "string", "format": "local-time"},
+            },
+        }
+
+    def test_should_apply_a_temporal_format_option_only_to_columns_of_its_kind(self):
+        value = datetime.datetime(2024, 1, 15, 10, 30)
+        table = pl.DataFrame(
+            {
+                "zoned": pl.Series([value], dtype=pl.Datetime("us", "UTC")),
+                "naive": pl.Series([value], dtype=pl.Datetime("us")),
+            }
+        ).lazy()
+
+        result = infer_table_schema_from_table(table, datetimeFormat="%Y-%m-%d %H:%M")
+        assert result.model_dump(by_alias=True, exclude_none=True) == {
+            "properties": {
+                "zoned": {"type": "string", "format": "date-time"},
+                "naive": {
+                    "type": "string",
+                    "format": "local-date-time",
+                    "temporalFormat": "%Y-%m-%d %H:%M",
+                },
             },
         }
 
@@ -291,10 +333,10 @@ class TestInferTableSchemaFromTable:
         result = infer_table_schema_from_table(table)
         assert result.model_dump(by_alias=True, exclude_none=True) == {
             "properties": {
-                "fullTime": {"type": "string", "format": "time"},
+                "fullTime": {"type": "string", "format": "local-time"},
                 "shortTime": {
                     "type": "string",
-                    "format": "time",
+                    "format": "local-time",
                     "temporalFormat": "%H:%M",
                 },
             },
@@ -313,12 +355,12 @@ class TestInferTableSchemaFromTable:
             "properties": {
                 "fullTime": {
                     "type": "string",
-                    "format": "time",
+                    "format": "local-time",
                     "temporalFormat": "%I:%M:%S %p",
                 },
                 "shortTime": {
                     "type": "string",
-                    "format": "time",
+                    "format": "local-time",
                     "temporalFormat": "%I:%M %p",
                 },
             },
@@ -367,12 +409,12 @@ class TestInferTableSchemaFromTable:
         result = infer_table_schema_from_table(table)
         assert result.model_dump(by_alias=True, exclude_none=True) == {
             "properties": {
-                "standard": {"type": "string", "format": "date-time"},
+                "standard": {"type": "string", "format": "local-date-time"},
                 "utc": {"type": "string", "format": "date-time"},
                 "withTz": {"type": "string", "format": "date-time"},
                 "withSpace": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%Y-%m-%d %H:%M:%S",
                 },
             },
@@ -409,22 +451,22 @@ class TestInferTableSchemaFromTable:
             "properties": {
                 "shortDayMonth": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M",
                 },
                 "fullDayMonth": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M:%S",
                 },
                 "shortMonthDay": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M",
                 },
                 "fullMonthDay": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M:%S",
                 },
             },
@@ -435,22 +477,22 @@ class TestInferTableSchemaFromTable:
             "properties": {
                 "shortDayMonth": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M",
                 },
                 "fullDayMonth": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M:%S",
                 },
                 "shortMonthDay": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M",
                 },
                 "fullMonthDay": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M:%S",
                 },
             },
@@ -720,7 +762,7 @@ class TestInferTableSchemaFromTableOptionsSteerDetection:
             "properties": {
                 "value": {
                     "type": "string",
-                    "format": "time",
+                    "format": "local-time",
                     "temporalFormat": "%H:%M",
                 },
             },

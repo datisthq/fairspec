@@ -3,9 +3,18 @@
     "description": "temporal columns with a table schema",
     "tableSchema": {
       "properties": {
-        "day": { "type": "string", "format": "date" },
-        "at": { "type": "string", "format": "time" },
-        "stamp": { "type": "string", "format": "date-time" }
+        "day": {
+          "type": "string",
+          "format": "date"
+        },
+        "at": {
+          "type": "string",
+          "format": "local-time"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "local-date-time"
+        }
       }
     },
     "tests": [
@@ -15,6 +24,78 @@
         "expected": {
           "columns": ["day", "at", "stamp"],
           "rows": [["2024-01-15", "10:30:00", "2024-01-15T10:30:00"]]
+        }
+      }
+    ],
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#localtime",
+      "https://fairspec.org/specs/table-schema/#localdatetime"
+    ]
+  },
+  {
+    "description": "temporal columns with offsets",
+    "comment": "Values with an offset are read as UTC; the runner renders a zoned date-time with its offset",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#datetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "time"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are converted to UTC",
+        "data": "at,stamp\n10:30:00+02:00,2024-03-20T18:00:00-05:00\n",
+        "expected": {
+          "columns": ["at", "stamp"],
+          "rows": [["08:30:00", "2024-03-20T23:00:00+00:00"]]
+        }
+      },
+      {
+        "description": "keep their fractional seconds",
+        "data": "at,stamp\n10:30:00.5Z,2024-03-20T18:00:00.125Z\n",
+        "expected": {
+          "columns": ["at", "stamp"],
+          "rows": [["10:30:00.500", "2024-03-20T18:00:00.125+00:00"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "local temporal columns with fractional seconds",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#localtime",
+      "https://fairspec.org/specs/table-schema/#localdatetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "local-time"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "local-date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "keep their fractional seconds",
+        "data": "at,stamp\n10:30:00.5,2024-03-20T18:00:00.125\n",
+        "expected": {
+          "columns": ["at", "stamp"],
+          "rows": [["10:30:00.500", "2024-03-20T18:00:00.125"]]
         }
       }
     ]

@@ -11,6 +11,7 @@ from fairspec_metadata import Column
 class PolarsColumn:
     name: str
     type: type[pl.DataType]
+    time_zone: str | None = None
 
 
 @dataclass

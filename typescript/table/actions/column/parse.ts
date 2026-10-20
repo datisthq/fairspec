@@ -9,6 +9,8 @@ import { parseEmailColumn } from "./types/email.ts"
 import { parseHexColumn } from "./types/hex.ts"
 import { parseIntegerColumn } from "./types/integer.ts"
 import { parseListColumn } from "./types/list.ts"
+import { parseLocalDateTimeColumn } from "./types/localDateTime.ts"
+import { parseLocalTimeColumn } from "./types/localTime.ts"
 import { parseNumberColumn } from "./types/number.ts"
 import { parseTimeColumn } from "./types/time.ts"
 import { parseUrlColumn } from "./types/url.ts"
@@ -38,6 +40,10 @@ export function parseColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
       return parseIntegerColumn(column, columnExpr)
     case "list":
       return parseListColumn(column, columnExpr)
+    case "local-date-time":
+      return parseLocalDateTimeColumn(column, columnExpr)
+    case "local-time":
+      return parseLocalTimeColumn(column, columnExpr)
     case "number":
       return parseNumberColumn(column, columnExpr)
     case "time":

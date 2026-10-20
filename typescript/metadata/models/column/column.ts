@@ -16,6 +16,8 @@ import { GeojsonColumn, GeojsonColumnProperty } from "./geojson.ts"
 import { HexColumn, HexColumnProperty } from "./hex.ts"
 import { IntegerColumn, IntegerColumnProperty } from "./integer.ts"
 import { ListColumn, ListColumnProperty } from "./list.ts"
+import { LocalDateTimeColumn, LocalDateTimeColumnProperty } from "./localDateTime.ts"
+import { LocalTimeColumn, LocalTimeColumnProperty } from "./localTime.ts"
 import { NumberColumn, NumberColumnProperty } from "./number.ts"
 import { ObjectColumn, ObjectColumnProperty } from "./object.ts"
 import { StringColumn, StringColumnProperty } from "./string.ts"
@@ -40,6 +42,8 @@ export const Column = z.discriminatedUnion("type", [
   HexColumn,
   IntegerColumn,
   ListColumn,
+  LocalDateTimeColumn,
+  LocalTimeColumn,
   NumberColumn,
   ObjectColumn,
   StringColumn,
@@ -65,6 +69,8 @@ export const ColumnType = z.enum([
   "hex",
   "integer",
   "list",
+  "local-date-time",
+  "local-time",
   "number",
   "object",
   "string",
@@ -83,8 +89,10 @@ const StringColumnPropertyWithFormat = z.discriminatedUnion("format", [
   EmailColumnProperty,
   UrlColumnProperty,
   DateTimeColumnProperty,
+  LocalDateTimeColumnProperty,
   DateColumnProperty,
   TimeColumnProperty,
+  LocalTimeColumnProperty,
   DurationColumnProperty,
   WktColumnProperty,
   WkbColumnProperty,

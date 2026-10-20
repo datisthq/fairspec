@@ -36,7 +36,7 @@ def load_schema(path: str) -> Schema:
     for name, prop in descriptor["properties"].items():
         types = prop["type"] if isinstance(prop["type"], list) else [prop["type"]]
         base = next(item for item in types if item != "null")
-        kind: Kind = "date-time" if prop.get("format") == "date-time" else base
+        kind: Kind = "date-time" if prop.get("format") == "local-date-time" else base
         columns.append(
             Column(
                 name=name,

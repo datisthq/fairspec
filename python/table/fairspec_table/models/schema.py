@@ -40,8 +40,10 @@ class TableSchemaOptions(TypedDict, total=False):
         "boolean",
         "date",
         "date-time",
+        "local-date-time",
         "integer",
         "time",
+        "local-time",
     ]
 
 

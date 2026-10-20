@@ -53,9 +53,11 @@ def _convert_type(column: Column) -> str:
             return "bool"
         case "date":
             return "date"
-        case "time":
+        case "time" | "local-time":
             return "time"
         case "date-time":
+            return "timestamptz"
+        case "local-date-time":
             return "timestamp"
         case "object":
             return "json"

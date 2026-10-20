@@ -139,7 +139,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   temporal parsers check that the value prints back to its text
   (`typescript/table/actions/column/types/-shared/temporal.ts`): a custom `temporalFormat` through
   the normalising `keepExactTemporal`, the zero-padded default patterns through the plain compare
-  of `keepExactDefaultTemporal`, which is about a second cheaper on 1GB of date-times; `scanCSV` takes a one-character
+  of `keepExactDefaultTemporal`, which is about a second cheaper on 1GB of date-times. A value
+  with a UTC offset (`date-time`, `time`) cannot print back once converted to UTC, so
+  `parseOffsetTemporal` cuts the offset off with a regex built from the pattern, checks the local
+  rest, then applies the offset; a naive Datetime dtype has `timeZone: ""`, not undefined
+  (`getTypeTimeZone`); `scanCSV` takes a one-character
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
   Float64
 - nodejs-polars has no `sqlExpr`: a SQL condition joins a frame as

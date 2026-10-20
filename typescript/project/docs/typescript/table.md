@@ -381,8 +381,10 @@ const schema: TableSchema = {
 ### Temporal Types
 
 - `date` - Calendar dates
-- `datetime` - Date and time
-- `time` - Time of day
+- `date-time` - Instants: a date and time with a UTC offset, read as UTC
+- `local-date-time` - A date and time without an offset, in no time zone
+- `time` - Time of day with a UTC offset, read as UTC
+- `local-time` - Time of day without an offset
 - `duration` - Time spans
 
 ### Spatial Types

@@ -619,7 +619,7 @@ This example demonstrates advanced features like complex types and validation:
     },
     "measurement_time": {
       "type": "string",
-      "format": "date-time",
+      "format": "local-date-time",
       "title": "Measurement Timestamp",
       "temporalFormat": "%Y-%m-%d %H:%M:%S"
     }

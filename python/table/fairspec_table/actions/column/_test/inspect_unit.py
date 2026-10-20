@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from unittest.mock import patch
 
 import polars as pl
@@ -8,6 +9,8 @@ from fairspec_metadata import DateColumnProperty
 from fairspec_metadata import DateTimeColumnProperty
 from fairspec_metadata import DurationColumnProperty
 from fairspec_metadata import IntegerColumnProperty
+from fairspec_metadata import LocalDateTimeColumnProperty
+from fairspec_metadata import LocalTimeColumnProperty
 from fairspec_metadata import NumberColumnProperty
 from fairspec_metadata import StringColumnProperty
 from fairspec_metadata import TimeColumnProperty
@@ -72,6 +75,57 @@ class TestInspectColumnType:
         errors = inspect_table(table, table_schema=table_schema)
 
         assert len(errors) == 0
+
+    def test_should_match_a_zoned_datetime_to_date_time_only(self):
+        value = datetime.datetime(2024, 1, 15, 10, 30)
+        table = pl.DataFrame(
+            {"at": pl.Series([value], dtype=pl.Datetime("us", "Europe/Rome"))}
+        ).lazy()
+
+        assert (
+            inspect_table(
+                table,
+                table_schema=TableSchema(properties={"at": DateTimeColumnProperty()}),
+            )
+            == []
+        )
+        errors = inspect_table(
+            table,
+            table_schema=TableSchema(properties={"at": LocalDateTimeColumnProperty()}),
+        )
+
+        assert len(errors) == 1
+        assert isinstance(errors[0], ColumnTypeError)
+        assert errors[0].expectedColumnType == "local-date-time"
+        assert errors[0].actualColumnType == "date-time"
+
+    def test_should_match_a_naive_datetime_to_local_date_time_only(self):
+        table = pl.DataFrame({"at": [datetime.datetime(2024, 1, 15, 10, 30)]}).lazy()
+
+        assert (
+            inspect_table(
+                table,
+                table_schema=TableSchema(
+                    properties={"at": LocalDateTimeColumnProperty()}
+                ),
+            )
+            == []
+        )
+        errors = inspect_table(
+            table, table_schema=TableSchema(properties={"at": DateTimeColumnProperty()})
+        )
+
+        assert len(errors) == 1
+        assert isinstance(errors[0], ColumnTypeError)
+        assert errors[0].expectedColumnType == "date-time"
+        assert errors[0].actualColumnType == "local-date-time"
+
+    def test_should_match_a_time_to_time_and_local_time(self):
+        table = pl.DataFrame({"at": [datetime.time(10, 30)]}).lazy()
+
+        for property in [TimeColumnProperty(), LocalTimeColumnProperty()]:
+            table_schema = TableSchema(properties={"at": property})
+            assert inspect_table(table, table_schema=table_schema) == []
 
 
 class TestInspectColumnNamedNumber:
@@ -176,7 +230,7 @@ class TestInspectCellTypes:
         assert cell_errors[2].rowNumber == 4
 
     def test_should_validate_string_to_time_conversion_errors(self):
-        table = pl.DataFrame({"time": ["14:30:00", "2:30pm", "invalid", "14h30"]}).lazy()
+        table = pl.DataFrame({"time": ["14:30:00Z", "2:30pm", "invalid", "14h30"]}).lazy()
         table_schema = TableSchema(properties={"time": TimeColumnProperty()})
 
         errors = inspect_table(table, table_schema=table_schema)

@@ -949,7 +949,7 @@ Type properties:
 
 #### Date
 
-A column for ISO 8601 date values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date"`.
+A column for ISO 8601 calendar dates. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date"`, as the JSON Schema `date` format. A date is not associated with any time zone.
 
 Without [`temporalFormat`](#temporalformat), a value `MUST` be a calendar date `YYYY-MM-DD` with nothing before or after it.
 
@@ -984,9 +984,11 @@ Type properties:
 
 #### Time
 
-A column for ISO 8601 time values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"time"`.
+A column for times of day with a UTC offset, as the RFC 3339 `full-time` and the JSON Schema `time` format. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"time"`. For times of day without an offset, use [LocalTime](#localtime).
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be a time `HH:MM:SS` with nothing before or after it.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid.
+
+A value denotes a time of day in UTC: an implementation `MUST` apply the offset, so `14:30:00+02:00` and `12:30:00Z` are the same value.
 
 Metadata example:
 
@@ -1005,9 +1007,44 @@ Data example:
 
 ```csv
 start_time
-14:30:00
-09:45:30
-18:00:00
+14:30:00Z
+09:45:30+02:00
+18:00:00.5-05:00
+```
+
+Type properties:
+
+- [`minLength`](#minlength)
+- [`maxLength`](#maxlength)
+- [`pattern`](#pattern)
+- [`temporalFormat`](#temporalformat)
+
+#### LocalTime
+
+A column for times of day without a UTC offset. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"local-time"`. A local time is not associated with any time zone, including the reader's: an implementation `MUST NOT` convert it to UTC.
+
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid.
+
+Metadata example:
+
+```json
+{
+  "properties": {
+    "opening_time": {
+      "type": "string",
+      "format": "local-time"
+    }
+  }
+}
+```
+
+Data example:
+
+```csv
+opening_time
+09:00:00
+13:30:00
+17:45:30.25
 ```
 
 Type properties:
@@ -1019,9 +1056,11 @@ Type properties:
 
 #### DateTime
 
-A column for ISO 8601 date with time values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date-time"`.
+A column for instants: a date with a time of day and a UTC offset, as the RFC 3339 `date-time` and the JSON Schema `date-time` format. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date-time"`. For dates with times without an offset, use [LocalDateTime](#localdatetime).
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits) and then optionally by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid.
+
+A value denotes an instant: an implementation `MUST` apply the offset, so `2024-03-20T18:00:00-05:00` and `2024-03-20T23:00:00Z` are the same value.
 
 Metadata example:
 
@@ -1043,6 +1082,41 @@ created_at
 2023-12-01T14:30:00Z
 2024-01-15T09:45:30+00:00
 2024-03-20T18:00:00-05:00
+```
+
+Type properties:
+
+- [`minLength`](#minlength)
+- [`maxLength`](#maxlength)
+- [`pattern`](#pattern)
+- [`temporalFormat`](#temporalformat)
+
+#### LocalDateTime
+
+A column for dates with times of day without a UTC offset. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"local-date-time"`. A local date-time is not associated with any time zone, including the reader's: an implementation `MUST NOT` convert it to an instant.
+
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid.
+
+Metadata example:
+
+```json
+{
+  "properties": {
+    "recorded_at": {
+      "type": "string",
+      "format": "local-date-time"
+    }
+  }
+}
+```
+
+Data example:
+
+```csv
+recorded_at
+2023-12-01T14:30:00
+2024-01-15T09:45:30.125
+2024-03-20T18:00:00
 ```
 
 Type properties:
@@ -1361,7 +1435,7 @@ false
 #### `format`
 
 > [!NOTE]
-> Supported types: **List**, **Base64**, **Hex**, **Email**, **URL**, **DateTime**, **Date**, **Time**, **Duration**, **WKT**, **WKB**, **GeoJSON**, **TopoJSON**
+> Supported types: **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**, **GeoJSON**, **TopoJSON**
 
 An optional format qualifier that specifies a more specific subtype of the base type.
 
@@ -1684,7 +1758,7 @@ $19.99
 #### `minLength`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **DateTime**, **Date**, **Time**, **Duration**, **WKT**, **WKB**
+> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional minimum length constraint for string values. It `MUST` be a non-negative integer.
 
@@ -1713,7 +1787,7 @@ charlie
 #### `maxLength`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **DateTime**, **Date**, **Time**, **Duration**, **WKT**, **WKB**
+> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional maximum length constraint for string values. It `MUST` be a non-negative integer.
 
@@ -1742,7 +1816,7 @@ charlie
 #### `pattern`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **DateTime**, **Date**, **Time**, **Duration**, **WKT**, **WKB**
+> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regex string. As in JSON Schema, the pattern is not anchored: a value matches when the pattern matches any part of it, so a pattern meant for the whole value uses `^` and `$`.
 
@@ -1874,7 +1948,7 @@ gamma;delta;epsilon
 > [!NOTE]
 > Supported types: **List**
 
-An optional type for items in a list column. It `MUST` be one of: `string`, `integer`, `number`, `boolean`, `date-time`, `date`, `time`.
+An optional type for items in a list column. It `MUST` be one of: `string`, `integer`, `number`, `boolean`, `date`, `time`, `local-time`, `date-time`, `local-date-time`.
 
 Metadata example:
 
@@ -1962,9 +2036,34 @@ tags
 #### `temporalFormat`
 
 > [!NOTE]
-> Supported types: **DateTime**, **Date**, **Time**
+> Supported types: **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**
 
-An optional string specifying the temporal format pattern as per the [Strftime ](https://pubs.opengroup.org/onlinepubs/009696799/functions/strftime.html) specification. A value `MUST` match the whole pattern: a value with text before or after the part the pattern matches is invalid.
+An optional string specifying the pattern values are written in. A pattern is literal text and the conversion specifications below; it `MUST NOT` contain any other `%` sequence. A value `MUST` match the whole pattern: a value with text before or after the part the pattern matches is invalid.
+
+| Specification | Meaning                                                               | Written as                     |
+| ------------- | --------------------------------------------------------------------- | ------------------------------ |
+| `%Y`          | Year                                                                  | `2024`                         |
+| `%y`          | Year within a century: `00`–`69` is 2000–2069, `70`–`99` is 1970–1999 | `24`                           |
+| `%m`          | Month, `01`–`12`                                                      | `01`                           |
+| `%b`          | Abbreviated English month name                                        | `Jan`                          |
+| `%B`          | Full English month name; reading also accepts `%b` names              | `January`                      |
+| `%d`          | Day of the month, `01`–`31`                                           | `05`                           |
+| `%j`          | Day of the year, `001`–`366`                                          | `005`                          |
+| `%H`          | Hour, `00`–`23`                                                       | `14`                           |
+| `%I`          | Hour on a 12-hour clock, `01`–`12`                                    | `02`                           |
+| `%p`          | `AM` or `PM`                                                          | `PM`                           |
+| `%M`          | Minute, `00`–`59`                                                     | `30`                           |
+| `%S`          | Second, `00`–`59`                                                     | `00`                           |
+| `%.f`         | Optional fractional seconds: `.` and one or more digits               | `.5` as `.500`, none when zero |
+| `%z`          | UTC offset `+HHMM` or `-HHMM`; reading also accepts `+HH:MM`          | `+0200`                        |
+| `%:z`         | UTC offset `+HH:MM` or `-HH:MM`; reading also accepts `+HHMM`         | `+02:00`                       |
+| `%%`          | A literal `%`                                                         | `%`                            |
+
+Reading a value, a numeric field matches with or without its leading zeros, so `1/5/2024` matches `%m/%d/%Y`, and month names and `%p` match regardless of case. Writing a value, an implementation `MUST` use the forms in the last column, with fractional seconds in 3, 6 or 9 digits.
+
+Writing a [DateTime](#datetime) or [Time](#time) value, an implementation `MUST` write it in UTC. Without a pattern, it `MUST` write the default form of the type, with fractional seconds only when they are not zero and with `Z` as the offset.
+
+A pattern for [DateTime](#datetime) or [Time](#time) `MUST` contain one offset specification, `%z` or `%:z`. A pattern for [LocalDateTime](#localdatetime), [Date](#date) or [LocalTime](#localtime) `MUST NOT` contain one.
 
 Metadata example:
 

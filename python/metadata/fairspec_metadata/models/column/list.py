@@ -14,9 +14,11 @@ class ListItemType(StrEnum):
     integer = "integer"
     number = "number"
     boolean = "boolean"
-    date_time = "date-time"
     date = "date"
     time = "time"
+    local_time = "local-time"
+    date_time = "date-time"
+    local_date_time = "local-date-time"
 
 
 class ListColumnProperty(BaseStringColumnProperty):

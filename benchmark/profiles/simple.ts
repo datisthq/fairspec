@@ -25,7 +25,7 @@ export const simpleProfile: Profile = {
       score: { type: "number", minimum: 0, maximum: 100 },
       active: { type: "boolean" },
       category: { type: "string", enum: CATEGORIES },
-      created: { type: "string", format: "date-time" },
+      created: { type: "string", format: "local-date-time" },
       country: { type: ["string", "null"], pattern: "^[A-Z]{2}$" },
       notes: { type: ["string", "null"] },
     },

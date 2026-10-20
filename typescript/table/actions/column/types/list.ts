@@ -1,8 +1,17 @@
 import type { ListColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
+import {
+  parseDefaultLocalTemporal,
+  parseDefaultOffsetTemporal,
+} from "./-shared/temporal.ts"
 
 const TRUE_VALUES = ["true", "True", "TRUE", "1"]
 const FALSE_VALUES = ["false", "False", "FALSE", "0"]
+const DATE_TIME_PATTERN = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+const DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+const TIME_PATTERN = "\\d{2}:\\d{2}:\\d{2}"
+const TIME_FORMAT = "%H:%M:%S"
+const DATE_PREFIX = "1970-01-01T"
 
 export function parseListColumn(column: ListColumn, columnExpr: pl.Expr) {
   const delimiter = column.property.delimiter ?? ","
@@ -54,11 +63,25 @@ function castItem(itemType: ListColumn["property"]["itemType"], itemExpr: pl.Exp
         .then(pl.lit(false))
         .otherwise(pl.lit(null).cast(pl.Bool))
     case "date-time":
-      return itemExpr.cast(pl.Datetime("us"))
+      return parseDefaultOffsetTemporal(itemExpr, DATE_TIME_PATTERN, DATE_TIME_FORMAT)
+    case "local-date-time":
+      return parseDefaultLocalTemporal(itemExpr, DATE_TIME_PATTERN, DATE_TIME_FORMAT)
     case "date":
       return itemExpr.cast(pl.Date)
     case "time":
-      return itemExpr.cast(pl.Time)
+      return parseDefaultOffsetTemporal(
+        itemExpr,
+        TIME_PATTERN,
+        TIME_FORMAT,
+        DATE_PREFIX,
+      ).cast(pl.Time)
+    case "local-time":
+      return parseDefaultLocalTemporal(
+        itemExpr,
+        TIME_PATTERN,
+        TIME_FORMAT,
+        DATE_PREFIX,
+      ).cast(pl.Time)
     default:
       return itemExpr
   }

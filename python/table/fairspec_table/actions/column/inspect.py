@@ -70,7 +70,6 @@ COMPAT_MAPPING: dict[type[pl.DataType], list[str]] = {
     pl.Boolean: ["boolean"],
     pl.Categorical: ["string"],
     pl.Date: ["date"],
-    pl.Datetime: ["date-time"],
     pl.Float32: ["number", "integer"],
     pl.Float64: ["number", "integer"],
     pl.Int8: ["integer", "number"],
@@ -79,7 +78,7 @@ COMPAT_MAPPING: dict[type[pl.DataType], list[str]] = {
     pl.Int64: ["integer", "number"],
     pl.List: ["list"],
     pl.String: ["unknown"],
-    pl.Time: ["time"],
+    pl.Time: ["time", "local-time"],
     pl.UInt8: ["integer", "number"],
     pl.UInt16: ["integer", "number"],
     pl.UInt32: ["integer", "number"],
@@ -90,11 +89,7 @@ COMPAT_MAPPING: dict[type[pl.DataType], list[str]] = {
 def _inspect_type(mapping: ColumnMapping) -> list[TableError]:
     errors: list[TableError] = []
 
-    compat_types: list[str] = []
-    for dtype_cls, types in COMPAT_MAPPING.items():
-        if issubclass(mapping.source.type, dtype_cls):
-            compat_types = types
-            break
+    compat_types = _get_compat_types(mapping)
 
     target_types = {mapping.target.type, "unknown"}
     is_compat = bool(set(compat_types) & target_types)
@@ -112,6 +107,15 @@ def _inspect_type(mapping: ColumnMapping) -> list[TableError]:
         )
 
     return errors
+
+
+def _get_compat_types(mapping: ColumnMapping) -> list[str]:
+    if issubclass(mapping.source.type, pl.Datetime):
+        return ["date-time" if mapping.source.time_zone else "local-date-time"]
+    for dtype_cls, types in COMPAT_MAPPING.items():
+        if issubclass(mapping.source.type, dtype_cls):
+            return types
+    return []
 
 
 # These types are parsed row by row outside polars, so each keeps its own scan

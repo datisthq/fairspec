@@ -23,6 +23,30 @@ describe("inferTableSchemaFromTable", () => {
     expect(result).toEqual(tableSchema)
   })
 
+  it("should apply a temporal format option only to columns of its kind", async () => {
+    const table = pl
+      .DataFrame({ zoned: ["2024-01-15T10:30:00Z"], naive: ["2024-01-15T10:30:00"] })
+      .lazy()
+      .select(
+        pl.col("zoned").str.strptime(pl.Datetime, "%Y-%m-%dT%H:%M:%S%#z"),
+        pl.col("naive").str.strptime(pl.Datetime, "%Y-%m-%dT%H:%M:%S"),
+      )
+
+    const result = await inferTableSchemaFromTable(table, {
+      datetimeFormat: "%Y-%m-%d %H:%M",
+    })
+    expect(result).toEqual({
+      properties: {
+        zoned: { type: "string", format: "date-time" },
+        naive: {
+          type: "string",
+          format: "local-date-time",
+          temporalFormat: "%Y-%m-%d %H:%M",
+        },
+      },
+    })
+  })
+
   it("should infer integers from floats", async () => {
     const table = pl
       .DataFrame({
@@ -332,8 +356,8 @@ describe("inferTableSchemaFromTable", () => {
 
     const tableSchema: TableSchema = {
       properties: {
-        fullTime: { type: "string", format: "time" },
-        shortTime: { type: "string", format: "time", temporalFormat: "%H:%M" },
+        fullTime: { type: "string", format: "local-time" },
+        shortTime: { type: "string", format: "local-time", temporalFormat: "%H:%M" },
       },
     }
 
@@ -353,12 +377,12 @@ describe("inferTableSchemaFromTable", () => {
       properties: {
         fullTime: {
           type: "string",
-          format: "time",
+          format: "local-time",
           temporalFormat: "%I:%M:%S %p",
         },
         shortTime: {
           type: "string",
-          format: "time",
+          format: "local-time",
           temporalFormat: "%I:%M %p",
         },
       },
@@ -401,12 +425,12 @@ describe("inferTableSchemaFromTable", () => {
 
     const tableSchema: TableSchema = {
       properties: {
-        standard: { type: "string", format: "date-time" },
+        standard: { type: "string", format: "local-date-time" },
         utc: { type: "string", format: "date-time" },
         withTz: { type: "string", format: "date-time" },
         withSpace: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%Y-%m-%d %H:%M:%S",
         },
       },
@@ -438,22 +462,22 @@ describe("inferTableSchemaFromTable", () => {
       properties: {
         shortDayMonth: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%d/%m/%Y %H:%M",
         },
         fullDayMonth: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%d/%m/%Y %H:%M:%S",
         },
         shortMonthDay: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%d/%m/%Y %H:%M",
         },
         fullMonthDay: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%d/%m/%Y %H:%M:%S",
         },
       },
@@ -463,22 +487,22 @@ describe("inferTableSchemaFromTable", () => {
       properties: {
         shortDayMonth: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%m/%d/%Y %H:%M",
         },
         fullDayMonth: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%m/%d/%Y %H:%M:%S",
         },
         shortMonthDay: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%m/%d/%Y %H:%M",
         },
         fullMonthDay: {
           type: "string",
-          format: "date-time",
+          format: "local-date-time",
           temporalFormat: "%m/%d/%Y %H:%M:%S",
         },
       },
@@ -815,7 +839,7 @@ describe("inferTableSchemaFromTable (options steer detection)", () => {
 
     expect(result).toEqual({
       properties: {
-        value: { type: "string", format: "time", temporalFormat: "%H:%M" },
+        value: { type: "string", format: "local-time", temporalFormat: "%H:%M" },
       },
     })
   })

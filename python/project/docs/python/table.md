@@ -200,7 +200,7 @@ schema = infer_table_schema(
 
 The inferred schema detects:
 
-- Column types — string, integer, number, boolean, date, datetime, time, duration, etc.
+- Column types — string, integer, number, boolean, date, date-time, local-date-time, time, local-time, duration, etc.
 - Required columns based on null presence
 - Enum values for low-cardinality columns
 - Numeric constraints (minimum, maximum)
@@ -313,7 +313,7 @@ schema = TableSchema(
 ### Supported Column Types
 
 - **Primitive** — `string`, `integer`, `number`, `boolean`
-- **Temporal** — `date`, `datetime`, `time`, `duration`
+- **Temporal** — `date`, `time`, `local-time`, `date-time`, `local-date-time`, `duration`; `date-time` and `time` values carry a UTC offset and are read as UTC
 - **Spatial** — `geojson`, `wkt`, `wkb`
 - **Complex** — `array`, `list`, `object`
 - **Specialised** — `email`, `url`, `categorical`, `base64`, `hex`

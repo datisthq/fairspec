@@ -6,10 +6,14 @@ import { normalizeTable } from "../../../../actions/table/normalize.ts"
 
 describe("parseTimeColumn", () => {
   it.each([
-    ["06:00:00", "06:00:00"],
-    ["09:00", null],
-    ["3 am", null],
-    ["3.00", null],
+    ["06:00:00Z", "06:00:00"],
+    ["06:00:00+02:00", "04:00:00"],
+    ["01:00:00+02:00", "23:00:00"],
+    ["06:00:00.5-01:00", "07:00:00.500"],
+    ["06:00:00", null],
+    ["06:00:00+0200", null],
+    ["25:00:00Z", null],
+    ["09:00Z", null],
     ["invalid", null],
     ["", null],
   ])("default: %s -> %s", async (cell, expected) => {
@@ -31,12 +35,10 @@ describe("parseTimeColumn", () => {
   })
 
   it.each([
-    ["06:00", "06:00:00"],
-    ["06:50", "06:50:00"],
-    ["3:00", "03:00:00"],
-    ["3:00 am", null],
-    ["06:00:00", null],
-    ["some night", null],
+    ["06:00+02:00", "04:00:00"],
+    ["3:00+0000", "03:00:00"],
+    ["06:00", null],
+    ["06:00:00+02:00", null],
     ["invalid", null],
     ["", null],
   ])("temporalFormat: %s -> %s", async (cell, expected) => {
@@ -46,7 +48,7 @@ describe("parseTimeColumn", () => {
         name: {
           type: "string",
           format: "time",
-          temporalFormat: "%H:%M",
+          temporalFormat: "%H:%M%:z",
         },
       },
     }
@@ -61,8 +63,8 @@ describe("parseTimeColumn", () => {
 
 describe("stringifyTimeColumn", () => {
   it.each([
-    [new Date(Date.UTC(2014, 0, 1, 6, 0, 0)), "06:00:00"],
-    [new Date(Date.UTC(2014, 0, 1, 16, 30, 0)), "16:30:00"],
+    [new Date(Date.UTC(2014, 0, 1, 6, 0, 0)), "06:00:00Z"],
+    [new Date(Date.UTC(2014, 0, 1, 16, 30, 0)), "16:30:00Z"],
   ])("default: %s -> %s", async (value, expected) => {
     const table = pl.DataFrame([pl.Series("name", [value], pl.Time)]).lazy()
     const tableSchema: TableSchema = {
@@ -82,8 +84,8 @@ describe("stringifyTimeColumn", () => {
   })
 
   it.each([
-    [new Date(Date.UTC(2014, 0, 1, 6, 0, 0)), "06:00"],
-    [new Date(Date.UTC(2014, 0, 1, 16, 30, 0)), "16:30"],
+    [new Date(Date.UTC(2014, 0, 1, 6, 0, 0)), "06:00+00:00"],
+    [new Date(Date.UTC(2014, 0, 1, 16, 30, 0)), "16:30+00:00"],
   ])("temporalFormat: %s -> %s", async (value, expected) => {
     const table = pl.DataFrame([pl.Series("name", [value], pl.Time)]).lazy()
     const tableSchema: TableSchema = {
@@ -91,7 +93,7 @@ describe("stringifyTimeColumn", () => {
         name: {
           type: "string",
           format: "time",
-          temporalFormat: "%H:%M",
+          temporalFormat: "%H:%M%:z",
         },
       },
     }

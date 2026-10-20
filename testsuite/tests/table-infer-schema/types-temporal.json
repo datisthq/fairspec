@@ -110,7 +110,7 @@
     "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
     "specification": [
       "https://fairspec.org/specs/table-schema/#date",
-      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#localdatetime",
       "https://fairspec.org/specs/table-schema/#temporalformat"
     ],
     "options": {
@@ -191,7 +191,7 @@
             },
             "dt": {
               "type": "string",
-              "format": "date-time",
+              "format": "local-date-time",
               "temporalFormat": "%m/%d/%Y %H:%M:%S"
             }
           }
@@ -233,11 +233,12 @@
     "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
     "specification": [
       "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#localtime",
       "https://fairspec.org/specs/table-schema/#temporalformat"
     ],
     "tests": [
       {
-        "description": "ISO 8601 times need no format",
+        "description": "ISO 8601 times without an offset are local",
         "data": "id,t\n1,14:30:00\n2,09:45:30\n",
         "expected": {
           "properties": {
@@ -246,7 +247,7 @@
             },
             "t": {
               "type": "string",
-              "format": "time"
+              "format": "local-time"
             }
           }
         }
@@ -261,7 +262,7 @@
             },
             "t": {
               "type": "string",
-              "format": "time",
+              "format": "local-time",
               "temporalFormat": "%H:%M"
             }
           }
@@ -277,7 +278,7 @@
             },
             "t": {
               "type": "string",
-              "format": "time",
+              "format": "local-time",
               "temporalFormat": "%I:%M %p"
             }
           }
@@ -293,8 +294,37 @@
             },
             "t": {
               "type": "string",
-              "format": "time",
+              "format": "local-time",
               "temporalFormat": "%I:%M:%S %p"
+            }
+          }
+        }
+      },
+      {
+        "description": "times with offsets are UTC times",
+        "data": "id,t\n1,14:30:00Z\n2,09:45:30+02:00\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string",
+              "format": "time"
+            }
+          }
+        }
+      },
+      {
+        "description": "mixing offsets and local times is a string",
+        "data": "id,t\n1,14:30:00Z\n2,09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "t": {
+              "type": "string"
             }
           }
         }
@@ -306,11 +336,12 @@
     "comment": "The spec defines the column types but not how to infer them; the expected schemas are the deterministic answer both libraries give",
     "specification": [
       "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#localdatetime",
       "https://fairspec.org/specs/table-schema/#temporalformat"
     ],
     "tests": [
       {
-        "description": "ISO 8601 date-times need no format",
+        "description": "ISO 8601 date-times without an offset are local",
         "data": "id,dt\n1,2024-01-15T14:30:00\n2,2024-02-20T09:45:30\n",
         "expected": {
           "properties": {
@@ -319,13 +350,13 @@
             },
             "dt": {
               "type": "string",
-              "format": "date-time"
+              "format": "local-date-time"
             }
           }
         }
       },
       {
-        "description": "UTC date-times need no format",
+        "description": "UTC date-times are instants",
         "data": "id,dt\n1,2024-01-15T14:30:00Z\n2,2024-02-20T09:45:30Z\n",
         "expected": {
           "properties": {
@@ -349,7 +380,7 @@
             },
             "dt": {
               "type": "string",
-              "format": "date-time",
+              "format": "local-date-time",
               "temporalFormat": "%Y-%m-%d %H:%M:%S"
             }
           }
@@ -365,8 +396,52 @@
             },
             "dt": {
               "type": "string",
-              "format": "date-time",
+              "format": "local-date-time",
               "temporalFormat": "%d/%m/%Y %H:%M"
+            }
+          }
+        }
+      },
+      {
+        "description": "date-times with offsets are instants",
+        "data": "id,dt\n1,2024-01-15T14:30:00+02:00\n2,2024-02-20T09:45:30-05:00\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "fractional seconds need no format",
+        "data": "id,dt\n1,2024-01-15T14:30:00.125\n2,2024-02-20T09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string",
+              "format": "local-date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "mixing offsets and local values is a string",
+        "data": "id,dt\n1,2024-01-15T14:30:00Z\n2,2024-02-20T09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "dt": {
+              "type": "string"
             }
           }
         }

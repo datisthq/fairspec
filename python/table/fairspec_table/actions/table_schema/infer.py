@@ -10,6 +10,7 @@ from fairspec_metadata import set_property_nullable
 from fairspec_metadata import TableSchema
 
 from fairspec_table.helpers.schema import get_polars_schema
+from fairspec_table.models.column import PolarsColumn
 from fairspec_table.models.schema import InferTableSchemaOptions
 
 if TYPE_CHECKING:
@@ -24,7 +25,6 @@ TYPE_MAPPING: dict[type[pl.DataType], str] = {
     pl.Boolean: "boolean",
     pl.Categorical: "string",
     pl.Date: "date",
-    pl.Datetime: "date-time",
     pl.Decimal: "number",
     pl.Float32: "number",
     pl.Float64: "number",
@@ -40,7 +40,7 @@ TYPE_MAPPING: dict[type[pl.DataType], str] = {
     pl.Null: "unknown",
     pl.String: "string",
     pl.Struct: "object",
-    pl.Time: "time",
+    pl.Time: "local-time",
 }
 
 
@@ -92,7 +92,7 @@ def infer_table_schema_from_sample(
 
         col_type = (
             (column_types.get(name) if column_types else None)
-            or TYPE_MAPPING.get(polars_column.type)
+            or _get_polars_column_type(polars_column)
             or "unknown"
         )
         is_nullable = False
@@ -187,16 +187,20 @@ def _create_property_dict(col_type: str) -> Descriptor:
             return {"type": "string"}
         case "date":
             return {"type": "string", "format": "date"}
-        case "date-time":
-            return {"type": "string", "format": "date-time"}
-        case "time":
-            return {"type": "string", "format": "time"}
+        case "date-time" | "local-date-time" | "time" | "local-time":
+            return {"type": "string", "format": col_type}
         case "array":
             return {"type": "array"}
         case "object":
             return {"type": "object"}
         case _:
             return {}
+
+
+def _get_polars_column_type(polars_column: PolarsColumn) -> str | None:
+    if issubclass(polars_column.type, pl.Datetime):
+        return "date-time" if polars_column.time_zone else "local-date-time"
+    return TYPE_MAPPING.get(polars_column.type)
 
 
 def _build_column(name: str, col_type: str, property_dict: Descriptor) -> Column:
@@ -381,84 +385,88 @@ def _create_regex_mapping(
                 },
             }
         ),
-        "^\\d{2}:\\d{2}:\\d{2}$": {
-            "type": "time",
-            "property": {"type": "string", "format": "time"},
+        "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$": {
+            "type": "local-time",
+            "property": {"type": "string", "format": "local-time"},
         },
         "^\\d{2}:\\d{2}$": {
-            "type": "time",
-            "property": {"type": "string", "format": "time", "temporalFormat": "%H:%M"},
-        },
-        "^\\d{1,2}:\\d{2}:\\d{2}\\s*(am|pm|AM|PM)$": {
-            "type": "time",
+            "type": "local-time",
             "property": {
                 "type": "string",
-                "format": "time",
+                "format": "local-time",
+                "temporalFormat": "%H:%M",
+            },
+        },
+        "^\\d{1,2}:\\d{2}:\\d{2}\\s*(am|pm|AM|PM)$": {
+            "type": "local-time",
+            "property": {
+                "type": "string",
+                "format": "local-time",
                 "temporalFormat": "%I:%M:%S %p",
             },
         },
         "^\\d{1,2}:\\d{2}\\s*(am|pm|AM|PM)$": {
-            "type": "time",
+            "type": "local-time",
             "property": {
                 "type": "string",
-                "format": "time",
+                "format": "local-time",
                 "temporalFormat": "%I:%M %p",
             },
         },
-        "^\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:?\\d{2}$": {
+        "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$": {
             "type": "time",
             "property": {"type": "string", "format": "time"},
         },
-        "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z?$": {
+        "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$": {
             "type": "date-time",
             "property": {"type": "string", "format": "date-time"},
         },
-        "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:?\\d{2}$": {
-            "type": "date-time",
-            "property": {"type": "string", "format": "date-time"},
+        "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$": {
+            "type": "local-date-time",
+            "property": {"type": "string", "format": "local-date-time"},
         },
         "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$": {
-            "type": "date-time",
+            "type": "local-date-time",
             "property": {
                 "type": "string",
-                "format": "date-time",
+                "format": "local-date-time",
                 "temporalFormat": "%Y-%m-%d %H:%M:%S",
             },
         },
         "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$": (
             {
-                "type": "date-time",
+                "type": "local-date-time",
                 "property": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M",
                 },
             }
             if effective_month_first
             else {
-                "type": "date-time",
+                "type": "local-date-time",
                 "property": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M",
                 },
             }
         ),
         "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}$": (
             {
-                "type": "date-time",
+                "type": "local-date-time",
                 "property": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%m/%d/%Y %H:%M:%S",
                 },
             }
             if effective_month_first
             else {
-                "type": "date-time",
+                "type": "local-date-time",
                 "property": {
                     "type": "string",
-                    "format": "date-time",
+                    "format": "local-date-time",
                     "temporalFormat": "%d/%m/%Y %H:%M:%S",
                 },
             }
@@ -497,21 +505,20 @@ def _create_regex_mapping(
 
     canonical_formats: dict[str, str] = {
         "date": "%Y-%m-%d",
-        "time": "%H:%M:%S",
-        "date-time": "%Y-%m-%dT%H:%M:%S",
+        "local-time": "%H:%M:%S",
+        "local-date-time": "%Y-%m-%dT%H:%M:%S",
+    }
+    user_formats: dict[str, str | None] = {
+        "date": date_format,
+        "time": time_format,
+        "local-time": time_format,
+        "date-time": datetime_format,
+        "local-date-time": datetime_format,
     }
 
     to_delete: list[str] = []
     for regex, col in mapping.items():
-        user_format = (
-            date_format
-            if col["type"] == "date"
-            else (
-                time_format
-                if col["type"] == "time"
-                else (datetime_format if col["type"] == "date-time" else None)
-            )
-        )
+        user_format = user_formats.get(col["type"])
         if user_format is None:
             continue
         entry_format = (
@@ -544,15 +551,18 @@ def _enhance_column(column: Column, **options: Unpack[InferTableSchemaOptions]) 
             column.property.decimalChar = options["decimalChar"]  # type: ignore[union-attr]
         if options.get("groupChar") is not None:
             column.property.groupChar = options["groupChar"]  # type: ignore[union-attr]
-    elif column.type == "date-time":
-        if options.get("datetimeFormat") is not None:
-            column.property.temporalFormat = options["datetimeFormat"]  # type: ignore[union-attr]
+    elif column.type in ("date-time", "local-date-time"):
+        fmt = options.get("datetimeFormat")
+        # a native typed column reaches here unfiltered, so a format of the wrong kind is skipped
+        if fmt is not None and _has_offset_specifier(fmt) == (column.type == "date-time"):
+            column.property.temporalFormat = fmt  # type: ignore[union-attr]
     elif column.type == "date":
         if options.get("dateFormat") is not None:
             column.property.temporalFormat = options["dateFormat"]  # type: ignore[union-attr]
-    elif column.type == "time":
-        if options.get("timeFormat") is not None:
-            column.property.temporalFormat = options["timeFormat"]  # type: ignore[union-attr]
+    elif column.type in ("time", "local-time"):
+        fmt = options.get("timeFormat")
+        if fmt is not None and _has_offset_specifier(fmt) == (column.type == "time"):
+            column.property.temporalFormat = fmt  # type: ignore[union-attr]
     elif column.type == "list":
         if options.get("listDelimiter") is not None:
             column.property.delimiter = options["listDelimiter"]  # type: ignore[union-attr]
@@ -566,3 +576,7 @@ def _enhance_schema(
 ) -> None:
     if options.get("missingValues") is not None:
         table_schema.missingValues = list(options["missingValues"])
+
+
+def _has_offset_specifier(fmt: str) -> bool:
+    return re.search(r"(^|[^%])(%%)*%:?z", fmt) is not None

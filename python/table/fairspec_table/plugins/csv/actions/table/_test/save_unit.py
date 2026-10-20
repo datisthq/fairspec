@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 import polars as pl
 from fairspec_dataset import get_temp_file_path
 from fairspec_metadata import CsvFileDialect, Resource, TsvFileDialect
@@ -69,6 +71,27 @@ class TestSaveCsvTable:
             content = f.read()
         assert content == (
             "id,name\n1.0,'Alice,Smith'\n2.0,'Bob,Jones'\n3.0,'Charlie,Brown'\n"
+        )
+
+    def test_should_save_temporal_values_in_their_default_forms(self):
+        path = get_temp_file_path(format="csv")
+        value = datetime.datetime(2025, 1, 1, 10, 30, 0, 500000)
+
+        source = pl.DataFrame(
+            [
+                pl.Series("zoned", [value]).dt.replace_time_zone("Europe/Rome"),
+                pl.Series("naive", [value], dtype=pl.Datetime("us")),
+                pl.Series("time", [datetime.time(10, 30)], dtype=pl.Time),
+            ]
+        ).lazy()
+
+        save_csv_table(source, path=path)
+
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
+        assert content == (
+            "zoned,naive,time\n"
+            "2025-01-01T09:30:00.500Z,2025-01-01T10:30:00.500,10:30:00\n"
         )
 
     def test_should_save_and_load_various_data_types(self):

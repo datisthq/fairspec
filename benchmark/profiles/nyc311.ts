@@ -1,4 +1,4 @@
-import type { DateTimeColumn, StringColumn, TableSchema } from "@fairspec/metadata"
+import type { LocalDateTimeColumn, StringColumn, TableSchema } from "@fairspec/metadata"
 import type { Random } from "../generate/random.ts"
 import type { Column, Profile } from "./types.ts"
 
@@ -148,10 +148,13 @@ const SPAN = Date.UTC(2026, 0, 1) / 1000 - EPOCH
 
 const string: StringColumn["property"] = { type: "string" }
 const nullableString: StringColumn["property"] = { type: ["string", "null"] }
-const dateTime: DateTimeColumn["property"] = { type: "string", format: "date-time" }
-const nullableDateTime: DateTimeColumn["property"] = {
+const dateTime: LocalDateTimeColumn["property"] = {
+  type: "string",
+  format: "local-date-time",
+}
+const nullableDateTime: LocalDateTimeColumn["property"] = {
   type: ["string", "null"],
-  format: "date-time",
+  format: "local-date-time",
 }
 
 const tableSchema: TableSchema = {

@@ -141,7 +141,7 @@ describe("inspectTable", () => {
 
     const tableSchema: TableSchema = {
       properties: {
-        time: { type: "string", format: "time" },
+        time: { type: "string", format: "local-time" },
       },
     }
 
@@ -152,21 +152,21 @@ describe("inspectTable", () => {
       type: "cell/type",
       cell: "2:30pm",
       columnName: "time",
-      columnType: "time",
+      columnType: "local-time",
       rowNumber: 2,
     })
     expect(errors).toContainEqual({
       type: "cell/type",
       cell: "invalid",
       columnName: "time",
-      columnType: "time",
+      columnType: "local-time",
       rowNumber: 3,
     })
     expect(errors).toContainEqual({
       type: "cell/type",
       cell: "14h30",
       columnName: "time",
-      columnType: "time",
+      columnType: "local-time",
       rowNumber: 4,
     })
   })
@@ -180,7 +180,7 @@ describe("inspectTable", () => {
 
     const tableSchema: TableSchema = {
       properties: {
-        time: { type: "string", format: "time", temporalFormat: "%H:%M" },
+        time: { type: "string", format: "local-time", temporalFormat: "%H:%M" },
       },
     }
 
@@ -193,7 +193,7 @@ describe("inspectTable", () => {
       type: "cell/type",
       cell: "invalid",
       columnName: "time",
-      columnType: "time",
+      columnType: "local-time",
       rowNumber: 2,
     })
   })
@@ -202,7 +202,7 @@ describe("inspectTable", () => {
     const table = pl
       .DataFrame({
         timestamp: [
-          "2023-01-15T14:30:00",
+          "2023-01-15T14:30:00Z",
           "January 15, 2023 2:30 PM",
           "2023-01-15 14:30",
           "not-a-datetime",

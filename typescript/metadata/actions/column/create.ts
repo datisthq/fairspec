@@ -40,10 +40,14 @@ function getColumnType(
           return "url"
         case "date-time":
           return "date-time"
+        case "local-date-time":
+          return "local-date-time"
         case "date":
           return "date"
         case "time":
           return "time"
+        case "local-time":
+          return "local-time"
         case "duration":
           return "duration"
         case "wkt":

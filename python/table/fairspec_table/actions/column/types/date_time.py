@@ -4,21 +4,20 @@ import polars as pl
 
 from fairspec_metadata import DateTimeColumn
 
-DEFAULT_FORMAT = "%Y-%m-%dT%H:%M:%S"
-DEFAULT_PATTERN = r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(\.\d+)?(Z|[+-]\d{2}:\d{2})?$"
+DEFAULT_FORMAT = "%Y-%m-%dT%H:%M:%S%.fZ"
+DEFAULT_PARSE_FORMAT = "%Y-%m-%dT%H:%M:%S%.f%#z"
+DEFAULT_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$"
+DATE_TIME_TYPE = pl.Datetime("us", "UTC")
 
 
-# TODO: Add support for timezone handling
 def parse_date_time_column(column: DateTimeColumn, column_expr: pl.Expr) -> pl.Expr:
     fmt = column.property.temporalFormat
     if fmt:
-        return column_expr.str.strptime(pl.Datetime, fmt, strict=False)
+        return column_expr.str.strptime(DATE_TIME_TYPE, fmt, strict=False)
 
-    text_expr = column_expr.str.extract(DEFAULT_PATTERN, 1)
-    fraction_expr = column_expr.str.extract(DEFAULT_PATTERN, 2).fill_null("")
-    return pl.concat_str([text_expr, fraction_expr]).str.strptime(
-        pl.Datetime, f"{DEFAULT_FORMAT}%.f", strict=False
-    )
+    # %#z also reads `+02` and `+0200`, which the default form does not allow
+    text_expr = column_expr.str.extract(DEFAULT_PATTERN, 0)
+    return text_expr.str.strptime(DATE_TIME_TYPE, DEFAULT_PARSE_FORMAT, strict=False)
 
 
 def stringify_date_time_column(column: DateTimeColumn, column_expr: pl.Expr) -> pl.Expr:

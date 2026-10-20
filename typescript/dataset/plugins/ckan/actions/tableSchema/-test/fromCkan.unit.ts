@@ -62,14 +62,14 @@ describe("convertTableSchemaFromCkan", () => {
     expect(startTimeColumn).toBeDefined()
     if (startTimeColumn) {
       expect(startTimeColumn.type).toEqual("string")
-      expect(startTimeColumn.format).toEqual("time")
+      expect(startTimeColumn.format).toEqual("local-time")
     }
 
     const createdAtColumn = result.properties?.created_at
     expect(createdAtColumn).toBeDefined()
     if (createdAtColumn) {
       expect(createdAtColumn.type).toEqual("string")
-      expect(createdAtColumn.format).toEqual("date-time")
+      expect(createdAtColumn.format).toEqual("local-date-time")
       expect(createdAtColumn.title).toEqual("Created At")
       expect(createdAtColumn.description).toEqual("Timestamp when record was created")
     }
@@ -111,7 +111,7 @@ describe("convertTableSchemaFromCkan", () => {
 
     const datetimeColumn = result.properties?.datetime_field
     expect(datetimeColumn?.type).toEqual("string")
-    expect(datetimeColumn?.format).toEqual("date-time")
+    expect(datetimeColumn?.format).toEqual("local-date-time")
 
     const objectColumn = result.properties?.object_field
     expect(objectColumn?.type).toEqual("object")
@@ -191,6 +191,6 @@ describe("convertTableSchemaFromCkan", () => {
     expect(result.properties?.field2?.type).toEqual("integer")
     expect(result.properties?.field3?.type).toEqual("boolean")
     expect(result.properties?.field4?.type).toEqual("string")
-    expect(result.properties?.field4?.format).toEqual("date-time")
+    expect(result.properties?.field4?.format).toEqual("local-date-time")
   })
 })

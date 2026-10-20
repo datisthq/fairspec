@@ -116,11 +116,11 @@ class TestConvertTableSchemaToCkan:
         assert start_time_field.info is None
 
         created_at_field = next(f for f in result.fields if f.id == "created_at")
-        assert created_at_field.type == "timestamp"
+        assert created_at_field.type == "timestamptz"
         assert created_at_field.info is not None
         assert created_at_field.info.label == "Created At"
         assert created_at_field.info.notes == "Timestamp when record was created"
-        assert created_at_field.info.type_override == "timestamp"
+        assert created_at_field.info.type_override == "timestamptz"
 
         metadata_field = next(f for f in result.fields if f.id == "metadata")
         assert metadata_field.type == "json"

@@ -7,4 +7,5 @@ export const NATIVE_TYPES = [
   "string",
   "list",
   "date-time",
+  "local-date-time",
 ] satisfies Column["type"][]

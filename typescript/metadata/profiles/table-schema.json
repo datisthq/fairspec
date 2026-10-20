@@ -106,7 +106,9 @@
             "email",
             "date",
             "time",
+            "local-time",
             "date-time",
+            "local-date-time",
             "duration",
             "wkt",
             "wkb",
@@ -159,6 +161,14 @@
         {
           "if": { "properties": { "format": { "const": "time" } } },
           "then": { "$ref": "#/$defs/TimeColumnProperty" }
+        },
+        {
+          "if": { "properties": { "format": { "const": "local-time" } } },
+          "then": { "$ref": "#/$defs/LocalTimeColumnProperty" }
+        },
+        {
+          "if": { "properties": { "format": { "const": "local-date-time" } } },
+          "then": { "$ref": "#/$defs/LocalDateTimeColumnProperty" }
         },
         {
           "if": { "properties": { "format": { "const": "duration" } } },
@@ -335,21 +345,35 @@
       "allOf": [{ "$ref": "#/$defs/BaseStringColumnProperty" }],
       "properties": {
         "format": { "const": "date-time" },
-        "temporalFormat": { "$ref": "#/$defs/TemporalFormat" }
+        "temporalFormat": { "$ref": "#/$defs/OffsetTemporalFormat" }
+      }
+    },
+    "LocalDateTimeColumnProperty": {
+      "allOf": [{ "$ref": "#/$defs/BaseStringColumnProperty" }],
+      "properties": {
+        "format": { "const": "local-date-time" },
+        "temporalFormat": { "$ref": "#/$defs/LocalTemporalFormat" }
       }
     },
     "DateColumnProperty": {
       "allOf": [{ "$ref": "#/$defs/BaseStringColumnProperty" }],
       "properties": {
         "format": { "const": "date" },
-        "temporalFormat": { "$ref": "#/$defs/TemporalFormat" }
+        "temporalFormat": { "$ref": "#/$defs/LocalTemporalFormat" }
       }
     },
     "TimeColumnProperty": {
       "allOf": [{ "$ref": "#/$defs/BaseStringColumnProperty" }],
       "properties": {
         "format": { "const": "time" },
-        "temporalFormat": { "$ref": "#/$defs/TemporalFormat" }
+        "temporalFormat": { "$ref": "#/$defs/OffsetTemporalFormat" }
+      }
+    },
+    "LocalTimeColumnProperty": {
+      "allOf": [{ "$ref": "#/$defs/BaseStringColumnProperty" }],
+      "properties": {
+        "format": { "const": "local-time" },
+        "temporalFormat": { "$ref": "#/$defs/LocalTemporalFormat" }
       }
     },
     "DurationColumnProperty": {
@@ -484,14 +508,33 @@
       "maxLength": 1
     },
     "TemporalFormat": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^(?:[^%]|%[YymbBdjHIpMS%]|%\\.f|%:?z)*$"
+    },
+    "OffsetTemporalFormat": {
+      "allOf": [{ "$ref": "#/$defs/TemporalFormat" }],
+      "pattern": "^(?:[^%]|%[^:z]|%:[^z])*%:?z(?:[^%]|%[^:z]|%:[^z])*$"
+    },
+    "LocalTemporalFormat": {
+      "allOf": [{ "$ref": "#/$defs/TemporalFormat" }],
+      "not": { "pattern": "^(?:[^%]|%[^:z]|%:[^z])*%:?z" }
     },
     "ListDelimiter": {
       "type": "string",
       "maxLength": 1
     },
     "ListItemType": {
-      "enum": ["string", "integer", "number", "boolean", "date-time", "date", "time"]
+      "enum": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "date",
+        "time",
+        "local-time",
+        "date-time",
+        "local-date-time"
+      ]
     },
     "PrimaryKey": {
       "type": "array",

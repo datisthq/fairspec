@@ -108,8 +108,9 @@ in the library, never by loosening a runner. Two rules are fixed in both runners
 - Errors of type `data`, `metadata` and `cell/json` are compared without `message`: its text
   comes from each language's JSON Schema validator and is not normative. Leave `message` out
   of the expected error
-- Date, time and date-time columns in `{columns, rows}` are rendered as text, `%Y-%m-%d`,
-  `%H:%M:%S` and `%Y-%m-%dT%H:%M:%S`, through the library's own table query
+- Temporal columns in `{columns, rows}` are rendered as text through the library's own table
+  query: dates as `%Y-%m-%d`, times as `%H:%M:%S%.f`, date-times as `%Y-%m-%dT%H:%M:%S%.f`,
+  and date-times with a time zone as `%Y-%m-%dT%H:%M:%S%.f%:z`
 
 Binary inputs (xlsx, ods, parquet, arrow, sqlite) are tiny files generated once with the Python
 library and embedded as base64; the group's `comment` says how each was made.

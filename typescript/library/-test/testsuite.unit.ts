@@ -42,8 +42,9 @@ const TEST_SCHEMA = join(SUITE, "test-schema.json")
 const UNSPECIFIED_MESSAGE_ERRORS = ["data", "metadata", "cell/json"]
 const TEMPORAL_FORMATS: Record<string, string> = {
   Date: "%Y-%m-%d",
-  Time: "%H:%M:%S",
-  Datetime: "%Y-%m-%dT%H:%M:%S",
+  Time: "%H:%M:%S%.f",
+  Datetime: "%Y-%m-%dT%H:%M:%S%.f",
+  ZonedDatetime: "%Y-%m-%dT%H:%M:%S%.f%:z",
 }
 
 type Data = string | { base64: string } | unknown[] | Record<string, unknown>
@@ -236,7 +237,10 @@ async function writeDataset(group: Group, test: Test) {
 async function readRows(table: Table) {
   const frame = await table.collect()
   const columns = frame.columns.map(name => {
-    const format = TEMPORAL_FORMATS[frame.getColumn(name).dtype.variant]
+    const dtype = frame.getColumn(name).dtype
+    const isZoned =
+      "timeZone" in dtype && typeof dtype.timeZone === "string" && !!dtype.timeZone
+    const format = TEMPORAL_FORMATS[isZoned ? "ZonedDatetime" : dtype.variant]
     return format ? `STRFTIME("${name}", '${format}') AS "${name}"` : `"${name}"`
   })
   const rendered = await queryTable(

@@ -56,11 +56,11 @@ class TestConvertTableSchemaFromCkan:
 
         start_time_col = properties["start_time"]
         assert start_time_col.type == "string"
-        assert start_time_col.format == "time"
+        assert start_time_col.format == "local-time"
 
         created_at_col = properties["created_at"]
         assert created_at_col.type == "string"
-        assert created_at_col.format == "date-time"
+        assert created_at_col.format == "local-date-time"
         assert created_at_col.title == "Created At"
         assert created_at_col.description == "Timestamp when record was created"
 
@@ -85,7 +85,7 @@ class TestConvertTableSchemaFromCkan:
         assert properties["float_field"].type == "number"
         assert properties["boolean_field"].type == "boolean"
         assert properties["datetime_field"].type == "string"
-        assert properties["datetime_field"].format == "date-time"
+        assert properties["datetime_field"].format == "local-date-time"
         assert properties["object_field"].type == "object"
 
     def test_handles_unknown_field_types(self):
@@ -147,4 +147,4 @@ class TestConvertTableSchemaFromCkan:
         assert properties["field2"].type == "integer"
         assert properties["field3"].type == "boolean"
         assert properties["field4"].type == "string"
-        assert properties["field4"].format == "date-time"
+        assert properties["field4"].format == "local-date-time"

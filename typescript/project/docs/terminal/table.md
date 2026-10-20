@@ -187,7 +187,7 @@ fairspec table infer-schema data.csv --sample-rows 1000 --confidence 0.95
 
 The inferred schema automatically detects:
 
-- Column types (string, integer, number, boolean, date, datetime, etc.)
+- Column types (string, integer, number, boolean, date, date-time, local-date-time, etc.)
 - Required columns based on presence
 - Enum values for columns with limited distinct values
 - Numeric constraints (minimum, maximum)
@@ -434,9 +434,9 @@ All table commands support these schema-related options:
 
 ### Date/Time Parsing
 
-- `--datetime-format <format>` - Datetime format string
-- `--date-format <format>` - Date format string
-- `--time-format <format>` - Time format string
+- `--datetime-format <format>` - Date-time format pattern (`temporalFormat`), for `date-time` and `local-date-time` columns
+- `--date-format <format>` - Date format pattern
+- `--time-format <format>` - Time format pattern, for `time` and `local-time` columns
 - `--month-first` - Parse dates as month-first
 
 ### Array/List Parsing

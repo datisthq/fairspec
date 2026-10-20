@@ -171,13 +171,18 @@
     },
     "tests": [
       {
-        "description": "ISO 8601 times are valid",
-        "data": "id,x\n1,14:30:00\n2,09:45:30\n",
+        "description": "times with an offset are valid",
+        "data": "id,x\n1,14:30:00Z\n2,09:45:30+02:00\n3,18:00:00-05:00\n",
         "valid": true
       },
       {
-        "description": "hour 25 is a cell/type error",
-        "data": "id,x\n1,14:30:00\n2,25:00:00\n",
+        "description": "fractional seconds are valid",
+        "data": "id,x\n1,18:00:00.5-05:00\n",
+        "valid": true
+      },
+      {
+        "description": "a time without an offset is a cell/type error",
+        "data": "id,x\n1,14:30:00Z\n2,14:30:00\n",
         "valid": false,
         "errors": [
           {
@@ -185,13 +190,27 @@
             "columnName": "x",
             "columnType": "time",
             "rowNumber": 2,
-            "cell": "25:00:00"
+            "cell": "14:30:00"
+          }
+        ]
+      },
+      {
+        "description": "hour 25 is a cell/type error",
+        "data": "id,x\n1,14:30:00Z\n2,25:00:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "25:00:00Z"
           }
         ]
       },
       {
         "description": "a word is a cell/type error",
-        "data": "id,x\n1,14:30:00\n2,noon\n",
+        "data": "id,x\n1,14:30:00Z\n2,noon\n",
         "valid": false,
         "errors": [
           {
@@ -205,7 +224,7 @@
       },
       {
         "description": "an empty cell is a cell/missing error",
-        "data": "id,x\n1,14:30:00\n2,\n",
+        "data": "id,x\n1,14:30:00Z\n2,\n",
         "valid": false,
         "errors": [
           {
@@ -238,7 +257,7 @@
     "tests": [
       {
         "description": "an empty cell is valid",
-        "data": "id,x\n1,14:30:00\n2,\n",
+        "data": "id,x\n1,14:30:00Z\n2,\n",
         "valid": true
       }
     ]
@@ -257,6 +276,167 @@
         "x": {
           "type": "string",
           "format": "time",
+          "temporalFormat": "%H:%M%:z"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "times in the format are valid",
+        "data": "id,x\n1,14:30+02:00\n2,09:45-05:00\n",
+        "valid": true
+      },
+      {
+        "description": "a time without an offset is a cell/type error",
+        "data": "id,x\n1,14:30+02:00\n2,14:30\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "14:30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "local-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#localtime"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 times are valid",
+        "data": "id,x\n1,14:30:00\n2,09:45:30\n",
+        "valid": true
+      },
+      {
+        "description": "fractional seconds are valid",
+        "data": "id,x\n1,17:45:30.25\n",
+        "valid": true
+      },
+      {
+        "description": "a UTC Z suffix is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,14:30:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "14:30:00Z"
+          }
+        ]
+      },
+      {
+        "description": "an offset is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,14:30:00+02:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "14:30:00+02:00"
+          }
+        ]
+      },
+      {
+        "description": "hour 25 is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,25:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "25:00:00"
+          }
+        ]
+      },
+      {
+        "description": "a word is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,noon\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "noon"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,14:30:00\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable local-time column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#localtime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "local-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,14:30:00\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "local-time column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#localtime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-time",
           "temporalFormat": "%H:%M"
         }
       }
@@ -275,7 +455,7 @@
           {
             "type": "cell/type",
             "columnName": "x",
-            "columnType": "time",
+            "columnType": "local-time",
             "rowNumber": 2,
             "cell": "14:30:00"
           }
@@ -299,25 +479,32 @@
     },
     "tests": [
       {
-        "description": "ISO 8601 date-times are valid",
-        "data": "id,x\n1,2024-01-15T14:30:00\n",
+        "description": "the spec's data example is valid",
+        "data": "id,x\n1,2023-12-01T14:30:00Z\n2,2024-01-15T09:45:30+00:00\n3,2024-03-20T18:00:00-05:00\n",
         "valid": true
       },
       {
-        "description": "a UTC Z suffix is valid",
-        "comment": "The spec's DateTime data example lists 2023-12-01T14:30:00Z",
-        "data": "id,x\n1,2023-12-01T14:30:00Z\n",
+        "description": "fractional seconds are valid",
+        "data": "id,x\n1,2024-01-15T09:45:30.125+02:00\n",
         "valid": true
       },
       {
-        "description": "a UTC offset is valid",
-        "comment": "The spec's DateTime data example lists 2024-03-20T18:00:00-05:00",
-        "data": "id,x\n1,2024-03-20T18:00:00-05:00\n",
-        "valid": true
+        "description": "a date-time without an offset is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,2024-01-15T14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00"
+          }
+        ]
       },
       {
         "description": "a bare date is a cell/type error",
-        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15\n",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,2024-01-15\n",
         "valid": false,
         "errors": [
           {
@@ -331,7 +518,7 @@
       },
       {
         "description": "a word is a cell/type error",
-        "data": "id,x\n1,2024-01-15T14:30:00\n2,yesterday\n",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,yesterday\n",
         "valid": false,
         "errors": [
           {
@@ -344,8 +531,8 @@
         ]
       },
       {
-        "description": "trailing text is a cell/type error",
-        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15T14:30:00x\n",
+        "description": "leading text is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,x2024-01-15T14:30:00Z\n",
         "valid": false,
         "errors": [
           {
@@ -353,13 +540,27 @@
             "columnName": "x",
             "columnType": "date-time",
             "rowNumber": 2,
-            "cell": "2024-01-15T14:30:00x"
+            "cell": "x2024-01-15T14:30:00Z"
+          }
+        ]
+      },
+      {
+        "description": "trailing text is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,2024-01-15T14:30:00Zx\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00Zx"
           }
         ]
       },
       {
         "description": "an empty cell is a cell/missing error",
-        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,\n",
         "valid": false,
         "errors": [
           {
@@ -392,7 +593,7 @@
     "tests": [
       {
         "description": "an empty cell is valid",
-        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,\n",
         "valid": true
       }
     ]
@@ -411,6 +612,173 @@
         "x": {
           "type": "string",
           "format": "date-time",
+          "temporalFormat": "%Y-%m-%d %H:%M:%S%z"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "date-times in the format are valid",
+        "data": "id,x\n1,2024-01-15 14:30:00+0200\n",
+        "valid": true
+      },
+      {
+        "description": "%z also reads an offset with a colon",
+        "data": "id,x\n1,2024-01-15 14:30:00+02:00\n",
+        "comment": "The spec's temporalFormat table: %z reading also accepts +HH:MM",
+        "valid": true
+      },
+      {
+        "description": "a date-time without an offset is a cell/type error",
+        "data": "id,x\n1,2024-01-15 14:30:00+0200\n2,2024-01-15 14:30:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15 14:30:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "local-date-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#localdatetime"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "ISO 8601 date-times are valid",
+        "data": "id,x\n1,2024-01-15T14:30:00\n",
+        "valid": true
+      },
+      {
+        "description": "fractional seconds are valid",
+        "data": "id,x\n1,2024-01-15T09:45:30.125\n",
+        "valid": true
+      },
+      {
+        "description": "a UTC Z suffix is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2023-12-01T14:30:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2023-12-01T14:30:00Z"
+          }
+        ]
+      },
+      {
+        "description": "an offset is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-03-20T18:00:00-05:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-03-20T18:00:00-05:00"
+          }
+        ]
+      },
+      {
+        "description": "a bare date is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15"
+          }
+        ]
+      },
+      {
+        "description": "trailing text is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,2024-01-15T14:30:00x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00x"
+          }
+        ]
+      },
+      {
+        "description": "an empty cell is a cell/missing error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "nullable local-date-time column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#localdatetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "local-date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "local-date-time column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#localdatetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-date-time",
           "temporalFormat": "%Y-%m-%d %H:%M:%S"
         }
       }
@@ -429,7 +797,7 @@
           {
             "type": "cell/type",
             "columnName": "x",
-            "columnType": "date-time",
+            "columnType": "local-date-time",
             "rowNumber": 2,
             "cell": "2024-01-15T14:30:00"
           }

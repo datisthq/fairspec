@@ -12,7 +12,7 @@ class DateTimeColumnProperty(BaseStringColumnProperty):
     format: Literal["date-time"] = "date-time"
     temporalFormat: str | None = Field(
         default=None,
-        description="An optional string specifying the datetime format pattern as per the Strftime specification",
+        description="An optional string specifying the temporal format pattern with a UTC offset specification",
     )
 
 

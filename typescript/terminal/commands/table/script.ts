@@ -43,7 +43,7 @@ export const scriptTableCommand = f
       : await selectResource(session, input)
 
     const table = await session.task("Loading table", async () => {
-      const table = await loadTable(resource, { denormalized: true })
+      const table = await loadTable(resource, { ...input, denormalized: true })
       if (!table) throw new Error("Could not load table")
       return table
     })

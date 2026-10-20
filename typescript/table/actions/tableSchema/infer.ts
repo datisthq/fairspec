@@ -6,6 +6,7 @@ import {
 } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import { getPolarsSchema } from "../../helpers/schema.ts"
+import { getTypeTimeZone } from "../../helpers/type.ts"
 import type { InferTableSchemaOptions } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
 
@@ -63,7 +64,10 @@ export function inferTableSchemaFromSample(
       variant = variant.slice(0, -1)
     }
 
-    const type = columnTypes?.[name] ?? typeMapping[variant] ?? "unknown"
+    const type =
+      columnTypes?.[name] ??
+      (getTypeTimeZone(polarsColumn.type) ? "date-time" : typeMapping[variant]) ??
+      "unknown"
     let isNullable = false
 
     let column: Column
@@ -94,11 +98,25 @@ export function inferTableSchemaFromSample(
           property: { type: "string", format: "date-time" },
         }
         break
+      case "local-date-time":
+        column = {
+          name,
+          type: "local-date-time",
+          property: { type: "string", format: "local-date-time" },
+        }
+        break
       case "time":
         column = {
           name,
           type: "time",
           property: { type: "string", format: "time" },
+        }
+        break
+      case "local-time":
+        column = {
+          name,
+          type: "local-time",
+          property: { type: "string", format: "local-time" },
         }
         break
       case "array":
@@ -209,7 +227,7 @@ function createTypeMapping() {
     Bool: "boolean",
     Categorical: "string",
     Date: "date",
-    Datetime: "date-time",
+    Datetime: "local-date-time",
     Decimal: "number",
     Float32: "number",
     Float64: "number",
@@ -222,7 +240,7 @@ function createTypeMapping() {
     Object: "object",
     String: "string",
     Struct: "object",
-    Time: "time",
+    Time: "local-time",
     UInt16: "integer",
     UInt32: "integer",
     UInt64: "integer",
@@ -255,7 +273,6 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
     groupChar,
     listDelimiter,
     dateFormat,
-    timeFormat,
     datetimeFormat,
   } = options ?? {}
 
@@ -384,78 +401,78 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
           },
         },
 
-    "^\\d{2}:\\d{2}:\\d{2}$": {
-      type: "time",
-      property: { type: "string", format: "time" },
+    "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$": {
+      type: "local-time",
+      property: { type: "string", format: "local-time" },
     },
     "^\\d{2}:\\d{2}$": {
-      type: "time",
-      property: { type: "string", format: "time", temporalFormat: "%H:%M" },
+      type: "local-time",
+      property: { type: "string", format: "local-time", temporalFormat: "%H:%M" },
     },
     "^\\d{1,2}:\\d{2}:\\d{2}\\s*(am|pm|AM|PM)$": {
-      type: "time",
+      type: "local-time",
       property: {
         type: "string",
-        format: "time",
+        format: "local-time",
         temporalFormat: "%I:%M:%S %p",
       },
     },
     "^\\d{1,2}:\\d{2}\\s*(am|pm|AM|PM)$": {
-      type: "time",
-      property: { type: "string", format: "time", temporalFormat: "%I:%M %p" },
+      type: "local-time",
+      property: { type: "string", format: "local-time", temporalFormat: "%I:%M %p" },
     },
-    "^\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:?\\d{2}$": {
+    "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$": {
       type: "time",
       property: { type: "string", format: "time" },
     },
 
-    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z?$": {
-      type: "date-time",
-      property: { type: "string", format: "date-time" },
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$": {
+      type: "local-date-time",
+      property: { type: "string", format: "local-date-time" },
     },
-    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:?\\d{2}$": {
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$": {
       type: "date-time",
       property: { type: "string", format: "date-time" },
     },
     "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$": {
-      type: "date-time",
+      type: "local-date-time",
       property: {
         type: "string",
-        format: "date-time",
+        format: "local-date-time",
         temporalFormat: "%Y-%m-%d %H:%M:%S",
       },
     },
     "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$": effectiveMonthFirst
       ? {
-          type: "date-time",
+          type: "local-date-time",
           property: {
             type: "string",
-            format: "date-time",
+            format: "local-date-time",
             temporalFormat: "%m/%d/%Y %H:%M",
           },
         }
       : {
-          type: "date-time",
+          type: "local-date-time",
           property: {
             type: "string",
-            format: "date-time",
+            format: "local-date-time",
             temporalFormat: "%d/%m/%Y %H:%M",
           },
         },
     "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}$": effectiveMonthFirst
       ? {
-          type: "date-time",
+          type: "local-date-time",
           property: {
             type: "string",
-            format: "date-time",
+            format: "local-date-time",
             temporalFormat: "%m/%d/%Y %H:%M:%S",
           },
         }
       : {
-          type: "date-time",
+          type: "local-date-time",
           property: {
             type: "string",
-            format: "date-time",
+            format: "local-date-time",
             temporalFormat: "%d/%m/%Y %H:%M:%S",
           },
         },
@@ -502,19 +519,12 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
 
   const canonicalFormats: Record<string, string> = {
     date: "%Y-%m-%d",
-    time: "%H:%M:%S",
-    "date-time": "%Y-%m-%dT%H:%M:%S",
+    "local-time": "%H:%M:%S",
+    "local-date-time": "%Y-%m-%dT%H:%M:%S",
   }
 
   for (const [regex, col] of Object.entries(mapping)) {
-    const userFormat =
-      col.type === "date"
-        ? dateFormat
-        : col.type === "time"
-          ? timeFormat
-          : col.type === "date-time"
-            ? datetimeFormat
-            : undefined
+    const userFormat = getUserTemporalFormat(col.type, options)
     if (userFormat === undefined) continue
     const entryFormat =
       "temporalFormat" in col.property
@@ -545,17 +555,18 @@ function enhanceColumn(column: Column, options?: InferTableSchemaOptions) {
     if (options?.groupChar !== undefined) {
       column.property.groupChar = options.groupChar
     }
-  } else if (column.type === "date-time") {
-    if (options?.datetimeFormat !== undefined) {
-      column.property.temporalFormat = options.datetimeFormat
-    }
-  } else if (column.type === "date") {
-    if (options?.dateFormat !== undefined) {
-      column.property.temporalFormat = options.dateFormat
-    }
-  } else if (column.type === "time") {
-    if (options?.timeFormat !== undefined) {
-      column.property.temporalFormat = options.timeFormat
+  } else if (
+    column.type === "date" ||
+    column.type === "time" ||
+    column.type === "local-time" ||
+    column.type === "date-time" ||
+    column.type === "local-date-time"
+  ) {
+    const format = getUserTemporalFormat(column.type, options)
+    const isZoned = column.type === "date-time" || column.type === "time"
+    // a native typed column reaches here unfiltered, so a format of the wrong kind is skipped
+    if (format !== undefined && hasOffsetSpecifier(format) === isZoned) {
+      column.property.temporalFormat = format
     }
   } else if (column.type === "list") {
     if (options?.listDelimiter !== undefined) {
@@ -565,6 +576,17 @@ function enhanceColumn(column: Column, options?: InferTableSchemaOptions) {
       column.property.itemType = options.listItemType
     }
   }
+}
+
+function getUserTemporalFormat(type: Column["type"], options?: InferTableSchemaOptions) {
+  if (type === "date") return options?.dateFormat
+  if (type === "time" || type === "local-time") return options?.timeFormat
+  if (type === "date-time" || type === "local-date-time") return options?.datetimeFormat
+  return undefined
+}
+
+function hasOffsetSpecifier(format: string) {
+  return /(^|[^%])(%%)*%:?z/.test(format)
 }
 
 function makePropertyNullable(column: Column) {

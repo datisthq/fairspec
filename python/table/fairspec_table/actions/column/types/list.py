@@ -59,11 +59,28 @@ def _cast_item(item_type: str, item_expr: pl.Expr) -> pl.Expr:
                 .otherwise(pl.lit(None, dtype=pl.Boolean))
             )
         case "date-time":
-            return item_expr.str.to_datetime(strict=False)
+            return item_expr.str.to_datetime(
+                "%Y-%m-%dT%H:%M:%S%.f%#z", time_unit="us", time_zone="UTC", strict=False
+            )
+        case "local-date-time":
+            return item_expr.str.to_datetime(
+                "%Y-%m-%dT%H:%M:%S%.f", time_unit="us", strict=False
+            )
         case "date":
             return item_expr.str.to_date("%Y-%m-%d", strict=False)
         case "time":
-            return item_expr.str.to_time("%H:%M:%S", strict=False)
+            return (
+                pl.concat_str([pl.lit("1970-01-01T"), item_expr])
+                .str.to_datetime(
+                    "%Y-%m-%dT%H:%M:%S%.f%#z",
+                    time_unit="us",
+                    time_zone="UTC",
+                    strict=False,
+                )
+                .cast(pl.Time)
+            )
+        case "local-time":
+            return item_expr.str.to_time("%H:%M:%S%.f", strict=False)
         case _:
             return item_expr
 

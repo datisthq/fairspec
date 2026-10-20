@@ -180,6 +180,6 @@ describe("inferTableSchemaTool", () => {
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
     expect(result.tableSchema?.properties?.time?.type).toBe("string")
-    expect(result.tableSchema?.properties?.time?.format).toBe("time")
+    expect(result.tableSchema?.properties?.time?.format).toBe("local-time")
   })
 })
