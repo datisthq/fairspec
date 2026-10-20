@@ -2,11 +2,12 @@ from .actions.dataset.basepath import get_common_local_basepath, get_dataset_bas
 from .actions.dataset.merge import merge_datasets
 from .actions.file.copy import copy_file
 from .actions.file.describe import describe_file
-from .models.file import FileDescription
+from .models.file import FileDescription, FilePreview
 from .actions.file.infer import infer_bytes, infer_hash, infer_integrity, infer_textual
 from .actions.file.load import load_file
 from .actions.file.path import assert_local_path_vacant, get_is_local_path_exist
 from .actions.file.prefetch import prefetch_file, prefetch_files
+from .actions.file.preview import preview_file
 from .actions.file.save import save_file
 from .actions.file.temp import get_temp_file_path, write_temp_file
 from .actions.file.validate import validate_file
@@ -47,6 +48,7 @@ __all__ = [
     "DatasetPlugin",
     "DescriptorPlugin",
     "FileDescription",
+    "FilePreview",
     "FolderPlugin",
     "GithubPlugin",
     "InferFileDialectOptions",
@@ -81,6 +83,7 @@ __all__ = [
     "merge_datasets",
     "prefetch_file",
     "prefetch_files",
+    "preview_file",
     "save_dataset_to_ckan",
     "save_dataset_to_folder",
     "save_dataset_to_github",

@@ -62,6 +62,13 @@ class Session:
 
         self._console.print(f"{_render_status(status)} {text}")
 
+    def render_raw_result(self, text: str) -> None:
+        if self.silent:
+            return
+
+        # bypasses the console, whose markup would swallow "[...]" in file content
+        sys.stdout.write(text if text.endswith("\n") else f"{text}\n")
+
     def render_data_result(self, data: object) -> None:
         if self.silent:
             return

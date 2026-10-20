@@ -9,3 +9,8 @@ class FileDescription(FairspecModel):
     bytes: int
     textual: bool
     integrity: Integrity | None
+
+
+class FilePreview(FairspecModel):
+    text: str
+    truncated: bool

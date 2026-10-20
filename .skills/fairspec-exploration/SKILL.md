@@ -1,6 +1,6 @@
 ---
 name: fairspec-exploration
-description: Use when looking into tabular data with Fairspec — previewing rows, column stats, SQL queries over a CSV/Excel/JSON/Parquet table, listing a dataset's resources, or a file's size and hash, from the CLI, MCP server or TypeScript/Python library.
+description: Use when looking into tabular data with Fairspec — previewing rows, column stats, SQL queries over a CSV/Excel/JSON/Parquet table, listing a dataset's resources, a file's source, size and hash, from the CLI, MCP server or TypeScript/Python library.
 ---
 
 # Exploring data with Fairspec
@@ -19,6 +19,7 @@ same commands and flags, and `fairspec mcp` serves the MCP tools.
 | SQL query            | `fairspec table query <path> "<sql>" --json`         | `queryTableTool`   | `queryTable(table, sql)` / `query_table(table, sql)`   |
 | SQL across a dataset | `fairspec dataset query dataset.json "<sql>" --json` | `queryDatasetTool` | `queryDataset(path, sql)` / `query_dataset(path, sql)` |
 | first rows           | `fairspec table preview <path>`                      | —                  | `loadTable(resource)` / `load_table(resource)`         |
+| raw source           | `fairspec file preview <path>`                       | `previewFileTool`  | `previewFile(path)` / `preview_file(path)`             |
 | column stats         | `fairspec table describe <path> --json`              | —                  | load, then Polars `describe()`                         |
 | dataset's resources  | `fairspec dataset list dataset.json --json`          | —                  | `loadDataset(path)` / `load_dataset(path)`             |
 | file size, hash      | `fairspec file describe <path> --json`               | —                  | `describeFile(path)` / `describe_file(path)`           |
@@ -53,6 +54,8 @@ Both libraries return a lazy frame: call `.collect()` before reading rows, and n
 - `queryTableTool` and `queryDatasetTool` return at most `limit` records (default 100, up to 1000), fewer when they
   would exceed ~50k characters; `truncated: true` means rows were left out. Aggregate in SQL
   rather than raising `limit` to read a whole table
+- `previewFileTool` returns at most `maxLines` lines (default 20, up to 200) or `maxBytes` bytes
+  (default 10,000, up to 20,000); `truncated: true` means the file continues
 - The TypeScript `table describe` fails on any table with a date column
   (`type Date is incompatible with expected type Datetime`). Use the Python CLI's `table describe`,
   or SQL aggregates through `table query`

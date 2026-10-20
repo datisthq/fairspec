@@ -13,6 +13,7 @@ The file API provides utilities for working with raw files (independent of their
 
 - `copy_file` - Copy a file from one path to another (local or remote source)
 - `describe_file` - Get a file's size, textual flag, and integrity hash
+- `preview_file` - Read the first lines of a file as raw text, as a `FilePreview` (`text`, `truncated`)
 - `validate_file` - Validate a file against the metadata declared on a resource
 - `infer_file_dialect` - Detect a file's dialect (CSV, JSON, Parquet, …)
 - `infer_textual`, `infer_integrity`, `infer_hash`, `infer_bytes` - Lower-level inference primitives

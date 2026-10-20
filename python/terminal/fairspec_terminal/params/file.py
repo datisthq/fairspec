@@ -15,3 +15,4 @@ Hash_ = Annotated[
         "--hash", help="expected file hash calculated with the specified hash type"
     ),
 ]
+Lines = Annotated[int | None, typer.Option("--lines", help="maximum number of lines")]

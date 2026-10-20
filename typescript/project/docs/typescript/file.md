@@ -21,6 +21,7 @@ The file API provides these top-level utilities:
 - `saveFile` - Write a `Buffer` to a local path
 - `copyFile` - Copy a file from one path to another
 - `describeFile` - Get size, encoding, and integrity hash for a file
+- `previewFile` - Read the first lines of a file as raw text, as `{ text, truncated }`
 - `validateFile` - Check that a resource matches its declared integrity and `textual` flag
 - `prefetchFiles` - Download remote resources to local temp paths
 - `inferTextual`, `inferIntegrity` - Building blocks used by the validators

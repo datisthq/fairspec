@@ -7,6 +7,7 @@ import { validateDataSchemaTool } from "./tools/dataSchema/validate.ts"
 import { inferDatasetTool } from "./tools/dataset/infer.ts"
 import { queryDatasetTool } from "./tools/dataset/query.ts"
 import { validateDatasetTool } from "./tools/dataset/validate.ts"
+import { previewFileTool } from "./tools/file/preview.ts"
 import { inferFileDialectTool } from "./tools/fileDialect/infer.ts"
 import { queryTableTool } from "./tools/table/query.ts"
 import { validateTableTool } from "./tools/table/validate.ts"
@@ -18,6 +19,7 @@ const tools = [
   inferDatasetTool,
   inferFileDialectTool,
   inferTableSchemaTool,
+  previewFileTool,
   queryDatasetTool,
   queryTableTool,
   validateDataSchemaTool,

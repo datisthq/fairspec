@@ -11,6 +11,7 @@ import { scriptDatasetCommand } from "./commands/dataset/script.ts"
 import { validateDatasetCommand } from "./commands/dataset/validate.ts"
 import { copyFileCommand } from "./commands/file/copy.ts"
 import { describeFileCommand } from "./commands/file/describe.ts"
+import { previewFileCommand } from "./commands/file/preview.ts"
 import { validateFileCommand } from "./commands/file/validate.ts"
 import { inferFileDialectCommand } from "./commands/fileDialect/infer.ts"
 import { mcpCommand } from "./commands/general/mcp.ts"
@@ -65,6 +66,7 @@ const fileCommand = new commander.Command()
 
   .addCommand(copyFileCommand.name("copy"))
   .addCommand(describeFileCommand.name("describe"))
+  .addCommand(previewFileCommand.name("preview"))
   .addCommand(validateFileCommand.name("validate"))
   .addCommand(inferFileDialectCommand.name("infer-dialect"))
 

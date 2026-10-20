@@ -15,3 +15,7 @@ export const hash = new Option(
   "--hash <hash>",
   "expected file hash calculated with the specified hash type",
 )
+
+export const lines = new Option("--lines <lines>", "maximum number of lines").argParser(
+  Number.parseInt,
+)

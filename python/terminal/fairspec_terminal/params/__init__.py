@@ -8,6 +8,7 @@ from .dataset import WithRemote as WithRemote
 from .file import Bytes_ as Bytes_
 from .file import Hash_ as Hash_
 from .file import HashType as HashType
+from .file import Lines as Lines
 from .file import SampleBytes as SampleBytes
 from .file_dialect import ColumnNamesParam as ColumnNamesParam
 from .file_dialect import CommentPrefix as CommentPrefix

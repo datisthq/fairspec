@@ -103,7 +103,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 ## MCP server
 
 - Build a tool with `createTool` (`mcp-server/helpers/tool.ts`): `execute` takes typed input and is what tests call; `handle` is what `createServer()` registers. A throw reaches the client as `isError` with its message — never return an error object, which the output schema turns into an unreadable ZodError
-- **One call must not flood the client's context.** A tool returning a list takes a `limit`/`maxErrors` input (default 100, max 1000), fetches one item more, and cuts it with `limitItems`/`limitReport` (`helpers/limit.ts`), which also trims to the 50k-character budget and sets `truncated`; any other response over the budget fails
+- **One call must not flood the client's context.** A tool returning a list takes a `limit`/`maxErrors` input (default 100, max 1000), fetches one item more, and cuts it with `limitItems`/`limitReport` (`helpers/limit.ts`), which also trims to the 50k-character budget and sets `truncated`; any other response over the budget fails. A tool returning file content caps it in the input schema instead: `previewFileTool` takes `maxLines` (max 200) and `maxBytes` (max 20,000), while the CLI stays uncapped
 - `validateTable` splits `maxErrors` across columns, so `validateTableTool` asks for `(maxErrors + 1) × columns`; otherwise one bad column never shows truncation
 - Nothing may write to stdout — it is the stdio transport; `-test/server.unit.ts` asserts a call prints nothing
 - The Python server mirrors every tool, input name and limit; change both together

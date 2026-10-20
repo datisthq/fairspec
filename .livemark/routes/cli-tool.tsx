@@ -479,9 +479,9 @@ const commandGroups: CommandGroup[] = [
     icon: FileText,
     entity: "file",
     title: "Files",
-    verbs: ["describe", "validate", "copy"],
+    verbs: ["describe", "preview", "validate", "copy"],
     description:
-      "Compute file sizes and hashes, check integrity against an expected hash, and copy local or remote files and dataset resources.",
+      "Compute file sizes and hashes, preview the raw source, check integrity against an expected hash, and copy local or remote files and dataset resources.",
   },
 ]
 

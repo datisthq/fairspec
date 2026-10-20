@@ -54,7 +54,7 @@ A group has a `description` and `tests`. It may also carry:
 - the subject of the operation: `format` (the file extension, `csv` by default),
   `fileDialect`, `tableSchema`, `dataSchema`, `integrity`, `textual`, `dataset`, `query` and
   `options`. Options use the camelCase names of the TypeScript API; `file-describe` reads
-  `options.hashType`
+  `options.hashType`, `file-preview` reads `options.maxBytes` and `options.maxLines`
 - `inline: true`: pass the test's `data` to the resource as inline data instead of writing a
   file
 
@@ -83,6 +83,7 @@ A test has a `description`, its `data`, and exactly one outcome:
 | `dataset-query`       | write the dataset and run the group's `query`, each resource by name  | `expected`: `{columns, rows}`             |
 | `dataset-validate`    | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
 | `file-describe`       | describe the file written from `data`                                 | `expected`: `{bytes, textual, integrity}` |
+| `file-preview`        | preview the file written from `data`                                  | `expected`: `{text, truncated}`           |
 | `file-validate`       | validate a resource with the group's `integrity` / `textual`          | `valid`, `errors`                         |
 | `table-infer-dialect` | infer the file dialect                                                | `expected`: the dialect                   |
 | `table-infer-schema`  | infer the table schema                                                | `expected`: the schema                    |

@@ -9,6 +9,7 @@ from .tools.data_schema.validate import validate_data_schema_tool
 from .tools.dataset.infer import infer_dataset_tool
 from .tools.dataset.query import query_dataset_tool
 from .tools.dataset.validate import validate_dataset_tool
+from .tools.file.preview import preview_file_tool
 from .tools.file_dialect.infer import infer_file_dialect_tool
 from .tools.table.query import query_table_tool
 from .tools.table.validate import validate_table_tool
@@ -21,6 +22,7 @@ server.add_tool(guard_tool(infer_data_schema_tool), name="inferDataSchemaTool")
 server.add_tool(guard_tool(infer_dataset_tool), name="inferDatasetTool")
 server.add_tool(guard_tool(infer_file_dialect_tool), name="inferFileDialectTool")
 server.add_tool(guard_tool(infer_table_schema_tool), name="inferTableSchemaTool")
+server.add_tool(guard_tool(preview_file_tool), name="previewFileTool")
 server.add_tool(guard_tool(query_dataset_tool), name="queryDatasetTool")
 server.add_tool(guard_tool(query_table_tool), name="queryTableTool")
 server.add_tool(guard_tool(validate_data_schema_tool), name="validateDataSchemaTool")

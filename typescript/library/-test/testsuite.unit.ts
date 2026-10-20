@@ -25,6 +25,7 @@ import {
   inspectJson,
   loadDataset,
   loadTable,
+  previewFile,
   queryDataset,
   queryTable,
   ValidateTableOptions,
@@ -102,6 +103,13 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
     describeFile(await writeData(group, test.data), {
       hashType: Integrity.shape.type.parse(group.options?.hashType ?? "sha256"),
     }),
+  "file-preview": async (group, test) => {
+    const { maxBytes, maxLines } = group.options ?? {}
+    return previewFile(await writeData(group, test.data), {
+      maxBytes: typeof maxBytes === "number" ? maxBytes : undefined,
+      maxLines: typeof maxLines === "number" ? maxLines : undefined,
+    })
+  },
   "file-validate": async (group, test) => validateFile(await createResource(group, test)),
   "table-infer-dialect": async (group, test) =>
     inferFileDialect(

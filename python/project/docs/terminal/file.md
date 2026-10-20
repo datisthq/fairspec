@@ -5,7 +5,7 @@ path: /python/terminal/file/
 order: 4
 ---
 
-File operations for copying, describing, validating, and analyzing local or remote files.
+File operations for copying, describing, previewing, validating, and analyzing local or remote files.
 
 ## Available Commands
 
@@ -13,6 +13,7 @@ The `fairspec file` command provides utilities for working with files:
 
 - `copy` - Copy local or remote files
 - `describe` - Get file statistics and metadata
+- `preview` - Show the raw source of a file
 - `validate` - Validate file integrity
 - `infer-dialect` - Infer file dialect
 
@@ -88,6 +89,33 @@ The describe command returns:
   }
 }
 ```
+
+## Preview Files
+
+Show the raw source of a file before any parsing, to see what a parser will read, such as a CSV's delimiter, header and quoting:
+
+```bash
+# Preview the first 20 lines of a local file
+fairspec file preview data.csv
+
+# Preview the first 5 lines of a remote file
+fairspec file preview https://example.com/data.csv --lines 5
+
+# Preview from a dataset
+fairspec file preview --dataset dataset.json --resource users
+```
+
+The preview stops at whichever limit comes first: `--lines` (20 by default) or `--sample-bytes` (10,000 by default). It reads only that much of a remote file, and refuses a binary file.
+
+### Options
+
+- `--lines <lines>` - Maximum number of lines (default 20)
+- `--sample-bytes <bytes>` - Maximum number of bytes (default 10,000)
+- `--dataset <path>` - Load file from dataset descriptor
+- `--resource <name>` - Specify resource name from dataset
+- `--silent` - Suppress output messages
+- `--debug` - Show debug information
+- `--json` - Output `{ text, truncated }` as JSON, where `truncated` tells whether the file continues past the preview
 
 ## Validate Files
 

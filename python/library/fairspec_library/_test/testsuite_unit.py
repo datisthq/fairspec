@@ -9,7 +9,7 @@ from typing import TypedDict
 
 import polars as pl
 import pytest
-from fairspec_dataset import describe_file, validate_file, write_temp_file
+from fairspec_dataset import describe_file, preview_file, validate_file, write_temp_file
 from fairspec_metadata import (
     Dataset,
     Resource,
@@ -110,6 +110,17 @@ def run_file_describe(group: Group, test: Case) -> object:
     return describe_file(write_data(group, test["data"]), hash_type=hash_type)
 
 
+def run_file_preview(group: Group, test: Case) -> object:
+    options = group.get("options", {})
+    max_bytes = options.get("maxBytes")
+    max_lines = options.get("maxLines")
+    assert max_bytes is None or isinstance(max_bytes, int)
+    assert max_lines is None or isinstance(max_lines, int)
+    return preview_file(
+        write_data(group, test["data"]), max_bytes=max_bytes, max_lines=max_lines
+    )
+
+
 def run_file_validate(group: Group, test: Case) -> object:
     return validate_file(create_resource(group, test))
 
@@ -150,6 +161,7 @@ OPERATIONS: dict[str, Callable[[Group, Case], object]] = {
     "dataset-query": run_dataset_query,
     "dataset-validate": run_dataset_validate,
     "file-describe": run_file_describe,
+    "file-preview": run_file_preview,
     "file-validate": run_file_validate,
     "table-infer-dialect": run_table_infer_dialect,
     "table-infer-schema": run_table_infer_schema,

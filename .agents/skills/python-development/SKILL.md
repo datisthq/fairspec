@@ -102,6 +102,8 @@ relative import reaches beyond the top-level package.
 - **A terminal command that declares the Table Schema inference flags must pass them on**: build them
   with `create_infer_table_schema_options(...)` and splat into the library call
   (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing
+- Terminal output of raw file content goes through `Session.render_raw_result`: `render_text_result`
+  prints through Rich, whose markup swallows `[...]` in the content
 - Where Python must produce what a TypeScript dependency produces (resource-name slugs from
   `@sindresorhus/slugify`, data schema inference from `json-schema-it`), port that behaviour
   instead of reaching for a near-equivalent PyPI package; the shared testsuite compares both
@@ -112,7 +114,7 @@ relative import reaches beyond the top-level package.
 - A tool is a plain sync function returning a `ToolResult` model: `MCPServer` runs sync tools on a worker thread and derives the input and output schemas from the annotations
 - Register it in `server.py` wrapped in `guard_tool` (`helpers/tool.py`) under the **name the TypeScript server puts on the wire** — the tool's `name` in `typescript/mcp-server/tools/` (`inferTableSchemaTool`) — so client configs and allowlists carry across. `guard_tool` re-raises any exception as `ToolError` (the SDK shows only `Error executing tool X` for anything else), enforces the 50k-character budget and returns compact JSON text (the SDK's own copy is indented)
 - Parameters carry their wire names too (`maxErrors`, not `max_errors`): the SDK passes a `Field` alias as the keyword, so an aliased parameter breaks the call
-- A tool returning a list mirrors the TypeScript limits: `limit`/`maxErrors` (default 100, max 1000), one item more fetched, cut with `limit_items`/`limit_report` (`helpers/limit.py`), `truncated` in the result
+- A tool returning a list mirrors the TypeScript limits: `limit`/`maxErrors` (default 100, max 1000), one item more fetched, cut with `limit_items`/`limit_report` (`helpers/limit.py`), `truncated` in the result. A tool returning file content takes the same caps as its TypeScript twin in `Field(ge=1, le=…)` (`tools/file/preview.py`)
 - Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
 - Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the

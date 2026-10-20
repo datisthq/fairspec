@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
+  Eye,
   ExternalLink,
   ListOrdered,
   Search,
@@ -460,6 +461,12 @@ const tools: Tool[] = [
       "Runs a SQL query across a dataset, with each table resource available under its name, and returns the matching rows. Joins related resources in one query and loads only the resources the query names.",
   },
   {
+    icon: Eye,
+    title: "Preview File",
+    description:
+      "Returns the raw source of a local or remote file, exactly as stored and before any parsing, so a CSV's delimiter, header and quoting are visible. Reads only the first lines and caps the size, so a large file cannot flood the conversation.",
+  },
+  {
     icon: Search,
     title: "Infer File Dialect",
     description:
@@ -499,8 +506,8 @@ function Tools() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tools</h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Eleven tools organized around core Fairspec concepts: data, data schemas,
-              datasets, file dialects, tables, and table schemas.
+              Twelve tools organized around core Fairspec concepts: data, data schemas,
+              datasets, files, file dialects, tables, and table schemas.
             </p>
           </div>
         </Reveal>

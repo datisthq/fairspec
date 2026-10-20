@@ -1,0 +1,89 @@
+[
+  {
+    "description": "default limits",
+    "comment": "Not normative: a preview is library shape, so the expected values follow TypeScript",
+    "tests": [
+      {
+        "description": "a small csv is returned whole",
+        "data": "id,name\n1,alice\n",
+        "expected": { "text": "id,name\n1,alice\n", "truncated": false }
+      },
+      {
+        "description": "an empty file",
+        "data": "",
+        "expected": { "text": "", "truncated": false }
+      },
+      {
+        "description": "only the first 20 lines are kept",
+        "data": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n",
+        "expected": {
+          "text": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n",
+          "truncated": true
+        }
+      },
+      {
+        "description": "binary bytes",
+        "data": { "base64": "/9j/4AA=" },
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "line limit",
+    "options": { "maxLines": 2 },
+    "tests": [
+      {
+        "description": "lines past the limit are cut",
+        "data": "id\n1\n2\n",
+        "expected": { "text": "id\n1\n", "truncated": true }
+      },
+      {
+        "description": "crlf line terminators are kept",
+        "data": "id\r\n1\r\n2\r\n",
+        "expected": { "text": "id\r\n1\r\n", "truncated": true }
+      },
+      {
+        "description": "exactly the limit is not truncated",
+        "data": "id\n1\n",
+        "expected": { "text": "id\n1\n", "truncated": false }
+      },
+      {
+        "description": "a last line without a terminator is not truncated",
+        "data": "id\n1",
+        "expected": { "text": "id\n1", "truncated": false }
+      }
+    ]
+  },
+  {
+    "description": "byte limit",
+    "options": { "maxBytes": 4 },
+    "tests": [
+      {
+        "description": "bytes past the limit are cut",
+        "data": "abcdefgh",
+        "expected": { "text": "abcd", "truncated": true }
+      },
+      {
+        "description": "exactly the limit is not truncated",
+        "data": "abcd",
+        "expected": { "text": "abcd", "truncated": false }
+      },
+      {
+        "description": "a multi-byte character cut by the limit is dropped",
+        "data": "abcé",
+        "expected": { "text": "abc", "truncated": true }
+      }
+    ]
+  },
+  {
+    "description": "a non-positive limit",
+    "options": { "maxBytes": 0 },
+    "tests": [
+      {
+        "description": "is rejected",
+        "data": "id\n",
+        "throws": true
+      }
+    ]
+  }
+]

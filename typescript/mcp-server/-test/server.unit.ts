@@ -26,6 +26,7 @@ describe("createServer", () => {
       "inferDatasetTool",
       "inferFileDialectTool",
       "inferTableSchemaTool",
+      "previewFileTool",
       "queryDatasetTool",
       "queryTableTool",
       "validateDataSchemaTool",
