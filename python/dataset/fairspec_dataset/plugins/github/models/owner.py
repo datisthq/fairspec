@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from fairspec_metadata.models.base import FairspecModel
 
 
 class GithubOwner(FairspecModel):
-    login: str | None = None
-    id: int | None = None
-    avatar_url: str | None = None
-    html_url: str | None = None
-    type: str | None = None
+    login: str
+    id: int
+    avatar_url: str
+    html_url: str
+    type: Literal["User", "Organization"]

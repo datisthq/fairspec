@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from fairspec_dataset.actions.dataset.merge import merge_datasets
 from fairspec_dataset.plugins.github.models.repository import GithubRepository
+from fairspec_dataset.plugins.github.models.tree import GithubTree
 
 from fairspec_dataset.plugins.github.services.github import make_github_api_request
 from .from_github import convert_dataset_from_github
@@ -25,16 +26,18 @@ def load_dataset_from_github(
     repository = make_github_api_request(
         endpoint=f"/repos/{owner}/{repo}",
         api_key=api_key,
+        model=GithubRepository,
     )
 
-    ref = repository["default_branch"]
+    ref = repository.default_branch
     tree_response = make_github_api_request(
         endpoint=f"/repos/{owner}/{repo}/git/trees/{ref}?recursive=1",
         api_key=api_key,
+        model=GithubTree,
     )
-    repository["files"] = tree_response["tree"]
+    repository.files = tree_response.tree
 
-    system_dataset = convert_dataset_from_github(GithubRepository(**repository))
+    system_dataset = convert_dataset_from_github(repository)
     user_dataset_path: str | None = None
     for resource in system_dataset.resources or []:
         custom = resource.unstable_customMetadata or {}

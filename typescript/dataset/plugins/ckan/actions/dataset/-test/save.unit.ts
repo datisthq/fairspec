@@ -1,4 +1,5 @@
-import { relative } from "node:path"
+import { readFileSync } from "node:fs"
+import { join, relative } from "node:path"
 import type { Dataset } from "@fairspec/metadata"
 import { loadDatasetDescriptor } from "@fairspec/metadata"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
@@ -33,6 +34,15 @@ describe("saveDatasetToCkan", () => {
     datasetName: "test-dataset",
   }
 
+  const ckanPackage = readCkanResponse("package_create.json")
+  const ckanResource = readCkanResponse("resource_create.json")
+
+  const createCkanResource = (id: string) => ({
+    ...ckanResource,
+    id,
+    url: `https://ckan.example.com/dataset/test-dataset/resource/${id}/download/data`,
+  })
+
   const originalFetch = globalThis.fetch
   let fetchMock: ReturnType<typeof vi.fn>
 
@@ -62,41 +72,11 @@ describe("saveDatasetToCkan", () => {
   })
 
   it("creates a dataset in CKAN with correct API calls", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-1",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-1",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-1")))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-2",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-2",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-2")))
 
     const result = await saveDatasetToCkan(mockDataset, mockOptions)
 
@@ -125,47 +105,17 @@ describe("saveDatasetToCkan", () => {
     expect(datasetPayload.resources).toEqual([])
 
     expect(result).toEqual({
-      path: "https://ckan.example.com/dataset/test-dataset",
+      path: "https://ckan.example.com/dataset/test-dataset/resource/resource-2/download/data",
       datasetUrl: "https://ckan.example.com/dataset/test-dataset",
     })
   })
 
   it("creates resources with file uploads", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-1",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-1",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-1")))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-2",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-2",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-2")))
 
     await saveDatasetToCkan(mockDataset, mockOptions)
 
@@ -189,57 +139,27 @@ describe("saveDatasetToCkan", () => {
     expect(formData.get("name")).toEqual("data.csv")
   })
 
-  it("creates datapackage.json resource", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+  it("creates dataset.json resource", async () => {
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-1",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-1",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-1")))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-2",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-2",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-2")))
 
     await saveDatasetToCkan(mockDataset, mockOptions)
 
-    const datapackageCreateCall = fetchMock.mock.calls[2]
-    expect(datapackageCreateCall).toBeDefined()
-    if (!datapackageCreateCall) return
+    const descriptorCreateCall = fetchMock.mock.calls[2]
+    expect(descriptorCreateCall).toBeDefined()
+    if (!descriptorCreateCall) return
 
-    expect(datapackageCreateCall[0]).toEqual(
+    expect(descriptorCreateCall[0]).toEqual(
       "https://ckan.example.com/api/3/action/resource_create",
     )
 
-    const formData = datapackageCreateCall[1].body
+    const formData = descriptorCreateCall[1].body
     expect(formData).toBeInstanceOf(FormData)
     expect(formData.get("package_id")).toEqual("test-dataset")
-    expect(formData.get("name")).toEqual("datapackage.json")
+    expect(formData.get("name")).toEqual("dataset.json")
 
     const uploadBlob = formData.get("upload")
     expect(uploadBlob).toBeInstanceOf(Blob)
@@ -259,17 +179,7 @@ describe("saveDatasetToCkan", () => {
   })
 
   it("handles API errors from resource_create", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
 
     fetchMock.mockResolvedValueOnce({
       ok: false,
@@ -317,17 +227,8 @@ describe("saveDatasetToCkan", () => {
       ],
     }
 
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
+    fetchMock.mockResolvedValue(mockCkanResult(createCkanResource("resource-1")))
 
     await saveDatasetToCkan(multiResourceDataset, mockOptions)
 
@@ -348,45 +249,22 @@ describe("saveDatasetToCkan", () => {
       resources: [],
     }
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            name: "test-dataset",
-            url: "https://ckan.example.com/dataset/test-dataset",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: {
-            id: "resource-1",
-            url: "https://ckan.example.com/dataset/test-dataset/resource/resource-1",
-          },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(createCkanResource("resource-1")))
 
     const result = await saveDatasetToCkan(emptyDataset, mockOptions)
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(result.path).toEqual(
+      "https://ckan.example.com/dataset/test-dataset/resource/resource-1/download/data",
+    )
     expect(result.datasetUrl).toEqual("https://ckan.example.com/dataset/test-dataset")
   })
 
   it("passes API key in Authorization header", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          success: true,
-          result: { name: "test-dataset" },
-        }),
-    })
+    fetchMock.mockResolvedValueOnce(mockCkanResult(ckanPackage))
+    fetchMock.mockResolvedValue(mockCkanResult(createCkanResource("resource-1")))
 
     await saveDatasetToCkan(mockDataset, {
       ...mockOptions,
@@ -401,3 +279,12 @@ describe("saveDatasetToCkan", () => {
     expect(headers.Authorization).toEqual("custom-api-key")
   })
 })
+
+function readCkanResponse(name: string) {
+  const path = join(import.meta.dirname, "fixtures", "responses", name)
+  return JSON.parse(readFileSync(path, "utf8"))
+}
+
+function mockCkanResult(result: unknown) {
+  return { ok: true, json: () => Promise.resolve({ success: true, result }) }
+}

@@ -4,7 +4,8 @@ import { denormalizeDataset, stringifyDescriptor } from "@fairspec/metadata"
 import { getDatasetBasepath } from "../../../../actions/dataset/basepath.ts"
 import { saveResourceFiles } from "../../../../actions/resource/save.ts"
 import { loadFileStream } from "../../../../actions/stream/load.ts"
-import type { ZenodoRecord } from "../../models/record.ts"
+import { ZenodoDeposition } from "../../models/deposition.ts"
+import { ZenodoDepositionFile } from "../../models/depositionFile.ts"
 import { makeZenodoApiRequest } from "../../services/zenodo.ts"
 import { convertDatasetToZenodo } from "./toZenodo.ts"
 
@@ -19,13 +20,14 @@ export async function saveDatasetToZenodo(
   const basepath = getDatasetBasepath(dataset)
 
   const newZenodoRecord = convertDatasetToZenodo(dataset)
-  const zenodoRecord = (await makeZenodoApiRequest({
+  const zenodoRecord = await makeZenodoApiRequest({
     payload: newZenodoRecord,
     endpoint: "/deposit/depositions",
     method: "POST",
     apiKey,
     sandbox,
-  })) as ZenodoRecord
+    schema: ZenodoDeposition,
+  })
 
   const resourceDescriptors: Descriptor[] = []
   for (const resource of dataset.resources ?? []) {
@@ -46,6 +48,7 @@ export async function saveDatasetToZenodo(
             upload,
             apiKey,
             sandbox,
+            schema: ZenodoDepositionFile,
           })
 
           return options.denormalizedPath
@@ -71,6 +74,7 @@ export async function saveDatasetToZenodo(
       upload,
       apiKey,
       sandbox,
+      schema: ZenodoDepositionFile,
     })
   }
 

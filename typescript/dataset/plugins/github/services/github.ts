@@ -1,9 +1,10 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { z } from "zod"
 
 /**
  * Makes a request to the Github API
  */
-export async function makeGithubApiRequest<T = Descriptor>(options: {
+export async function makeGithubApiRequest<S extends z.ZodType>(options: {
   endpoint: string
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
   payload?: Descriptor
@@ -13,6 +14,7 @@ export async function makeGithubApiRequest<T = Descriptor>(options: {
     data: Blob
     path?: string // Path within repository
   }
+  schema: S
 }) {
   const { endpoint, method = "GET", payload, upload, apiKey } = options
 
@@ -58,5 +60,12 @@ export async function makeGithubApiRequest<T = Descriptor>(options: {
     )
   }
 
-  return (await response.json()) as T
+  const result = options.schema.safeParse(await response.json())
+  if (!result.success) {
+    throw new Error(
+      `Github API returned an unexpected response from ${endpoint}:\n${z.prettifyError(result.error)}`,
+    )
+  }
+
+  return result.data
 }

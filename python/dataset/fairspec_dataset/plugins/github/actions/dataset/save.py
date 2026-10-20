@@ -10,6 +10,8 @@ from fairspec_dataset.actions.dataset.basepath import get_dataset_basepath
 from fairspec_dataset.actions.resource.save import SaveFileProps, save_resource_files
 from fairspec_dataset.actions.stream.load import load_file_stream
 
+from fairspec_dataset.plugins.github.models.content import GithubContent
+from fairspec_dataset.plugins.github.models.repository import GithubRepository
 from fairspec_dataset.plugins.github.services.github import make_github_api_request
 
 if TYPE_CHECKING:
@@ -33,9 +35,10 @@ def save_dataset_to_github(
         payload={"name": repo, "auto_init": True},
         method="POST",
         api_key=api_key,
+        model=GithubRepository,
     )
 
-    owner_login = github_repository["owner"]["login"]
+    owner_login = github_repository.owner.login
 
     resource_descriptors: list[Descriptor] = []
     for resource in dataset.resources or []:
@@ -56,6 +59,7 @@ def save_dataset_to_github(
                     method="PUT",
                     payload=payload,
                     api_key=api_key,
+                    model=GithubContent,
                 )
 
                 return props.denormalized_path
@@ -88,9 +92,10 @@ def save_dataset_to_github(
             "content": content,
         },
         api_key=api_key,
+        model=GithubContent,
     )
 
     return {
         "path": f"https://raw.githubusercontent.com/{owner_login}/{repo}/refs/heads/main/dataset.json",
-        "repo_url": github_repository["html_url"],
+        "repo_url": github_repository.html_url,
     }

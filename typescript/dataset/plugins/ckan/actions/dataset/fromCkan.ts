@@ -34,8 +34,8 @@ export function convertDatasetFromCkan(ckanDataset: CkanDataset): Dataset {
     dataset.rightsList = [
       {
         rights: ckanDataset.license_title || ckanDataset.license_id || "",
-        rightsUri: ckanDataset.license_url,
-        rightsIdentifier: ckanDataset.license_id,
+        rightsUri: ckanDataset.license_url ?? undefined,
+        rightsIdentifier: ckanDataset.license_id ?? undefined,
       },
     ]
   }

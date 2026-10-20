@@ -1,0 +1,290 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - api.github.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://api.github.com/repos/roll/data
+  response:
+    body:
+      string: '{"message":"Moved Permanently","url":"https://api.github.com/repositories/220959516","documentation_url":"https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api#follow-redirects"}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset, Warning
+      Content-Length:
+      - '198'
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:07 GMT
+      Location:
+      - https://api.github.com/repositories/220959516
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Vary:
+      - Accept-Encoding, Accept, X-Requested-With
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - 8882:2B83D6:8F56C:1259C7:6AD75407
+      X-RateLimit-Limit:
+      - '60'
+      X-RateLimit-Remaining:
+      - '40'
+      X-RateLimit-Reset:
+      - '1792498763'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '20'
+      X-XSS-Protection:
+      - '0'
+      connection:
+      - close
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-edge-region:
+      - switzerlandnorth
+    status:
+      code: 301
+      message: Moved Permanently
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - api.github.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://api.github.com/repositories/220959516
+  response:
+    body:
+      string: '{"id":220959516,"node_id":"MDEwOlJlcG9zaXRvcnkyMjA5NTk1MTY=","name":"testdata","full_name":"roll/testdata","private":false,"owner":{"login":"roll","id":557395,"node_id":"MDQ6VXNlcjU1NzM5NQ==","avatar_url":"https://avatars.githubusercontent.com/u/557395?v=4","gravatar_id":"","url":"https://api.github.com/users/roll","html_url":"https://github.com/roll","followers_url":"https://api.github.com/users/roll/followers","following_url":"https://api.github.com/users/roll/following{/other_user}","gists_url":"https://api.github.com/users/roll/gists{/gist_id}","starred_url":"https://api.github.com/users/roll/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/roll/subscriptions","organizations_url":"https://api.github.com/users/roll/orgs","repos_url":"https://api.github.com/users/roll/repos","events_url":"https://api.github.com/users/roll/events{/privacy}","received_events_url":"https://api.github.com/users/roll/received_events","type":"User","user_view_type":"public","site_admin":false},"html_url":"https://github.com/roll/testdata","description":null,"fork":false,"url":"https://api.github.com/repos/roll/testdata","forks_url":"https://api.github.com/repos/roll/testdata/forks","keys_url":"https://api.github.com/repos/roll/testdata/keys{/key_id}","collaborators_url":"https://api.github.com/repos/roll/testdata/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/roll/testdata/teams","hooks_url":"https://api.github.com/repos/roll/testdata/hooks","issue_events_url":"https://api.github.com/repos/roll/testdata/issues/events{/number}","events_url":"https://api.github.com/repos/roll/testdata/events","assignees_url":"https://api.github.com/repos/roll/testdata/assignees{/user}","branches_url":"https://api.github.com/repos/roll/testdata/branches{/branch}","tags_url":"https://api.github.com/repos/roll/testdata/tags","blobs_url":"https://api.github.com/repos/roll/testdata/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/roll/testdata/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/roll/testdata/git/refs{/sha}","trees_url":"https://api.github.com/repos/roll/testdata/git/trees{/sha}","statuses_url":"https://api.github.com/repos/roll/testdata/statuses/{sha}","languages_url":"https://api.github.com/repos/roll/testdata/languages","stargazers_url":"https://api.github.com/repos/roll/testdata/stargazers","contributors_url":"https://api.github.com/repos/roll/testdata/contributors","subscribers_url":"https://api.github.com/repos/roll/testdata/subscribers","subscription_url":"https://api.github.com/repos/roll/testdata/subscription","commits_url":"https://api.github.com/repos/roll/testdata/commits{/sha}","git_commits_url":"https://api.github.com/repos/roll/testdata/git/commits{/sha}","comments_url":"https://api.github.com/repos/roll/testdata/comments{/number}","issue_comment_url":"https://api.github.com/repos/roll/testdata/issues/comments{/number}","contents_url":"https://api.github.com/repos/roll/testdata/contents/{+path}","compare_url":"https://api.github.com/repos/roll/testdata/compare/{base}...{head}","merges_url":"https://api.github.com/repos/roll/testdata/merges","archive_url":"https://api.github.com/repos/roll/testdata/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/roll/testdata/downloads","issues_url":"https://api.github.com/repos/roll/testdata/issues{/number}","pulls_url":"https://api.github.com/repos/roll/testdata/pulls{/number}","milestones_url":"https://api.github.com/repos/roll/testdata/milestones{/number}","notifications_url":"https://api.github.com/repos/roll/testdata/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/roll/testdata/labels{/name}","releases_url":"https://api.github.com/repos/roll/testdata/releases{/id}","deployments_url":"https://api.github.com/repos/roll/testdata/deployments","created_at":"2019-11-11T10:48:02Z","updated_at":"2026-04-11T11:00:08Z","pushed_at":"2026-10-01T07:39:10Z","git_url":"git://github.com/roll/testdata.git","ssh_url":"git@github.com:roll/testdata.git","clone_url":"https://github.com/roll/testdata.git","svn_url":"https://github.com/roll/testdata","homepage":null,"size":596190,"stargazers_count":1,"watchers_count":1,"language":"JavaScript","has_issues":true,"has_projects":true,"has_downloads":false,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":0,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":1,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"has_pull_requests":true,"pull_request_creation_policy":"all","topics":[],"visibility":"public","forks":0,"open_issues":1,"watchers":1,"default_branch":"main","temp_clone_token":null,"network_count":0,"subscribers_count":0}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset, Warning
+      Cache-Control:
+      - public, max-age=60, s-maxage=60
+      Content-Length:
+      - '4774'
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:08 GMT
+      ETag:
+      - W/"e213be8926ca1915e1ed02e5a746b3a6cc817b67e171b7855c692c81df777676"
+      Last-Modified:
+      - Sat, 11 Apr 2026 11:00:08 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Vary:
+      - Accept,Accept-Encoding, Accept, X-Requested-With
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - 888A:FDC8:98C863:DAA78D:6AD75407
+      X-RateLimit-Limit:
+      - '60'
+      X-RateLimit-Remaining:
+      - '39'
+      X-RateLimit-Reset:
+      - '1792498763'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '21'
+      X-XSS-Protection:
+      - '0'
+      connection:
+      - close
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-edge-region:
+      - switzerlandnorth
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - api.github.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://api.github.com/repos/roll/data/git/trees/main?recursive=1
+  response:
+    body:
+      string: '{"message":"Moved Permanently","url":"https://api.github.com/repositories/220959516/git/trees/main?recursive=1","documentation_url":"https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api#follow-redirects"}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset, Warning
+      Content-Length:
+      - '225'
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:08 GMT
+      Location:
+      - https://api.github.com/repositories/220959516/git/trees/main?recursive=1
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Vary:
+      - Accept-Encoding, Accept, X-Requested-With
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - 8892:2A236D:3CEF5:B19D5:6AD75408
+      X-RateLimit-Limit:
+      - '60'
+      X-RateLimit-Remaining:
+      - '38'
+      X-RateLimit-Reset:
+      - '1792498763'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '22'
+      X-XSS-Protection:
+      - '0'
+      connection:
+      - close
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-edge-region:
+      - switzerlandnorth
+    status:
+      code: 301
+      message: Moved Permanently
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - api.github.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://api.github.com/repositories/220959516/git/trees/main?recursive=1
+  response:
+    body:
+      string: '{"sha":"12d58a908a6e4b08f2a676ed44503f1baf62e39e","url":"https://api.github.com/repos/roll/testdata/git/trees/12d58a908a6e4b08f2a676ed44503f1baf62e39e","tree":[{"path":".gitignore","mode":"100644","type":"blob","sha":"692050da54781395d19894b64edd9a3e292cd0a0","size":852,"url":"https://api.github.com/repos/roll/testdata/git/blobs/692050da54781395d19894b64edd9a3e292cd0a0"},{"path":".prettierrc","mode":"100644","type":"blob","sha":"36a4660e1d068962321affe174c604c8b5bfa6d5","size":90,"url":"https://api.github.com/repos/roll/testdata/git/blobs/36a4660e1d068962321affe174c604c8b5bfa6d5"},{"path":"README.md","mode":"100644","type":"blob","sha":"903e5ce50fc2f5fe1ba013cd0c7f5007bf7a1140","size":11,"url":"https://api.github.com/repos/roll/testdata/git/blobs/903e5ce50fc2f5fe1ba013cd0c7f5007bf7a1140"},{"path":"data","mode":"040000","type":"tree","sha":"09a41584da8f75bae0d880730a94da7caf38a3bf","url":"https://api.github.com/repos/roll/testdata/git/trees/09a41584da8f75bae0d880730a94da7caf38a3bf"},{"path":"data/table-10x1M-invalid.csv","mode":"100644","type":"blob","sha":"afacdaae434ff29516bbf7023ae5173e4d3f71e4","size":100000000,"url":"https://api.github.com/repos/roll/testdata/git/blobs/afacdaae434ff29516bbf7023ae5173e4d3f71e4"},{"path":"data/table-10x1M.csv","mode":"100644","type":"blob","sha":"734520644f4616825209c0c7a0750e5887b93a76","size":100000000,"url":"https://api.github.com/repos/roll/testdata/git/blobs/734520644f4616825209c0c7a0750e5887b93a76"},{"path":"data/table-5x1M-invalid.csv","mode":"100644","type":"blob","sha":"14a34ddef5565c032b5729bd51bc14e02a534425","size":50000000,"url":"https://api.github.com/repos/roll/testdata/git/blobs/14a34ddef5565c032b5729bd51bc14e02a534425"},{"path":"data/table-5x1M.csv","mode":"100644","type":"blob","sha":"eca005a30f75202d7ccdadbbb6789a9ae0389555","size":50000000,"url":"https://api.github.com/repos/roll/testdata/git/blobs/eca005a30f75202d7ccdadbbb6789a9ae0389555"},{"path":"package.json","mode":"100644","type":"blob","sha":"4564795a02255050972182a43590b853dee8b8b5","size":513,"url":"https://api.github.com/repos/roll/testdata/git/blobs/4564795a02255050972182a43590b853dee8b8b5"},{"path":"pnpm-lock.yaml","mode":"100644","type":"blob","sha":"79f913beb4c13bc4dee0883df09e97909390eecd","size":837,"url":"https://api.github.com/repos/roll/testdata/git/blobs/79f913beb4c13bc4dee0883df09e97909390eecd"},{"path":"scripts","mode":"040000","type":"tree","sha":"995edc3191f80fdcf810f044bcf3fa91a41521b9","url":"https://api.github.com/repos/roll/testdata/git/trees/995edc3191f80fdcf810f044bcf3fa91a41521b9"},{"path":"scripts/generate.js","mode":"100644","type":"blob","sha":"80f4a1eaf4aba53794032bb3cda99939fcd95021","size":1948,"url":"https://api.github.com/repos/roll/testdata/git/blobs/80f4a1eaf4aba53794032bb3cda99939fcd95021"}],"truncated":false}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset, Warning
+      Cache-Control:
+      - public, max-age=60, s-maxage=60
+      Content-Length:
+      - '2806'
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:09 GMT
+      ETag:
+      - W/"cd92f4b6580d55e413f9aa7340e335a2ec07a1796a526238f9046b81fb6edcf4"
+      Last-Modified:
+      - Sat, 11 Apr 2026 11:00:08 GMT
+      Referrer-Policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      Server:
+      - github.com
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubdomains; preload
+      Vary:
+      - Accept,Accept-Encoding, Accept, X-Requested-With
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - deny
+      X-GitHub-Media-Type:
+      - github.v3; format=json
+      X-GitHub-Request-Id:
+      - 889A:2CC95D:17F07A:2721FF:6AD75409
+      X-RateLimit-Limit:
+      - '60'
+      X-RateLimit-Remaining:
+      - '37'
+      X-RateLimit-Reset:
+      - '1792498763'
+      X-RateLimit-Resource:
+      - core
+      X-RateLimit-Used:
+      - '23'
+      X-XSS-Protection:
+      - '0'
+      connection:
+      - close
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-edge-region:
+      - switzerlandnorth
+    status:
+      code: 200
+      message: OK
+version: 1

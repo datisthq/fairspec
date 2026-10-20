@@ -10,8 +10,8 @@ from .schema import CkanSchema
 class CkanResource(FairspecModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    id: str | None = None
-    url: str | None = None
+    id: str
+    url: str
     name: str | None = None
     created: str | None = None
     description: str | None = None
@@ -21,4 +21,16 @@ class CkanResource(FairspecModel):
     metadata_modified: str | None = None
     mimetype: str | None = None
     size: int | None = None
+    schema_: CkanSchema | None = Field(default=None, alias="schema")
+
+
+class NewCkanResource(FairspecModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    name: str | None = None
+    created: str | None = None
+    description: str | None = None
+    format: str | None = None
+    hash: str | None = None
+    last_modified: str | None = None
     schema_: CkanSchema | None = Field(default=None, alias="schema")

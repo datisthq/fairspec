@@ -1,6 +1,7 @@
 import { mergeDatasets } from "../../../../actions/dataset/merge.ts"
 import { makeCkanApiRequest } from "../../services/ckan.ts"
-import type { CkanDataset } from "../../models/dataset.ts"
+import { CkanDataset } from "../../models/dataset.ts"
+import { CkanSchema } from "../../models/schema.ts"
 import { convertDatasetFromCkan } from "./fromCkan.ts"
 
 /**
@@ -14,15 +15,16 @@ export async function loadDatasetFromCkan(datasetUrl: string) {
     throw new Error(`Failed to extract dataset ID from URL: ${datasetUrl}`)
   }
 
-  const ckanDataset = await makeCkanApiRequest<CkanDataset>({
+  const ckanDataset = await makeCkanApiRequest({
     ckanUrl: datasetUrl,
     action: "package_show",
     payload: { id: datasetId },
+    schema: CkanDataset,
   })
 
   for (const resource of ckanDataset.resources) {
     const resourceId = resource.id
-    if (["CSV", "XLS", "XLSX"].includes(resource.format)) {
+    if (["CSV", "XLS", "XLSX"].includes(resource.format ?? "")) {
       const schema = await loadCkanSchema({ datasetUrl, resourceId })
       if (schema) {
         resource.schema = schema
@@ -70,11 +72,11 @@ async function loadCkanSchema(options: { datasetUrl: string; resourceId: string 
       ckanUrl: options.datasetUrl,
       action: "datastore_search",
       payload: { resource_id: options.resourceId, limit: 0 },
+      schema: CkanSchema,
     })
 
-    // @ts-ignore
     const fields = result.fields.filter(
-      (field: any) => field.id !== "_id" && field.id !== "_full_text",
+      field => field.id !== "_id" && field.id !== "_full_text",
     )
 
     return { fields }

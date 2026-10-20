@@ -1,9 +1,8 @@
 import type { Dataset } from "@fairspec/metadata"
 import type { ZenodoCreator } from "../../models/creator.ts"
 import type { ZenodoMetadata } from "../../models/metadata.ts"
-import type { ZenodoRecord } from "../../models/record.ts"
 
-export function convertDatasetToZenodo(dataset: Dataset): Partial<ZenodoRecord> {
+export function convertDatasetToZenodo(dataset: Dataset) {
   const metadata: Partial<ZenodoMetadata> = {
     upload_type: "dataset",
   }

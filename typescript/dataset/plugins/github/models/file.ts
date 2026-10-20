@@ -5,7 +5,7 @@ export const GithubFile = z
     path: z.string().describe("File path within repository"),
     mode: z.string().describe("File mode e.g. `100755`"),
     type: z.string().describe("File type e.g. `blob`"),
-    size: z.number().describe("File size in bytes"),
+    size: z.number().optional().describe("File size in bytes, absent for directories"),
     sha: z.string().describe("File SHA-1"),
     url: z.string().describe("File url on GitHub API"),
   })

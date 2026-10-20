@@ -10,6 +10,6 @@ class CkanFieldInfo(FairspecModel):
 
 
 class CkanField(FairspecModel):
-    id: str | None = None
-    type: str | None = None
+    id: str
+    type: str
     info: CkanFieldInfo | None = None

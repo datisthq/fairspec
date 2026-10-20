@@ -5,5 +5,5 @@ from fairspec_metadata.models.base import FairspecModel
 
 class CkanTag(FairspecModel):
     id: str | None = None
-    name: str | None = None
+    name: str
     display_name: str | None = None

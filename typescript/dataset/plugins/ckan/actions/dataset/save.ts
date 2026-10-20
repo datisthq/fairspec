@@ -9,7 +9,8 @@ import { getDatasetBasepath } from "../../../../actions/dataset/basepath.ts"
 import { saveResourceFiles } from "../../../../actions/resource/save.ts"
 import { loadFileStream } from "../../../../actions/stream/load.ts"
 import { convertResourceToCkan } from "../../actions/resource/toCkan.ts"
-import type { CkanResource } from "../../models/resource.ts"
+import { CkanDataset } from "../../models/dataset.ts"
+import { CkanResource } from "../../models/resource.ts"
 import { makeCkanApiRequest } from "../../services/ckan.ts"
 import { convertDatasetToCkan } from "./toCkan.ts"
 
@@ -39,6 +40,7 @@ export async function saveDatasetToCkan(
     payload,
     ckanUrl: ckanUrl,
     apiKey: apiKey,
+    schema: CkanDataset,
   })
 
   const url = new URL(ckanUrl)
@@ -67,12 +69,13 @@ export async function saveDatasetToCkan(
             data: await blob(await loadFileStream(options.normalizedPath)),
           }
 
-          const result = await makeCkanApiRequest<CkanResource>({
+          const result = await makeCkanApiRequest({
             action: "resource_create",
             payload,
             upload,
             ckanUrl,
             apiKey,
+            schema: CkanResource,
           })
 
           return result.url
@@ -86,28 +89,17 @@ export async function saveDatasetToCkan(
     resources: resourceDescriptors,
   }
 
-  for (const denormalizedPath of ["datapackage.json"]) {
-    const payload = {
-      package_id: datasetName,
-      name: denormalizedPath,
-    }
-
-    const upload = {
-      name: denormalizedPath,
-      data: new Blob([stringifyDescriptor(descriptor)]),
-    }
-
-    await makeCkanApiRequest({
-      action: "resource_create",
-      payload,
-      upload,
-      ckanUrl,
-      apiKey,
-    })
-  }
+  const descriptorResource = await makeCkanApiRequest({
+    action: "resource_create",
+    payload: { package_id: datasetName, name: "dataset.json" },
+    upload: { name: "dataset.json", data: new Blob([stringifyDescriptor(descriptor)]) },
+    ckanUrl,
+    apiKey,
+    schema: CkanResource,
+  })
 
   return {
-    path: result.url,
+    path: descriptorResource.url,
     datasetUrl: url.toString(),
   }
 }

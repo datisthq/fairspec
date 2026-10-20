@@ -6,4 +6,4 @@ from .field import CkanField
 
 
 class CkanSchema(FairspecModel):
-    fields: list[CkanField] | None = None
+    fields: list[CkanField]

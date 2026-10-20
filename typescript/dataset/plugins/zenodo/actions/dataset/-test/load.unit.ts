@@ -8,6 +8,7 @@ describe("loadDatasetFromZenodo", () => {
   it("should load a package", async () => {
     const dataset = await loadDatasetFromZenodo("https://zenodo.org/records/15525711")
 
+    expect(dataset.rightsList).toEqual([{ rights: "cc-by-4.0" }])
     expect(dataset).toMatchSnapshot()
   })
 })

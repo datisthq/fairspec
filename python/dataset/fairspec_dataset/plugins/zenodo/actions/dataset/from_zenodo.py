@@ -63,7 +63,7 @@ def convert_dataset_from_zenodo(zenodo_record: ZenodoRecord) -> Dataset:
     )
 
     rights_list = (
-        [Rights(rights=metadata.license)] if metadata and metadata.license else None
+        [Rights(rights=metadata.license.id)] if metadata and metadata.license else None
     )
 
     doi = metadata.doi if metadata else None

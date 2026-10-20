@@ -1,7 +1,7 @@
 import { mergeDatasets } from "../../../../actions/dataset/merge.ts"
 import { makeGithubApiRequest } from "../../services/github.ts"
-import type { GithubFile } from "../../models/file.ts"
-import type { GithubRepository } from "../../models/repository.ts"
+import { GithubRepository } from "../../models/repository.ts"
+import { GithubTree } from "../../models/tree.ts"
 import { convertDatasetFromGithub } from "./fromGithub.ts"
 
 /**
@@ -23,16 +23,18 @@ export async function loadDatasetFromGithub(
     throw new Error(`Failed to extract repository info from URL: ${repoUrl}`)
   }
 
-  const githubRepository = await makeGithubApiRequest<GithubRepository>({
+  const githubRepository = await makeGithubApiRequest({
     endpoint: `/repos/${owner}/${repo}`,
     apiKey,
+    schema: GithubRepository,
   })
 
   const ref = githubRepository.default_branch
   githubRepository.files = (
-    await makeGithubApiRequest<{ tree: GithubFile[] }>({
+    await makeGithubApiRequest({
       endpoint: `/repos/${owner}/${repo}/git/trees/${ref}?recursive=1`,
       apiKey,
+      schema: GithubTree,
     })
   ).tree
 

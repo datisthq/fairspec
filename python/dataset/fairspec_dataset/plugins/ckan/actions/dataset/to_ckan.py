@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 from fairspec_dataset.plugins.ckan.actions.resource.to_ckan import (
     convert_resource_to_ckan,
 )
-from fairspec_dataset.plugins.ckan.models.dataset import CkanDataset
+from fairspec_dataset.plugins.ckan.models.dataset import NewCkanDataset
 from fairspec_dataset.plugins.ckan.models.tag import CkanTag
 
 if TYPE_CHECKING:
     from fairspec_metadata import Dataset
 
 
-def convert_dataset_to_ckan(dataset: Dataset) -> CkanDataset:
+def convert_dataset_to_ckan(dataset: Dataset) -> NewCkanDataset:
     title = None
     titles = dataset.titles or []
     if titles and titles[0].title:
@@ -78,7 +78,7 @@ def convert_dataset_to_ckan(dataset: Dataset) -> CkanDataset:
     if updated_date:
         metadata_modified = updated_date.date
 
-    return CkanDataset(
+    return NewCkanDataset(
         title=title,
         notes=notes,
         version=version,

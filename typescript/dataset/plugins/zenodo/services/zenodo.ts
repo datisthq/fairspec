@@ -1,12 +1,14 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { z } from "zod"
 
-export async function makeZenodoApiRequest<T = Descriptor>(options: {
+export async function makeZenodoApiRequest<S extends z.ZodType>(options: {
   endpoint: string
   method?: "GET" | "POST" | "PUT" | "DELETE"
   payload?: Descriptor
   upload?: { name: string; data: Blob }
   apiKey?: string
   sandbox?: boolean
+  schema: S
 }) {
   const { endpoint, method = "GET", payload, upload, apiKey, sandbox = false } = options
 
@@ -47,5 +49,12 @@ export async function makeZenodoApiRequest<T = Descriptor>(options: {
     )
   }
 
-  return (await response.json()) as T
+  const result = options.schema.safeParse(await response.json())
+  if (!result.success) {
+    throw new Error(
+      `Zenodo API returned an unexpected response from ${endpoint}:\n${z.prettifyError(result.error)}`,
+    )
+  }
+
+  return result.data
 }

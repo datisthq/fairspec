@@ -7,13 +7,13 @@ from fairspec_metadata import TableSchema
 from fairspec_dataset.plugins.ckan.actions.table_schema.to_ckan import (
     convert_table_schema_to_ckan,
 )
-from fairspec_dataset.plugins.ckan.models.resource import CkanResource
+from fairspec_dataset.plugins.ckan.models.resource import NewCkanResource
 
 if TYPE_CHECKING:
     from fairspec_metadata import Resource
 
 
-def convert_resource_to_ckan(resource: Resource) -> CkanResource:
+def convert_resource_to_ckan(resource: Resource) -> NewCkanResource:
     name = resource.name if resource.name else None
 
     fmt = None
@@ -48,7 +48,7 @@ def convert_resource_to_ckan(resource: Resource) -> CkanResource:
     if isinstance(table_schema, TableSchema):
         schema = convert_table_schema_to_ckan(table_schema)
 
-    return CkanResource(
+    return NewCkanResource(
         name=name,
         format=fmt,
         description=description,

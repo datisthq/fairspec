@@ -36,7 +36,7 @@ export function convertDatasetFromZenodo(zenodoRecord: ZenodoRecord): Dataset {
   }
 
   if (metadata.license) {
-    dataset.rightsList = [{ rights: metadata.license }]
+    dataset.rightsList = [{ rights: metadata.license.id }]
   }
 
   if (metadata.doi) {

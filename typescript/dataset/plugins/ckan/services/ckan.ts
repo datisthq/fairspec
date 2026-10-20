@@ -1,11 +1,13 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { z } from "zod"
 
-export async function makeCkanApiRequest<T = Descriptor>(options: {
+export async function makeCkanApiRequest<S extends z.ZodType>(options: {
   ckanUrl: string
   action: string
   payload: Descriptor
   upload?: { name: string; data: Blob }
   apiKey?: string
+  schema: S
 }) {
   let body: string | FormData
   const headers: Record<string, any> = {}
@@ -42,10 +44,32 @@ export async function makeCkanApiRequest<T = Descriptor>(options: {
     )
   }
 
-  const data = (await response.json()) as Descriptor
-  if (!data.success) {
-    throw new Error(`CKAN API error: ${data.error}`)
+  const envelope = CkanResponse.safeParse(await response.json())
+  if (!envelope.success) {
+    throw createResponseError(options.action, envelope.error)
   }
 
-  return data.result as T
+  if (!envelope.data.success) {
+    const { error } = envelope.data
+    throw new Error(`CKAN API error: ${error?.message ?? JSON.stringify(error)}`)
+  }
+
+  const result = options.schema.safeParse(envelope.data.result)
+  if (!result.success) {
+    throw createResponseError(options.action, result.error)
+  }
+
+  return result.data
+}
+
+const CkanResponse = z.object({
+  success: z.boolean(),
+  result: z.unknown(),
+  error: z.looseObject({ message: z.string().optional() }).optional(),
+})
+
+function createResponseError(action: string, error: z.ZodError) {
+  return new Error(
+    `CKAN API returned an unexpected response from ${action}:\n${z.prettifyError(error)}`,
+  )
 }

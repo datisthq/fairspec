@@ -4,9 +4,9 @@ from fairspec_metadata.models.base import FairspecModel
 
 
 class GithubFile(FairspecModel):
-    path: str | None = None
-    mode: str | None = None
-    type: str | None = None
+    path: str
+    mode: str
+    type: str
     size: int | None = None
-    sha: str | None = None
-    url: str | None = None
+    sha: str
+    url: str

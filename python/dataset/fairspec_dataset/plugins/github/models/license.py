@@ -4,7 +4,7 @@ from fairspec_metadata.models.base import FairspecModel
 
 
 class GithubLicense(FairspecModel):
-    key: str | None = None
-    name: str | None = None
-    spdx_id: str | None = None
-    url: str | None = None
+    key: str
+    name: str
+    spdx_id: str | None
+    url: str | None

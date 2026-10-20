@@ -276,13 +276,17 @@ describe("saveDatasetToZenodo", () => {
         }),
     })
 
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
           id: "file-1",
           filename: "data.csv",
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: "file-1", filename: "data.csv", filesize: 100 }),
     })
 
     await saveDatasetToZenodo(mockDataset, {
@@ -299,7 +303,7 @@ describe("saveDatasetToZenodo", () => {
   })
 
   it("passes API key as access_token query parameter", async () => {
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -320,6 +324,10 @@ describe("saveDatasetToZenodo", () => {
           submitted: false,
           files: [],
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: "file-1", filename: "data.csv", filesize: 100 }),
     })
 
     await saveDatasetToZenodo(mockDataset, {
@@ -400,7 +408,7 @@ describe("saveDatasetToZenodo", () => {
       ],
     }
 
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -421,6 +429,10 @@ describe("saveDatasetToZenodo", () => {
           submitted: false,
           files: [],
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: "file-1", filename: "data.csv", filesize: 100 }),
     })
 
     await saveDatasetToZenodo(multiResourceDataset, mockOptions)

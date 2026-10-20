@@ -5,7 +5,7 @@ from fairspec_metadata.models.base import FairspecModel
 
 class ZenodoLink(FairspecModel):
     self: str | None = None
-    html: str | None = None
+    html: str
     files: str | None = None
     bucket: str | None = None
     publish: str | None = None

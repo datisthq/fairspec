@@ -102,6 +102,11 @@ relative import reaches beyond the top-level package.
 - **A terminal command that declares the Table Schema inference flags must pass them on**: build them
   with `create_infer_table_schema_options(...)` and splat into the library call
   (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing
+- **A remote API response is parsed at the service boundary** — a dataset plugin's
+  `make_*_api_request` takes a required `model` and returns `model.model_validate(...)`; never
+  `Model(**dict)` or raw `dict["key"]` reads. Response models keep the same required fields as
+  their zod twins; what the plugin _sends_ gets its own all-optional model (`NewCkanDataset`), so
+  the response model can stay strict. Test mocks return realistic bodies from `fixtures/responses/`
 - Terminal output of raw file content goes through `Session.render_raw_result`: `render_text_result`
   prints through Rich, whose markup swallows `[...]` in the content
 - Where Python must produce what a TypeScript dependency produces (resource-name slugs from

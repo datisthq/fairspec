@@ -13,6 +13,8 @@ from fairspec_dataset.actions.resource.save import (
 )
 from fairspec_dataset.actions.stream.load import load_file_stream
 
+from fairspec_dataset.plugins.zenodo.models.deposition import ZenodoDeposition
+from fairspec_dataset.plugins.zenodo.models.deposition_file import ZenodoDepositionFile
 from fairspec_dataset.plugins.zenodo.services.zenodo import make_zenodo_api_request
 from .to_zenodo import convert_dataset_to_zenodo
 
@@ -37,9 +39,10 @@ def save_dataset_to_zenodo(
         method="POST",
         api_key=api_key,
         sandbox=sandbox,
+        model=ZenodoDeposition,
     )
 
-    record_id = zenodo_record["id"]
+    record_id = zenodo_record.id
 
     resource_descriptors: list[Descriptor] = []
     for resource in dataset.resources or []:
@@ -55,6 +58,7 @@ def save_dataset_to_zenodo(
                     upload=(props.denormalized_path, file_data),
                     api_key=api_key,
                     sandbox=sandbox,
+                    model=ZenodoDepositionFile,
                 )
 
                 return props.denormalized_path
@@ -85,9 +89,10 @@ def save_dataset_to_zenodo(
         upload=("dataset.json", descriptor_bytes),
         api_key=api_key,
         sandbox=sandbox,
+        model=ZenodoDepositionFile,
     )
 
-    html_url = zenodo_record["links"]["html"]
+    html_url = zenodo_record.links.html
     parsed = urllib.parse.urlparse(html_url)
     origin = f"{parsed.scheme}://{parsed.netloc}"
 

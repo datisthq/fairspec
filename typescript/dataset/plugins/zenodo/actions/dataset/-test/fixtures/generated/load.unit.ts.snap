@@ -34,9 +34,7 @@ exports[`loadDatasetFromZenodo > should load a package 1`] = `
   ],
   "rightsList": [
     {
-      "rights": {
-        "id": "cc-by-4.0",
-      },
+      "rights": "cc-by-4.0",
     },
   ],
   "subjects": [

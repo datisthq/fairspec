@@ -4,8 +4,11 @@ import json
 import urllib.parse
 import urllib.request
 
+from fairspec_metadata.models.base import FairspecModel
+from pydantic import ValidationError
 
-def make_zenodo_api_request(
+
+def make_zenodo_api_request[M: FairspecModel](
     *,
     endpoint: str,
     method: str = "GET",
@@ -13,7 +16,8 @@ def make_zenodo_api_request(
     upload: tuple[str, bytes] | None = None,
     api_key: str | None = None,
     sandbox: bool = False,
-) -> dict:
+    model: type[M],
+) -> M:
     base_url = "https://sandbox.zenodo.org/api" if sandbox else "https://zenodo.org/api"
     url = f"{base_url}{endpoint}"
 
@@ -44,6 +48,10 @@ def make_zenodo_api_request(
 
     with urllib.request.urlopen(request) as response:
         response_data = response.read().decode()
-        if not response_data:
-            return {}
-        return json.loads(response_data)
+
+    try:
+        return model.model_validate(json.loads(response_data) if response_data else {})
+    except ValidationError as error:
+        raise Exception(
+            f"Zenodo API returned an unexpected response from {endpoint}:\n{error}"
+        ) from error

@@ -91,6 +91,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
 - `columnProperties` overrides are zod-parsed, so one without a `type` matches `UnknownColumnProperty`
   and keeps only its annotations (`title`, `description`, `rdfType`); constraints need the `type`
+- **A remote API response is parsed at the service boundary** — a dataset plugin's
+  `make*ApiRequest` takes a required zod `schema` and returns its output; never `as T`. A
+  response model requires nothing the API may omit or null (real CKAN and Zenodo send `null`
+  freely; mark those `.nullish()`) and leaves out what the code never reads; one endpoint, one model (`ZenodoRecord` for `/records`,
+  `ZenodoDeposition` for `/deposit`). Test mocks return realistic bodies, never `{ id, url }` stubs
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column

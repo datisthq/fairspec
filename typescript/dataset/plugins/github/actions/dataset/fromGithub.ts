@@ -24,7 +24,7 @@ export function convertDatasetFromGithub(githubRepository: GithubRepository): Da
     dataset.rightsList = [
       {
         rights: githubRepository.license.name,
-        rightsUri: githubRepository.license.url,
+        rightsUri: githubRepository.license.url ?? undefined,
         rightsIdentifier:
           githubRepository.license.spdx_id || githubRepository.license.key,
         rightsIdentifierScheme: "SPDX",

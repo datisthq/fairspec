@@ -17,6 +17,8 @@ from fairspec_dataset.actions.stream.load import load_file_stream
 from fairspec_dataset.plugins.ckan.actions.resource.to_ckan import (
     convert_resource_to_ckan,
 )
+from fairspec_dataset.plugins.ckan.models.dataset import CkanDataset
+from fairspec_dataset.plugins.ckan.models.resource import CkanResource
 from fairspec_dataset.plugins.ckan.services.ckan import make_ckan_api_request
 from .to_ckan import convert_dataset_to_ckan
 
@@ -49,19 +51,18 @@ def save_dataset_to_ckan(
         payload=payload,
         ckan_url=ckan_url,
         api_key=api_key,
+        model=CkanDataset,
     )
 
     parsed = urllib.parse.urlparse(ckan_url)
-    dataset_url = f"{parsed.scheme}://{parsed.netloc}/dataset/{result['name']}"
+    dataset_url = f"{parsed.scheme}://{parsed.netloc}/dataset/{result.name}"
 
     resource_descriptors: list[Descriptor] = []
     for resource in dataset.resources or []:
 
         def _make_save_file(res: Resource) -> Callable[[SaveFileProps], str]:
             def _save_file(props: SaveFileProps) -> str:
-                ckan_resource = convert_resource_to_ckan(
-                    res.model_dump(by_alias=True, exclude_none=True)
-                )
+                ckan_resource = convert_resource_to_ckan(res)
                 extension = get_file_extension(props.normalized_path)
 
                 upload_payload: dict = {
@@ -81,9 +82,10 @@ def save_dataset_to_ckan(
                     upload=(props.denormalized_path, file_data),
                     ckan_url=ckan_url,
                     api_key=api_key,
+                    model=CkanResource,
                 )
 
-                return upload_result["url"]
+                return upload_result.url
 
             return _save_file
 
@@ -105,18 +107,19 @@ def save_dataset_to_ckan(
 
     descriptor_bytes = stringify_descriptor(descriptor).encode()
 
-    make_ckan_api_request(
+    descriptor_resource = make_ckan_api_request(
         action="resource_create",
         payload={
             "package_id": dataset_name,
-            "name": "datapackage.json",
+            "name": "dataset.json",
         },
-        upload=("datapackage.json", descriptor_bytes),
+        upload=("dataset.json", descriptor_bytes),
         ckan_url=ckan_url,
         api_key=api_key,
+        model=CkanResource,
     )
 
     return {
-        "path": result.get("url"),
+        "path": descriptor_resource.url,
         "dataset_url": dataset_url,
     }

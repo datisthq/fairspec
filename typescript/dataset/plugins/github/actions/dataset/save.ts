@@ -5,7 +5,8 @@ import { denormalizeDataset, stringifyDescriptor } from "@fairspec/metadata"
 import { getDatasetBasepath } from "../../../../actions/dataset/basepath.ts"
 import { saveResourceFiles } from "../../../../actions/resource/save.ts"
 import { loadFileStream } from "../../../../actions/stream/load.ts"
-import type { GithubRepository } from "../../models/repository.ts"
+import { GithubContent } from "../../models/content.ts"
+import { GithubRepository } from "../../models/repository.ts"
 import { makeGithubApiRequest } from "../../services/github.ts"
 
 /**
@@ -24,10 +25,11 @@ export async function saveDatasetToGithub(
   const { apiKey, org, repo } = options
   const basepath = getDatasetBasepath(dataset)
 
-  const githubRepository = await makeGithubApiRequest<GithubRepository>({
+  const githubRepository = await makeGithubApiRequest({
     endpoint: org ? `/orgs/${org}/repos` : "/user/repos",
     payload: { name: repo, auto_init: true },
     method: "POST",
+    schema: GithubRepository,
     apiKey,
   })
 
@@ -51,6 +53,7 @@ export async function saveDatasetToGithub(
             method: "PUT",
             payload,
             apiKey,
+            schema: GithubContent,
           })
 
           return options.denormalizedPath
@@ -76,6 +79,7 @@ export async function saveDatasetToGithub(
       method: "PUT",
       payload,
       apiKey,
+      schema: GithubContent,
     })
   }
 

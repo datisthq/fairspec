@@ -29,9 +29,10 @@ def load_dataset_from_zenodo(
         endpoint=f"/records/{record_id}",
         api_key=api_key,
         sandbox=sandbox,
+        model=ZenodoRecord,
     )
 
-    system_dataset = convert_dataset_from_zenodo(ZenodoRecord(**zenodo_record))
+    system_dataset = convert_dataset_from_zenodo(zenodo_record)
     user_dataset_path: str | None = None
     for resource in system_dataset.resources or []:
         custom = resource.unstable_customMetadata or {}

@@ -176,7 +176,7 @@ describe("saveDatasetToGithub", () => {
         }),
     })
 
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -186,6 +186,10 @@ describe("saveDatasetToGithub", () => {
             sha: "abc123",
           },
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ content: { path: "data.csv", sha: "abc123" } }),
     })
 
     await saveDatasetToGithub(mockDataset, {
@@ -360,12 +364,13 @@ describe("saveDatasetToGithub", () => {
   })
 
   it("passes API key as Bearer token in Authorization header", async () => {
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
           id: 12345,
           name: "test-repo",
+          full_name: "test-user/test-repo",
           owner: {
             login: "test-user",
             id: 1,
@@ -391,6 +396,10 @@ describe("saveDatasetToGithub", () => {
           ssh_url: "git@github.com:test-user/test-repo.git",
           clone_url: "https://github.com/test-user/test-repo.git",
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ content: { path: "data.csv", sha: "abc123" } }),
     })
 
     await saveDatasetToGithub(mockDataset, {
@@ -479,7 +488,7 @@ describe("saveDatasetToGithub", () => {
       ],
     }
 
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -511,6 +520,10 @@ describe("saveDatasetToGithub", () => {
           ssh_url: "git@github.com:test-user/test-repo.git",
           clone_url: "https://github.com/test-user/test-repo.git",
         }),
+    })
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ content: { path: "data.csv", sha: "abc123" } }),
     })
 
     await saveDatasetToGithub(multiResourceDataset, mockOptions)

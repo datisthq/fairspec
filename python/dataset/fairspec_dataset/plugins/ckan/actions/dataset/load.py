@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from fairspec_dataset.actions.dataset.merge import merge_datasets
 
 from fairspec_dataset.plugins.ckan.models.dataset import CkanDataset
+from fairspec_dataset.plugins.ckan.models.schema import CkanSchema
 from fairspec_dataset.plugins.ckan.services.ckan import make_ckan_api_request
 from .from_ckan import convert_dataset_from_ckan
 
@@ -22,25 +23,24 @@ def load_dataset_from_ckan(
     if not dataset_id:
         raise Exception(f"Failed to extract dataset ID from URL: {dataset_url}")
 
-    ckan_dict = make_ckan_api_request(
+    ckan_dataset = make_ckan_api_request(
         ckan_url=dataset_url,
         action="package_show",
         payload={"id": dataset_id},
         api_key=api_key,
+        model=CkanDataset,
     )
 
-    for resource in ckan_dict.get("resources", []):
-        resource_id = resource.get("id")
-        if resource.get("format", "").upper() in ("CSV", "XLS", "XLSX"):
+    for resource in ckan_dataset.resources:
+        if (resource.format or "").upper() in ("CSV", "XLS", "XLSX"):
             schema = _load_ckan_schema(
                 dataset_url=dataset_url,
-                resource_id=resource_id,
+                resource_id=resource.id,
                 api_key=api_key,
             )
             if schema:
-                resource["schema"] = schema
+                resource.schema_ = schema
 
-    ckan_dataset = CkanDataset(**ckan_dict)
     system_dataset = convert_dataset_from_ckan(ckan_dataset)
     user_dataset_path: str | None = None
     for resource in system_dataset.resources or []:
@@ -71,19 +71,16 @@ def _load_ckan_schema(
     dataset_url: str,
     resource_id: str,
     api_key: str | None = None,
-) -> dict | None:
+) -> CkanSchema | None:
     try:
         result = make_ckan_api_request(
             ckan_url=dataset_url,
             action="datastore_search",
             payload={"resource_id": resource_id, "limit": 0},
             api_key=api_key,
+            model=CkanSchema,
         )
-        fields = [
-            f
-            for f in result.get("fields", [])
-            if f.get("id") not in ("_id", "_full_text")
-        ]
-        return {"fields": fields}
+        fields = [f for f in result.fields if f.id not in ("_id", "_full_text")]
+        return CkanSchema(fields=fields)
     except Exception:
         return None

@@ -4,7 +4,7 @@ from fairspec_metadata.models.base import FairspecModel
 
 
 class CkanOrganization(FairspecModel):
-    id: str | None = None
-    name: str | None = None
+    id: str
+    name: str
     title: str | None = None
     description: str | None = None
