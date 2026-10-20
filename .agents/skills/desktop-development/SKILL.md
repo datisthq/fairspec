@@ -6,7 +6,8 @@ description: Use when working in desktop/ — the Electron application. Covers c
 # Desktop
 
 The `desktop/` section is the Electron application, consuming `@fairspec/library` and
-`@fairspec/metadata` from `typescript/`.
+`@fairspec/metadata` from `typescript/`. It is a surface with no twin: a library behaviour
+change the app shows lands here in the same branch (root `AGENTS.md`, **Terminology**).
 
 ## Commands
 

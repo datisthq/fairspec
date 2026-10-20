@@ -93,9 +93,6 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - An exported function whose inferred type names a `nodejs-polars` type outside `table` fails
   the build with TS2883 ("cannot be named without a reference to … LazyDataFrame"); annotate it
   with the `Table` type (`Promise<Table>`), the one place an explicit return type is required
-- **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
-  entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
-  `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
 - `columnProperties` overrides are zod-parsed, so one without a `type` matches `UnknownColumnProperty`
   and keeps only its annotations (`title`, `description`, `rdfType`); constraints need the `type`
 - **A remote API response is parsed at the service boundary** — a dataset plugin's
@@ -118,7 +115,27 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **One call must not flood the client's context.** A tool returning a list takes a `limit`/`maxErrors` input (default 100, max 1000), fetches one item more, and cuts it with `limitItems`/`limitReport` (`helpers/limit.ts`), which also trims to the 50k-character budget and sets `truncated`; any other response over the budget fails. A tool returning file content caps it in the input schema instead: `previewFileTool` takes `maxLines` (max 200) and `maxBytes` (max 20,000), while the CLI stays uncapped
 - `validateTable` caps cell errors with one global head but splits `maxErrors` across the row key checks by column count, so `validateTableTool` asks for `(maxErrors + 1) × columns`; otherwise one bad key never shows truncation
 - Nothing may write to stdout — it is the stdio transport; `-test/server.unit.ts` asserts a call prints nothing
-- The Python server mirrors every tool, input name and limit; change both together
+
+## Twins
+
+Every behaviour here has a twin in `python/`, and a change lands in both in the same branch,
+with every other surface that shows it (root `AGENTS.md`, **Terminology**). Find the twin by
+name, not by path:
+
+- `loadTable` ↔ `load_table`, `-test/` ↔ `_test/`, `index.ts` ↔ `__init__.py`, an entity folder
+  `tableSchema/` ↔ `table_schema/`
+- Package layouts drift: `extension`'s renderers are Python's
+  `python/library/fairspec_library/actions/table_schema/render.py`, and the CLI's
+  `typescript/terminal/commands/tableSchema/infer.ts` is Python's
+  `python/terminal/fairspec_terminal/commands/table/infer_schema.py` (the command,
+  `table infer-schema`, is the same)
+- The Python MCP server registers every tool under its `name` here, with the same input names
+  and limits; renaming one renames it for both
+- **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
+  entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
+  `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
+- A behaviour both share gets a `testsuite/` case, which compares both outputs exactly
+  (**`testsuite-development`**)
 
 ## Specs
 

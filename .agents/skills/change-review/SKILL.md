@@ -37,6 +37,9 @@ more than the generic checklist:
   ships (the site, an example, tests, tooling), or a normative change to the standard's prose
   typed `docs` — release-please versions on the type, and a burnt version is never reusable;
 - a commit marked breaking (`!`, `BREAKING CHANGE:`), or a hand-edited `.release/manifest.json`;
+- a behaviour changed in one library with its twin untouched, or a CLI command, MCP tool,
+  option, default or limit added on one side only, with no reason in the body — or a surface
+  that shows it (desktop, `.skills/`, docs, the site's command and tool lists) left stale;
 - a package edge that reverses the `metadata`-first DAG in `python/` or `typescript/`;
 - a public API missing from its package's `index.ts` / `__init__.py`, or an `export *` there;
 - a TypeScript test asserting on a raw path string or a bare `\n` — it fails on Windows CI;

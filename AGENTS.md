@@ -24,6 +24,20 @@ by default), `.scripts/` repo-wide guards and scripts, `.release/` release-pleas
 `.livemark/` the website, `.skills/` the user-facing `fairspec-*` skills for agents that use
 Fairspec (changes to them are `docs`).
 
+## Terminology
+
+- **libraries** — `python/` and `typescript/` together, the two implementations of the standard
+- **twin** — the same behaviour's counterpart in the other library: `loadTable` ↔ `load_table`,
+  a CLI command ↔ its command, an MCP tool ↔ the tool of the same wire name. Twins match by
+  behaviour, not by package: TypeScript's `extension` renderers are Python's
+  `python/library/fairspec_library/actions/table_schema/render.py`
+- **interfaces** — how a user reaches a library: its API, its CLI (`terminal`), its MCP server
+- **surfaces** — every place a behaviour shows up: both libraries' interfaces, `desktop/`, the
+  `.skills/` user skills, `python/project/docs/` and `typescript/project/docs/`, and the site
+  pages that list commands and tools (`.livemark/routes/cli-tool.tsx`,
+  `.livemark/routes/mcp-server.tsx`)
+- `desktop/` is the one surface with no twin: it sits on the TypeScript library only
+
 ## General
 
 - **Never commit unless asked to** — except that a session working directly on `main` commits
@@ -68,6 +82,12 @@ Fairspec (changes to them are `docs`).
   on the next run — check `git status` after renaming one
 - `desktop/package.json` pins `productName: fairspec`; Electron derives the user-data directory
   from it, so renaming it orphans every user's settings
+- **A behaviour change lands on every surface that has it, in the same branch.** A library
+  change lands in its twin with the same names (case-converted), inputs, defaults, limits and
+  output, and a behaviour both share gets a `testsuite/` case, not only a unit test per library
+  (**`testsuite-development`**). Then its CLI command, MCP tool, desktop screen, `.skills/` row
+  and both libraries' docs. A twin left out on purpose is named in the commit body with why.
+  When it is unclear which surfaces count, ask first
 
 ## Commands
 

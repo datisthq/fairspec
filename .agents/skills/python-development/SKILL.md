@@ -116,10 +116,6 @@ relative import reaches beyond the top-level package.
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
   wkt, array, object, geojson, topojson) and the row key checks keep their own scan. Collect
   with `engine=QUERY_ENGINE`
-- Where Python must produce what a TypeScript dependency produces (resource-name slugs from
-  `@sindresorhus/slugify`, data schema inference from `json-schema-it`), port that behaviour
-  instead of reaching for a near-equivalent PyPI package; the shared testsuite compares both
-  outputs exactly
 
 ## MCP server
 
@@ -129,10 +125,30 @@ relative import reaches beyond the top-level package.
 - A tool returning a list mirrors the TypeScript limits: `limit`/`maxErrors` (default 100, max 1000), one item more fetched, cut with `limit_items`/`limit_report` (`helpers/limit.py`), `truncated` in the result. A tool returning file content takes the same caps as its TypeScript twin in `Field(ge=1, le=…)` (`tools/file/preview.py`)
 - Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
 - Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing. That in-memory `capfd` check is the only guard: while serving stdio the SDK points fd 1 at stderr, so a stray `print` never fails the spawned-process test in `python/terminal/fairspec_terminal/commands/general/_test/mcp_unit.py`
+- `fairspec mcp` imports `fairspec_mcp_server` inside the command, so the rest of the CLI does not load the MCP stack
+
+## Twins
+
+Every behaviour here has a twin in `typescript/`, and a change lands in both in the same branch,
+with every other surface that shows it (root `AGENTS.md`, **Terminology**). Find the twin by
+name, not by path:
+
+- `load_table` ↔ `loadTable`, `_test/` ↔ `-test/`, `__init__.py` ↔ `index.ts`, an entity folder
+  `table_schema/` ↔ `tableSchema/`
+- Package layouts drift: `library/fairspec_library/actions/table_schema/render.py` is
+  TypeScript's `extension` package, and the CLI's
+  `python/terminal/fairspec_terminal/commands/table/infer_schema.py` is TypeScript's
+  `typescript/terminal/commands/tableSchema/infer.ts` (the command, `table infer-schema`, is the
+  same)
+- MCP tools carry the TypeScript wire names, inputs and limits (**MCP server**)
+- Where Python must produce what a TypeScript dependency produces (resource-name slugs from
+  `@sindresorhus/slugify`, data schema inference from `json-schema-it`), port that behaviour
+  instead of reaching for a near-equivalent PyPI package
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
   entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
-- `fairspec mcp` imports `fairspec_mcp_server` inside the command, so the rest of the CLI does not load the MCP stack
+- A behaviour both share gets a `testsuite/` case, which compares both outputs exactly
+  (**`testsuite-development`**)
 
 ## Specs
 

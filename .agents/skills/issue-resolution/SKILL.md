@@ -25,9 +25,9 @@ names, against the version it names (the bug report template asks for one).
 - Find the root cause, not the symptom: name the `file:line` and say why it produces what the
   evidence shows (`superpowers:systematic-debugging`). A fix that is not tied to a named cause is
   a guess.
-- When both implementations carry the behaviour, check the other one too. A bug in
-  `typescript/` usually has a twin in `python/`, and a spec ambiguity in `standard/` explains
-  both.
+- When both libraries carry the behaviour, reproduce it in the twin too. A bug in
+  `typescript/` usually has one in `python/`, and a spec ambiguity in `standard/` explains
+  both. Note every surface that shows the behaviour (root `AGENTS.md`, **Terminology**).
 
 ## 3. Write the failing test first
 
@@ -50,8 +50,9 @@ Load the skill for the section you touch before editing it: `typescript-developm
 
 - Change only what the root cause needs. No drive-by refactors, renames or reformatting of code
   you did not otherwise change.
-- When the twin exists in the other implementation, fix both in the same change, or say why
-  not.
+- Fix the twin in the same change, and every surface that shows the behaviour, or name the one
+  left out and why. A shared behaviour gets its failing case in `testsuite/`, which both
+  libraries run (**`testsuite-development`**).
 - A change to what the standard requires is its own `feat`/`fix(standard)`, separate from the
   implementations' fixes — and a decision for a person (step 6).
 
@@ -84,7 +85,8 @@ Commit it only when the caller asked for a commit; stage only your own paths, wi
 - it does not reproduce (step 2);
 - the fix needs a decision: a change to what the standard requires, a behaviour users would
   notice, or a new dependency;
-- the fix crosses into a section the issue did not name;
+- the fix crosses into a section the issue did not name — the twin library never counts as
+  one;
 - the gates are still red after two attempts.
 
 When you stop, comment what you found and leave the branch as it is. Do not commit a fix that

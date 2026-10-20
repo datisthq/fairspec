@@ -77,8 +77,9 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    `tsconfig.json` or `package.json`, `lefthook.yaml`, a `pyproject.toml` or `uv.lock`. Run
    `pnpm test`; no cherry-picking here.
 
-**A change made in both implementations is sliced per section.** A TypeScript + Python fix runs
-both sections' slices.
+**A change mirrored across the libraries is sliced per section.** A TypeScript + Python fix runs
+both sections' slices, and a behaviour both share runs both `testsuite/` runners
+(**`testsuite-development`**).
 
 ## Guards a narrow slice cannot see
 
@@ -92,6 +93,7 @@ never reaches them. When the diff touches a trigger, add the check by hand:
 | a user-facing desktop string                                           | `pnpm -C desktop extract`, then the catalogues (**`desktop-development`**) |
 | a test path or path assertion in `typescript/`                         | read it for raw separators and bare `\n` — CI runs Windows                 |
 | a renamed recorded test                                                | `git status` for an orphaned recording                                     |
+| a behaviour in one library                                             | `git diff --stat main` names its twin and every other surface too          |
 | `.livemark/public/profiles/` or the version in `standard/package.json` | `vp test` (`.scripts/-test/profiles.unit.ts`)                              |
 | a root script, especially a `-F` filter                                | run it, and check its quoting holds on Windows (**`monorepo-layout`**)     |
 

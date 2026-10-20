@@ -22,8 +22,9 @@ is specific to it.
 
 Skills come in two kinds. `.agents/skills/` teaches agents to develop this repo; only it is
 symlinked into `.claude/skills` and listed in `AGENTS.md`. `.skills/` holds the `fairspec-*`
-skills users install to work with Fairspec. Every command, flag and API name in them must match
-both CLIs' `--help` and both libraries, so a change to either surface checks them too.
+skills users install to work with Fairspec. They are a surface (root `AGENTS.md`,
+**Terminology**): every command, flag and API name in them must match both CLIs' `--help` and
+both libraries, so a change to any interface checks them too.
 
 vite-plus reads `fmt` and `lint` from the root config only; a nested block is silently
 ignored, so path-specific lint rules go in the root `overrides` with a section prefix

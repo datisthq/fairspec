@@ -7,6 +7,7 @@ description: Use when working in testsuite/ — the language-neutral conformance
 
 The `testsuite/` section is pure data: JSON test files that the TypeScript and Python
 libraries both run. It has no `package.json`, ships nothing, and is not a release component.
+It is how a pair of twins proves it agrees: a behaviour both libraries share gets its case here.
 `testsuite/README.md` is the format reference; this skill is how to work with it.
 
 ## Commands
