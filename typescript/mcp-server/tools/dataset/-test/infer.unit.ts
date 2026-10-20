@@ -5,7 +5,7 @@ import { inferDatasetTool } from "../infer.ts"
 
 describe("inferDatasetTool", () => {
   it("validates tool structure", () => {
-    expect(inferDatasetTool.id).toBe("infer-dataset")
+    expect(inferDatasetTool.name).toBe("inferDatasetTool")
     expect(inferDatasetTool.description).toBeTruthy()
     expect(inferDatasetTool.inputSchema).toBeTruthy()
     expect(inferDatasetTool.outputSchema).toBeTruthy()
@@ -19,15 +19,9 @@ describe("inferDatasetTool", () => {
       resources: [{ data: path, fileDialect: { format: "csv" } }],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.language).toBe("en")
     expect(result.dataset.resources).toHaveLength(1)
@@ -50,15 +44,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.language).toBe("en")
     expect(result.dataset.resources).toHaveLength(2)
@@ -79,15 +67,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.language).toBe("en")
     expect(result.dataset.resources).toHaveLength(1)
@@ -117,15 +99,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.resources?.[0]?.tableSchema).toEqual({
       properties: {
@@ -140,15 +116,9 @@ describe("inferDatasetTool", () => {
       resources: [],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.resources).toHaveLength(0)
   })
@@ -163,15 +133,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.resources?.[0]?.name).toBeDefined()
     expect(result.dataset.resources?.[1]?.name).toBeDefined()
@@ -189,15 +153,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     const tableSchema = result.dataset.resources?.[0]?.tableSchema
     expect(tableSchema).toBeDefined()
@@ -222,15 +180,9 @@ describe("inferDatasetTool", () => {
       ],
     }
 
-    const result = await inferDatasetTool.execute?.(
-      {
-        dataset: source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDatasetTool.execute({
+      dataset: source,
+    })
 
     expect(result.dataset.language).toBe("en")
     expect(result.dataset.version).toBe("1.0.0")

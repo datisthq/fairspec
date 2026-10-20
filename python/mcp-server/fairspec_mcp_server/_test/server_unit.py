@@ -59,3 +59,34 @@ class TestServer:
             )
 
         assert result.is_error
+
+    async def test_should_report_real_message_of_failed_query(self):
+        path = write_temp_file("id,name\n1,alice\n", format="csv")
+
+        async with Client(server) as client:
+            result = await client.call_tool(
+                "queryTableTool",
+                {"resource": {"data": path}, "query": "SELEC nonsense"},
+            )
+
+        assert result.is_error
+        assert "sql" in str(result.content).lower()
+
+    async def test_should_report_real_message_of_missing_file(self):
+        async with Client(server) as client:
+            result = await client.call_tool(
+                "validateDatasetTool", {"source": "missing/dataset.json"}
+            )
+
+        assert result.is_error
+        assert "missing" in str(result.content)
+
+    async def test_should_reject_response_over_budget(self):
+        async with Client(server) as client:
+            result = await client.call_tool(
+                "inferDatasetTool",
+                {"dataset": {"resources": [{"data": [{"text": "x" * 60_000}]}]}},
+            )
+
+        assert result.is_error
+        assert "exceeds 50000 characters" in str(result.content)

@@ -38,7 +38,7 @@ metadata ─┬─► dataset ───┐
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlxs.
 - `extension` — renderers turning a `TableSchema` into markdown or HTML.
 - `library` — the plugin registry (`system.ts`) and the facade actions every consumer calls: `loadTable`, `saveTable`, `loadDataset`, `saveDataset`, `validate*`, `infer*`.
-- `mcp-server` — MCP tools over the library actions, served over stdio as `fairspec mcp`. Clients see each tool under its key in `server.ts` (`inferTableSchemaTool`), not its `id`; the Python server registers the same names, so renaming a key renames it for both.
+- `mcp-server` — MCP tools over the library actions (the official `@modelcontextprotocol/sdk` `McpServer`), served over stdio as `fairspec mcp`. Clients see each tool under its `name` (`inferTableSchemaTool`); the Python server registers the same names, so renaming one renames it for both.
 - `terminal` — the `fairspec` CLI (commander), one command group per entity.
 - `fairspec` — umbrella package re-exporting `@fairspec/library` and shipping the CLI binary.
 - `project` — the documentation site in `typescript/project/docs/`. Private and outside the DAG: nothing depends on it.
@@ -99,6 +99,14 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   (`typescript/table/actions/column/types/-shared/temporal.ts`); `scanCSV` takes a one-character
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
   Float64
+
+## MCP server
+
+- Build a tool with `createTool` (`mcp-server/helpers/tool.ts`): `execute` takes typed input and is what tests call; `handle` is what `createServer()` registers. A throw reaches the client as `isError` with its message — never return an error object, which the output schema turns into an unreadable ZodError
+- **One call must not flood the client's context.** A tool returning a list takes a `limit`/`maxErrors` input (default 100, max 1000), fetches one item more, and cuts it with `limitItems`/`limitReport` (`helpers/limit.ts`), which also trims to the 50k-character budget and sets `truncated`; any other response over the budget fails
+- `validateTable` splits `maxErrors` across columns, so `validateTableTool` asks for `(maxErrors + 1) × columns`; otherwise one bad column never shows truncation
+- Nothing may write to stdout — it is the stdio transport; `-test/server.unit.ts` asserts a call prints nothing
+- The Python server mirrors every tool, input name and limit; change both together
 
 ## Specs
 

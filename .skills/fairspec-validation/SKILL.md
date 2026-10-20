@@ -65,5 +65,9 @@ Each error has a `type`, plus `resourceName` within a dataset. Cell errors add `
 | `file/integrity`, `file/textual`                              | hash or encoding mismatch                | the file changed since it was described: re-hash (`fairspec file describe`)   |
 | `resource/missing`, `resource/type`, `metadata`               | the descriptor itself is malformed       | fix the descriptor; validate it before the data                               |
 
+The MCP validate tools return at most `maxErrors` errors (default 100, up to 1000), fewer when
+they would exceed ~50k characters; `truncated: true` means the report left some out, while
+`valid` still reflects them all.
+
 Report errors grouped by `type` and `columnName`, with a count and a few sample rows. Don't
 list every row. When `errors` is long, the first failure usually explains the rest.

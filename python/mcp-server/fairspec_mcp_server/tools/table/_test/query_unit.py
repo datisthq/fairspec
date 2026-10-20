@@ -48,3 +48,38 @@ class TestQueryTableTool:
     def test_should_raise_for_unloadable_table(self):
         with pytest.raises(ValueError, match="Could not load table"):
             query_table_tool(Resource(), "SELECT * FROM self")
+
+    def test_should_return_at_most_100_records_by_default(self):
+        rows = "\n".join(f"{i},name{i}" for i in range(150))
+        path = write_temp_file(f"id,name\n{rows}\n", format="csv")
+
+        result = query_table_tool(Resource(data=path), "SELECT * FROM self")
+
+        assert len(result.records) == 100
+        assert result.truncated is True
+
+    def test_should_respect_limit(self):
+        rows = "\n".join(f"{i},name{i}" for i in range(10))
+        path = write_temp_file(f"id,name\n{rows}\n", format="csv")
+
+        result = query_table_tool(Resource(data=path), "SELECT * FROM self", limit=5)
+
+        assert len(result.records) == 5
+        assert result.truncated is True
+
+    def test_should_not_mark_complete_records_as_truncated(self):
+        path = write_temp_file("id\n1\n2\n", format="csv")
+
+        result = query_table_tool(Resource(data=path), "SELECT * FROM self")
+
+        assert result.truncated is False
+
+    def test_should_trim_records_to_response_budget(self):
+        rows = "\n".join(f"{i},{'x' * 1000}" for i in range(100))
+        path = write_temp_file(f"id,text\n{rows}\n", format="csv")
+
+        result = query_table_tool(Resource(data=path), "SELECT * FROM self")
+
+        assert len(result.records) < 50
+        assert result.truncated is True
+        assert len(result.model_dump_json()) <= 50_000

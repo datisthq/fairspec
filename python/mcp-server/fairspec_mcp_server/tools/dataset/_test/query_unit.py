@@ -27,3 +27,13 @@ class TestQueryDatasetTool:
         )
 
         assert result.records == [{"name": "bob", "n": 2}]
+
+    def test_should_return_at_most_limit_records(self):
+        source = Dataset.model_validate(
+            {"resources": [{"name": "items", "data": [{"id": i} for i in range(10)]}]}
+        )
+
+        result = query_dataset_tool(source, "SELECT * FROM items", limit=5)
+
+        assert len(result.records) == 5
+        assert result.truncated is True

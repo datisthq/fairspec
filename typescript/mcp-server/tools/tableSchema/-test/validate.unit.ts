@@ -5,7 +5,7 @@ import { validateTableSchemaTool } from "../validate.ts"
 
 describe("validateTableSchemaTool", () => {
   it("validates tool structure", () => {
-    expect(validateTableSchemaTool.id).toBe("validate-table-schema")
+    expect(validateTableSchemaTool.name).toBe("validateTableSchemaTool")
     expect(validateTableSchemaTool.description).toBeTruthy()
     expect(validateTableSchemaTool.inputSchema).toBeTruthy()
     expect(validateTableSchemaTool.outputSchema).toBeTruthy()
@@ -20,15 +20,9 @@ describe("validateTableSchemaTool", () => {
       },
     }
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -43,15 +37,9 @@ describe("validateTableSchemaTool", () => {
       },
     }
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -69,15 +57,9 @@ describe("validateTableSchemaTool", () => {
       format: "json",
     })
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: path,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: path,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -95,15 +77,9 @@ describe("validateTableSchemaTool", () => {
       format: "json",
     })
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: path,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: path,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -114,15 +90,9 @@ describe("validateTableSchemaTool", () => {
       properties: {},
     }
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -148,15 +118,9 @@ describe("validateTableSchemaTool", () => {
       },
     }
 
-    const result = await validateTableSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateTableSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)

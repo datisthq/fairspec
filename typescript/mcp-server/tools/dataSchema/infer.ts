@@ -1,9 +1,9 @@
 import { DataSchema, inferDataSchema, Resource } from "@fairspec/library"
-import { createTool } from "@mastra/core/tools"
 import { z } from "zod"
+import { createTool } from "../../helpers/tool.ts"
 
 export const inferDataSchemaTool = createTool({
-  id: "infer-data-schema",
+  name: "inferDataSchemaTool",
   description:
     "Infer a data schema (JSON Schema) from data. Analyzes the data structure to determine types and properties.",
   inputSchema: z.object({

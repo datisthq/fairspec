@@ -5,7 +5,7 @@ import { inferDataSchemaTool } from "../infer.ts"
 
 describe("inferDataSchemaTool", () => {
   it("validates tool structure", () => {
-    expect(inferDataSchemaTool.id).toBe("infer-data-schema")
+    expect(inferDataSchemaTool.name).toBe("inferDataSchemaTool")
     expect(inferDataSchemaTool.description).toBeTruthy()
     expect(inferDataSchemaTool.inputSchema).toBeTruthy()
     expect(inferDataSchemaTool.outputSchema).toBeTruthy()
@@ -17,15 +17,9 @@ describe("inferDataSchemaTool", () => {
       data: { name: "test", count: 5, active: true },
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toEqual({
       type: "object",
@@ -45,15 +39,9 @@ describe("inferDataSchemaTool", () => {
       ],
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toEqual({
       type: "array",
@@ -74,15 +62,9 @@ describe("inferDataSchemaTool", () => {
     })
     const resource: Resource = { data: path }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toEqual({
       type: "object",
@@ -105,15 +87,9 @@ describe("inferDataSchemaTool", () => {
       },
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toMatchObject({
       type: "object",
@@ -140,15 +116,9 @@ describe("inferDataSchemaTool", () => {
       },
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toMatchObject({
       type: "object",
@@ -185,15 +155,9 @@ describe("inferDataSchemaTool", () => {
       },
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toMatchObject({
       type: "object",
@@ -212,15 +176,10 @@ describe("inferDataSchemaTool", () => {
   it("returns undefined for resource without data", async () => {
     const resource: Resource = { name: "empty" }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
-    expect.assert(result)
-    expect.assert(!("error" in result))
     expect(result.dataSchema).toBeUndefined()
   })
 
@@ -235,15 +194,9 @@ describe("inferDataSchemaTool", () => {
       },
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toEqual({
       type: "object",
@@ -262,15 +215,9 @@ describe("inferDataSchemaTool", () => {
       data: [1, 2, 3, 4, 5],
     }
 
-    const result = await inferDataSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferDataSchemaTool.execute({
+      resource,
+    })
 
     expect(result.dataSchema).toEqual({
       type: "array",

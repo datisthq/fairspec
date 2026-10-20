@@ -1,4 +1,5 @@
-import { MCPServer } from "@mastra/mcp"
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import packageJson from "./package.json" with { type: "json" }
 import { validateDataTool } from "./tools/data/validate.ts"
 import { inferDataSchemaTool } from "./tools/dataSchema/infer.ts"
@@ -12,21 +13,44 @@ import { validateTableTool } from "./tools/table/validate.ts"
 import { inferTableSchemaTool } from "./tools/tableSchema/infer.ts"
 import { validateTableSchemaTool } from "./tools/tableSchema/validate.ts"
 
-export const server = new MCPServer({
-  id: "fairspec",
-  name: "fairspec",
-  version: packageJson.version,
-  tools: {
-    inferDataSchemaTool,
-    inferDatasetTool,
-    inferFileDialectTool,
-    inferTableSchemaTool,
-    queryDatasetTool,
-    queryTableTool,
-    validateDataSchemaTool,
-    validateDatasetTool,
-    validateDataTool,
-    validateTableSchemaTool,
-    validateTableTool,
-  },
-})
+const tools = [
+  inferDataSchemaTool,
+  inferDatasetTool,
+  inferFileDialectTool,
+  inferTableSchemaTool,
+  queryDatasetTool,
+  queryTableTool,
+  validateDataSchemaTool,
+  validateDatasetTool,
+  validateDataTool,
+  validateTableSchemaTool,
+  validateTableTool,
+]
+
+/**
+ * Create the Fairspec MCP server with every tool registered.
+ */
+export function createServer() {
+  const server = new McpServer({ name: "fairspec", version: packageJson.version })
+
+  for (const tool of tools) {
+    server.registerTool(
+      tool.name,
+      {
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        outputSchema: tool.outputSchema,
+      },
+      tool.handle,
+    )
+  }
+
+  return server
+}
+
+/**
+ * Serve the Fairspec MCP server over stdio.
+ */
+export async function startServer() {
+  await createServer().connect(new StdioServerTransport())
+}

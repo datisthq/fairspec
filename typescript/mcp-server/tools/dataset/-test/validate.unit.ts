@@ -5,7 +5,7 @@ import { validateDatasetTool } from "../validate.ts"
 
 describe("validateDatasetTool", () => {
   it("validates tool structure", () => {
-    expect(validateDatasetTool.id).toBe("validate-dataset")
+    expect(validateDatasetTool.name).toBe("validateDatasetTool")
     expect(validateDatasetTool.description).toBeTruthy()
     expect(validateDatasetTool.inputSchema).toBeTruthy()
     expect(validateDatasetTool.outputSchema).toBeTruthy()
@@ -31,15 +31,9 @@ describe("validateDatasetTool", () => {
       ],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -64,15 +58,9 @@ describe("validateDatasetTool", () => {
       ],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors).toHaveLength(1)
@@ -112,15 +100,9 @@ describe("validateDatasetTool", () => {
       ],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors).toHaveLength(2)
@@ -148,15 +130,9 @@ describe("validateDatasetTool", () => {
       format: "json",
     })
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source: path,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source: path,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -167,15 +143,9 @@ describe("validateDatasetTool", () => {
       resources: [],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -213,15 +183,9 @@ describe("validateDatasetTool", () => {
       ],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -246,15 +210,9 @@ describe("validateDatasetTool", () => {
       ],
     }
 
-    const result = await validateDatasetTool.execute?.(
-      {
-        source,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDatasetTool.execute({
+      source,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)

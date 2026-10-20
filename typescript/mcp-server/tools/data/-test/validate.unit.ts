@@ -5,7 +5,7 @@ import { validateDataTool } from "../validate.ts"
 
 describe("validateDataTool", () => {
   it("validates tool structure", () => {
-    expect(validateDataTool.id).toBe("validate-data")
+    expect(validateDataTool.name).toBe("validateDataTool")
     expect(validateDataTool.description).toBeTruthy()
     expect(validateDataTool.inputSchema).toBeTruthy()
     expect(validateDataTool.outputSchema).toBeTruthy()
@@ -24,15 +24,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -50,15 +44,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -93,15 +81,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -125,15 +107,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -160,15 +136,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -195,15 +165,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -215,15 +179,9 @@ describe("validateDataTool", () => {
       dataSchema: { type: "object" },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors).toHaveLength(1)
@@ -246,15 +204,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -278,15 +230,9 @@ describe("validateDataTool", () => {
       },
     }
 
-    const result = await validateDataTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataTool.execute({
+      resource,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)

@@ -3,11 +3,14 @@ from typing import Annotated
 from fairspec_library import Dataset, Report, validate_dataset
 from pydantic import Field
 
+from ...helpers.limit import limit_report
 from ...models.tool import ToolResult
+from .._shared.schemas import MaxErrors, Truncated
 
 
 class ValidateDatasetResult(ToolResult):
     report: Report
+    truncated: Truncated
 
 
 def validate_dataset_tool(
@@ -15,6 +18,8 @@ def validate_dataset_tool(
         Dataset | str,
         Field(description="The dataset to validate (dataset object or file path)"),
     ],
+    maxErrors: MaxErrors = None,
 ) -> ValidateDatasetResult:
     """Validate a dataset including all its resources and foreign keys. Returns a validation report with errors if any."""
-    return ValidateDatasetResult(report=validate_dataset(source))
+    report, truncated = limit_report(validate_dataset(source), max_errors=maxErrors)
+    return ValidateDatasetResult(report=report, truncated=truncated)

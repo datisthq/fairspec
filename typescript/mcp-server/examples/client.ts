@@ -1,16 +1,10 @@
-import { MCPClient } from "@mastra/mcp"
+import { Client } from "@modelcontextprotocol/sdk/client/index.js"
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
-const mcp = new MCPClient({
-  servers: {
-    fairspec: {
-      command: "node",
-      args: ["mcp-server/main.ts"],
-    },
-  },
-})
+const client = new Client({ name: "example", version: "0.0.0" })
+await client.connect(
+  new StdioClientTransport({ command: "node", args: ["mcp-server/main.ts"] }),
+)
 
-const tools = await mcp.listTools()
-const toolsets = await mcp.listToolsets()
-
-console.log(tools)
-console.log(toolsets)
+console.log(await client.listTools())
+await client.close()

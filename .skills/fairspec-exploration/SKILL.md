@@ -50,6 +50,9 @@ Both libraries return a lazy frame: call `.collect()` before reading rows, and n
 
 ## Gotchas
 
+- `queryTableTool` and `queryDatasetTool` return at most `limit` records (default 100, up to 1000), fewer when they
+  would exceed ~50k characters; `truncated: true` means rows were left out. Aggregate in SQL
+  rather than raising `limit` to read a whole table
 - The TypeScript `table describe` fails on any table with a date column
   (`type Date is incompatible with expected type Datetime`). Use the Python CLI's `table describe`,
   or SQL aggregates through `table query`

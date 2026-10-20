@@ -5,7 +5,7 @@ import { validateDataSchemaTool } from "../validate.ts"
 
 describe("validateDataSchemaTool", () => {
   it("validates tool structure", () => {
-    expect(validateDataSchemaTool.id).toBe("validate-data-schema")
+    expect(validateDataSchemaTool.name).toBe("validateDataSchemaTool")
     expect(validateDataSchemaTool.description).toBeTruthy()
     expect(validateDataSchemaTool.inputSchema).toBeTruthy()
     expect(validateDataSchemaTool.outputSchema).toBeTruthy()
@@ -23,15 +23,9 @@ describe("validateDataSchemaTool", () => {
       required: ["name", "age"],
     }
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -45,15 +39,9 @@ describe("validateDataSchemaTool", () => {
       },
     }
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -72,15 +60,9 @@ describe("validateDataSchemaTool", () => {
       format: "json",
     })
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: path,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: path,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -99,15 +81,9 @@ describe("validateDataSchemaTool", () => {
       format: "json",
     })
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: path,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: path,
+    })
 
     expect(result.report.valid).toBe(false)
     expect(result.report.errors.length).toBeGreaterThan(0)
@@ -119,15 +95,9 @@ describe("validateDataSchemaTool", () => {
       properties: {},
     }
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -153,15 +123,9 @@ describe("validateDataSchemaTool", () => {
       },
     }
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)
@@ -182,15 +146,9 @@ describe("validateDataSchemaTool", () => {
       },
     }
 
-    const result = await validateDataSchemaTool.execute?.(
-      {
-        source: descriptor,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await validateDataSchemaTool.execute({
+      source: descriptor,
+    })
 
     expect(result.report.valid).toBe(true)
     expect(result.report.errors).toHaveLength(0)

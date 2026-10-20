@@ -36,8 +36,7 @@
   },
   "dependencies": {
     "@fairspec/library": "workspace:*",
-    "@mastra/core": "^1.2.0",
-    "@mastra/mcp": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "zod": "^4.2.1"
   }
 }

@@ -4,7 +4,7 @@ import { queryDatasetTool } from "../query.ts"
 
 describe("queryDatasetTool", () => {
   it("validates tool structure", () => {
-    expect(queryDatasetTool.id).toBe("query-dataset")
+    expect(queryDatasetTool.name).toBe("queryDatasetTool")
     expect(queryDatasetTool.description).toBeTruthy()
     expect(queryDatasetTool.inputSchema).toBeTruthy()
     expect(queryDatasetTool.outputSchema).toBeTruthy()
@@ -31,17 +31,29 @@ describe("queryDatasetTool", () => {
       ],
     }
 
-    const result = await queryDatasetTool.execute?.(
-      {
-        source,
-        query:
-          "SELECT users.name, COUNT(*) AS n FROM posts JOIN users ON posts.user_id = users.id GROUP BY users.name",
-      },
-      {},
-    )
+    const result = await queryDatasetTool.execute({
+      source,
+      query:
+        "SELECT users.name, COUNT(*) AS n FROM posts JOIN users ON posts.user_id = users.id GROUP BY users.name",
+    })
 
-    expect.assert(result)
-    expect.assert(!("error" in result))
     expect(result.records).toEqual([{ name: "bob", n: 2 }])
+  })
+
+  it("returns at most limit records", async () => {
+    const source: Dataset = {
+      resources: [
+        { name: "items", data: Array.from({ length: 10 }, (_, id) => ({ id })) },
+      ],
+    }
+
+    const result = await queryDatasetTool.execute({
+      source,
+      query: "SELECT * FROM items",
+      limit: 5,
+    })
+
+    expect(result.records).toHaveLength(5)
+    expect(result.truncated).toBe(true)
   })
 })

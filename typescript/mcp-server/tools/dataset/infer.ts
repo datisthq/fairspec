@@ -1,9 +1,9 @@
 import { Dataset, inferDataset } from "@fairspec/library"
-import { createTool } from "@mastra/core/tools"
 import { z } from "zod"
+import { createTool } from "../../helpers/tool.ts"
 
 export const inferDatasetTool = createTool({
-  id: "infer-dataset",
+  name: "inferDatasetTool",
   description:
     "Infer metadata for all resources in a dataset. Analyzes each resource to determine schemas and dialects.",
   inputSchema: z.object({

@@ -4,11 +4,11 @@ import {
   Resource,
   TableSchema,
 } from "@fairspec/library"
-import { createTool } from "@mastra/core/tools"
 import { z } from "zod"
+import { createTool } from "../../helpers/tool.ts"
 
 export const inferTableSchemaTool = createTool({
-  id: "infer-table-schema",
+  name: "inferTableSchemaTool",
   description:
     "Infer a table schema from table resource data. Analyzes the data to determine column types and constraints.",
   inputSchema: z.object({

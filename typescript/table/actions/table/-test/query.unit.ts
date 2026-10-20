@@ -13,6 +13,12 @@ describe("queryTable", () => {
 
     expect(frame.toRecords()).toEqual([{ name: "Alice" }])
   })
+
+  it("should throw the SQL error of an invalid query", () => {
+    const table = pl.DataFrame({ id: [1] }).lazy()
+
+    expect(() => queryTable(table, "SELEC nonsense")).toThrow(/sql parser error/)
+  })
 })
 
 describe("queryTables", () => {

@@ -110,7 +110,9 @@ relative import reaches beyond the top-level package.
 ## MCP server
 
 - A tool is a plain sync function returning a `ToolResult` model: `MCPServer` runs sync tools on a worker thread and derives the input and output schemas from the annotations
-- Register it in `server.py` under the **name the TypeScript server puts on the wire** — the key in `typescript/mcp-server/server.ts` (`inferTableSchemaTool`), not the tool's `id` — so client configs and allowlists carry across
+- Register it in `server.py` wrapped in `guard_tool` (`helpers/tool.py`) under the **name the TypeScript server puts on the wire** — the tool's `name` in `typescript/mcp-server/tools/` (`inferTableSchemaTool`) — so client configs and allowlists carry across. `guard_tool` re-raises any exception as `ToolError` (the SDK shows only `Error executing tool X` for anything else), enforces the 50k-character budget and returns compact JSON text (the SDK's own copy is indented)
+- Parameters carry their wire names too (`maxErrors`, not `max_errors`): the SDK passes a `Field` alias as the keyword, so an aliased parameter breaks the call
+- A tool returning a list mirrors the TypeScript limits: `limit`/`maxErrors` (default 100, max 1000), one item more fetched, cut with `limit_items`/`limit_report` (`helpers/limit.py`), `truncated` in the result
 - Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
 - Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the

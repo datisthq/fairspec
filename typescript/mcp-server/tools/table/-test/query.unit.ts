@@ -5,7 +5,7 @@ import { queryTableTool } from "../query.ts"
 
 describe("queryTableTool", () => {
   it("validates tool structure", () => {
-    expect(queryTableTool.id).toBe("query-table")
+    expect(queryTableTool.name).toBe("queryTableTool")
     expect(queryTableTool.description).toBeTruthy()
     expect(queryTableTool.inputSchema).toBeTruthy()
     expect(queryTableTool.outputSchema).toBeTruthy()
@@ -17,16 +17,10 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT * FROM self WHERE age > 25",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self WHERE age > 25",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(2)
@@ -39,16 +33,10 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT name, city FROM self",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT name, city FROM self",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(3)
@@ -63,16 +51,10 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT * FROM self ORDER BY score DESC",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self ORDER BY score DESC",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(3)
@@ -86,16 +68,10 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT COUNT(*) as count, AVG(score) as avg_score FROM self",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT COUNT(*) as count, AVG(score) as avg_score FROM self",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(1)
@@ -109,16 +85,10 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT * FROM self WHERE age >= 25 ORDER BY age LIMIT 2",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self WHERE age >= 25 ORDER BY age LIMIT 2",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(2)
@@ -133,16 +103,10 @@ describe("queryTableTool", () => {
       ],
     }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT name, score FROM self WHERE score > 85",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT name, score FROM self WHERE score > 85",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(2)
@@ -158,16 +122,10 @@ describe("queryTableTool", () => {
       ],
     }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT * FROM self WHERE dept_id = 10",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self WHERE dept_id = 10",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(1)
@@ -179,18 +137,52 @@ describe("queryTableTool", () => {
     const csvPath = await writeTempFile(csvContent, { format: "csv" })
     const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
 
-    const result = await queryTableTool.execute?.(
-      {
-        resource,
-        query: "SELECT * FROM self",
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self",
+    })
 
     expect(Array.isArray(result.records)).toBe(true)
     expect(result.records.length).toBe(3)
+  })
+
+  it("returns at most 100 records by default", async () => {
+    const rows = Array.from({ length: 150 }, (_, i) => `${i},name${i}`).join("\n")
+    const csvPath = await writeTempFile(`id,name\n${rows}`, { format: "csv" })
+    const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
+
+    const result = await queryTableTool.execute({ resource, query: "SELECT * FROM self" })
+
+    expect(result.records).toHaveLength(100)
+    expect(result).toMatchObject({ truncated: true })
+  })
+
+  it("respects the limit input", async () => {
+    const rows = Array.from({ length: 10 }, (_, i) => `${i},name${i}`).join("\n")
+    const csvPath = await writeTempFile(`id,name\n${rows}`, { format: "csv" })
+    const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
+
+    const result = await queryTableTool.execute({
+      resource,
+      query: "SELECT * FROM self",
+      limit: 5,
+    })
+
+    expect(result.records).toHaveLength(5)
+    expect(result).toMatchObject({ truncated: true })
+  })
+
+  it("trims records to the response budget", async () => {
+    const rows = Array.from({ length: 100 }, (_, i) => `${i},${"x".repeat(1000)}`)
+    const csvPath = await writeTempFile(`id,text\n${rows.join("\n")}`, {
+      format: "csv",
+    })
+    const resource: Resource = { data: csvPath, fileDialect: { format: "csv" } }
+
+    const result = await queryTableTool.execute({ resource, query: "SELECT * FROM self" })
+
+    expect(result.records.length).toBeLessThan(50)
+    expect(result).toMatchObject({ truncated: true })
+    expect(JSON.stringify(result).length).toBeLessThanOrEqual(50_000)
   })
 })

@@ -4,11 +4,11 @@ import {
   inferFileDialect,
   Resource,
 } from "@fairspec/library"
-import { createTool } from "@mastra/core/tools"
 import { z } from "zod"
+import { createTool } from "../../helpers/tool.ts"
 
 export const inferFileDialectTool = createTool({
-  id: "infer-file-dialect",
+  name: "inferFileDialectTool",
   description:
     "Infer the dialect (format and format-specific properties) from a resource. Analyzes the data to determine CSV delimiters, JSON structure, etc.",
   inputSchema: z.object({

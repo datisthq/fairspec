@@ -9,5 +9,12 @@ export function queryTable(table: Table, query: string) {
 /** Run a SQL query against several tables, each exposed under its key. */
 export function queryTables(tables: Record<string, Table>, query: string) {
   const context = pl.SQLContext(tables)
-  return context.execute(query)
+  const result = context.execute(query)
+
+  // The binding returns a SQL error as the frame instead of throwing it
+  if (result._ldf instanceof Error) {
+    throw result._ldf
+  }
+
+  return result
 }

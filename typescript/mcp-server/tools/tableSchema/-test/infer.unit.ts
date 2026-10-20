@@ -5,7 +5,7 @@ import { inferTableSchemaTool } from "../infer.ts"
 
 describe("inferTableSchemaTool", () => {
   it("validates tool structure", () => {
-    expect(inferTableSchemaTool.id).toBe("infer-table-schema")
+    expect(inferTableSchemaTool.name).toBe("inferTableSchemaTool")
     expect(inferTableSchemaTool.description).toBeTruthy()
     expect(inferTableSchemaTool.inputSchema).toBeTruthy()
     expect(inferTableSchemaTool.outputSchema).toBeTruthy()
@@ -16,15 +16,9 @@ describe("inferTableSchemaTool", () => {
     const path = await writeTempFile("id,name,age\n1,alice,30\n2,bob,25")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -40,15 +34,9 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -64,15 +52,9 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -89,15 +71,9 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -114,16 +90,10 @@ describe("inferTableSchemaTool", () => {
       })),
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-        options: { sampleRows: 10 },
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+      options: { sampleRows: 10 },
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -135,15 +105,10 @@ describe("inferTableSchemaTool", () => {
       data: [],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
-    expect.assert(result)
-    expect.assert(!("error" in result))
     expect(result.tableSchema).toBeUndefined()
   })
 
@@ -152,15 +117,9 @@ describe("inferTableSchemaTool", () => {
       data: [{ id: 1, name: "alice" }],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -175,16 +134,10 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-        options: { columnTypes: { id: "integer", value: "integer" } },
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+      options: { columnTypes: { id: "integer", value: "integer" } },
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")
@@ -199,18 +152,12 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-        options: {
-          columnProperties: { id: { type: "string" }, name: { title: "Name" } },
-        },
+    const result = await inferTableSchemaTool.execute({
+      resource,
+      options: {
+        columnProperties: { id: { type: "string" }, name: { title: "Name" } },
       },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    })
 
     expect(result.tableSchema?.properties).toEqual({
       id: { type: "string" },
@@ -226,15 +173,9 @@ describe("inferTableSchemaTool", () => {
       ],
     }
 
-    const result = await inferTableSchemaTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferTableSchemaTool.execute({
+      resource,
+    })
 
     expect(result.tableSchema?.properties).toBeDefined()
     expect(result.tableSchema?.properties?.id?.type).toBe("integer")

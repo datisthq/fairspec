@@ -5,7 +5,7 @@ import { inferFileDialectTool } from "../infer.ts"
 
 describe("inferFileDialectTool", () => {
   it("validates tool structure", () => {
-    expect(inferFileDialectTool.id).toBe("infer-file-dialect")
+    expect(inferFileDialectTool.name).toBe("inferFileDialectTool")
     expect(inferFileDialectTool.description).toBeTruthy()
     expect(inferFileDialectTool.inputSchema).toBeTruthy()
     expect(inferFileDialectTool.outputSchema).toBeTruthy()
@@ -16,15 +16,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile("id,name,age\n1,alice,25\n2,bob,30")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect).toEqual<CsvFileDialect>({
       format: "csv",
@@ -38,15 +32,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile("id\tname\tage\n1\talice\t25\n2\tbob\t30")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect).toEqual({
       format: "tsv",
@@ -59,15 +47,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile(JSON.stringify([{ id: 1, name: "alice" }]))
     const resource: Resource = { data: path, fileDialect: { format: "json" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect).toEqual({
       format: "json",
@@ -84,15 +66,9 @@ describe("inferFileDialectTool", () => {
     )
     const resource: Resource = { data: path, fileDialect: { format: "json" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect?.format).toBe("json")
     expect(result.fileDialect).toHaveProperty("rowType")
@@ -102,15 +78,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile('{"id":1,"name":"alice"}\n{"id":2,"name":"bob"}')
     const resource: Resource = { data: path, fileDialect: { format: "jsonl" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect?.format).toBe("jsonl")
   })
@@ -119,15 +89,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile("id;name;age\n1;alice;25\n2;bob;30")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect).toMatchObject({
       format: "csv",
@@ -139,15 +103,9 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile("1,alice,25\n2,bob,30")
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect?.format).toBe("csv")
     expect(result.fileDialect).toHaveProperty("delimiter")
@@ -158,15 +116,9 @@ describe("inferFileDialectTool", () => {
       data: [{ id: 1 }],
     }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect).toBeUndefined()
   })
@@ -176,16 +128,10 @@ describe("inferFileDialectTool", () => {
     const path = await writeTempFile(`id,name\n${largeData}`)
     const resource: Resource = { data: path, fileDialect: { format: "csv" } }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-        options: { sampleBytes: 1000 },
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+      options: { sampleBytes: 1000 },
+    })
 
     expect(result.fileDialect?.format).toBe("csv")
   })
@@ -197,15 +143,9 @@ describe("inferFileDialectTool", () => {
       fileDialect: { format: "csv" },
     }
 
-    const result = await inferFileDialectTool.execute?.(
-      {
-        resource,
-      },
-      {},
-    )
-
-    expect.assert(result)
-    expect.assert(!("error" in result))
+    const result = await inferFileDialectTool.execute({
+      resource,
+    })
 
     expect(result.fileDialect?.format).toBe("csv")
     expect(result.fileDialect).toHaveProperty("delimiter")
