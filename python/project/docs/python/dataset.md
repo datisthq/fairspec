@@ -15,6 +15,7 @@ The dataset API provides utilities for working with datasets:
 - `infer_dataset` - Automatically fill in missing metadata for every resource
 - `save_dataset` - Save a dataset (and its resources) via plugins
 - `validate_dataset` - Validate a dataset descriptor and all its resources
+- `query_dataset` - Run a SQL query across the dataset's tables
 - `validate_dataset_foreign_keys` - Check foreign-key relationships across resources
 - `render_dataset_as` - Render a dataset as Markdown, JSON, or other formats
 
@@ -197,6 +198,23 @@ report = validate_dataset("dataset.json")
 for error in report.errors:
     print(f"[{error.type}] {error.resourceName}: {error.message}")
 ```
+
+## Querying a Dataset
+
+`query_dataset(source, sql)` runs a SQL query across a dataset's tables using Polars' SQL engine. Each table resource is exposed under its name (an unnamed one under the name inferred from its file), so one query can join several resources. Only the resources the query mentions are loaded.
+
+```python
+from fairspec import query_dataset
+
+result = query_dataset(
+    "dataset.json",
+    "SELECT users.name, COUNT(*) AS orders FROM orders JOIN users ON orders.user_id = users.id GROUP BY users.name",
+)
+
+print(result.collect())
+```
+
+`source` is a path or a `Dataset` object. To query a single table as `self`, load it and use `query_table`.
 
 ## Validating Foreign Keys
 

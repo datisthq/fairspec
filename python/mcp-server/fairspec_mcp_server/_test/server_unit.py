@@ -23,6 +23,7 @@ class TestServer:
                 "inferDatasetTool",
                 "inferFileDialectTool",
                 "inferTableSchemaTool",
+                "queryDatasetTool",
                 "queryTableTool",
                 "validateDataSchemaTool",
                 "validateDatasetTool",

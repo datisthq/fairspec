@@ -19,6 +19,7 @@ def register_commands() -> None:
     import fairspec_terminal.commands.dataset.copy  # noqa: F401
     import fairspec_terminal.commands.dataset.infer  # noqa: F401
     import fairspec_terminal.commands.dataset.list_  # noqa: F401
+    import fairspec_terminal.commands.dataset.query  # noqa: F401
     import fairspec_terminal.commands.dataset.script  # noqa: F401
     import fairspec_terminal.commands.dataset.validate  # noqa: F401
     import fairspec_terminal.commands.table.describe  # noqa: F401

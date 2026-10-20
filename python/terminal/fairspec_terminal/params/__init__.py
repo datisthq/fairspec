@@ -1,4 +1,5 @@
 from .data_schema import DataSchemaPath as DataSchemaPath
+from .dataset import DatasetQuery as DatasetQuery
 from .dataset import FromDataset as FromDataset
 from .dataset import FromResource as FromResource
 from .dataset import ToArchive as ToArchive

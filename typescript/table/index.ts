@@ -1,7 +1,7 @@
 export { denormalizeTable } from "./actions/table/denormalize.ts"
 export { inspectTable } from "./actions/table/inspect.ts"
 export { normalizeTable } from "./actions/table/normalize.ts"
-export { queryTable } from "./actions/table/query.ts"
+export { queryTable, queryTables } from "./actions/table/query.ts"
 export { inferTableSchemaFromTable } from "./actions/tableSchema/infer.ts"
 export { DenormalizeColumnOptions } from "./models/column.ts"
 export type { Frame } from "./models/frame.ts"

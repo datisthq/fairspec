@@ -1,0 +1,74 @@
+[
+  {
+    "description": "join two resources",
+    "comment": "Querying is a library feature the spec does not define. Each table resource is a relation named after the resource",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "user_id": { "type": "integer" }
+            }
+          }
+        }
+      ]
+    },
+    "query": "SELECT users.name, COUNT(*) AS n FROM posts JOIN users ON posts.user_id = users.id GROUP BY users.name ORDER BY users.name",
+    "tests": [
+      {
+        "description": "counts the posts of each user",
+        "data": {
+          "users.csv": "id,name\n1,alice\n2,bob\n",
+          "posts.csv": "id,user_id\n1,2\n2,1\n3,2\n"
+        },
+        "expected": {
+          "columns": ["name", "n"],
+          "rows": [
+            ["alice", 1],
+            ["bob", 2]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a resource the query does not name",
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "users.csv" },
+        { "name": "broken", "data": "missing.csv" }
+      ]
+    },
+    "query": "SELECT COUNT(*) AS n FROM users",
+    "tests": [
+      {
+        "description": "is never loaded",
+        "data": { "users.csv": "id,name\n1,alice\n2,bob\n" },
+        "expected": { "columns": ["n"], "rows": [[2]] }
+      }
+    ]
+  },
+  {
+    "description": "a relation that is not a resource",
+    "dataset": { "resources": [{ "name": "users", "data": "users.csv" }] },
+    "query": "SELECT * FROM orders",
+    "tests": [
+      {
+        "description": "fails the query",
+        "data": { "users.csv": "id,name\n1,alice\n" },
+        "throws": true
+      }
+    ]
+  }
+]

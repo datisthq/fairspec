@@ -14,16 +14,19 @@ shows the delimiter, header and type problems those steps would trip on.
 Install with `npm install fairspec` or `pip install fairspec`. Both ship a `fairspec` binary with the
 same commands and flags, and `fairspec mcp` serves the MCP tools.
 
-| task                | CLI                                          | MCP tool         | TypeScript / Python                                  |
-| ------------------- | -------------------------------------------- | ---------------- | ---------------------------------------------------- |
-| SQL query           | `fairspec table query <path> "<sql>" --json` | `queryTableTool` | `queryTable(table, sql)` / `query_table(table, sql)` |
-| first rows          | `fairspec table preview <path>`              | —                | `loadTable(resource)` / `load_table(resource)`       |
-| column stats        | `fairspec table describe <path> --json`      | —                | load, then Polars `describe()`                       |
-| dataset's resources | `fairspec dataset list dataset.json --json`  | —                | `loadDataset(path)` / `load_dataset(path)`           |
-| file size, hash     | `fairspec file describe <path> --json`       | —                | `describeFile(path)` / `describe_file(path)`         |
+| task                 | CLI                                                  | MCP tool           | TypeScript / Python                                    |
+| -------------------- | ---------------------------------------------------- | ------------------ | ------------------------------------------------------ |
+| SQL query            | `fairspec table query <path> "<sql>" --json`         | `queryTableTool`   | `queryTable(table, sql)` / `query_table(table, sql)`   |
+| SQL across a dataset | `fairspec dataset query dataset.json "<sql>" --json` | `queryDatasetTool` | `queryDataset(path, sql)` / `query_dataset(path, sql)` |
+| first rows           | `fairspec table preview <path>`                      | —                  | `loadTable(resource)` / `load_table(resource)`         |
+| column stats         | `fairspec table describe <path> --json`              | —                  | load, then Polars `describe()`                         |
+| dataset's resources  | `fairspec dataset list dataset.json --json`          | —                  | `loadDataset(path)` / `load_dataset(path)`             |
+| file size, hash      | `fairspec file describe <path> --json`               | —                  | `describeFile(path)` / `describe_file(path)`           |
 
-In SQL the table is named `self`: `SELECT name, sum(price) FROM self GROUP BY name`. The query runs
-on Polars SQL, not a database, so stick to standard `SELECT` syntax. A table inside a dataset is
+In SQL the table is named `self`: `SELECT name, sum(price) FROM self GROUP BY name`. A dataset
+query names each table after its resource instead (`dataset list` shows the names), so it can join
+resources: `SELECT u.name, count(*) FROM orders o JOIN users u ON o.user_id = u.id GROUP BY u.name`.
+The query runs on Polars SQL, not a database, so stick to standard `SELECT` syntax. A table inside a dataset is
 selected with `-d dataset.json -r <name>` in place of a path. All table commands take the same
 dialect flags (`--delimiter`, `--header-rows`, `--sheet-name`, …) and `--schema`.
 

@@ -25,6 +25,7 @@ import {
   inspectJson,
   loadDataset,
   loadTable,
+  queryDataset,
   queryTable,
   ValidateTableOptions,
   validateData,
@@ -87,6 +88,12 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
     return (dataset.resources ?? []).map(
       (resource, index) =>
         resource.name ?? inferResourceName(resource, { resourceNumber: index + 1 }),
+    )
+  },
+  "dataset-query": async (group, test) => {
+    if (!group.query) return null
+    return await readRows(
+      await queryDataset(await writeDataset(group, test), group.query),
     )
   },
   "dataset-validate": async (group, test) =>

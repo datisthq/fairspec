@@ -24,6 +24,7 @@ from ..actions.data.validate import validate_data
 from ..actions.data_schema.infer import infer_data_schema
 from ..actions.dataset.infer import infer_dataset
 from ..actions.dataset.load import load_dataset
+from ..actions.dataset.query import query_dataset
 from ..actions.dataset.validate import validate_dataset
 from ..actions.file_dialect.infer import infer_file_dialect
 from ..actions.table.load import load_table
@@ -92,6 +93,13 @@ def run_dataset_list(group: Group, test: Case) -> object:
     ]
 
 
+def run_dataset_query(group: Group, test: Case) -> object:
+    query = group.get("query")
+    if query is None:
+        return None
+    return read_rows(query_dataset(write_dataset(group, test), query))
+
+
 def run_dataset_validate(group: Group, test: Case) -> object:
     return validate_dataset(write_dataset(group, test))
 
@@ -139,6 +147,7 @@ OPERATIONS: dict[str, Callable[[Group, Case], object]] = {
     "data-validate": run_data_validate,
     "dataset-infer": run_dataset_infer,
     "dataset-list": run_dataset_list,
+    "dataset-query": run_dataset_query,
     "dataset-validate": run_dataset_validate,
     "file-describe": run_file_describe,
     "file-validate": run_file_validate,

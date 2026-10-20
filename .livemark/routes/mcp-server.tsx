@@ -454,6 +454,12 @@ const tools: Tool[] = [
       "Checks that a dataset descriptor is well-formed and that all referenced resources are consistent. Verifies that resource paths resolve correctly and that schemas match the actual data.",
   },
   {
+    icon: ListOrdered,
+    title: "Query Dataset",
+    description:
+      "Runs a SQL query across a dataset, with each table resource available under its name, and returns the matching rows. Joins related resources in one query and loads only the resources the query names.",
+  },
+  {
     icon: Search,
     title: "Infer File Dialect",
     description:
@@ -493,7 +499,7 @@ function Tools() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Tools</h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Ten tools organized around core Fairspec concepts: data, data schemas,
+              Eleven tools organized around core Fairspec concepts: data, data schemas,
               datasets, file dialects, tables, and table schemas.
             </p>
           </div>

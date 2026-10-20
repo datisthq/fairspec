@@ -1,7 +1,7 @@
 from .actions.table.denormalize import denormalize_table
 from .actions.table.inspect import inspect_table
 from .actions.table.normalize import normalize_table
-from .actions.table.query import query_table
+from .actions.table.query import query_table, query_tables
 from .actions.table_schema.infer import (
     infer_table_schema_from_sample,
     infer_table_schema_from_table,
@@ -73,6 +73,7 @@ __all__ = [
     "load_sqlite_table",
     "normalize_table",
     "query_table",
+    "query_tables",
     "save_arrow_table",
     "save_csv_table",
     "save_json_table",

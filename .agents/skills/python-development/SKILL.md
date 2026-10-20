@@ -113,6 +113,9 @@ relative import reaches beyond the top-level package.
 - Register it in `server.py` under the **name the TypeScript server puts on the wire** — the key in `typescript/mcp-server/server.ts` (`inferTableSchemaTool`), not the tool's `id` — so client configs and allowlists carry across
 - Results extend `ToolResult`: `mcp` dumps output without `exclude_none`, so a plain model sends every unset field as `null`
 - Nothing may write to stdout — it is the stdio transport. Never use the terminal's `Session` in a tool; `_test/server_unit.py` asserts a call prints nothing
+- **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
+  entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
+  `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
 - `fairspec mcp` imports `fairspec_mcp_server` inside the command, so the rest of the CLI does not load the MCP stack
 
 ## Specs

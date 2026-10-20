@@ -83,6 +83,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **A terminal command that declares the Table Schema inference flags must pass them on** — commander
   collects them into `options`, so hand that to `loadTable`/`inferTableSchemaFromTable`
   (`loadTable(resource, { ...options, previewBytes })`); declared-but-dropped flags parse fine and do nothing
+- An exported function whose inferred type names a `nodejs-polars` type outside `table` fails
+  the build with TS2883 ("cannot be named without a reference to … LazyDataFrame"); annotate it
+  with the `Table` type (`Promise<Table>`), the one place an explicit return type is required
+- **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
+  entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
+  `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
 - `columnProperties` overrides are zod-parsed, so one without a `type` matches `UnknownColumnProperty`
   and keeps only its annotations (`title`, `description`, `rdfType`); constraints need the `type`
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness

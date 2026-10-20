@@ -1,4 +1,4 @@
-import { Option } from "commander"
+import { Argument, Option } from "commander"
 
 export const withRemote = new Option("--with-remote", "include remote resources")
 
@@ -21,3 +21,8 @@ export const toArchive = new Option(
   "--to-archive <toArchive>",
   "a local output zip file path",
 ).makeOptionMandatory()
+
+export const datasetQuery = new Argument(
+  "<query>",
+  "a SQL query to execute against a dataset (refer to each table by its resource name)",
+)

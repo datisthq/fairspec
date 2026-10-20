@@ -15,6 +15,7 @@ The `fairspec dataset` command provides utilities for working with datasets:
 - `copy` - Copy datasets to a local folder
 - `validate` - Validate dataset descriptors and their resources
 - `list` - List resources in a dataset
+- `query` - Query the dataset's tables with SQL
 - `script` - Interactive REPL session with loaded dataset
 
 ## What is a Dataset?
@@ -279,6 +280,36 @@ JSON output:
 ```json
 ["users", "products", "orders", "transactions"]
 ```
+
+### Options
+
+- `--debug` - Show debug information
+- `--json` - Output as JSON
+
+## Query Dataset
+
+Run a SQL query across every table resource in a dataset. Each resource is a table named after
+the resource, so a query can join several of them:
+
+```bash
+# Join two resources
+fairspec dataset query dataset.json \
+  "SELECT users.name, COUNT(*) AS orders FROM orders JOIN users ON orders.user_id = users.id GROUP BY users.name"
+
+# Query a remote dataset
+fairspec dataset query https://example.com/dataset.json "SELECT * FROM products LIMIT 10"
+
+# Output as JSON
+fairspec dataset query dataset.json "SELECT COUNT(*) AS n FROM users" --json
+```
+
+### Table Names
+
+- A resource is queried under its `name`; one without a name takes the name `dataset list`
+  shows for it, inferred from its file name
+- Only the resources the query mentions are loaded, so a large resource the query does not use
+  costs nothing
+- A resource that is not a table, such as a JSON object, cannot be queried
 
 ### Options
 

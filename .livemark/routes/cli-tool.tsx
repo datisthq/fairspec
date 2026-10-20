@@ -445,9 +445,9 @@ const commandGroups: CommandGroup[] = [
     icon: Database,
     entity: "dataset",
     title: "Datasets",
-    verbs: ["infer", "validate", "copy", "list", "script"],
+    verbs: ["infer", "validate", "copy", "list", "query", "script"],
     description:
-      "Infer a dataset descriptor from a set of files, validate it with every resource it references, list or copy its resources, or open it in an interactive session.",
+      "Infer a dataset descriptor from a set of files, validate it with every resource it references, list or copy its resources, join them in one SQL query, or open it in an interactive session.",
   },
   {
     icon: Table2,

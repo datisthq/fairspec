@@ -21,6 +21,7 @@ The dataset API provides these top-level utilities:
 - `saveDataset` - Save a dataset to a folder, Zip archive, or external service
 - `inferDataset` - Infer a dataset descriptor from a list of files
 - `validateDataset` - Validate a dataset descriptor and all its resources
+- `queryDataset` - Run a SQL query across the dataset's tables
 
 ```ts
 import { loadDataset, validateDataset } from "fairspec"
@@ -147,6 +148,24 @@ import { loadDataset, validateDataset } from "fairspec"
 const dataset = await loadDataset("dataset.json")
 const report = await validateDataset(dataset)
 ```
+
+## Querying a Dataset
+
+`queryDataset(source, sql)` runs a SQL query across a dataset's tables using Polars' SQL engine. Each table resource is exposed under its name (an unnamed one under the name inferred from its file), so one query can join several resources. Only the resources the query mentions are loaded.
+
+```ts
+import { queryDataset } from "fairspec"
+
+const result = await queryDataset(
+  "dataset.json",
+  "SELECT users.name, COUNT(*) AS orders FROM orders JOIN users ON orders.user_id = users.id GROUP BY users.name",
+)
+
+const frame = await result.collect()
+console.log(frame.toRecords())
+```
+
+`source` is a path or a `Dataset` object. To query a single table as `self`, load it and use `queryTable`.
 
 ## Working with Resources
 

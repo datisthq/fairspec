@@ -6,6 +6,7 @@ import { validateDataSchemaCommand } from "./commands/dataSchema/validate.ts"
 import { copyDatasetCommand } from "./commands/dataset/copy.ts"
 import { inferDatasetCommand } from "./commands/dataset/infer.ts"
 import { listDatasetCommand } from "./commands/dataset/list.ts"
+import { queryDatasetCommand } from "./commands/dataset/query.ts"
 import { scriptDatasetCommand } from "./commands/dataset/script.ts"
 import { validateDatasetCommand } from "./commands/dataset/validate.ts"
 import { copyFileCommand } from "./commands/file/copy.ts"
@@ -32,6 +33,7 @@ const datasetCommand = new commander.Command()
   .addCommand(copyDatasetCommand.name("copy"))
   .addCommand(validateDatasetCommand.name("validate"))
   .addCommand(listDatasetCommand.name("list"))
+  .addCommand(queryDatasetCommand.name("query"))
   .addCommand(scriptDatasetCommand.name("script"))
 
 const tableCommand = new commander.Command()

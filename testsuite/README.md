@@ -80,6 +80,7 @@ A test has a `description`, its `data`, and exactly one outcome:
 | `data-validate`       | validate the data against the group's `dataSchema`                    | `valid`, `errors`                         |
 | `dataset-infer`       | write the dataset, infer it, make paths relative again                | `expected`: the dataset                   |
 | `dataset-list`        | write the dataset, list its resource names (inferred when absent)     | `expected`: the names                     |
+| `dataset-query`       | write the dataset and run the group's `query`, each resource by name  | `expected`: `{columns, rows}`             |
 | `dataset-validate`    | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
 | `file-describe`       | describe the file written from `data`                                 | `expected`: `{bytes, textual, integrity}` |
 | `file-validate`       | validate a resource with the group's `integrity` / `textual`          | `valid`, `errors`                         |

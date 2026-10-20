@@ -39,7 +39,7 @@
         "integrity": { "type": "object" },
         "textual": { "type": "boolean" },
         "query": {
-          "description": "SQL run against the loaded table as `self`, for table-query",
+          "description": "SQL run against the loaded table as `self` for table-query, or against each resource by name for dataset-query",
           "type": "string"
         },
         "dataset": {

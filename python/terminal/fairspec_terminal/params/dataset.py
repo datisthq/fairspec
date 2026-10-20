@@ -15,3 +15,9 @@ ToFolder = Annotated[str, typer.Option("--to-folder", help="a local output folde
 ToArchive = Annotated[
     str, typer.Option("--to-archive", help="a local output zip file path")
 ]
+DatasetQuery = Annotated[
+    str,
+    typer.Argument(
+        help="a SQL query to execute against a dataset (refer to each table by its resource name)"
+    ),
+]

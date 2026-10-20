@@ -1,0 +1,33 @@
+[
+  {
+    "description": "a resource without a name",
+    "comment": "The relation takes the name dataset-list infers, slugged from the file stem",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "data": "user-list.csv" }] },
+    "query": "SELECT COUNT(*) AS n FROM user_list",
+    "tests": [
+      {
+        "description": "is queried under its inferred name",
+        "data": { "user-list.csv": "id\n1\n2\n3\n" },
+        "expected": { "columns": ["n"], "rows": [[3]] }
+      }
+    ]
+  },
+  {
+    "description": "two resources with the same name",
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "a.csv" },
+        { "name": "users", "data": "b.csv" }
+      ]
+    },
+    "query": "SELECT * FROM users",
+    "tests": [
+      {
+        "description": "is ambiguous",
+        "data": { "a.csv": "id\n1\n", "b.csv": "id\n2\n" },
+        "throws": true
+      }
+    ]
+  }
+]

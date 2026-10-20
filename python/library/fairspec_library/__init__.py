@@ -11,6 +11,7 @@ from .actions.dataset.foreign_key import (
 )
 from .actions.dataset.infer import infer_dataset as infer_dataset
 from .actions.dataset.load import load_dataset as load_dataset
+from .actions.dataset.query import query_dataset as query_dataset
 from .actions.dataset.render import render_dataset_as as render_dataset_as
 from .actions.dataset.save import save_dataset as save_dataset
 from .actions.dataset.validate import validate_dataset as validate_dataset
