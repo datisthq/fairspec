@@ -37,8 +37,8 @@ def validate_table_tool(
     if not table_schema and not table_options.get("noInfer"):
         table_schema = infer_table_schema(resource, **table_options)
 
-    # The library splits maxErrors across columns, so ask every column for one error
-    # more than the limit, or a single bad column would never show truncation
+    # The library splits maxErrors across row key checks by the column count, so ask
+    # for one error more per column, or a single bad key would never show truncation
     column_count = max(len(table_schema.properties or {}) if table_schema else 0, 1)
     table_options["maxErrors"] = (max_errors + 1) * column_count
 

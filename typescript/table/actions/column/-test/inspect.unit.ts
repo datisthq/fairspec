@@ -1,6 +1,6 @@
 import type { TableSchema } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { describe, expect, it } from "vite-plus/test"
+import { describe, expect, it, vi } from "vite-plus/test"
 import { inspectTable } from "../../../actions/table/inspect.ts"
 
 describe("inspectColumn", () => {
@@ -450,6 +450,67 @@ describe("inspectColumn", () => {
       const errors = await inspectTable(table, { tableSchema })
 
       expect(errors).toHaveLength(0)
+    })
+  })
+
+  describe("single scan", () => {
+    it("should check every column in one query", async () => {
+      const table = pl.DataFrame({ a: ["1", "x"], b: ["x", "2"], c: ["3", "4"] }).lazy()
+      const withRowIndex = vi.spyOn(table, "withRowIndex")
+
+      const tableSchema: TableSchema = {
+        properties: {
+          a: { type: "integer" },
+          b: { type: "integer" },
+          c: { type: "integer" },
+        },
+      }
+
+      const errors = await inspectTable(table, { tableSchema })
+
+      expect(errors).toHaveLength(2)
+      expect(withRowIndex).toHaveBeenCalledTimes(1)
+    })
+
+    it("should keep errors column by column then by row", async () => {
+      const table = pl
+        .DataFrame({
+          a: ["x", "1", "x"],
+          b: ["P1D", "bad", "bad"],
+          c: ["x", "x", "3"],
+          d: [1, 2, 3],
+        })
+        .lazy()
+
+      const tableSchema: TableSchema = {
+        allRequired: true,
+        properties: {
+          a: { type: "integer" },
+          b: { type: "string", format: "duration" },
+          c: { type: "integer" },
+          d: { type: "boolean" },
+          e: { type: "string" },
+        },
+      }
+
+      const errors = await inspectTable(table, { tableSchema })
+
+      expect(
+        errors.map(error => [
+          error.type,
+          "columnName" in error ? error.columnName : undefined,
+          "rowNumber" in error ? error.rowNumber : undefined,
+        ]),
+      ).toEqual([
+        ["column/type", "d", undefined],
+        ["column/missing", "e", undefined],
+        ["cell/type", "a", 1],
+        ["cell/type", "a", 3],
+        ["cell/type", "b", 2],
+        ["cell/type", "b", 3],
+        ["cell/type", "c", 1],
+        ["cell/type", "c", 2],
+      ])
     })
   })
 })

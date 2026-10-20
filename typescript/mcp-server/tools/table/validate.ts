@@ -35,8 +35,8 @@ export const validateTableTool = createTool({
       (await resolveTableSchema(resource.tableSchema)) ??
       (options?.noInfer ? undefined : await inferTableSchema(resource, options))
 
-    // The library splits maxErrors across columns, so ask every column for one error
-    // more than the limit, or a single bad column would never show truncation
+    // The library splits maxErrors across row key checks by the column count, so ask
+    // for one error more per column, or a single bad key would never show truncation
     const columnCount = Math.max(Object.keys(tableSchema?.properties ?? {}).length, 1)
     const report = await validateTable(
       { ...resource, tableSchema },

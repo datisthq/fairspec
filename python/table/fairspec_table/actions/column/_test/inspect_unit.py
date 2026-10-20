@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import polars as pl
 from fairspec_metadata import BooleanColumnProperty
 from fairspec_metadata import DateColumnProperty
 from fairspec_metadata import DateTimeColumnProperty
+from fairspec_metadata import DurationColumnProperty
 from fairspec_metadata import IntegerColumnProperty
 from fairspec_metadata import NumberColumnProperty
 from fairspec_metadata import StringColumnProperty
@@ -224,3 +227,55 @@ class TestInspectCellTypes:
         errors = inspect_table(table, table_schema=table_schema)
 
         assert len(errors) == 0
+
+
+class TestInspectColumnsScan:
+    def test_should_check_every_column_in_one_collect(self):
+        table = pl.DataFrame({"a": ["1", "x"], "b": ["x", "2"], "c": ["3", "4"]}).lazy()
+        table_schema = TableSchema(
+            properties={name: IntegerColumnProperty() for name in ["a", "b", "c"]}
+        )
+
+        with patch.object(
+            pl.LazyFrame, "collect", autospec=True, side_effect=pl.LazyFrame.collect
+        ) as collect:
+            errors = inspect_table(table, table_schema=table_schema)
+
+        assert len(errors) == 2
+        assert collect.call_count == 2
+
+    def test_should_keep_errors_column_by_column_then_by_row(self):
+        table = pl.DataFrame(
+            {
+                "a": ["x", "1", "x"],
+                "b": ["P1D", "bad", "bad"],
+                "c": ["x", "x", "3"],
+                "d": [1, 2, 3],
+            }
+        ).lazy()
+        table_schema = TableSchema(
+            allRequired=True,
+            properties={
+                "a": IntegerColumnProperty(),
+                "b": DurationColumnProperty(),
+                "c": IntegerColumnProperty(),
+                "d": BooleanColumnProperty(),
+                "e": StringColumnProperty(),
+            },
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        dumps = [error.model_dump() for error in errors]
+        assert [
+            (dump["type"], dump["columnName"], dump.get("rowNumber")) for dump in dumps
+        ] == [
+            ("column/type", "d", None),
+            ("column/missing", "e", None),
+            ("cell/type", "a", 1),
+            ("cell/type", "a", 3),
+            ("cell/type", "b", 2),
+            ("cell/type", "b", 3),
+            ("cell/type", "c", 1),
+            ("cell/type", "c", 2),
+        ]

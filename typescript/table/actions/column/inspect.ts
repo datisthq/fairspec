@@ -24,22 +24,43 @@ import { inspectTopojsonColumn } from "./types/topojson.ts"
 import { inspectWkbColumn } from "./types/wkb.ts"
 import { inspectWktColumn } from "./types/wkt.ts"
 
-export async function inspectColumn(
-  mapping: ColumnMapping,
+/**
+ * Check every column against its schema, keyed by column name in mapping order
+ */
+export async function inspectColumns(
+  mappings: ColumnMapping[],
   table: Table,
   options: {
     maxErrors: number
   },
 ) {
   const { maxErrors } = options
-  const errors: TableError[] = []
+  const errors = new Map<string, TableError[]>()
+  const polarsMappings: ColumnMapping[] = []
 
-  const typeErrors = inspectType(mapping)
-  errors.push(...typeErrors)
+  for (const mapping of mappings) {
+    const typeErrors: TableError[] = inspectType(mapping)
+    errors.set(mapping.target.name, typeErrors)
+    if (!typeErrors.length && !ROW_INSPECTED_TYPES.has(mapping.target.type)) {
+      polarsMappings.push(mapping)
+    }
+  }
 
-  if (!typeErrors.length) {
-    const dataErorrs = await inspectCells(mapping, table, { maxErrors })
-    errors.push(...dataErorrs)
+  if (polarsMappings.length) {
+    const cellErrors = await inspectCellsInPolars(polarsMappings, table, { maxErrors })
+    for (const [name, columnErrors] of cellErrors) {
+      errors.set(name, columnErrors)
+    }
+  }
+
+  let errorCount = 0
+  for (const mapping of mappings) {
+    const columnErrors = errors.get(mapping.target.name) ?? []
+    const isChecked = !columnErrors.length && errorCount < maxErrors
+    if (isChecked && ROW_INSPECTED_TYPES.has(mapping.target.type)) {
+      columnErrors.push(...(await inspectCellsByRow(mapping, table)))
+    }
+    errorCount += columnErrors.length
   }
 
   return errors
@@ -89,17 +110,18 @@ function inspectType(mapping: ColumnMapping) {
   return errors
 }
 
-async function inspectCells(
-  mapping: ColumnMapping,
-  table: Table,
-  options: {
-    maxErrors: number
-  },
-) {
-  // TODO: Improve the implementation
-  // Make unblocking / handle large data / process in parallel / move processing to Rust?
+// These types are parsed row by row outside polars, so each keeps its own scan
+const ROW_INSPECTED_TYPES = new Set<Column["type"]>([
+  "duration",
+  "wkb",
+  "wkt",
+  "array",
+  "object",
+  "geojson",
+  "topojson",
+])
 
-  // Types that require non-polars validation
+async function inspectCellsByRow(mapping: ColumnMapping, table: Table) {
   switch (mapping.target.type) {
     case "duration":
       return await inspectDurationColumn(mapping.target, table, mapping)
@@ -116,84 +138,138 @@ async function inspectCells(
     case "topojson":
       return await inspectTopojsonColumn(mapping.target, table, mapping)
     default:
-      return await inspectCellsInPolars(mapping, table, options)
+      return []
   }
 }
 
+const CHECK_FUNCTIONS = [
+  checkCellType,
+  checkCellMissing,
+  checkCellEnum,
+  checkCellConst,
+  createCheckCellMinimum(),
+  createCheckCellMaximum(),
+  createCheckCellMinimum({ isExclusive: true }),
+  createCheckCellMaximum({ isExclusive: true }),
+  checkCellMultipleOf,
+  checkCellMinLength,
+  checkCellMaxLength,
+  checkCellMinItems,
+  checkCellMaxItems,
+  checkCellPattern,
+]
+
 async function inspectCellsInPolars(
-  mapping: ColumnMapping,
+  mappings: ColumnMapping[],
   table: Table,
   options: {
     maxErrors: number
   },
 ) {
   const { maxErrors } = options
-  const errors: CellError[] = []
+  const errors = new Map<string, TableError[]>(
+    mappings.map(mapping => [mapping.target.name, []]),
+  )
 
-  // The error column carries a tag, not the error itself: a literal is broadcast to
+  // The error columns carry a tag, not the error itself: a literal is broadcast to
   // every row, so a JSON template would materialize a full-length string column per
   // check. Templates are resolved back in JS once the frame is filtered down.
-  const errorTemplates: CellError[] = []
+  const checked: {
+    index: number
+    mapping: ColumnMapping
+    templates: CellError[]
+    errorExpr: pl.Expr
+  }[] = []
 
-  let columnCheckTable = table
+  for (const [index, mapping] of mappings.entries()) {
+    const cellMapping = {
+      source: pl.col(getSourceName(index)),
+      target: pl.col(getTargetName(index)),
+    }
+
+    const checks = CHECK_FUNCTIONS.map(checkCell =>
+      checkCell(mapping.target, cellMapping),
+    ).filter(check => !!check)
+    if (!checks.length) continue
+
+    // The first failing check wins, so the chain is built from the last one back
+    let errorExpr = pl.lit(null).cast(pl.UInt8)
+    for (const [errorTag, check] of [...checks.entries()].reverse()) {
+      errorExpr = pl
+        .when(check.isErrorExpr)
+        .then(pl.lit(errorTag).cast(pl.UInt8))
+        .otherwise(errorExpr)
+    }
+
+    const templates = checks.map(check => check.errorTemplate)
+    checked.push({ index, mapping, templates, errorExpr })
+  }
+
+  if (!checked.length) return errors
+
+  const checkTable = table
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
     .select(
       pl.col(NUMBER_COLUMN_NAME),
-      normalizeColumn(mapping).alias("target"),
-      normalizeColumn(mapping, { keepType: true }).alias("source"),
-      pl.col(mapping.source.name).alias("cell"),
-      pl.lit(null).cast(pl.UInt8).alias("error"),
+      ...checked.flatMap(({ index, mapping }) => [
+        normalizeColumn(mapping).alias(getTargetName(index)),
+        normalizeColumn(mapping, { keepType: true }).alias(getSourceName(index)),
+        pl.col(mapping.source.name).alias(getCellName(index)),
+      ]),
+    )
+    .withColumns(
+      ...checked.map(({ index, errorExpr }) => errorExpr.alias(getErrorName(index))),
     )
 
-  for (const checkCell of [
-    checkCellType,
-    checkCellMissing,
-    checkCellEnum,
-    checkCellConst,
-    createCheckCellMinimum(),
-    createCheckCellMaximum(),
-    createCheckCellMinimum({ isExclusive: true }),
-    createCheckCellMaximum({ isExclusive: true }),
-    checkCellMultipleOf,
-    checkCellMinLength,
-    checkCellMaxLength,
-    checkCellMinItems,
-    checkCellMaxItems,
-    checkCellPattern,
-  ]) {
-    const cellMapping = { source: pl.col("source"), target: pl.col("target") }
-
-    const check = checkCell(mapping.target, cellMapping)
-    if (!check) continue
-
-    const errorTag = errorTemplates.length
-    errorTemplates.push(check.errorTemplate)
-
-    columnCheckTable = columnCheckTable.withColumn(
-      pl
-        .when(pl.col("error").isNotNull())
-        .then(pl.col("error"))
-        .when(check.isErrorExpr)
-        .then(pl.lit(errorTag).cast(pl.UInt8))
-        .otherwise(pl.lit(null).cast(pl.UInt8))
-        .alias("error"),
+  // A lazy frame caches nothing, so every column shares this one collect: a collect
+  // per column would parse the whole source once for each
+  const checkFrame = await checkTable
+    .filter(
+      pl.anyHorizontal(
+        checked.map(({ index }) => pl.col(getErrorName(index)).isNotNull()),
+      ),
     )
-  }
-
-  const columnCheckFrame = await columnCheckTable
-    .filter(pl.col("error").isNotNull())
-    .drop(["target", "source"])
+    .select(
+      pl.col(NUMBER_COLUMN_NAME),
+      ...checked.flatMap(({ index }) => [
+        pl.col(getCellName(index)),
+        pl.col(getErrorName(index)),
+      ]),
+    )
     .head(maxErrors)
     .collect()
 
-  for (const row of columnCheckFrame.toRecords() as any[]) {
-    const errorTemplate = errorTemplates[row.error] as CellError
-    errors.push({
-      ...errorTemplate,
-      rowNumber: row[NUMBER_COLUMN_NAME],
-      cell: String(row.cell ?? ""),
-    })
+  const rows = checkFrame.toRecords() as any[]
+  for (const { index, mapping, templates } of checked) {
+    const columnErrors = errors.get(mapping.target.name) ?? []
+
+    for (const row of rows) {
+      const errorTag = row[getErrorName(index)]
+      if (errorTag === null || errorTag === undefined) continue
+
+      columnErrors.push({
+        ...(templates[errorTag] as CellError),
+        rowNumber: row[NUMBER_COLUMN_NAME],
+        cell: String(row[getCellName(index)] ?? ""),
+      })
+    }
   }
 
   return errors
+}
+
+function getTargetName(index: number) {
+  return `fairspec:target:${index}`
+}
+
+function getSourceName(index: number) {
+  return `fairspec:source:${index}`
+}
+
+function getCellName(index: number) {
+  return `fairspec:cell:${index}`
+}
+
+function getErrorName(index: number) {
+  return `fairspec:error:${index}`
 }

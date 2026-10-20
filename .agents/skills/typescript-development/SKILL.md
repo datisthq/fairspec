@@ -80,6 +80,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - Add brief docstrings for exported functions and models (explain what it does)
 - Nothing the MCP server loads may write to stdout — it is the stdio transport. `typescript/mcp-server/-test/main.unit.ts` spawns the real server and fails on any non-JSON line
 - **Polars runs on the streaming engine through `POLARS_FORCE_STREAMING`**, set once in `typescript/table/settings.ts` (listed in `sideEffects`). Async `collect()` takes no engine and its `streaming` option is a dead flag, so call plain `collect()` — never `collect({ streaming: true })`, and never `collectSync` to reach the engine, which blocks the MCP server and the desktop app. Not every expression streams: `Expr.replace` holds the whole column (use an anchored `str.replace`), so one such check makes a validation's memory grow with the file. Judge a memory change by the smallest cgroup cap it survives (`systemd-run --user --scope -p MemoryMax=…`), not peak RSS, which counts the mmap'd source
+- **Table validation collects once for every column.** A LazyFrame caches nothing, so each
+  `collect()` re-parses the source: `inspectColumns` (`typescript/table/actions/column/inspect.ts`)
+  puts each column's target, source, cell and UInt8 tag columns into one frame, filters rows
+  with any tag, takes one global `head(maxErrors)` and expands errors column by column, so the
+  spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
+  wkt, array, object, geojson, topojson) and the row key checks keep their own scan
 - **A table plugin's `loadTable` returns `undefined` when the data is not a table** — a JSON file whose rows (the document, or the value at `jsonPointer`) are not an array, such as a top-level object. Library `inferTableSchema` and `validateTable` read that as "no table", so the resource keeps only its `dataSchema`; never throw for it. `jsonPointer` is always an RFC 6901 pointer (`/items`, `""` for the root) — go through `parseJsonPointer`/`formatJsonPointer` in `typescript/table/plugins/json/helpers/pointer.ts`, never index by the raw string
 - **A terminal command that declares the Table Schema inference flags must pass them on** — commander
   collects them into `options`, so hand that to `loadTable`/`inferTableSchemaFromTable`
@@ -110,7 +116,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 
 - Build a tool with `createTool` (`mcp-server/helpers/tool.ts`): `execute` takes typed input and is what tests call; `handle` is what `createServer()` registers. A throw reaches the client as `isError` with its message — never return an error object, which the output schema turns into an unreadable ZodError
 - **One call must not flood the client's context.** A tool returning a list takes a `limit`/`maxErrors` input (default 100, max 1000), fetches one item more, and cuts it with `limitItems`/`limitReport` (`helpers/limit.ts`), which also trims to the 50k-character budget and sets `truncated`; any other response over the budget fails. A tool returning file content caps it in the input schema instead: `previewFileTool` takes `maxLines` (max 200) and `maxBytes` (max 20,000), while the CLI stays uncapped
-- `validateTable` splits `maxErrors` across columns, so `validateTableTool` asks for `(maxErrors + 1) × columns`; otherwise one bad column never shows truncation
+- `validateTable` caps cell errors with one global head but splits `maxErrors` across the row key checks by column count, so `validateTableTool` asks for `(maxErrors + 1) × columns`; otherwise one bad key never shows truncation
 - Nothing may write to stdout — it is the stdio transport; `-test/server.unit.ts` asserts a call prints nothing
 - The Python server mirrors every tool, input name and limit; change both together
 

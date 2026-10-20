@@ -109,6 +109,13 @@ relative import reaches beyond the top-level package.
   the response model can stay strict. Test mocks return realistic bodies from `fixtures/responses/`
 - Terminal output of raw file content goes through `Session.render_raw_result`: `render_text_result`
   prints through Rich, whose markup swallows `[...]` in the content
+- **Table validation collects once for every column.** A LazyFrame caches nothing, so each
+  `collect` re-parses the source: `inspect_columns` (`python/table/fairspec_table/actions/column/inspect.py`)
+  puts each column's target, source, cell and UInt8 tag columns into one frame, filters rows
+  with any tag, takes one global `head(max_errors)` and expands errors column by column, so the
+  spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
+  wkt, array, object, geojson, topojson) and the row key checks keep their own scan. Collect
+  with `engine=QUERY_ENGINE`
 - Where Python must produce what a TypeScript dependency produces (resource-name slugs from
   `@sindresorhus/slugify`, data schema inference from `json-schema-it`), port that behaviour
   instead of reaching for a near-equivalent PyPI package; the shared testsuite compares both

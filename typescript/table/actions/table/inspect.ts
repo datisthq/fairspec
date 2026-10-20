@@ -1,14 +1,14 @@
-import type { Column, RowError, TableError, TableSchema } from "@fairspec/metadata"
+import type { RowError, TableError, TableSchema } from "@fairspec/metadata"
 import { getColumns } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import pAll from "p-all"
-import { inspectColumn } from "../../actions/column/inspect.ts"
+import { inspectColumns } from "../../actions/column/inspect.ts"
 import { getPolarsSchema } from "../../helpers/schema.ts"
+import type { ColumnMapping } from "../../models/column.ts"
 import type { SchemaMapping } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
 import {
   ERROR_COLUMN_NAME,
-  INSPECT_COLUMN_CONCURRENCY,
   INSPECT_ROW_CONCURRENCY,
   NUMBER_COLUMN_NAME,
 } from "../../settings.ts"
@@ -31,7 +31,7 @@ export async function inspectTable(
     const polarsSchema = getPolarsSchema(sample.schema)
     const mapping = { source: polarsSchema, target: tableSchema }
 
-    const columnErrors = await inspectColumns(mapping, table, { maxErrors })
+    const columnErrors = await inspectSchemaColumns(mapping, table, { maxErrors })
     errors.push(...columnErrors)
 
     const rowErrors = await inspectRows(mapping, table, { maxErrors })
@@ -41,7 +41,7 @@ export async function inspectTable(
   return errors.slice(0, maxErrors)
 }
 
-async function inspectColumns(
+async function inspectSchemaColumns(
   mapping: SchemaMapping,
   table: Table,
   options: {
@@ -51,10 +51,10 @@ async function inspectColumns(
   const { maxErrors } = options
   const errors: TableError[] = []
   const columns = getColumns(mapping.target)
-  const abortController = new AbortController()
-  const maxColumnErrors = Math.ceil(maxErrors / columns.length)
 
-  const collectColumnErrors = async (column: Column) => {
+  const missingErrors = new Map<string, TableError[]>()
+  const columnMappings: ColumnMapping[] = []
+  for (const column of columns) {
     const polarsColumn = mapping.source.columns.find(
       polarsColumn => polarsColumn.name === column.name,
     )
@@ -63,39 +63,26 @@ async function inspectColumns(
       const isRequired =
         mapping.target.allRequired || mapping.target.required?.includes(column.name)
 
-      if (isRequired) {
-        errors.push({
-          type: "column/missing",
-          columnName: column.name,
-        })
-      }
-
-      return
+      missingErrors.set(
+        column.name,
+        isRequired ? [{ type: "column/missing", columnName: column.name }] : [],
+      )
+      continue
     }
 
     const mergedColumn = mergeMissingValues(column, mapping.target)
-    const columnMapping = { source: polarsColumn, target: mergedColumn }
-    const fieldErrors = await inspectColumn(columnMapping, table, {
-      maxErrors: maxColumnErrors,
-    })
-
-    errors.push(...fieldErrors)
-    if (errors.length > maxErrors) {
-      abortController.abort()
-    }
+    columnMappings.push({ source: polarsColumn, target: mergedColumn })
   }
 
-  try {
-    await pAll(
-      columns.map(column => () => collectColumnErrors(column)),
-      { concurrency: INSPECT_COLUMN_CONCURRENCY },
-    )
-  } catch (error) {
-    const isAborted = error instanceof Error && error.name === "AbortError"
-    if (!isAborted) throw error
+  const cellErrors = await inspectColumns(columnMappings, table, { maxErrors })
+  for (const column of columns) {
+    errors.push(...(missingErrors.get(column.name) ?? cellErrors.get(column.name) ?? []))
   }
 
-  return errors
+  return errors.sort(
+    (a, b) =>
+      Number(!a.type.startsWith("column/")) - Number(!b.type.startsWith("column/")),
+  )
 }
 
 async function inspectRows(

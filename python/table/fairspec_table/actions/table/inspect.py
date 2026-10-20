@@ -6,18 +6,16 @@ import math
 import polars as pl
 from fairspec_dataset.helpers.concurrency import iter_concurrent_chunks
 from fairspec_metadata import TableError, get_columns
-from fairspec_metadata import Column
 from fairspec_metadata import ColumnMissingError
 from fairspec_metadata import RowError
 from fairspec_metadata import TableSchema
 from pydantic import TypeAdapter
 
-from fairspec_table.actions.column.inspect import inspect_column
+from fairspec_table.actions.column.inspect import inspect_columns
 from fairspec_table.helpers.schema import get_polars_schema
 from fairspec_table.models import ColumnMapping, SchemaMapping, Table
 from fairspec_table.settings import (
     ERROR_COLUMN_NAME,
-    INSPECT_COLUMN_CONCURRENCY,
     NUMBER_COLUMN_NAME,
     QUERY_ENGINE,
 )
@@ -43,9 +41,7 @@ def inspect_table(
         polars_schema = get_polars_schema(dict(sample.schema))
         mapping = SchemaMapping(source=polars_schema, target=table_schema)
 
-        column_errors = _inspect_columns(
-            mapping, table, max_errors=max_errors, concurrency=concurrency
-        )
+        column_errors = _inspect_columns(mapping, table, max_errors=max_errors)
         errors.extend(column_errors)
 
         row_errors = _inspect_rows(
@@ -61,13 +57,13 @@ def _inspect_columns(
     table: Table,
     *,
     max_errors: int,
-    concurrency: int | None = None,
 ) -> list[TableError]:
     errors: list[TableError] = []
     columns = get_columns(mapping.target.model_dump())
-    max_column_errors = math.ceil(max_errors / len(columns)) if columns else max_errors
 
-    def inspect(column: Column) -> list[TableError]:
+    missing_errors: dict[str, list[TableError]] = {}
+    column_mappings: list[ColumnMapping] = []
+    for column in columns:
         polars_column = next(
             (pc for pc in mapping.source.columns if pc.name == column.name),
             None,
@@ -77,22 +73,19 @@ def _inspect_columns(
             is_required = mapping.target.allRequired or (
                 mapping.target.required and column.name in mapping.target.required
             )
-            if is_required:
-                return [ColumnMissingError(type="column/missing", columnName=column.name)]
-            return []
+            missing_errors[column.name] = (
+                [ColumnMissingError(type="column/missing", columnName=column.name)]
+                if is_required
+                else []
+            )
+            continue
 
         merged_column = merge_missing_values(column, mapping.target)
-        column_mapping = ColumnMapping(source=polars_column, target=merged_column)
-        return inspect_column(column_mapping, table, max_errors=max_column_errors)
+        column_mappings.append(ColumnMapping(source=polars_column, target=merged_column))
 
-    for chunk in iter_concurrent_chunks(
-        inspect, columns, concurrency=concurrency or INSPECT_COLUMN_CONCURRENCY
-    ):
-        for column_errors in chunk:
-            errors.extend(column_errors)
-
-        if len(errors) >= max_errors:
-            break
+    cell_errors = inspect_columns(column_mappings, table, max_errors=max_errors)
+    for column in columns:
+        errors.extend(missing_errors.get(column.name) or cell_errors.get(column.name, []))
 
     return sorted(errors, key=lambda error: not error.type.startswith("column/"))
 

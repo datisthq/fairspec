@@ -9,11 +9,6 @@ ERROR_COLUMN_NAME = "fairspec:error"
 # 500MB and 1GB validations all fit in the same 384MB.
 QUERY_ENGINE = "streaming"
 
-# Each column check scans the whole source, so peak memory grows with the number in
-# flight while the speed does not. Validating a 41-column 514MB file: 6.8s in 384MB
-# serially, 3.5s in 1GB at four, 3.4s in 1.5GB at one per core.
-INSPECT_COLUMN_CONCURRENCY = 4
-
 BASE64_REGEX = (
     r"^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$"
 )

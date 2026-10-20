@@ -34,20 +34,34 @@ from .types.wkb import inspect_wkb_column
 from .types.wkt import inspect_wkt_column
 
 
-def inspect_column(
-    mapping: ColumnMapping,
+def inspect_columns(
+    mappings: list[ColumnMapping],
     table: Table,
     *,
     max_errors: int,
-) -> list[TableError]:
-    errors: list[TableError] = []
+) -> dict[str, list[TableError]]:
+    """Check every column against its schema, keyed by column name in mapping order."""
+    errors: dict[str, list[TableError]] = {}
+    polars_mappings: list[ColumnMapping] = []
 
-    type_errors = _inspect_type(mapping)
-    errors.extend(type_errors)
+    for mapping in mappings:
+        errors[mapping.target.name] = _inspect_type(mapping)
+        is_checked = not errors[mapping.target.name]
+        if is_checked and mapping.target.type not in ROW_INSPECTED_TYPES:
+            polars_mappings.append(mapping)
 
-    if not type_errors:
-        data_errors = _inspect_cells(mapping, table, max_errors=max_errors)
-        errors.extend(data_errors)
+    if polars_mappings:
+        errors.update(
+            _inspect_cells_in_polars(polars_mappings, table, max_errors=max_errors)
+        )
+
+    error_count = 0
+    for mapping in mappings:
+        column_errors = errors[mapping.target.name]
+        is_checked = not column_errors and error_count < max_errors
+        if is_checked and mapping.target.type in ROW_INSPECTED_TYPES:
+            column_errors.extend(_inspect_cells_by_row(mapping, table))
+        error_count += len(column_errors)
 
     return errors
 
@@ -100,12 +114,13 @@ def _inspect_type(mapping: ColumnMapping) -> list[TableError]:
     return errors
 
 
-def _inspect_cells(
-    mapping: ColumnMapping,
-    table: Table,
-    *,
-    max_errors: int,
-) -> list[TableError]:
+# These types are parsed row by row outside polars, so each keeps its own scan
+ROW_INSPECTED_TYPES = frozenset(
+    {"duration", "wkb", "wkt", "array", "object", "geojson", "topojson"}
+)
+
+
+def _inspect_cells_by_row(mapping: ColumnMapping, table: Table) -> list[TableError]:
     target = mapping.target
     match target.type:
         case "duration":
@@ -123,78 +138,140 @@ def _inspect_cells(
         case "topojson":
             return inspect_topojson_column(target, table, mapping)  # type: ignore[arg-type]
         case _:
-            return _inspect_cells_in_polars(mapping, table, max_errors=max_errors)
+            return []
+
+
+CHECK_FUNCTIONS = [
+    check_cell_type,
+    check_cell_missing,
+    check_cell_enum,
+    check_cell_const,
+    create_check_cell_minimum(),
+    create_check_cell_maximum(),
+    create_check_cell_minimum(is_exclusive=True),
+    create_check_cell_maximum(is_exclusive=True),
+    check_cell_multiple_of,
+    check_cell_min_length,
+    check_cell_max_length,
+    check_cell_min_items,
+    check_cell_max_items,
+    check_cell_pattern,
+]
 
 
 def _inspect_cells_in_polars(
-    mapping: ColumnMapping,
+    mappings: list[ColumnMapping],
     table: Table,
     *,
     max_errors: int,
-) -> list[TableError]:
-    errors: list[TableError] = []
+) -> dict[str, list[TableError]]:
+    errors: dict[str, list[TableError]] = {m.target.name: [] for m in mappings}
 
-    # The error column carries a tag, not the error itself: a literal is broadcast to
+    # The error columns carry a tag, not the error itself: a literal is broadcast to
     # every row, so a JSON template would materialize a full-length string column per
     # check. Templates are resolved back in Python once the frame is filtered down.
-    error_templates: list[CellError] = []
-
-    column_check_table = table.with_row_index(NUMBER_COLUMN_NAME, 1).select(
-        pl.col(NUMBER_COLUMN_NAME),
-        normalize_column(mapping).alias("target"),
-        normalize_column(mapping, keep_type=True).alias("source"),
-        pl.col(mapping.source.name).alias("cell"),
-        pl.lit(None, dtype=pl.UInt8).alias("error"),
-    )
-
-    check_functions = [
-        check_cell_type,
-        check_cell_missing,
-        check_cell_enum,
-        check_cell_const,
-        create_check_cell_minimum(),
-        create_check_cell_maximum(),
-        create_check_cell_minimum(is_exclusive=True),
-        create_check_cell_maximum(is_exclusive=True),
-        check_cell_multiple_of,
-        check_cell_min_length,
-        check_cell_max_length,
-        check_cell_min_items,
-        check_cell_max_items,
-        check_cell_pattern,
-    ]
-
-    for check_cell in check_functions:
-        cell_mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
-
-        check = check_cell(mapping.target, cell_mapping)
-        if not check:
-            continue
-
-        error_tag = len(error_templates)
-        error_templates.append(check.error_template)
-
-        column_check_table = column_check_table.with_columns(
-            pl.when(pl.col("error").is_not_null())
-            .then(pl.col("error"))
-            .when(check.is_error_expr)
-            .then(pl.lit(error_tag, dtype=pl.UInt8))
-            .otherwise(pl.lit(None, dtype=pl.UInt8))
-            .alias("error"),
+    checked: list[tuple[int, ColumnMapping, list[CellError], pl.Expr]] = []
+    for index, mapping in enumerate(mappings):
+        cell_mapping = CellMapping(
+            source=pl.col(_get_source_name(index)),
+            target=pl.col(_get_target_name(index)),
         )
 
-    column_check_frame: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-        column_check_table.filter(pl.col("error").is_not_null())
-        .drop("target", "source")
+        checks = [
+            check
+            for check_cell in CHECK_FUNCTIONS
+            if (check := check_cell(mapping.target, cell_mapping))
+        ]
+        if not checks:
+            continue
+
+        # The first failing check wins, so the chain is built from the last one back
+        error_expr = pl.lit(None, dtype=pl.UInt8)
+        for error_tag in reversed(range(len(checks))):
+            error_expr = (
+                pl.when(checks[error_tag].is_error_expr)
+                .then(pl.lit(error_tag, dtype=pl.UInt8))
+                .otherwise(error_expr)
+            )
+
+        templates = [check.error_template for check in checks]
+        checked.append((index, mapping, templates, error_expr))
+
+    if not checked:
+        return errors
+
+    check_table = (
+        table.with_row_index(NUMBER_COLUMN_NAME, 1)
+        .select(
+            pl.col(NUMBER_COLUMN_NAME),
+            *(
+                expr
+                for index, mapping, _, _ in checked
+                for expr in (
+                    normalize_column(mapping).alias(_get_target_name(index)),
+                    normalize_column(mapping, keep_type=True).alias(
+                        _get_source_name(index)
+                    ),
+                    pl.col(mapping.source.name).alias(_get_cell_name(index)),
+                )
+            ),
+        )
+        .with_columns(
+            error_expr.alias(_get_error_name(index))
+            for index, _, _, error_expr in checked
+        )
+    )
+
+    # A lazy frame caches nothing, so every column shares this one collect: a collect
+    # per column would parse the whole source once for each
+    check_frame: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        check_table.filter(
+            pl.any_horizontal(
+                pl.col(_get_error_name(index)).is_not_null() for index, _, _, _ in checked
+            )
+        )
+        .select(
+            pl.col(NUMBER_COLUMN_NAME),
+            *(
+                pl.col(_get_cell_name(index), _get_error_name(index))
+                for index, _, _, _ in checked
+            ),
+        )
         .head(max_errors)
         .collect(engine=QUERY_ENGINE)
     )
 
     _cell_error_adapter = TypeAdapter(CellError)
-    for row in column_check_frame.to_dicts():
-        error_dict = error_templates[row["error"]].model_dump(by_alias=True)
-        error_dict["rowNumber"] = row[NUMBER_COLUMN_NAME]
-        error_dict["cell"] = str(row["cell"] if row["cell"] is not None else "")
-        errors.append(_cell_error_adapter.validate_python(error_dict))
+    row_numbers = check_frame.get_column(NUMBER_COLUMN_NAME).to_list()
+    for index, mapping, templates, _ in checked:
+        cells = check_frame.get_column(_get_cell_name(index)).to_list()
+        error_tags = check_frame.get_column(_get_error_name(index)).to_list()
+
+        for row_number, cell, error_tag in zip(row_numbers, cells, error_tags):
+            if error_tag is None:
+                continue
+
+            error_dict = templates[error_tag].model_dump(by_alias=True)
+            error_dict["rowNumber"] = row_number
+            error_dict["cell"] = str(cell if cell is not None else "")
+            errors[mapping.target.name].append(
+                _cell_error_adapter.validate_python(error_dict)
+            )
 
     return errors
+
+
+def _get_target_name(index: int) -> str:
+    return f"fairspec:target:{index}"
+
+
+def _get_source_name(index: int) -> str:
+    return f"fairspec:source:{index}"
+
+
+def _get_cell_name(index: int) -> str:
+    return f"fairspec:cell:{index}"
+
+
+def _get_error_name(index: int) -> str:
+    return f"fairspec:error:{index}"
