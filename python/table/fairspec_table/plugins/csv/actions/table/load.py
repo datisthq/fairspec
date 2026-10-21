@@ -48,6 +48,9 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     is_multi_header = len(header_rows) > 1 and not column_names
     if is_multi_header:
         scan_options["schema"] = _get_headerless_schema(paths[0], scan_options)
+        # Polars 2 sizes a headerless file by its first line, which may be the shorter
+        # first header row; inserting keeps the wider rows' cells
+        scan_options["missing_columns"] = "insert"
 
     tables: list[Table] = []
     for path in paths:
@@ -58,10 +61,11 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
 
     has_header = scan_options.get("has_header", True)
     if not has_header and not column_names and not is_multi_header:
+        # By position, not from polars' own names: polars 2 numbers them from column_0
         result = result.rename(
             {
-                name: name.replace("column_", "column")
-                for name in result.collect_schema().names()
+                name: f"column{index + 1}"
+                for index, name in enumerate(result.collect_schema().names())
             }
         )
 
@@ -114,7 +118,11 @@ def _get_scan_options(
     if comment_prefix is not None:
         options["comment_prefix"] = comment_prefix
 
-    if column_names:
+    # Polars 2 matches a schema against the header row by name, so names that replace a
+    # header go in by position through new_columns
+    if column_names and options["has_header"]:
+        options["new_columns"] = column_names
+    elif column_names:
         options["schema"] = {name: pl.String for name in column_names}
 
     return options

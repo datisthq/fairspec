@@ -138,6 +138,12 @@ relative import reaches beyond the top-level package.
 - **Never share one read between two queries** with a diagonal `pl.concat` or `pl.collect_all`:
   polars holds the shared scan in memory, so a 10GB validation runs out of memory under a 10G
   cap. Ride along in the one query instead, as the key hashes do
+- **Polars 2 is strict where 1.x coerced** (the floor is `polars>=2.0`): `is_in` refuses a float
+  list on an integer column and the reverse, so values are converted to the column's kind
+  first (`substitute_column`); `scan_csv` matches a `schema` against the header row by name, so
+  names replacing a header go in through `new_columns`; a headerless read is sized by its first
+  line and named from `column_0`, so multi-row headers pass `missing_columns="insert"` and
+  headerless columns are renamed by position, never from polars' own names
 - **A column mapping keeps the dtype's class, not the dtype**: `PolarsColumn.type` is
   `type(dtype)`, so a Datetime's zone lives in `PolarsColumn.time_zone`. A zoned Datetime is a
   `date-time`, a naive one a `local-date-time`, a Time either `time` or `local-time`; check the

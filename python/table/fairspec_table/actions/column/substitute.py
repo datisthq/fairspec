@@ -15,18 +15,22 @@ def substitute_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
         for item in (mapping.target.property.missingValues or [])
     ]
 
-    compatible_missing_values = (
-        [
+    if missing_value_type == "string":
+        compatible_missing_values: list[str | int | float] = [
+            value for value in flatten_missing_values if isinstance(value, str)
+        ]
+    else:
+        numbers = [
             value
             for value in flatten_missing_values
-            if isinstance(value, str)
-            if missing_value_type == "string"
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
         ]
-        if missing_value_type == "string"
-        else [
-            value for value in flatten_missing_values if isinstance(value, (int, float))
-        ]
-    )
+        # is_in compares within one kind only: an integer column never equals 2.5
+        compatible_missing_values = (
+            [float(value) for value in numbers]
+            if mapping.source.type in (pl.Float32, pl.Float64)
+            else [int(value) for value in numbers if float(value).is_integer()]
+        )
 
     if not compatible_missing_values:
         return column_expr
