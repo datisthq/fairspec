@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from jsonschema import Draft202012Validator
+
 from fairspec_metadata.actions.descriptor.load import load_descriptor
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.profile.load import load_profile
@@ -23,7 +25,7 @@ def validate_table_schema(
     schema = descriptor.get("$schema")
     schema_url = (
         schema
-        if isinstance(schema, str)
+        if isinstance(schema, str) and schema != Draft202012Validator.META_SCHEMA["$id"]
         else "https://fairspec.org/profiles/latest/table-schema.json"
     )
 

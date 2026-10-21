@@ -13,6 +13,18 @@ describe("getBasePropertyType", () => {
   it("should return the base type for [null, type]", () => {
     expect(getBasePropertyType(["null", "string"])).toBe("string")
   })
+
+  it("should return the base type for a one-item array", () => {
+    expect(getBasePropertyType(["integer"])).toBe("integer")
+  })
+
+  it("should return number for integer and number", () => {
+    expect(getBasePropertyType(["integer", "number", "null"])).toBe("number")
+  })
+
+  it("should return undefined for mixed types", () => {
+    expect(getBasePropertyType(["integer", "string"])).toBe(undefined)
+  })
 })
 
 describe("getIsNullablePropertyType", () => {

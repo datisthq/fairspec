@@ -1,5 +1,6 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
+import { META_SCHEMA_URL } from "../../actions/jsonSchema/ajv.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
 import type { TableSchema } from "../../models/tableSchema.ts"
@@ -14,7 +15,7 @@ export async function validateTableSchema(
     typeof source === "string" ? await loadDescriptor(source) : (source as Descriptor)
 
   const $schema =
-    typeof descriptor.$schema === "string"
+    typeof descriptor.$schema === "string" && descriptor.$schema !== META_SCHEMA_URL
       ? descriptor.$schema
       : `https://fairspec.org/profiles/latest/table-schema.json`
 

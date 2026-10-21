@@ -6,7 +6,7 @@ import math
 import polars as pl
 from fairspec_dataset.helpers.concurrency import iter_concurrent_chunks
 from fairspec_metadata import TableError, get_columns
-from fairspec_metadata import ColumnMissingError
+from fairspec_metadata import ColumnExtraError, ColumnMissingError
 from fairspec_metadata import RowError
 from fairspec_metadata import TableSchema
 from pydantic import TypeAdapter
@@ -118,6 +118,14 @@ def _inspect_columns(
     )
     for column in columns:
         errors.extend(missing_errors.get(column.name) or cell_errors.get(column.name, []))
+
+    if mapping.target.additionalProperties is False:
+        names = {column.name for column in columns}
+        for polars_column in mapping.source.columns:
+            if polars_column.name not in names:
+                errors.append(
+                    ColumnExtraError(type="column/extra", columnName=polars_column.name)
+                )
 
     return sorted(errors, key=lambda error: not error.type.startswith("column/"))
 

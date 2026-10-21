@@ -69,18 +69,18 @@ so a value that fails its type passes the check and is reported once, as `cell/t
 Each error has a `type`, plus `resourceName` within a dataset. Cell errors add `columnName`,
 `rowNumber` (1-based, header excluded) and `cell` (the raw value).
 
-| `type` family                                                 | means                                    | usual fix                                                                     |
-| ------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
-| `cell/type`                                                   | the value doesn't parse as `columnType`  | fix the value, or the schema's type/format, or add it to `missingValues`      |
-| `cell/missing`                                                | empty value in a `required` column       | fill it, or drop the column from `required`                                   |
-| `cell/minimum`, `cell/maxLength`, `cell/pattern`, `cell/enum` | a constraint failed                      | fix the value, or loosen the constraint if the data is right                  |
-| `cell/unique`, `row/primaryKey`, `row/uniqueKey`              | duplicate key (`columnNames` lists them) | dedupe rows, or the key is wrong                                              |
-| `foreignKey`                                                  | a reference has no target row            | add the target row, or fix the reference; only reported by dataset validation |
-| `column/missing`, `column/type`                               | header vs schema mismatch                | rename the header or the schema property; check `headerRows` in the dialect   |
-| `file/integrity`, `file/textual`                              | hash or encoding mismatch                | the file changed since it was described: re-hash (`fairspec file describe`)   |
-| `resource/missing`, `resource/type`, `metadata`               | the descriptor itself is malformed       | fix the descriptor; validate it before the data                               |
-| `row/check`, `cell/check`, `table/check`                      | a custom check failed (`checkName`)      | fix the rows, or the condition if the rule is wrong                           |
-| `check`                                                       | a custom check cannot run (`message`)    | fix the condition: column name, SQL syntax, a boolean result                  |
+| `type` family                                                 | means                                    | usual fix                                                                                                                           |
+| ------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `cell/type`                                                   | the value doesn't parse as `columnType`  | fix the value, or the schema's type/format, or add it to `missingValues`                                                            |
+| `cell/missing`                                                | empty value in a `required` column       | fill it, or drop the column from `required`                                                                                         |
+| `cell/minimum`, `cell/maxLength`, `cell/pattern`, `cell/enum` | a constraint failed                      | fix the value, or loosen the constraint if the data is right                                                                        |
+| `cell/unique`, `row/primaryKey`, `row/uniqueKey`              | duplicate key (`columnNames` lists them) | dedupe rows, or the key is wrong                                                                                                    |
+| `foreignKey`                                                  | a reference has no target row            | add the target row, or fix the reference; only reported by dataset validation                                                       |
+| `column/missing`, `column/extra`, `column/type`               | header vs schema mismatch                | rename the header or the schema property; check `headerRows` in the dialect; `column/extra` only with `additionalProperties: false` |
+| `file/integrity`, `file/textual`                              | hash or encoding mismatch                | the file changed since it was described: re-hash (`fairspec file describe`)                                                         |
+| `resource/missing`, `resource/type`, `metadata`               | the descriptor itself is malformed       | fix the descriptor; validate it before the data                                                                                     |
+| `row/check`, `cell/check`, `table/check`                      | a custom check failed (`checkName`)      | fix the rows, or the condition if the rule is wrong                                                                                 |
+| `check`                                                       | a custom check cannot run (`message`)    | fix the condition: column name, SQL syntax, a boolean result                                                                        |
 
 The MCP validate tools return at most `maxErrors` errors (default 100, up to 1000), fewer when
 they would exceed ~50k characters; `truncated: true` means the report left some out, while

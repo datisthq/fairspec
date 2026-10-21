@@ -468,6 +468,10 @@ msgid "is not in the allowed values"
 msgstr "no está entre los valores permitidos"
 
 #: components/report/Error.tsx
+msgid "is not in the schema"
+msgstr "no está en el esquema"
+
+#: components/report/Error.tsx
 msgid "is not unique"
 msgstr "no es único"
 

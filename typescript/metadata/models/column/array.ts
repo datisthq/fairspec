@@ -6,25 +6,27 @@ import { BaseColumn, BaseColumnProperty } from "./base.ts"
 
 export const ArrayColumnProperty = BaseColumnProperty.extend({
   type: createNullablePropertyType("array"),
-  format: z.never().optional(),
+  format: z.string().optional(),
 
   enum: z
-    .array(z.unknown())
+    .array(z.array(z.unknown()).nullable())
     .optional()
     .describe("An optional array of allowed values for the column"),
 
   const: z
     .array(z.unknown())
+    .nullable()
     .optional()
     .describe("An optional const that all values must match"),
 
   default: z
-    .array(z.array(z.unknown()))
+    .array(z.unknown())
+    .nullable()
     .optional()
     .describe("An optional default value for the column"),
 
   examples: z
-    .array(z.array(z.unknown()))
+    .array(z.array(z.unknown()).nullable())
     .optional()
     .describe("An optional array of examples for the column"),
 

@@ -17,6 +17,7 @@ from fairspec_metadata import (
     infer_resource_name,
     inspect_json,
     validate_data_schema,
+    validate_table_schema,
 )
 from fairspec_table import Table, query_table
 from pydantic import BaseModel
@@ -159,6 +160,14 @@ def run_table_query(group: Group, test: Case) -> object:
     return read_rows(query_table(table, query))
 
 
+def run_table_validate_schema(group: Group, test: Case) -> object:
+    data = test["data"]
+    if not isinstance(data, dict):
+        raise TypeError("table-validate-schema data must be a schema object")
+    report = validate_table_schema(data)
+    return report.model_copy(update={"table_schema": None})
+
+
 def run_table_validate(group: Group, test: Case) -> object:
     return validate_table(create_resource(group, test), **group.get("options", {}))
 
@@ -179,6 +188,7 @@ OPERATIONS: dict[str, Callable[[Group, Case], object]] = {
     "table-load": run_table_load,
     "table-query": run_table_query,
     "table-validate": run_table_validate,
+    "table-validate-schema": run_table_validate_schema,
 }
 
 

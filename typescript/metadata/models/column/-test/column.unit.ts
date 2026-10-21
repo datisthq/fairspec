@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { describe, expect, it } from "vite-plus/test"
 import { TableSchema } from "../../tableSchema.ts"
+import { createColumnFromProperty } from "../../../actions/column/create.ts"
 import { ColumnProperty } from "../column.ts"
 
 describe("ColumnProperty", () => {
@@ -30,11 +31,11 @@ describe("ColumnProperty", () => {
     expect(result).toEqual({ type: "string", format: "email" })
   })
 
-  it("rejects a format that its type does not support", () => {
+  it("accepts a format that its type does not use, as an annotation", () => {
     const properties = [
-      { type: "string", format: "bogus" },
+      { type: "string", format: "uuid" },
       { type: "string", format: "geojson" },
-      { type: "integer", format: "email" },
+      { type: "integer", format: "int64" },
       { type: "number", format: "categorical" },
       { type: "boolean", format: "categorical" },
       { type: "object", format: "bogus" },
@@ -42,13 +43,10 @@ describe("ColumnProperty", () => {
     ]
 
     for (const property of properties) {
-      expect(ColumnProperty.safeParse(property).success, property.format).toBe(false)
-    }
-  })
-
-  it("rejects an empty format", () => {
-    for (const type of ["string", "integer", "number", "boolean", "object", "array"]) {
-      expect(ColumnProperty.safeParse({ type, format: "" }).success, type).toBe(false)
+      expect(ColumnProperty.safeParse(property).success, property.format).toBe(true)
+      expect(createColumnFromProperty("x", ColumnProperty.parse(property)).type).toBe(
+        property.type,
+      )
     }
   })
 })

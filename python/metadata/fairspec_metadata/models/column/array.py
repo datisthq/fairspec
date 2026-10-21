@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
 from ..base import FairspecModel
-from .base import BaseColumn, BaseColumnProperty
+from .base import BaseColumn, BaseColumnProperty, create_type_array_check
 
 ArrayNullablePropertyType = (
     Literal["array"]
-    | tuple[Literal["array"], Literal["null"]]
-    | tuple[Literal["null"], Literal["array"]]
+    | Annotated[
+        tuple[Literal["array", "null"], ...],
+        AfterValidator(create_type_array_check("array")),
+    ]
 )
 
 
@@ -21,8 +23,8 @@ class ArrayMissingValueItem(FairspecModel):
 
 class ArrayColumnProperty(BaseColumnProperty):
     type: ArrayNullablePropertyType = "array"
-    format: Literal[None] = None
-    enum: list[Any] | None = Field(
+    format: str | None = None
+    enum: list[list[Any] | None] | None = Field(
         default=None,
         description="An optional array of allowed values for the column",
     )
@@ -30,11 +32,11 @@ class ArrayColumnProperty(BaseColumnProperty):
         default=None,
         description="An optional const that all values must match",
     )
-    default: list[list[Any]] | None = Field(
+    default: list[Any] | None = Field(
         default=None,
         description="An optional default value for the column",
     )
-    examples: list[list[Any]] | None = Field(
+    examples: list[list[Any] | None] | None = Field(
         default=None,
         description="An optional array of examples for the column",
     )

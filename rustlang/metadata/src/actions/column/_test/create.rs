@@ -1,6 +1,7 @@
 use serde_json::{Value, json};
 
 use crate::actions::column::create::create_column_from_property;
+use crate::models::column::base::BasePropertyType;
 use crate::models::column::column::{Column, ColumnType};
 
 fn create_column(name: &str, property: Value) -> Column {
@@ -80,9 +81,13 @@ fn test_creates_column_by_type_and_format() {
 }
 
 #[test]
-fn test_rejects_an_unsupported_format() {
+fn test_creates_a_plain_column_for_an_unknown_format() {
     let Value::Object(property) = json!({"type": "string", "format": "weird"}) else {
         unreachable!()
     };
-    assert!(create_column_from_property("x", &property).is_err());
+    let column = create_column_from_property("x", &property).unwrap();
+    assert_eq!(
+        column.property().base_type(),
+        Some(BasePropertyType::String)
+    );
 }

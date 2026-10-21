@@ -95,7 +95,7 @@ fn test_round_trip_property_fields() {
     for input in [
         json!({"type": "integer", "title": "Id", "rdfType": "x", "minimum": 1, "multipleOf": 2,
                "missingValues": [-1, "NA", {"value": 0, "label": "zero"}]}),
-        json!({"type": "number", "minimum": 1.5, "default": [1.0], "decimalChar": ","}),
+        json!({"type": "number", "minimum": 1.5, "default": 1.0, "decimalChar": ","}),
         json!({"type": "boolean", "trueValues": ["Y"], "missingValues": ["-", 0, {"value": "x", "label": "y"}]}),
         json!({"type": ["string", "null"], "format": "list", "itemType": "local-date-time", "delimiter": ";", "minItems": 1}),
         json!({"type": "string", "format": "categorical", "categories": ["a", {"value": "b", "label": "B"}], "withOrder": true}),
@@ -124,16 +124,26 @@ fn test_unknown_fields_are_dropped() {
 }
 
 #[test]
+fn test_round_trips_json_schema_spellings() {
+    for input in [
+        json!({"type": ["integer"]}),
+        json!({"type": ["number", "integer", "null"]}),
+        json!({"type": ["string", "null"], "enum": ["a", null]}),
+        json!({"type": "string", "format": "weird"}),
+        json!({"type": "boolean", "format": "categorical"}),
+    ] {
+        assert_eq!(round_trip::<ColumnProperty>(&input), input);
+    }
+}
+
+#[test]
 fn test_rejects_what_python_rejects() {
     for input in [
-        json!({"type": "string", "format": "weird"}),
-        json!({"type": "object", "format": "other"}),
-        json!({"type": "boolean", "format": "categorical"}),
         json!({"type": "foo"}),
         json!({"type": ["string", "integer"]}),
         json!({"type": ["null"]}),
         json!({"type": "string", "enum": [1]}),
-        json!({"type": "string", "default": "x"}),
+        json!({"type": "string", "default": ["x"]}),
     ] {
         assert!(
             serde_json::from_value::<ColumnProperty>(input.clone()).is_err(),

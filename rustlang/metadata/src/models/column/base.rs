@@ -75,17 +75,27 @@ pub enum NullPosition {
     Before,
 }
 
-/// A property `type` of one base type, optionally paired with `"null"`.
+/// A property `type` of one base type, optionally paired with `"null"`. A spelling other
+/// than `"x"`, `["x", "null"]` or `["null", "x"]`, such as `["x"]`, is kept to round-trip.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct NullablePropertyType<B> {
     pub null: NullPosition,
+    spelling: Option<[Option<TypeToken>; 3]>,
     base: PhantomData<B>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum TypeToken {
+    Base,
+    Null,
+    Integer,
 }
 
 impl<B: PropertyBase> NullablePropertyType<B> {
     pub fn new(null: NullPosition) -> Self {
         Self {
             null,
+            spelling: None,
             base: PhantomData,
         }
     }
@@ -97,11 +107,28 @@ impl<B: PropertyBase> NullablePropertyType<B> {
     pub fn is_nullable(&self) -> bool {
         self.null != NullPosition::None
     }
+
+    fn spelled_tokens(&self) -> Option<Vec<TypeToken>> {
+        let tokens: Vec<TypeToken> = self.spelling?.into_iter().flatten().collect();
+        let spells_null = tokens.contains(&TypeToken::Null);
+        (spells_null == self.is_nullable()).then_some(tokens)
+    }
 }
 
 impl<B: PropertyBase> Serialize for NullablePropertyType<B> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let base = B::TYPE.as_str();
+        if let Some(tokens) = self.spelled_tokens() {
+            let names: Vec<&str> = tokens
+                .iter()
+                .map(|token| match token {
+                    TypeToken::Base => base,
+                    TypeToken::Null => "null",
+                    TypeToken::Integer => "integer",
+                })
+                .collect();
+            return names.serialize(serializer);
+        }
         match self.null {
             NullPosition::None => serializer.serialize_str(base),
             NullPosition::After => [base, "null"].serialize(serializer),
@@ -125,10 +152,47 @@ impl<'de, B: PropertyBase> Deserialize<'de> for NullablePropertyType<B> {
             }
             _ => None,
         };
-        null.map(Self::new).ok_or_else(|| {
+        if let Some(null) = null {
+            return Ok(Self::new(null));
+        }
+        parse_spelling::<B>(&value).ok_or_else(|| {
             D::Error::custom(format!("expected property type \"{base}\", got {value}"))
         })
     }
+}
+
+fn parse_spelling<B: PropertyBase>(value: &Value) -> Option<NullablePropertyType<B>> {
+    let Value::Array(items) = value else {
+        return None;
+    };
+    if items.is_empty() || items.len() > 3 {
+        return None;
+    }
+    let mut spelling = [None; 3];
+    for (index, item) in items.iter().enumerate() {
+        let token = match item.as_str()? {
+            "null" => TypeToken::Null,
+            "integer" if B::TYPE == BasePropertyType::Number => TypeToken::Integer,
+            name if name == B::TYPE.as_str() => TypeToken::Base,
+            _ => return None,
+        };
+        if spelling.contains(&Some(token)) {
+            return None;
+        }
+        spelling[index] = Some(token);
+    }
+    if !spelling.contains(&Some(TypeToken::Base)) {
+        return None;
+    }
+    let null = match spelling.contains(&Some(TypeToken::Null)) {
+        true => NullPosition::After,
+        false => NullPosition::None,
+    };
+    Some(NullablePropertyType {
+        null,
+        spelling: Some(spelling),
+        base: PhantomData,
+    })
 }
 
 pub type StringNullablePropertyType = NullablePropertyType<StringBase>;

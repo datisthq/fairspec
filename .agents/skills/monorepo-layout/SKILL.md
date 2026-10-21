@@ -89,10 +89,12 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 - `release-as` pins one component's next version (typescript is pinned to `0.13.1` because
   npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
   later Release PR keeps proposing the same version
-- The libraries bundle `standard/profiles/` (refs resolved to `latest`) in
-  `typescript/metadata/profiles/` and `python/metadata/fairspec_metadata/profiles/`, and pin
-  `FAIRSPEC_VERSION` in their `settings` to `standard/package.json`'s version.
-  `pnpm sync:profiles` (`.scripts/@sync.ts`) writes both; the guard fails while either drifts
+- The libraries and the Rust port bundle `standard/profiles/` (refs resolved to `latest`) in
+  `typescript/metadata/profiles/`, `python/metadata/fairspec_metadata/profiles/` and
+  `rustlang/metadata/profiles/`, and pin `FAIRSPEC_VERSION` in their `settings` to
+  `standard/package.json`'s version. `pnpm sync:profiles` (`.scripts/@sync.ts`) writes all
+  three; the guard fails while any drifts. A change to what a column may contain also reaches
+  each twin's column models, which parse descriptors independently of the profile
 - `release.yaml`'s `profiles` job runs on the Release PR: `pnpm generate:profiles`
   (`.scripts/@generate.ts`) writes `.livemark/public/profiles/{latest,<version>}`, then
   `pnpm sync:profiles` bumps the libraries' `FAIRSPEC_VERSION`. When the standard is not in

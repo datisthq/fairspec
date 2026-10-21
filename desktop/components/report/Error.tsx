@@ -44,6 +44,8 @@ export function Error(props: { error: fairspec.FairspecError }) {
       return <CheckError error={error} />
     case "column/missing":
       return <ColumnMissingError error={error} />
+    case "column/extra":
+      return <ColumnExtraError error={error} />
     case "column/type":
       return <ColumnTypeError error={error} />
     case "data":
@@ -408,6 +410,20 @@ function ColumnMissingError(props: { error: fairspec.ColumnMissingError }) {
   return (
     <div>
       <Trans>Required column</Trans> {columnName} <Trans>is missing</Trans>
+      {inResource}
+    </div>
+  )
+}
+
+function ColumnExtraError(props: { error: fairspec.ColumnExtraError }) {
+  const { error } = props
+
+  const columnName = <Code>{error.columnName}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  return (
+    <div>
+      <Trans>Column</Trans> {columnName} <Trans>is not in the schema</Trans>
       {inResource}
     </div>
   )

@@ -1,0 +1,92 @@
+[
+  {
+    "description": "the JSON Schema 2020-12 subset a table schema accepts",
+    "specification": ["https://fairspec.org/specs/table-schema/#json-schema"],
+    "tests": [
+      {
+        "description": "the 2020-12 dialect as $schema is valid",
+        "data": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": { "id": { "type": "integer" } }
+        },
+        "valid": true
+      },
+      {
+        "description": "a one-item type array is valid",
+        "data": { "properties": { "id": { "type": ["integer"] } } },
+        "valid": true
+      },
+      {
+        "description": "integer and number together are valid",
+        "data": { "properties": { "x": { "type": ["integer", "number", "null"] } } },
+        "valid": true
+      },
+      {
+        "description": "null in the enum of a nullable column is valid",
+        "data": {
+          "properties": { "x": { "type": ["null", "string"], "enum": ["a", null] } }
+        },
+        "valid": true
+      },
+      {
+        "description": "a format the type does not use is an annotation",
+        "data": {
+          "properties": {
+            "a": { "type": "string", "format": "uuid" },
+            "b": { "type": "integer", "format": "int64" }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "applicators inside an array column are valid",
+        "data": {
+          "properties": {
+            "x": { "type": "array", "items": { "anyOf": [{ "type": "string" }] } }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "additionalProperties false is valid",
+        "data": {
+          "additionalProperties": false,
+          "properties": { "id": { "type": "integer" } }
+        },
+        "valid": true
+      },
+      {
+        "description": "a mixed type array is invalid",
+        "data": { "properties": { "x": { "type": ["integer", "string"] } } },
+        "valid": false
+      },
+      {
+        "description": "an applicator on a column is invalid",
+        "data": { "properties": { "x": { "anyOf": [{ "type": "string" }] } } },
+        "valid": false
+      },
+      {
+        "description": "an applicator on the table schema is invalid",
+        "data": {
+          "oneOf": [{ "required": ["id"] }],
+          "properties": { "id": { "type": "integer" } }
+        },
+        "valid": false
+      },
+      {
+        "description": "a reference is invalid",
+        "data": {
+          "$defs": { "id": { "type": "integer" } },
+          "properties": { "id": { "$ref": "#/$defs/id" } }
+        },
+        "valid": false
+      },
+      {
+        "description": "additionalProperties as a schema is invalid",
+        "data": { "additionalProperties": { "type": "string" } },
+        "valid": false
+      }
+    ]
+  }
+]

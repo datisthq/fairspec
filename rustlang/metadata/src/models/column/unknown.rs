@@ -9,6 +9,8 @@ define_literal!(NullPropertyType, Null, "null");
 #[serde(rename_all = "camelCase")]
 pub struct UnknownColumnProperty {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#type: Option<NullPropertyType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,

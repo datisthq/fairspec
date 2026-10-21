@@ -8,22 +8,24 @@ export const BaseObjectColumnProperty = BaseColumnProperty.extend({
   type: createNullablePropertyType("object"),
 
   enum: z
-    .array(z.record(z.string(), z.unknown()))
+    .array(z.record(z.string(), z.unknown()).nullable())
     .optional()
     .describe("An optional array of allowed values for the column"),
 
   const: z
     .record(z.string(), z.unknown())
+    .nullable()
     .optional()
     .describe("An optional const that all values must match"),
 
   default: z
-    .array(z.record(z.string(), z.unknown()))
+    .record(z.string(), z.unknown())
+    .nullable()
     .optional()
     .describe("An optional default value for the column"),
 
   examples: z
-    .array(z.record(z.string(), z.unknown()))
+    .array(z.record(z.string(), z.unknown()).nullable())
     .optional()
     .describe("An optional array of examples for the column"),
 
@@ -64,7 +66,7 @@ export const BaseObjectColumnProperty = BaseColumnProperty.extend({
 })
 
 export const ObjectColumnProperty = BaseObjectColumnProperty.extend({
-  format: z.never().optional(),
+  format: z.string().optional(),
 })
 
 export const ObjectColumn = BaseColumn.extend({

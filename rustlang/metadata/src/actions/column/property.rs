@@ -6,13 +6,18 @@ use crate::models::column::column::{Column, ColumnProperty};
 pub fn get_base_property_type(r#type: Option<&Value>) -> Option<&str> {
     match r#type? {
         Value::String(name) => Some(name),
-        Value::Array(names) => Some(
-            names
+        Value::Array(names) => {
+            let names: Vec<&str> = names
                 .iter()
                 .filter_map(Value::as_str)
-                .find(|name| *name != "null")
-                .unwrap_or("null"),
-        ),
+                .filter(|name| *name != "null")
+                .collect();
+            match names.as_slice() {
+                [name] => Some(name),
+                ["integer", "number"] | ["number", "integer"] => Some("number"),
+                _ => None,
+            }
+        }
         _ => None,
     }
 }

@@ -184,6 +184,7 @@ export { CheckError, TableCheckError } from "./models/error/check.ts"
 export {
   ColumnError,
   ColumnMissingError,
+  ColumnExtraError,
   ColumnTypeError,
 } from "./models/error/column.ts"
 export { DataError } from "./models/error/data.ts"

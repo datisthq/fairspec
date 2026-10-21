@@ -1,3 +1,4 @@
+use crate::actions::column::property::get_base_property_type;
 use serde::de::{DeserializeOwned, Error as _};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
@@ -405,11 +406,15 @@ impl<'de> Deserialize<'de> for ColumnProperty {
                 return parse_variant(value, P::Unknown);
             }
             Some(Value::String(name)) => name.as_str(),
-            Some(Value::Array(items)) => items
-                .iter()
-                .filter_map(Value::as_str)
-                .find(|name| *name != "null")
-                .unwrap_or("null"),
+            Some(Value::Array(_)) => match get_base_property_type(object.get("type")) {
+                Some(name) => name,
+                None => {
+                    return Err(D::Error::custom(format!(
+                        "unsupported column property type {}",
+                        object["type"]
+                    )));
+                }
+            },
             Some(other) => {
                 return Err(D::Error::custom(format!(
                     "invalid column property type {other}"
@@ -451,6 +456,12 @@ impl<'de> Deserialize<'de> for ColumnProperty {
             ("object", None) => parse_variant(value, P::Object),
             ("object", Some("geojson")) => parse_variant(value, P::Geojson),
             ("object", Some("topojson")) => parse_variant(value, P::Topojson),
+            ("boolean", Some(_)) => parse_variant(value, P::Boolean),
+            ("integer", Some(_)) => parse_variant(value, P::Integer),
+            ("number", Some(_)) => parse_variant(value, P::Number),
+            ("string", Some(_)) => parse_variant(value, P::String),
+            ("array", Some(_)) => parse_variant(value, P::Array),
+            ("object", Some(_)) => parse_variant(value, P::Object),
             (base_type, format) => Err(D::Error::custom(format!(
                 "unsupported column property type \"{base_type}\" with format {format:?}"
             ))),

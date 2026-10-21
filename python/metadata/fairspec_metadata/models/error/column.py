@@ -13,6 +13,11 @@ class ColumnMissingError(BaseError):
     columnName: str = Field(description="Names of missing column")
 
 
+class ColumnExtraError(BaseError):
+    type: Literal["column/extra"] = Field(description="Error type identifier")
+    columnName: str = Field(description="Name of the column the schema does not list")
+
+
 class ColumnTypeError(BaseError):
     type: Literal["column/type"] = Field(description="Error type identifier")
     columnName: str = Field(description="The name of the column")
@@ -23,6 +28,6 @@ class ColumnTypeError(BaseError):
 
 
 ColumnError = Annotated[
-    Union[ColumnMissingError, ColumnTypeError],
+    Union[ColumnMissingError, ColumnExtraError, ColumnTypeError],
     Field(discriminator="type"),
 ]

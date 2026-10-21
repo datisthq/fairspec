@@ -7,6 +7,8 @@ use crate::models::column::column::ColumnType;
 pub enum ColumnError {
     #[serde(rename = "column/missing")]
     Missing(ColumnMissingError),
+    #[serde(rename = "column/extra")]
+    Extra(ColumnExtraError),
     #[serde(rename = "column/type")]
     Type(ColumnTypeError),
 }
@@ -14,6 +16,14 @@ pub enum ColumnError {
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColumnMissingError {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_name: Option<String>,
+    pub column_name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ColumnExtraError {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resource_name: Option<String>,
     pub column_name: String,

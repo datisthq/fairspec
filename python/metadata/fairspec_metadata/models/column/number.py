@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
 from ..base import FairspecModel
-from .base import BaseColumn, BaseColumnProperty
+from .base import BaseColumn, BaseColumnProperty, create_type_array_check
 
 NumberNullablePropertyType = (
     Literal["number"]
-    | tuple[Literal["number"], Literal["null"]]
-    | tuple[Literal["null"], Literal["number"]]
+    | Annotated[
+        tuple[Literal["number", "integer", "null"], ...],
+        AfterValidator(create_type_array_check("number")),
+    ]
 )
 
 
@@ -21,7 +23,7 @@ class NumberMissingValueItem(FairspecModel):
 
 class BaseNumberColumnProperty(BaseColumnProperty):
     type: NumberNullablePropertyType = "number"
-    enum: list[float] | None = Field(
+    enum: list[float | None] | None = Field(
         default=None,
         description="An optional array of allowed values for the column",
     )
@@ -29,11 +31,11 @@ class BaseNumberColumnProperty(BaseColumnProperty):
         default=None,
         description="An optional const that all values must match",
     )
-    default: list[float] | None = Field(
+    default: float | None = Field(
         default=None,
         description="An optional default value for the column",
     )
-    examples: list[float] | None = Field(
+    examples: list[float | None] | None = Field(
         default=None,
         description="An optional array of examples for the column",
     )
@@ -81,7 +83,7 @@ class BaseNumberColumnProperty(BaseColumnProperty):
 
 
 class NumberColumnProperty(BaseNumberColumnProperty):
-    format: Literal[None] = None
+    format: str | None = None
 
 
 class NumberColumn(BaseColumn):

@@ -17,6 +17,7 @@ import type {
   CellTypeError,
   CellUniqueError,
   CheckError,
+  ColumnExtraError,
   ColumnMissingError,
   ColumnTypeError,
   DataError,
@@ -74,6 +75,8 @@ export function renderError(error: FairspecError) {
       return renderCheckError(error)
     case "column/missing":
       return renderColumnMissingError(error)
+    case "column/extra":
+      return renderColumnExtraError(error)
     case "column/type":
       return renderColumnTypeError(error)
     case "data":
@@ -287,6 +290,13 @@ export function renderColumnMissingError(error: ColumnMissingError) {
   const inResource = renderInResource(error.resourceName)
 
   return `Required column ${columnName} is missing${inResource}`
+}
+
+export function renderColumnExtraError(error: ColumnExtraError) {
+  const columnName = pc.bold(error.columnName)
+  const inResource = renderInResource(error.resourceName)
+
+  return `Column ${columnName} is not in the schema${inResource}`
 }
 
 export function renderColumnTypeError(error: ColumnTypeError) {

@@ -46,6 +46,8 @@ def render_error(error: FairspecError) -> str:
             return _render_check_error(error)
         case "column/missing":
             return _render_column_missing_error(error)
+        case "column/extra":
+            return _render_column_extra_error(error)
         case "column/type":
             return _render_column_type_error(error)
         case "data":
@@ -158,6 +160,10 @@ def _render_cell_check_error(error: object) -> str:
 
 def _render_check_error(error: object) -> str:
     return f"Check {_b(error.checkName)} cannot be evaluated{_in_resource(error.resourceName)}: {error.message}"  # type: ignore[union-attr]
+
+
+def _render_column_extra_error(error: object) -> str:
+    return f"Column {_b(error.columnName)} is not in the schema{_in_resource(error.resourceName)}"  # type: ignore[union-attr]
 
 
 def _render_column_missing_error(error: object) -> str:

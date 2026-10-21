@@ -5,6 +5,8 @@ use super::base::{BooleanNullablePropertyType, StringOrInteger, ValueOrItem};
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BooleanColumnProperty {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
     pub r#type: BooleanNullablePropertyType,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
@@ -13,13 +15,13 @@ pub struct BooleanColumnProperty {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rdf_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#enum: Option<Vec<bool>>,
+    pub r#enum: Option<Vec<Option<bool>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#const: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default: Option<Vec<bool>>,
+    pub default: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub examples: Option<Vec<bool>>,
+    pub examples: Option<Vec<Option<bool>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_values: Option<Vec<BooleanMissingValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

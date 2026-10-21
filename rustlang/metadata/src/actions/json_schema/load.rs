@@ -9,7 +9,7 @@ use crate::actions::profile::registry::PROFILE_REGISTRY;
 use crate::models::exception::Result;
 use crate::models::json_schema::JsonSchema;
 
-const METASCHEMA_ID: &str = "https://json-schema.org/draft/2020-12/schema";
+pub const METASCHEMA_ID: &str = "https://json-schema.org/draft/2020-12/schema";
 
 static CACHE: LazyLock<Mutex<LruCache<(String, bool), JsonSchema>>> =
     LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(100).unwrap())));

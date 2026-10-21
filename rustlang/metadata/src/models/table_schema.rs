@@ -21,6 +21,8 @@ pub struct TableSchema {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub all_required: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub additional_properties: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub properties: Option<IndexMap<String, ColumnProperty>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_values: Option<Vec<TableSchemaMissingValue>>,

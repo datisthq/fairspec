@@ -18,7 +18,7 @@ order: 5
   </tr>
 </table>
 
-Fairspec Table Schema is a simple [JSON](https://json.org)-based format that defines Table Schema to describe a class of tabular data resources. Table Schema is structurally compatible with the [JSON Schema](https://json-schema.org/) standard. When expedient, this specification aims to be structurally compatible with the [Data Package](https://datapackage.org/standard/table-schema/) standard.
+Fairspec Table Schema is a simple [JSON](https://json.org)-based format that defines Table Schema to describe a class of tabular data resources. A Table Schema is a [JSON Schema 2020-12](https://json-schema.org/draft/2020-12) schema of one row, restricted to the [subset](#json-schema) that describes one typed column per property. When expedient, this specification aims to be structurally compatible with the [Data Package](https://datapackage.org/standard/table-schema/) standard.
 
 ## Language
 
@@ -37,7 +37,7 @@ A top-level descriptor object defining a schema of tabular data resources. It `M
 > [!NOTE]
 > Data publisher `SHOULD` provide this property with an exact version when sharing a standalone descriptor publicly.
 
-[External Path](#external-path) to one of the officially published Fairspec Table Schema profiles with default value `https://fairspec.org/profiles/latest/table-schema.json`.
+[External Path](#external-path) to one of the officially published Fairspec Table Schema profiles or `https://json-schema.org/draft/2020-12/schema` with default value `https://fairspec.org/profiles/latest/table-schema.json`. A Table Schema declaring the JSON Schema dialect `MUST` be validated as one declaring the default profile.
 
 For example for version X.Y.Z of the profile:
 
@@ -291,6 +291,26 @@ For example, with a composite foreign key:
 }
 ```
 
+### `additionalProperties`
+
+An optional boolean stating whether the data `MAY` have columns that [`properties`](#properties) does not list. It defaults to `true`. When `false`, every such column is an error. A schema value, which JSON Schema allows, is not supported and `MUST` be rejected.
+
+For example, to allow only the listed columns:
+
+```json
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+}
+```
+
 ### `missingValues`
 
 > [!NOTE]
@@ -341,16 +361,13 @@ The data type of the column. It `MUST` be one of the following values:
 - `array` - Array/list values
 - `object` - Object/dictionary values
 
-If a column allows missing values the type can include `null` (order insensitive):
+As in JSON Schema, the type `MAY` also be an array of these values with unique items, in any order. A column allows missing values when the array includes `null`:
 
-- `["boolean", "null"]` - True/false values or missing values
-- `["integer", "null"]` - Whole numbers or missing values
-- `["number", "null"]` - Numeric values or missing values
-- `["string", "null"]` - Text values or missing values
-- `["array", "null"]` - Array/list values or missing values
-- `["object", "null"]` - Object/dictionary values or missing values
+- `"integer"` and `["integer"]` are the same type
+- `["integer", "null"]` and `["null", "integer"]` - Whole numbers or missing values
+- `["integer", "number"]`, with or without `null`, is `number`, since every integer is a number
 
-Any other value of the type property indicates that the column type is [Unknown](#unknown).
+Any other array, holding two or more of the values above, `MUST` be rejected. A column without `type` is [Unknown](#unknown).
 
 Metadata example:
 
@@ -1406,7 +1423,7 @@ Type properties:
 
 #### Unknown
 
-A column for values of unknown type. It `MUST` have [`type`](#type) not supported by the types above. Any value is valid in it, including a missing one.
+A column for values of unknown type. It has no [`type`](#type). Any value is valid in it, including a missing one.
 
 Metadata example:
 
@@ -1437,7 +1454,7 @@ false
 > [!NOTE]
 > Supported types: **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**, **GeoJSON**, **TopoJSON**
 
-An optional format qualifier that specifies a more specific subtype of the base type.
+An optional format qualifier that specifies a more specific subtype of the base type. A `format` takes effect only when it is one listed above for the column's type; any other `format`, on any type, is an annotation, as in JSON Schema, and the column is the plain column of its type. A validator `SHOULD` warn about a `format` it does not recognise.
 
 Metadata example:
 
@@ -2151,11 +2168,17 @@ metadata
 
 A validator that reports the errors of a table `MUST` list them in this order:
 
-1. Column errors, such as a [required](#required) column missing from the data
+1. Column errors, such as a [required](#required) column missing from the data, then the columns [`additionalProperties`](#additionalproperties) does not allow, in the order of the data
 2. Cell errors, column by column in the order of [`properties`](#properties), and within a column by row
 3. Row errors: [`primaryKey`](#primarykey) errors, then [`uniqueKeys`](#uniquekeys) errors
 
 [`foreignKeys`](#foreignkeys) errors are dataset-level and follow these, as the [Dataset](../dataset#validation) specification sets out.
+
+## JSON Schema
+
+A Table Schema `MAY` use any JSON Schema 2020-12 keyword that describes a single column, with the restrictions this specification states, and any annotation keyword such as `$comment` or `deprecated`. These keywords `MUST` be rejected, at the top level and on a column, since they do not describe one typed column per property: `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else`, `$ref`, `$dynamicRef`, `$defs`, `patternProperties`, `propertyNames`, `dependentRequired`, `dependentSchemas`, `unevaluatedProperties`, `unevaluatedItems`. Inside an [Array](#array) or [Object](#object) column, which holds JSON values, every JSON Schema keyword is allowed.
+
+The keywords [`enum`](#enum), [`const`](#const), [`default`](#default) and [`examples`](#examples) of a column that allows missing values `MAY` include `null`.
 
 ## Common
 
@@ -2176,7 +2199,7 @@ For example:
 ## Extension
 
 > [!WARNING]
-> Additional properties are NOT allowed.
+> Properties beyond this specification and [JSON Schema](#json-schema) are NOT allowed.
 
 Fairspec Table Schema does not support extension.
 

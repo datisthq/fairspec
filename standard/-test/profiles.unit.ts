@@ -37,6 +37,20 @@ describe.each(documentExamples)("$document examples", ({ examples }) => {
   })
 })
 
+describe("table schemas", () => {
+  it.each([
+    { valid: true, schema: { $schema: "https://json-schema.org/draft/2020-12/schema" } },
+    { valid: true, schema: { type: "object", additionalProperties: false } },
+    { valid: true, schema: { additionalProperties: true, $comment: "note" } },
+    { valid: false, schema: { additionalProperties: { type: "string" } } },
+    { valid: false, schema: { oneOf: [{ required: ["a"] }] } },
+    { valid: false, schema: { $defs: { a: { type: "string" } } } },
+  ])("validates $schema as $valid", ({ schema, valid }) => {
+    const validate = getValidator("table-schema.json")
+    expect(validate(schema)).toBe(valid)
+  })
+})
+
 describe("examples", () => {
   it.each(["dataset", "table-schema"])("validates %s.json", async name => {
     const text = await readFile(join(STANDARD, "examples", `${name}.json`), "utf8")
@@ -60,14 +74,25 @@ describe("table schema columns", () => {
     { valid: true, column: { type: "array", items: { type: "number" } } },
     { valid: true, column: { type: "object", format: "geojson" } },
     { valid: false, column: { type: "string", enum: [1, 2] } },
-    { valid: false, column: { type: "string", format: "bogus" } },
+    { valid: true, column: { type: "string", format: "bogus" } },
     { valid: false, column: { type: "array", const: "x" } },
-    { valid: false, column: { type: "object", format: "bogus" } },
+    { valid: true, column: { type: "object", format: "bogus" } },
     { valid: true, column: { default: "x", const: "x", examples: ["x", 1] } },
     { valid: true, column: { enum: ["a", 1, true] } },
     { valid: true, column: { missingValues: ["NA"] } },
     { valid: true, column: { type: "string", default: "x" } },
     { valid: false, column: { type: "integer", default: "x" } },
+    { valid: true, column: { type: ["integer"], minimum: 1 } },
+    { valid: true, column: { type: ["null", "string"], enum: ["a", null] } },
+    { valid: true, column: { type: ["integer", "number"], minimum: 0.5 } },
+    { valid: true, column: { type: "integer", format: "int64" } },
+    { valid: true, column: { type: "array", items: { anyOf: [{ type: "string" }] } } },
+    { valid: false, column: { type: ["integer", "string"] } },
+    { valid: false, column: { type: "date" } },
+    { valid: false, column: { type: "string", enum: [1] } },
+    { valid: false, column: { anyOf: [{ type: "string" }] } },
+    { valid: false, column: { type: "string", $ref: "#/$defs/x" } },
+    { valid: false, column: { type: "string", format: "list", delimiter: 5 } },
   ])("validates $column as $valid", ({ column, valid }) => {
     const validate = getValidator("table-schema.json")
     expect(validate({ properties: { column } })).toBe(valid)

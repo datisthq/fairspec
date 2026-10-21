@@ -1,0 +1,138 @@
+[
+  {
+    "description": "a one-item type array is that type",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "tableSchema": { "properties": { "id": { "type": ["integer"] } } },
+    "tests": [
+      { "description": "an integer is valid", "data": "id\n1\n", "valid": true },
+      {
+        "description": "text is a cell/type error",
+        "data": "id\n1\nx\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer and number together are number",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "tableSchema": { "properties": { "x": { "type": ["integer", "number", "null"] } } },
+    "tests": [
+      {
+        "description": "integers, decimals and missing values are valid",
+        "data": "x\n1\n1.5\n\n",
+        "valid": true
+      },
+      {
+        "description": "text is a cell/type error",
+        "data": "x\nz\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 1,
+            "cell": "z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "null in the enum of a nullable column",
+    "specification": ["https://fairspec.org/specs/table-schema/#json-schema"],
+    "tableSchema": {
+      "properties": { "x": { "type": ["string", "null"], "enum": ["a", null] } }
+    },
+    "tests": [
+      {
+        "description": "a listed value and a missing one are valid",
+        "data": "x\na\n\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a format the type does not use",
+    "specification": ["https://fairspec.org/specs/table-schema/#format"],
+    "tableSchema": {
+      "properties": {
+        "a": { "type": "string", "format": "uuid" },
+        "b": { "type": "integer", "format": "int64" }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a plain column of its type",
+        "data": "a,b\nzzz,1\n",
+        "valid": true
+      },
+      {
+        "description": "keeps the type's checks",
+        "data": "a,b\nzzz,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "b",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a table schema declaring the JSON Schema 2020-12 dialect",
+    "specification": ["https://fairspec.org/specs/table-schema/#profile"],
+    "tableSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "required": ["id"],
+      "properties": { "id": { "type": "integer" } }
+    },
+    "tests": [{ "description": "validates the table", "data": "id\n1\n", "valid": true }]
+  },
+  {
+    "description": "columns the schema does not list",
+    "specification": ["https://fairspec.org/specs/table-schema/#additionalproperties"],
+    "tableSchema": {
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "the listed columns are valid",
+        "data": "id,name\n1,a\n",
+        "valid": true
+      },
+      {
+        "description": "each other column is a column/extra error, after missing columns, in data order",
+        "data": "zeta,alpha\nx,y\n",
+        "valid": false,
+        "errors": [
+          { "type": "column/missing", "columnName": "id" },
+          { "type": "column/extra", "columnName": "zeta" },
+          { "type": "column/extra", "columnName": "alpha" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "columns the schema does not list, allowed by default",
+    "specification": ["https://fairspec.org/specs/table-schema/#additionalproperties"],
+    "tableSchema": { "properties": { "id": { "type": "integer" } } },
+    "tests": [{ "description": "are valid", "data": "id,extra\n1,x\n", "valid": true }]
+  }
+]

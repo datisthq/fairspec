@@ -6,19 +6,24 @@ export const BaseStringColumnProperty = BaseColumnProperty.extend({
   type: createNullablePropertyType("string"),
 
   enum: z
-    .array(z.string())
+    .array(z.string().nullable())
     .optional()
     .describe("An optional array of allowed values for the column"),
 
-  const: z.string().optional().describe("An optional const that all values must match"),
+  const: z
+    .string()
+    .nullable()
+    .optional()
+    .describe("An optional const that all values must match"),
 
   default: z
-    .array(z.string())
+    .string()
+    .nullable()
     .optional()
     .describe("An optional default value for the column"),
 
   examples: z
-    .array(z.string())
+    .array(z.string().nullable())
     .optional()
     .describe("An optional array of examples for the column"),
 
@@ -58,7 +63,7 @@ export const BaseStringColumnProperty = BaseColumnProperty.extend({
 })
 
 export const StringColumnProperty = BaseStringColumnProperty.extend({
-  format: z.never().optional(),
+  format: z.string().optional(),
 })
 
 export const StringColumn = BaseColumn.extend({

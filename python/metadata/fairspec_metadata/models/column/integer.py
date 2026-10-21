@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
 from ..base import FairspecModel
-from .base import BaseColumn, BaseColumnProperty
+from .base import BaseColumn, BaseColumnProperty, create_type_array_check
 
 IntegerNullablePropertyType = (
     Literal["integer"]
-    | tuple[Literal["integer"], Literal["null"]]
-    | tuple[Literal["null"], Literal["integer"]]
+    | Annotated[
+        tuple[Literal["integer", "null"], ...],
+        AfterValidator(create_type_array_check("integer")),
+    ]
 )
 
 
@@ -21,7 +23,7 @@ class IntegerMissingValueItem(FairspecModel):
 
 class BaseIntegerColumnProperty(BaseColumnProperty):
     type: IntegerNullablePropertyType = "integer"
-    enum: list[int] | None = Field(
+    enum: list[int | None] | None = Field(
         default=None,
         description="An optional array of allowed values for the column",
     )
@@ -29,11 +31,11 @@ class BaseIntegerColumnProperty(BaseColumnProperty):
         default=None,
         description="An optional const that all values must match",
     )
-    default: list[int] | None = Field(
+    default: int | None = Field(
         default=None,
         description="An optional default value for the column",
     )
-    examples: list[int] | None = Field(
+    examples: list[int | None] | None = Field(
         default=None,
         description="An optional array of examples for the column",
     )
@@ -75,7 +77,7 @@ class BaseIntegerColumnProperty(BaseColumnProperty):
 
 
 class IntegerColumnProperty(BaseIntegerColumnProperty):
-    format: Literal[None] = None
+    format: str | None = None
 
 
 class IntegerColumn(BaseColumn):

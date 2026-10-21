@@ -40,6 +40,10 @@ class TableSchema(FairspecModel):
         default=None,
         description="An optional boolean indicating whether all columns are required",
     )
+    additionalProperties: bool | None = Field(
+        default=None,
+        description="Whether the data may have columns that properties does not list",
+    )
     properties: dict[str, ColumnProperty] | None = Field(
         default=None,
         description="An object defining the schema for table columns, where each key is a column name",

@@ -13,13 +13,13 @@ pub struct BaseStringColumnProperty {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rdf_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#enum: Option<Vec<String>>,
+    pub r#enum: Option<Vec<Option<String>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#const: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default: Option<Vec<String>>,
+    pub default: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub examples: Option<Vec<String>>,
+    pub examples: Option<Vec<Option<String>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_values: Option<Vec<StringMissingValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -40,6 +40,8 @@ pub struct StringMissingValueItem {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct StringColumnProperty {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
     #[serde(flatten)]
     pub base: BaseStringColumnProperty,
 }

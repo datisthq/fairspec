@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import StrEnum
 from typing import Any
 
@@ -39,3 +40,14 @@ class BaseColumn(FairspecModel):
     required: bool | None = None
     nullable: bool | None = None
     property: BaseColumnProperty
+
+
+def create_type_array_check(name: str) -> Callable[[tuple[str, ...]], tuple[str, ...]]:
+    def check_type_array(value: tuple[str, ...]) -> tuple[str, ...]:
+        if name not in value or len(set(value)) != len(value):
+            raise ValueError(
+                f"a type array must name {name} once, with only null besides"
+            )
+        return value
+
+    return check_type_array

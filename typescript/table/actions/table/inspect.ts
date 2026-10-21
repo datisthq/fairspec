@@ -89,6 +89,14 @@ async function inspectSchemaColumns(
     errors.push(...(missingErrors.get(column.name) ?? cellErrors.get(column.name) ?? []))
   }
 
+  if (mapping.target.additionalProperties === false) {
+    const names = new Set(columns.map(column => column.name))
+    for (const polarsColumn of mapping.source.columns) {
+      if (names.has(polarsColumn.name)) continue
+      errors.push({ type: "column/extra", columnName: polarsColumn.name })
+    }
+  }
+
   return errors.sort(
     (a, b) =>
       Number(!a.type.startsWith("column/")) - Number(!b.type.startsWith("column/")),

@@ -205,7 +205,12 @@ from .models.error.cell import (
     CellUniqueError,
 )
 from .models.error.check import CheckError, TableCheckError
-from .models.error.column import ColumnError, ColumnMissingError, ColumnTypeError
+from .models.error.column import (
+    ColumnError,
+    ColumnExtraError,
+    ColumnMissingError,
+    ColumnTypeError,
+)
 from .models.error.data import DataError
 from .models.error.error import FairspecError
 from .models.error.file import FileError, IntegrityError, TextualError
@@ -371,6 +376,7 @@ __all__ = [
     "ConvertTableSchemaFromOptions",
     "ConvertTableSchemaToOptions",
     "ColumnMissingError",
+    "ColumnExtraError",
     "ColumnProperty",
     "ColumnType",
     "ColumnTypeError",

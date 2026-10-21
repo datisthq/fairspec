@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use fairspec_metadata::{
     Dataset, Descriptor, infer_resource_name, inspect_json, load_dataset_descriptor,
-    validate_data_schema,
+    validate_data_schema, validate_table_schema,
 };
 use serde_json::{Map, Value};
 
@@ -78,6 +78,7 @@ fn get_operation(operation: &str) -> Option<Operation> {
     match operation {
         "data-validate-schema" => Some(run_data_validate_schema),
         "dataset-list" => Some(run_dataset_list),
+        "table-validate-schema" => Some(run_table_validate_schema),
         _ => None,
     }
 }
@@ -88,6 +89,16 @@ fn run_data_validate_schema(_group: &Value, test: &Value) -> Result<Value, Strin
     };
     let mut report = validate_data_schema(data.clone(), None).map_err(|error| error.to_string())?;
     report.data_schema = None;
+    serde_json::to_value(report).map_err(|error| error.to_string())
+}
+
+fn run_table_validate_schema(_group: &Value, test: &Value) -> Result<Value, String> {
+    let Value::Object(data) = &test["data"] else {
+        return Err("table-validate-schema data must be a schema object".to_string());
+    };
+    let mut report =
+        validate_table_schema(data.clone(), None).map_err(|error| error.to_string())?;
+    report.table_schema = None;
     serde_json::to_value(report).map_err(|error| error.to_string())
 }
 

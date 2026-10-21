@@ -2,6 +2,7 @@ use serde_json::Value;
 
 use super::load::load_descriptor_source;
 use crate::actions::json::inspect::inspect_json;
+use crate::actions::json_schema::load::METASCHEMA_ID;
 use crate::actions::profile::load::load_profile;
 use crate::actions::profile::registry::get_profile_type_name;
 use crate::actions::report::create::create_report;
@@ -46,7 +47,11 @@ pub(crate) fn validate_profiled_descriptor(
     let descriptor = load_descriptor_source(source)?;
 
     let schema_url = match descriptor.get("$schema") {
-        Some(Value::String(schema)) => schema.clone(),
+        Some(Value::String(schema))
+            if !(profile_type == ProfileType::TableSchema && schema == METASCHEMA_ID) =>
+        {
+            schema.clone()
+        }
         _ => format!(
             "https://fairspec.org/profiles/latest/{}.json",
             get_profile_type_name(profile_type)

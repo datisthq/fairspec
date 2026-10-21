@@ -13,13 +13,13 @@ pub struct BaseIntegerColumnProperty {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rdf_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#enum: Option<Vec<i64>>,
+    pub r#enum: Option<Vec<Option<i64>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#const: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default: Option<Vec<i64>>,
+    pub default: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub examples: Option<Vec<i64>>,
+    pub examples: Option<Vec<Option<i64>>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_values: Option<Vec<IntegerMissingValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -48,6 +48,8 @@ pub struct IntegerMissingValueItem {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct IntegerColumnProperty {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
     #[serde(flatten)]
     pub base: BaseIntegerColumnProperty,
 }

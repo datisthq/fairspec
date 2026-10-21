@@ -10,10 +10,12 @@ def get_base_property_type(type: str | Sequence[str] | None) -> str | None:
         return None
     if isinstance(type, str):
         return type
-    for t in type:
-        if t != "null":
-            return t
-    return "null"
+    names = [name for name in type if name != "null"]
+    if len(names) == 1:
+        return names[0]
+    if sorted(names) == ["integer", "number"]:
+        return "number"
+    return None
 
 
 def get_is_nullable_property_type(type: str | Sequence[str] | None) -> bool:

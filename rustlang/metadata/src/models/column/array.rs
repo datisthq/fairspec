@@ -6,6 +6,8 @@ use super::base::{ArrayNullablePropertyType, ValueOrItem};
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArrayColumnProperty {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
     pub r#type: ArrayNullablePropertyType,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
@@ -18,9 +20,9 @@ pub struct ArrayColumnProperty {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#const: Option<Vec<Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default: Option<Vec<Vec<Value>>>,
+    pub default: Option<Vec<Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub examples: Option<Vec<Vec<Value>>>,
+    pub examples: Option<Vec<Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_values: Option<Vec<ArrayMissingValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

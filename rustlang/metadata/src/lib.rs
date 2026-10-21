@@ -107,7 +107,9 @@ pub use models::error::cell::{
     CellMultipleOfError, CellPatternError, CellTypeError, CellUniqueError,
 };
 pub use models::error::check::{CheckError, CheckErrorType, TableCheckError, TableCheckErrorType};
-pub use models::error::column::{ColumnError, ColumnMissingError, ColumnTypeError};
+pub use models::error::column::{
+    ColumnError, ColumnExtraError, ColumnMissingError, ColumnTypeError,
+};
 pub use models::error::data::{DataError, DataErrorType};
 pub use models::error::error::FairspecError;
 pub use models::error::file::{FileError, IntegrityError, TextualError};

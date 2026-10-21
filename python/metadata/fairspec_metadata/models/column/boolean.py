@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
 from ..base import FairspecModel
-from .base import BaseColumn, BaseColumnProperty
+from .base import BaseColumn, BaseColumnProperty, create_type_array_check
 
 BooleanNullablePropertyType = (
     Literal["boolean"]
-    | tuple[Literal["boolean"], Literal["null"]]
-    | tuple[Literal["null"], Literal["boolean"]]
+    | Annotated[
+        tuple[Literal["boolean", "null"], ...],
+        AfterValidator(create_type_array_check("boolean")),
+    ]
 )
 
 
@@ -21,8 +23,8 @@ class StringIntMissingValue(FairspecModel):
 
 class BooleanColumnProperty(BaseColumnProperty):
     type: BooleanNullablePropertyType = "boolean"
-    format: Literal[None] = None
-    enum: list[bool] | None = Field(
+    format: str | None = None
+    enum: list[bool | None] | None = Field(
         default=None,
         description="An optional array of allowed values for the column",
     )
@@ -30,11 +32,11 @@ class BooleanColumnProperty(BaseColumnProperty):
         default=None,
         description="An optional const that all values must match",
     )
-    default: list[bool] | None = Field(
+    default: bool | None = Field(
         default=None,
         description="An optional default value for the column",
     )
-    examples: list[bool] | None = Field(
+    examples: list[bool | None] | None = Field(
         default=None,
         description="An optional array of examples for the column",
     )

@@ -34,6 +34,7 @@ import {
   validateDataset,
   validateFile,
   validateTable,
+  validateTableSchema,
   writeTempFile,
 } from "../index.ts"
 
@@ -144,6 +145,13 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
     )
     if (!table || !group.query) return null
     return await readRows(queryTable(table, group.query))
+  },
+  "table-validate-schema": async (_group, test) => {
+    if (typeof test.data !== "object" || Array.isArray(test.data)) {
+      throw new Error("table-validate-schema data must be a schema object")
+    }
+    const { valid, errors } = await validateTableSchema(test.data)
+    return { valid, errors }
   },
   "table-validate": async (group, test) =>
     validateTable(
