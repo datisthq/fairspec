@@ -271,26 +271,27 @@
         <p class="eyebrow">Fairspec benchmark</p>
         <h1>How fast does a 10GB table validate?</h1>
         <p class="lede">
-          Fairspec's Python and TypeScript CLIs against 8 other validators, all checking
-          the same generated CSV against the same Table Schema. Measured 2026-10-21 on AMD
-          Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB RAM, capped at 12G
-          per tool, linux 7.0.0-34-generic.
+          Fairspec's Python and TypeScript libraries against 8 other validators, all
+          checking the same generated CSV against the same Table Schema. Measured
+          2026-10-21 on AMD Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB
+          RAM, capped at 10G per tool, linux 7.0.0-34-generic.
         </p>
       </header>
       <section aria-label="Headline">
         <p class="caption">nyc-311, 10GB · 19,398,995 rows</p>
         <div class="tiles">
           <div class="tile">
-            <span class="label">Fairspec Python</span><span class="value">15.9 s</span
-            ><span class="note">2.3 GB</span>
+            <span class="label">Fairspec Python</span><span class="value">15.5 s</span
+            ><span class="note">2.2 GB</span>
           </div>
           <div class="tile">
-            <span class="label">Fairspec TypeScript</span><span class="value">21.7 s</span
-            ><span class="note">2.1 GB</span>
+            <span class="label">Fairspec TypeScript</span><span class="value">23.0 s</span
+            ><span class="note">4.6 GB</span>
           </div>
           <div class="tile">
             <span class="label">Fastest correct rival</span
-            ><span class="value">1 min 4 s</span><span class="note">qsv</span>
+            ><span class="value">1 min 5 s</span
+            ><span class="note">pandera (DuckDB)</span>
           </div>
           <div class="tile">
             <span class="label">Did not finish</span><span class="value">5 of 13</span
@@ -307,7 +308,21 @@
         </div>
         <div class="charts">
           <figure>
-            <figcaption>Wall time</figcaption>
+            <figcaption>Time</figcaption>
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 0.30 s">
+              <span class="name">Fairspec Python</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 3.7%"></span
+                ><span class="value">0.30 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 0.41 s">
+              <span class="name">Fairspec TypeScript</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 5.1%"></span
+                ><span class="value">0.41 s</span></span
+              >
+            </div>
             <div class="row" data-tip="dataframely 3.1.2: 0.44 s">
               <span class="name">dataframely</span
               ><span class="track"
@@ -315,25 +330,11 @@
                 ><span class="value">0.44 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 0.65 s">
-              <span class="name">Fairspec TypeScript</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 8%"></span
-                ><span class="value">0.65 s</span></span
-              >
-            </div>
             <div class="row" data-tip="qsv 24.0.0: 0.76 s">
               <span class="name">qsv</span
               ><span class="track"
                 ><span class="bar rival" style="width: 9.4%"></span
                 ><span class="value">0.76 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 0.83 s">
-              <span class="name">Fairspec Python</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 10.2%"></span
-                ><span class="value">0.83 s</span></span
               >
             </div>
             <div class="row" data-tip="pandera (polars) 0.34.1: 0.83 s">
@@ -411,6 +412,20 @@
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 458 MB">
+              <span class="name">Fairspec Python</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 61.1%"></span
+                ><span class="value">458 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 438 MB">
+              <span class="name">Fairspec TypeScript</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 58.5%"></span
+                ><span class="value">438 MB</span></span
+              >
+            </div>
             <div class="row" data-tip="dataframely 3.1.2: 429 MB">
               <span class="name">dataframely</span
               ><span class="track"
@@ -418,25 +433,11 @@
                 ><span class="value">429 MB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 399 MB">
-              <span class="name">Fairspec TypeScript</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 53.2%"></span
-                ><span class="value">399 MB</span></span
-              >
-            </div>
             <div class="row" data-tip="qsv 24.0.0: 62 MB">
               <span class="name">qsv</span
               ><span class="track"
                 ><span class="bar rival" style="width: 8.3%"></span
                 ><span class="value">62 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 450 MB">
-              <span class="name">Fairspec Python</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 60%"></span
-                ><span class="value">450 MB</span></span
               >
             </div>
             <div class="row" data-tip="pandera (polars) 0.34.1: 477 MB">
@@ -526,6 +527,20 @@
             </thead>
             <tbody>
               <tr>
+                <td>Fairspec Python</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.30 s</td>
+                <td class="num">458 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>Fairspec TypeScript</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.41 s</td>
+                <td class="num">438 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
                 <td>dataframely</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">0.44 s</td>
@@ -533,24 +548,10 @@
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
-                <td>Fairspec TypeScript</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.65 s</td>
-                <td class="num">399 MB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
                 <td>qsv</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">0.76 s</td>
                 <td class="num">62 MB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
-                <td>Fairspec Python</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.83 s</td>
-                <td class="num">450 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
@@ -629,7 +630,14 @@
         </div>
         <div class="charts">
           <figure>
-            <figcaption>Wall time</figcaption>
+            <figcaption>Time</figcaption>
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 1.68 s">
+              <span class="name">Fairspec Python</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 2.2%"></span
+                ><span class="value">1.68 s</span></span
+              >
+            </div>
             <div class="row" data-tip="dataframely 3.1.2: 1.78 s">
               <span class="name">dataframely</span
               ><span class="track"
@@ -637,18 +645,11 @@
                 ><span class="value">1.78 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 2.17 s">
-              <span class="name">Fairspec Python</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 2.8%"></span
-                ><span class="value">2.17 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 2.71 s">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 2.30 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 3.5%"></span
-                ><span class="value">2.71 s</span></span
+                ><span class="bar fairspec" style="width: 3%"></span
+                ><span class="value">2.30 s</span></span
               >
             </div>
             <div class="row" data-tip="pandera (polars) 0.34.1: 2.94 s">
@@ -733,6 +734,13 @@
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 842 MB">
+              <span class="name">Fairspec Python</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 19.2%"></span
+                ><span class="value">842 MB</span></span
+              >
+            </div>
             <div class="row" data-tip="dataframely 3.1.2: 3.1 GB">
               <span class="name">dataframely</span
               ><span class="track"
@@ -740,17 +748,10 @@
                 ><span class="value">3.1 GB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 873 MB">
-              <span class="name">Fairspec Python</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 20%"></span
-                ><span class="value">873 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 1.2 GB">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 1.2 GB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 27.4%"></span
+                ><span class="bar fairspec" style="width: 27.2%"></span
                 ><span class="value">1.2 GB</span></span
               >
             </div>
@@ -848,6 +849,13 @@
             </thead>
             <tbody>
               <tr>
+                <td>Fairspec Python</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">1.68 s</td>
+                <td class="num">842 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
                 <td>dataframely</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">1.78 s</td>
@@ -855,16 +863,9 @@
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
-                <td>Fairspec Python</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.17 s</td>
-                <td class="num">873 MB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.71 s</td>
+                <td class="num">2.30 s</td>
                 <td class="num">1.2 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
@@ -951,26 +952,19 @@
         </div>
         <div class="charts">
           <figure>
-            <figcaption>Wall time</figcaption>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 15.9 s">
+            <figcaption>Time</figcaption>
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 15.5 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
                 ><span class="bar fairspec" style="width: 2%"></span
-                ><span class="value">15.9 s</span></span
+                ><span class="value">15.5 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 21.7 s">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 23.0 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 2.8%"></span
-                ><span class="value">21.7 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="qsv 24.0.0: 1 min 4 s">
-              <span class="name">qsv</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 8.2%"></span
-                ><span class="value">1 min 4 s</span></span
+                ><span class="bar fairspec" style="width: 2.9%"></span
+                ><span class="value">23.0 s</span></span
               >
             </div>
             <div class="row" data-tip="pandera (DuckDB) 0.34.1: 1 min 5 s">
@@ -978,6 +972,13 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 8.2%"></span
                 ><span class="value">1 min 5 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="qsv 24.0.0: 1 min 11 s">
+              <span class="name">qsv</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 9.1%"></span
+                ><span class="value">1 min 11 s</span></span
               >
             </div>
             <div class="row" data-tip="CSV Validator 1.4.4: 8 min 50 s">
@@ -994,37 +995,37 @@
                 ><span class="value">13 min 8 s</span></span
               >
             </div>
-            <div class="row" data-tip="dataframely 3.1.2: out of memory after 8.73 s">
+            <div class="row" data-tip="dataframely 3.1.2: out of memory after 5.41 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="missing">out of memory after 8.73 s</span></span
+                ><span class="missing">out of memory after 5.41 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 51 s"
+              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 39 s"
             >
               <span class="name">Great Expectations (pandas)</span
               ><span class="track"
-                ><span class="missing">out of memory after 1 min 51 s</span></span
+                ><span class="missing">out of memory after 1 min 39 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pandera (polars) 0.34.1: out of memory after 20.8 s"
+              data-tip="pandera (polars) 0.34.1: out of memory after 8.04 s"
             >
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 20.8 s</span></span
+                ><span class="missing">out of memory after 8.04 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
+              data-tip="pointblank (polars) 1.0.1: out of memory after 5.35 s"
             >
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 6.78 s</span></span
+                ><span class="missing">out of memory after 5.35 s</span></span
               >
             </div>
             <div
@@ -1049,35 +1050,28 @@
             </div>
             <div
               class="row"
-              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.31 s"
+              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.36 s"
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="missing">out of memory after 7.31 s</span></span
+                ><span class="missing">out of memory after 7.36 s</span></span
               >
             </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
-            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 2.3 GB">
+            <div class="row" data-tip="Fairspec Python 0.2.0+8d187d7: 2.2 GB">
               <span class="name">Fairspec Python</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 37.1%"></span
-                ><span class="value">2.3 GB</span></span
+                ><span class="bar fairspec" style="width: 36%"></span
+                ><span class="value">2.2 GB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 2.1 GB">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 4.6 GB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 34.7%"></span
-                ><span class="value">2.1 GB</span></span
-              >
-            </div>
-            <div class="row" data-tip="qsv 24.0.0: 3.8 GB">
-              <span class="name">qsv</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 60.9%"></span
-                ><span class="value">3.8 GB</span></span
+                ><span class="bar fairspec" style="width: 74.7%"></span
+                ><span class="value">4.6 GB</span></span
               >
             </div>
             <div class="row" data-tip="pandera (DuckDB) 0.34.1: 6.2 GB">
@@ -1085,6 +1079,13 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 100%"></span
                 ><span class="value">6.2 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="qsv 24.0.0: 3.8 GB">
+              <span class="name">qsv</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 60.8%"></span
+                ><span class="value">3.8 GB</span></span
               >
             </div>
             <div class="row" data-tip="CSV Validator 1.4.4: 3.1 GB">
@@ -1101,37 +1102,37 @@
                 ><span class="value">2.7 GB</span></span
               >
             </div>
-            <div class="row" data-tip="dataframely 3.1.2: out of memory after 8.73 s">
+            <div class="row" data-tip="dataframely 3.1.2: out of memory after 5.41 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="missing">out of memory after 8.73 s</span></span
+                ><span class="missing">out of memory after 5.41 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 51 s"
+              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 39 s"
             >
               <span class="name">Great Expectations (pandas)</span
               ><span class="track"
-                ><span class="missing">out of memory after 1 min 51 s</span></span
+                ><span class="missing">out of memory after 1 min 39 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pandera (polars) 0.34.1: out of memory after 20.8 s"
+              data-tip="pandera (polars) 0.34.1: out of memory after 8.04 s"
             >
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 20.8 s</span></span
+                ><span class="missing">out of memory after 8.04 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
+              data-tip="pointblank (polars) 1.0.1: out of memory after 5.35 s"
             >
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 6.78 s</span></span
+                ><span class="missing">out of memory after 5.35 s</span></span
               >
             </div>
             <div
@@ -1156,11 +1157,11 @@
             </div>
             <div
               class="row"
-              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.31 s"
+              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.36 s"
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="missing">out of memory after 7.31 s</span></span
+                ><span class="missing">out of memory after 7.36 s</span></span
               >
             </div>
           </figure>
@@ -1180,22 +1181,15 @@
               <tr>
                 <td>Fairspec Python</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">15.9 s</td>
-                <td class="num">2.3 GB</td>
+                <td class="num">15.5 s</td>
+                <td class="num">2.2 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">21.7 s</td>
-                <td class="num">2.1 GB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
-                <td>qsv</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">1 min 4 s</td>
-                <td class="num">3.8 GB</td>
+                <td class="num">23.0 s</td>
+                <td class="num">4.6 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
@@ -1204,6 +1198,13 @@
                 <td class="num">1 min 5 s</td>
                 <td class="num">6.2 GB</td>
                 <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>qsv</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">1 min 11 s</td>
+                <td class="num">3.8 GB</td>
+                <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>CSV Validator</td>
@@ -1222,28 +1223,28 @@
               <tr>
                 <td>dataframely</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 8.73 s</td>
+                <td class="num">out of memory after 5.41 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 100</td>
               </tr>
               <tr>
                 <td>Great Expectations (pandas)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 1 min 51 s</td>
+                <td class="num">out of memory after 1 min 39 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 80</td>
               </tr>
               <tr>
                 <td>pandera (polars)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 20.8 s</td>
+                <td class="num">out of memory after 8.04 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 100</td>
               </tr>
               <tr>
                 <td>pointblank (polars)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 6.78 s</td>
+                <td class="num">out of memory after 5.35 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 80</td>
               </tr>
@@ -1264,7 +1265,7 @@
               <tr>
                 <td>patito (polars) (not a full validator)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 7.31 s</td>
+                <td class="num">out of memory after 7.36 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 80</td>
               </tr>
@@ -1291,13 +1292,13 @@
             <tbody>
               <tr>
                 <td>Fairspec Python</td>
-                <td>0.2.0+6987c98</td>
+                <td>0.2.0+8d187d7</td>
                 <td>–</td>
                 <td>–</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
-                <td>0.12.4+7a3366e</td>
+                <td>0.12.4+8d187d7</td>
                 <td>–</td>
                 <td>–</td>
               </tr>
@@ -1442,11 +1443,12 @@
             measured here.
           </li>
           <li>
-            Every tool runs as its own process from a warm file cache. Time is wall clock.
-            Memory is the peak anonymous memory of the tool's processes, sampled every 50
-            ms: memory-mapped pages of the input file are excluded, since the kernel can
-            drop them at any time. Each tool is capped at the memory the report header
-            names; the machine was shared with other work.
+            Every tool runs as its own process from a warm file cache. Time is clocked by
+            the script calling a library, after its imports; qsv and CSV Validator, two
+            CLIs, are timed whole. Memory is the peak anonymous memory of the tool's
+            processes, sampled every 50 ms: memory-mapped pages of the input file are
+            excluded, since the kernel can drop them at any time. Each tool is capped at
+            the memory the report header names; the machine was shared with other work.
           </li>
           <li>
             Reproduce: <code>pnpm -C benchmark setup:rivals</code>, then
