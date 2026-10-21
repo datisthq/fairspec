@@ -1,0 +1,38 @@
+{
+  "id": 12345,
+  "conceptrecid": "12344",
+  "created": "2026-10-20T10:00:00+00:00",
+  "modified": "2026-10-20T10:00:00+00:00",
+  "owner": 1,
+  "record_id": 12345,
+  "state": "unsubmitted",
+  "submitted": false,
+  "title": "Test Package",
+  "links": {
+    "self": "https://sandbox.zenodo.org/api/deposit/depositions/12345",
+    "html": "https://sandbox.zenodo.org/deposit/12345",
+    "files": "https://sandbox.zenodo.org/api/deposit/depositions/12345/files",
+    "bucket": "https://sandbox.zenodo.org/api/files/568377dd-daf8-4235-85e1-a56011ad454b",
+    "publish": "https://sandbox.zenodo.org/api/deposit/depositions/12345/actions/publish",
+    "discard": "https://sandbox.zenodo.org/api/deposit/depositions/12345/actions/discard",
+    "edit": "https://sandbox.zenodo.org/api/deposit/depositions/12345/actions/edit"
+  },
+  "metadata": {
+    "title": "Test Package",
+    "description": "A test package",
+    "upload_type": "dataset",
+    "creators": [
+      {
+        "name": "Unknown Author",
+        "affiliation": "Unknown Affiliation"
+      }
+    ],
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "prereserve_doi": {
+      "doi": "10.5281/zenodo.12345",
+      "recid": 12345
+    }
+  },
+  "files": []
+}

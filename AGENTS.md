@@ -174,9 +174,9 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | ------------------------ | ---------------------------------------------------------------------- |
 | `typescript-development` | the npm packages, CLI or MCP server in `typescript/`                   |
 | `python-development`     | the PyPI packages, CLI or MCP server in `python/`                      |
-| `rustlang-development`   | the Cargo workspace in `rustlang/`, the Rust twin (metadata so far)    |
+| `rustlang-development`   | the Cargo workspace in `rustlang/`, the Rust twin (metadata, dataset)  |
 | `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
-| `testsuite-development`  | the shared test suite in `testsuite/` and its two runners              |
+| `testsuite-development`  | the shared test suite in `testsuite/` and its runners                  |
 | `benchmark-development`  | the benchmark in `benchmark/`: generated data, rival validators        |
 | `monorepo-layout`        | adding a section, a root script, a workflow job or a release component |
 | `human-documentation`    | a report for people under `.humans/`, and the docs pass before a merge |

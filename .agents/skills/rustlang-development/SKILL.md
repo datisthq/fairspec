@@ -1,14 +1,15 @@
 ---
 name: rustlang-development
-description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata so far). Covers commands, the crate layout mirroring Python, serde union conventions, offline tests, the testsuite runner and divergences.
+description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
 ---
 
 # Rust
 
 The `rustlang/` section is a Cargo workspace, a **third twin** of the libraries. The goal is a
 Fairspec implementation for users outside Python and TypeScript — a standalone binary they can
-wrap as a CLI. So far only `rustlang/metadata/` (`fairspec-metadata`, lib `fairspec_metadata`)
-exists, ported from `python/metadata/`; nothing is published and it has no release component.
+wrap as a CLI. So far `rustlang/metadata/` (`fairspec-metadata`) and `rustlang/dataset/`
+(`fairspec-dataset`, on top of metadata) exist, ported from their Python packages; the crates
+follow Python's package DAG. Nothing is published and the section has no release component.
 
 ## Commands
 
@@ -55,9 +56,18 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - HTTP goes through `fetch_remote_text` / `resolve_remote_url` in `actions/descriptor/load.rs` with the `fairspec-rust` user agent; under `cfg(test)` they refuse every host but 127.0.0.1, so tests never touch the network
 - Slugify tables are generated from Python's and must stay byte-exact with both twins
 
+## Dataset
+
+- Sync API: streams are `FileStream = Box<dyn Read + Send>`; Python's thread pool is `helpers/concurrency.rs` (scoped threads per chunk, nested calls run inline)
+- All dataset HTTP goes through `dataset/src/helpers/http.rs` (`send_http_request`, `load_remote_stream`) — the one place a host policy applies; under `cfg(test)` it refuses every host but 127.0.0.1, so remote tests use `helpers/test_server.rs` or a replayed cassette
+- Temp files and folders are deleted at exit through `libc::atexit` (`helpers/cleanup.rs`), Python's `atexit`, unless `persist`. Every `tempfile::Builder` takes `.prefix("tmp")` like Python's `mkstemp`: the default `.tmp` makes a dot-leading file name that fails the dataset profile's path pattern
+- `infer_textual` is "no control bytes and valid UTF-8": Python's charset-normalizer fallback can never answer `utf-8`/`ascii` for non-UTF-8 bytes (it names codecs `utf_8`), so no detector is needed
+- Plugins implement `MetadataPlugin` (every hook defaults to `Ok(None)`) and `DatasetPlugin`
+
 ## Testsuite
 
-`metadata/tests/testsuite.rs` is the third runner: it checks every file against
-`testsuite/test-schema.json`, runs `data-validate-schema` and `dataset-list`, and lists every
-other operation in `SKIPPED`. An unknown operation directory fails, so a new operation in
+`dataset/tests/testsuite.rs` is the third runner; it lives in the highest crate, so it moves up
+as crates are added. It checks every file against `testsuite/test-schema.json`, runs
+`data-validate-schema`, `table-validate-schema`, `dataset-list` and the three `file-*`
+operations, and lists every other operation in `SKIPPED`. An unknown operation directory fails, so a new operation in
 `testsuite/` lands here too — implemented or skipped (**`testsuite-development`**).

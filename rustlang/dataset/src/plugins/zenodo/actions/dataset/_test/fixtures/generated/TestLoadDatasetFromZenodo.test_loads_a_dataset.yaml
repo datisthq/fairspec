@@ -1,0 +1,108 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - zenodo.org
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://zenodo.org/api/records/15525711
+  response:
+    body:
+      string: '{"created": "2025-05-27T10:20:07.936985+00:00", "modified": "2025-05-27T10:20:08.174083+00:00",
+        "id": 15525711, "conceptrecid": "15525710", "doi": "10.5281/zenodo.15525711",
+        "conceptdoi": "10.5281/zenodo.15525710", "doi_url": "https://doi.org/10.5281/zenodo.15525711",
+        "metadata": {"title": "PM10 Concentration in Japan", "doi": "10.5281/zenodo.15525711",
+        "publication_date": "2025-05-27", "description": "<p>A brief project to extract
+        PM 10 concentration from Japan. Data set has been created using the OpenAQ
+        data through a python script</p>", "access_right": "open", "creators": [{"name":
+        "Sukhija, Vinay Jagdish", "affiliation": null, "orcid": "0000-0003-2155-6940"}],
+        "keywords": ["PM10 concentrations", "Air Quality", "Japan", "OpenAQ"], "custom":
+        {"code:programmingLanguage": [{"id": "python", "title": {"en": "Python"}}]},
+        "resource_type": {"title": "Dataset", "type": "dataset"}, "meeting": {"title":
+        "Open Data and Open Science Conference", "dates": "27 May 2025", "place":
+        "Padova"}, "license": {"id": "cc-by-4.0"}, "relations": {"version": [{"index":
+        0, "is_last": true, "parent": {"pid_type": "recid", "pid_value": "15525710"}}]}},
+        "title": "PM10 Concentration in Japan", "links": {"self": "https://zenodo.org/api/records/15525711",
+        "self_html": "https://zenodo.org/records/15525711", "preview_html": "https://zenodo.org/records/15525711?preview=1",
+        "doi": "https://doi.org/10.5281/zenodo.15525711", "self_doi": "https://doi.org/10.5281/zenodo.15525711",
+        "self_doi_html": "https://zenodo.org/doi/10.5281/zenodo.15525711", "reserve_doi":
+        "https://zenodo.org/api/records/15525711/draft/pids/doi", "parent": "https://zenodo.org/api/records/15525710",
+        "parent_html": "https://zenodo.org/records/15525710", "parent_doi": "https://doi.org/10.5281/zenodo.15525710",
+        "parent_doi_html": "https://zenodo.org/doi/10.5281/zenodo.15525710", "self_iiif_manifest":
+        "https://zenodo.org/api/iiif/record:15525711/manifest", "self_iiif_sequence":
+        "https://zenodo.org/api/iiif/record:15525711/sequence/default", "files": "https://zenodo.org/api/records/15525711/files",
+        "media_files": "https://zenodo.org/api/records/15525711/media-files", "latest":
+        "https://zenodo.org/api/records/15525711/versions/latest", "latest_html":
+        "https://zenodo.org/records/15525711/latest", "versions": "https://zenodo.org/api/records/15525711/versions",
+        "draft": "https://zenodo.org/api/records/15525711/draft", "access_links":
+        "https://zenodo.org/api/records/15525711/access/links", "access_grants": "https://zenodo.org/api/records/15525711/access/grants",
+        "access_users": "https://zenodo.org/api/records/15525711/access/users", "access_request":
+        "https://zenodo.org/api/records/15525711/access/request", "access": "https://zenodo.org/api/records/15525711/access",
+        "communities": "https://zenodo.org/api/records/15525711/communities", "communities-suggestions":
+        "https://zenodo.org/api/records/15525711/communities-suggestions", "request_deletion":
+        "https://zenodo.org/api/records/15525711/request-deletion", "file_modification":
+        "https://zenodo.org/api/records/15525711/file-modification", "quota_increase":
+        "https://zenodo.org/api/records/15525711/quota-increase", "requests": "https://zenodo.org/api/records/15525711/requests"},
+        "updated": "2025-05-27T10:20:08.174083+00:00", "recid": "15525711", "revision":
+        4, "files": [{"id": "c50a6efe-4946-4054-a3bb-797a35da03d0", "key": "openaq_measurements_PM10_Japan_20250527_095520.csv",
+        "size": 272, "checksum": "md5:5ac1b92a57ec809c546ea90334c845c9", "links":
+        {"self": "https://zenodo.org/api/records/15525711/files/openaq_measurements_PM10_Japan_20250527_095520.csv/content"}}],
+        "swh": {}, "owners": [{"id": "1328821"}], "status": "published", "stats":
+        {"downloads": 22, "unique_downloads": 19, "views": 30, "unique_views": 27,
+        "version_downloads": 22, "version_unique_downloads": 19, "version_unique_views":
+        27, "version_views": 30}, "state": "done", "submitted": true}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Content-Type, ETag, Link, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+      connection:
+      - close
+      content-length:
+      - '3892'
+      content-security-policy:
+      - 'default-src ''self'' fonts.googleapis.com *.gstatic.com data: ''unsafe-inline''
+        ''unsafe-eval'' blob: zenodo-broker.web.cern.ch zenodo-broker-qa.web.cern.ch
+        maxcdn.bootstrapcdn.com cdnjs.cloudflare.com ajax.googleapis.com webanalytics.web.cern.ch'
+      content-type:
+      - application/json
+      date:
+      - Tue, 20 Oct 2026 11:44:07 GMT
+      etag:
+      - '"4"'
+      link:
+      - <https://zenodo.org/api/records/15525711> ; rel="linkset" ; type="application/linkset+json"
+      permissions-policy:
+      - interest-cohort=()
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      retry-after:
+      - '60'
+      server:
+      - nginx
+      strict-transport-security:
+      - max-age=31556926; includeSubDomains
+      vary:
+      - Accept-Encoding
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - sameorigin
+      x-ratelimit-limit:
+      - '133'
+      x-ratelimit-remaining:
+      - '132'
+      x-ratelimit-reset:
+      - '1792496708'
+      x-source:
+      - api
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

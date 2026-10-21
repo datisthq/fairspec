@@ -19,6 +19,24 @@ pub enum ResourceDataPath {
     Paths(Vec<Path>),
 }
 
+impl From<&str> for ResourceDataPath {
+    fn from(path: &str) -> Self {
+        ResourceDataPath::Path(path.to_string())
+    }
+}
+
+impl From<String> for ResourceDataPath {
+    fn from(path: String) -> Self {
+        ResourceDataPath::Path(path)
+    }
+}
+
+impl From<Vec<String>> for ResourceDataPath {
+    fn from(paths: Vec<String>) -> Self {
+        ResourceDataPath::Paths(paths)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ResourceDataValue {

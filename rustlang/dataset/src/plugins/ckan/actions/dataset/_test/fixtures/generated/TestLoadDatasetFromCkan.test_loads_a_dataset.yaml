@@ -1,0 +1,229 @@
+interactions:
+- request:
+    body: '{"id": "referendum-on-the-thirty-seventh-amendment-of-the-constitution-bill-2018"}'
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '82'
+      Content-Type:
+      - application/json
+      Host:
+      - data.gov.ie
+      User-Agent:
+      - Python-urllib/3.12
+    method: POST
+    uri: https://data.gov.ie/api/3/action/package_show
+  response:
+    body:
+      string: '{"help": "https://data.gov.ie/api/3/action/help_show?name=package_show",
+        "success": true, "result": {"applicable_legislation": [], "author": null,
+        "author_email": null, "collection_name": "housing-ckan", "conforms_to": "",
+        "contact_email": "franchise@housing.gov.ie", "contact_name": "Franchise section-
+        Department of Housing, Local Government and Heritage", "contact_phone": "",
+        "creator_user_id": "ef08264c-676d-48c5-aaad-6ce8aa18d521", "frequency": "Never",
+        "high_value_dataset": false, "hvd_category": "", "id": "603829ca-9690-4571-9481-e4590de3d76d",
+        "isopen": true, "language": "en", "license_id": "CC-BY-SA-4.0", "license_title":
+        "Creative Commons Attribution Share-Alike 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "maintainer": null, "maintainer_email": null, "metadata_created": "2026-10-15T09:11:38.063175",
+        "metadata_modified": "2026-10-16T16:01:36.460830", "name": "referendum-on-the-thirty-seventh-amendment-of-the-constitution-bill-2018",
+        "notes_translated": {"en": "Polling at the referendum took place on Friday,
+        26 October 2018. The subject matter of the referendum was described as follows
+        in the official\r\npolling card sent to each elector:\r\nTHE THIRTY-SEVENTH
+        AMENDMENT OF THE CONSTITUTION (REPEAL OF\r\nOFFENCE OF PUBLICATION OR UTTERANCE
+        OF BLASPHEMOUS MATTER)\r\nBILL 2018 \u2013 printed on GREEN Paper\r\nYou are
+        being asked in this referendum if you agree with the proposal to amend\r\nArticle
+        40 of the Constitution to repeal the offence of publication or utterance of\r\nblasphemous
+        matter.", "ga": "Bh\u00ed v\u00f3ta\u00edocht ag an reifreann ar si\u00fal
+        D\u00e9 hAoine, 26\u00fa Deireadh F\u00f3mhair 2018. \u00c1ir\u00edodh an
+        r\u00e1iteas seo a leanas mar eolas do v\u00f3t\u00e1laithe ar \u00e1bhar
+        an reifrinn i\r\nmbileog a seoladh chuig gach toghth\u00f3ir:\r\nAn Bille
+        um an Seacht\u00fa Leas\u00fa is Tr\u00edocha ar an mBunreacht (Cion an aisghairm\r\narb
+        \u00e9ard \u00e9 n\u00ed diamhaslach a fhoilsi\u00fa n\u00f3 a aithris), 2018
+        \u2013 p\u00e1ip\u00e9ar ball\u00f3ide\r\nUAINE\r\nFiafra\u00edtear d\u00edot
+        sa reifreann seo an aonta\u00edonn t\u00fa leis an togra chun Airteagal 40
+        den\r\nBhunreacht a leas\u00fa chun an cion a aisghairm arb \u00e9ard \u00e9
+        n\u00ed diamhaslach a fhoilsi\u00fa n\u00f3\r\na aithris."}, "num_resources":
+        2, "num_tags": 3, "organization": {"id": "department-of-housing-planning-community-and-local-government",
+        "name": "department-of-housing-local-government-and-heritage", "title": "Department
+        of Housing, Local Government and Heritage", "type": "organization", "description":
+        "The Department''s mission is to support the sustainable and efficient delivery
+        of well-planned homes and effective local government.\r\n", "image_url": "2025-04-23-110538.306273DoHLGH.png",
+        "created": "2018-03-05T11:24:53.294724", "is_organization": true, "approval_status":
+        "approved", "state": "active"}, "owner_org": "department-of-housing-planning-community-and-local-government",
+        "private": false, "provenance": "", "rights": "", "spatial": "", "spatial_other":
+        "", "spatial_resolution": "", "spatial_uri": "", "srs": [], "state": "active",
+        "temporal": "", "temporal_end": "2018-10-26", "temporal_start": "2018-10-26",
+        "theme": "Housing", "title": "Referendum on the Thirty-seventh Amendment of
+        the Constitution (Repeal of offence of publication or utterance of blasphemous
+        matter) Bill 2018", "title_translated": {"en": "Referendum on the Thirty-seventh
+        Amendment of the Constitution (Repeal of offence of publication or utterance
+        of blasphemous matter) Bill 2018", "ga": "Reifreann ar an mBille um an Seacht\u00fa
+        Leas\u00fa is Tr\u00edocha ar an mBunreacht (Cion a aisghairm arb \u00e9ard
+        \u00e9 n\u00ed diamhaslach a fhoilsi\u00fa n\u00f3 a aithris), 2018"}, "type":
+        "dataset", "url": "", "version": "", "vertical_extent": "", "extras": [{"key":
+        "harvest_object_id", "value": "be5ecd65-f2e1-407d-ae42-6234e9f5e531"}, {"key":
+        "harvest_source_id", "value": "9485d8a4-b3e3-40a7-bcb1-20ca386573fb"}, {"key":
+        "harvest_source_title", "value": "Housing CKAN data portal"}], "resources":
+        [{"access_url": "https://opendata.housing.gov.ie/en_GB/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/4321a47b-b594-4ed5-a1a6-4485b425f061/download/referendum-on-the-37th-amendment-of-the-constitution-blasphemous-matter-bill-2018.csv",
+        "api_access_url": "", "api_response_formats": [], "api_type": "", "applicable_legislation":
+        [], "cache_last_updated": null, "cache_url": null, "created": "2026-10-15T08:52:49.279063",
+        "datastore_active": true, "description": null, "download_url": "https://opendata.housing.gov.ie/en_GB/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/4321a47b-b594-4ed5-a1a6-4485b425f061/download/referendum-on-the-37th-amendment-of-the-constitution-blasphemous-matter-bill-2018.csv",
+        "format": "CSV", "hash": "92b5cf18f3f4b3f7e04da1b244ddd8b4", "high_value_dataset":
+        false, "id": "4321a47b-b594-4ed5-a1a6-4485b425f061", "last_modified": "2026-10-15T08:52:49.232093",
+        "metadata_modified": "2026-10-16T16:01:36.466954", "mimetype": "text/csv",
+        "mimetype_inner": null, "name": "Referendum on the 37th Amendment of the Constitution
+        Bill 2018", "notes": "", "package_id": "603829ca-9690-4571-9481-e4590de3d76d",
+        "position": 0, "preview": true, "preview_rows": 42, "resource_type": null,
+        "size": 2782, "state": "active", "superset_dataset": "478", "total_record_count":
+        42, "url": "https://opendata.housing.gov.ie/en_GB/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/4321a47b-b594-4ed5-a1a6-4485b425f061/download/referendum-on-the-37th-amendment-of-the-constitution-blasphemous-matter-bill-2018.csv",
+        "url_type": null}, {"access_url": "https://opendata.housing.gov.ie/ga/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/476a9c10-a6a0-4c43-81b1-15e24d0e0ee3/download/reifreann-ar-an-mbille-um-an-seachtu-leasu-is-triocha-ar-an-mbunreacht-2018.csv",
+        "api_access_url": "", "api_response_formats": [], "api_type": "", "applicable_legislation":
+        [], "cache_last_updated": null, "cache_url": null, "created": "2026-10-16T15:58:45.071145",
+        "datastore_active": false, "description": null, "download_url": "https://opendata.housing.gov.ie/ga/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/476a9c10-a6a0-4c43-81b1-15e24d0e0ee3/download/reifreann-ar-an-mbille-um-an-seachtu-leasu-is-triocha-ar-an-mbunreacht-2018.csv",
+        "format": "CSV", "hash": "", "high_value_dataset": false, "id": "476a9c10-a6a0-4c43-81b1-15e24d0e0ee3",
+        "last_modified": "2026-10-16T15:58:45.015799", "metadata_modified": "2026-10-16T16:01:35.586765",
+        "mimetype": "text/csv", "mimetype_inner": null, "name": "Reifreann ar an mBille
+        um an Seacht\u00fa Leas\u00fa is Tr\u00edocha ar an mBunreacht (Cion a aisghairm
+        arb \u00e9ard \u00e9 n\u00ed diamhaslach a fhoilsi\u00fa n\u00f3 a aithris),
+        2018", "notes": "", "package_id": "603829ca-9690-4571-9481-e4590de3d76d",
+        "position": 1, "resource_type": null, "size": 2982, "state": "active", "url":
+        "https://opendata.housing.gov.ie/ga/dataset/603829ca-9690-4571-9481-e4590de3d76d/resource/476a9c10-a6a0-4c43-81b1-15e24d0e0ee3/download/reifreann-ar-an-mbille-um-an-seachtu-leasu-is-triocha-ar-an-mbunreacht-2018.csv",
+        "url_type": null}], "tags": [{"display_name": "2018", "id": "839e5472-f554-4880-b43b-fd27b73216d7",
+        "name": "2018", "state": "active", "vocabulary_id": null}, {"display_name":
+        "referendum", "id": "98e22e26-043c-4f02-884d-11f24e591978", "name": "referendum",
+        "state": "active", "vocabulary_id": null}, {"display_name": "results", "id":
+        "e5ae4698-48d3-4a6a-b8c8-64454925bf74", "name": "results", "state": "active",
+        "vocabulary_id": null}], "groups": [], "relationships_as_subject": [], "relationships_as_object":
+        [], "qa": {"openness_score_reason": "One of the resource formats is 3-star
+        data - machine-readable data in an open format.", "openness_score": 3}, "views":
+        0}}'
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - x-csrftoken
+      - content-type
+      Access-Control-Allow-Origin:
+      - https://superset.data.gov.ie
+      Cache-Control:
+      - public, max-age=0, must-revalidate
+      Connection:
+      - close
+      Content-Length:
+      - '7810'
+      Content-Security-Policy:
+      - frame-ancestors 'self' https://data.gov.ie
+      Content-Type:
+      - application/json;charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:37 GMT
+      Server:
+      - nginx/1.30.4
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"resource_id": "4321a47b-b594-4ed5-a1a6-4485b425f061", "limit": 0}'
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '67'
+      Content-Type:
+      - application/json
+      Host:
+      - data.gov.ie
+      User-Agent:
+      - Python-urllib/3.12
+    method: POST
+    uri: https://data.gov.ie/api/3/action/datastore_search
+  response:
+    body:
+      string: '{"help": "https://data.gov.ie/api/3/action/help_show?name=datastore_search",
+        "success": true, "result": {"include_total": true, "limit": 0, "records_format":
+        "objects", "resource_id": "4321a47b-b594-4ed5-a1a6-4485b425f061", "total_estimation_threshold":
+        null, "records": [], "fields": [{"id": "_id", "type": "int"}, {"id": "referendum_on_the_thirty_seventh_amendment_of_the_constituti",
+        "type": "text", "info": {"label": "Referendum on the Thirty-seventh Amendment
+        of the Constitution (Repeal of offence of publication or utterance of blasphemous
+        matter) Bill 2018"}}, {"id": "unsafe_", "type": "text", "info": {"label":
+        "Unnamed Column"}}, {"id": "unsafe__2", "type": "text", "info": {"label":
+        "Unnamed Column"}}, {"id": "unsafe__3", "type": "text", "info": {"label":
+        "Unnamed Column"}}, {"id": "unsafe__4", "type": "text", "info": {"label":
+        "Unnamed Column"}}, {"id": "unsafe__5", "type": "text", "info": {"label":
+        "Unnamed Column"}}, {"id": "unsafe__6", "type": "text", "info": {"label":
+        "Unnamed Column"}}], "_links": {"start": "/api/3/action/datastore_search",
+        "next": "/api/3/action/datastore_search?offset=0"}, "total": 42, "total_was_estimated":
+        false}}'
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - x-csrftoken
+      - content-type
+      Access-Control-Allow-Origin:
+      - https://superset.data.gov.ie
+      Cache-Control:
+      - public, max-age=0, must-revalidate
+      Connection:
+      - close
+      Content-Length:
+      - '1161'
+      Content-Security-Policy:
+      - frame-ancestors 'self' https://data.gov.ie
+      Content-Type:
+      - application/json;charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:37 GMT
+      Server:
+      - nginx/1.30.4
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"resource_id": "476a9c10-a6a0-4c43-81b1-15e24d0e0ee3", "limit": 0}'
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '67'
+      Content-Type:
+      - application/json
+      Host:
+      - data.gov.ie
+      User-Agent:
+      - Python-urllib/3.12
+    method: POST
+    uri: https://data.gov.ie/api/3/action/datastore_search
+  response:
+    body:
+      string: '{"help": "https://data.gov.ie/api/3/action/help_show?name=datastore_search",
+        "error": {"__type": "Not Found Error", "message": "Not found: Resource \"476a9c10-a6a0-4c43-81b1-15e24d0e0ee3\"
+        was not found."}, "success": false}'
+    headers:
+      Cache-Control:
+      - public, max-age=0, must-revalidate
+      Connection:
+      - close
+      Content-Length:
+      - '224'
+      Content-Type:
+      - application/json;charset=utf-8
+      Date:
+      - Tue, 20 Oct 2026 11:44:38 GMT
+      Server:
+      - nginx/1.30.4
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+    status:
+      code: 404
+      message: NOT FOUND
+version: 1

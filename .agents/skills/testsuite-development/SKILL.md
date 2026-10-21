@@ -1,6 +1,6 @@
 ---
 name: testsuite-development
-description: Use when working in testsuite/ — the language-neutral conformance test suite both libraries run. Covers the JSON-Schema-Test-Suite file format, the operations, the two runners, and fixing a failing test in the library rather than the runner.
+description: Use when working in testsuite/ — the language-neutral conformance test suite both libraries run. Covers the JSON-Schema-Test-Suite file format, the operations, the runners, and fixing a failing test in the library rather than the runner.
 ---
 
 # Testsuite
@@ -17,7 +17,7 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 - `pnpm -C python test:unit library/fairspec_library/_test/testsuite_unit.py` — the Python runner
 - A section-wide `pnpm -C typescript test:unit` or `pnpm -C python test:unit` runs it too. CI runs both runners
   on Linux, macOS and Windows whenever `testsuite/**` changes
-- `pnpm -C rustlang test:unit` — the partial Rust runner, `rustlang/metadata/tests/testsuite.rs`: it
+- `pnpm -C rustlang test:unit` — the partial Rust runner, `rustlang/dataset/tests/testsuite.rs`: it
   runs only the operations the Rust port implements and lists the rest in `SKIPPED`
 
 ## Format

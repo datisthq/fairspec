@@ -1,24 +1,23 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use base64::Engine;
+use fairspec_dataset::{describe_file, preview_file, validate_file, write_temp_file};
 use fairspec_metadata::{
-    Dataset, Descriptor, infer_resource_name, inspect_json, load_dataset_descriptor,
-    validate_data_schema, validate_table_schema,
+    Dataset, Descriptor, IntegrityType, Resource, infer_resource_name, inspect_json,
+    load_dataset_descriptor, validate_data_schema, validate_table_schema,
 };
 use serde_json::{Map, Value};
 
 const UNSPECIFIED_MESSAGE_ERRORS: [&str; 3] = ["data", "metadata", "cell/json"];
 
-/// Operations that need the dataset and table layers, which this crate does not have.
-const SKIPPED: [&str; 13] = [
+/// Operations that need the table and library layers, which no Rust crate has yet.
+const SKIPPED: [&str; 10] = [
     "data-infer-schema",
     "data-validate",
     "dataset-infer",
     "dataset-query",
     "dataset-validate",
-    "file-describe",
-    "file-preview",
-    "file-validate",
     "table-infer-dialect",
     "table-infer-schema",
     "table-load",
@@ -78,6 +77,9 @@ fn get_operation(operation: &str) -> Option<Operation> {
     match operation {
         "data-validate-schema" => Some(run_data_validate_schema),
         "dataset-list" => Some(run_dataset_list),
+        "file-describe" => Some(run_file_describe),
+        "file-preview" => Some(run_file_preview),
+        "file-validate" => Some(run_file_validate),
         "table-validate-schema" => Some(run_table_validate_schema),
         _ => None,
     }
@@ -120,6 +122,84 @@ fn run_dataset_list(group: &Value, test: &Value) -> Result<Value, String> {
         })
         .collect();
     Ok(Value::Array(names))
+}
+
+fn run_file_describe(group: &Value, test: &Value) -> Result<Value, String> {
+    let hash_type = group["options"]
+        .get("hashType")
+        .cloned()
+        .unwrap_or(Value::String("sha256".to_string()));
+    let hash_type: IntegrityType =
+        serde_json::from_value(hash_type).map_err(|error| error.to_string())?;
+    let description = describe_file(&write_data(group, &test["data"])?, Some(hash_type))
+        .map_err(|error| error.to_string())?;
+    serde_json::to_value(description).map_err(|error| error.to_string())
+}
+
+fn run_file_preview(group: &Value, test: &Value) -> Result<Value, String> {
+    let get_option = |name: &str| -> Result<Option<usize>, String> {
+        match group["options"].get(name) {
+            None => Ok(None),
+            Some(value) => value
+                .as_u64()
+                .map(|value| Some(value as usize))
+                .ok_or_else(|| format!("{name} must be a non-negative integer")),
+        }
+    };
+    let preview = preview_file(
+        &write_data(group, &test["data"])?,
+        get_option("maxBytes")?,
+        get_option("maxLines")?,
+    )
+    .map_err(|error| error.to_string())?;
+    serde_json::to_value(preview).map_err(|error| error.to_string())
+}
+
+fn run_file_validate(group: &Value, test: &Value) -> Result<Value, String> {
+    let report =
+        validate_file(&create_resource(group, test)?, None).map_err(|error| error.to_string())?;
+    serde_json::to_value(report).map_err(|error| error.to_string())
+}
+
+fn create_resource(group: &Value, test: &Value) -> Result<Resource, String> {
+    let data = if group["inline"] == Value::Bool(true) {
+        test["data"].clone()
+    } else {
+        Value::String(write_data(group, &test["data"])?)
+    };
+    let mut descriptor = Map::new();
+    descriptor.insert("data".to_string(), data);
+    for key in [
+        "fileDialect",
+        "tableSchema",
+        "dataSchema",
+        "integrity",
+        "textual",
+    ] {
+        if let Some(value) = group.get(key) {
+            descriptor.insert(key.to_string(), value.clone());
+        }
+    }
+    serde_json::from_value(Value::Object(descriptor)).map_err(|error| error.to_string())
+}
+
+fn write_data(group: &Value, data: &Value) -> Result<String, String> {
+    let format = group["format"].as_str().unwrap_or("csv");
+    write_temp_file(encode_data(data)?, false, None, Some(format))
+        .map_err(|error| error.to_string())
+}
+
+fn encode_data(data: &Value) -> Result<Vec<u8>, String> {
+    match data {
+        Value::String(text) => Ok(text.as_bytes().to_vec()),
+        Value::Object(object) => match object.get("base64") {
+            Some(Value::String(encoded)) => base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .map_err(|error| error.to_string()),
+            _ => Err("data must be a string or base64 object".to_string()),
+        },
+        _ => Err("data must be a string or base64 object".to_string()),
+    }
 }
 
 fn run_case(run: Operation, group: &Value, test: &Value) -> Result<(), String> {

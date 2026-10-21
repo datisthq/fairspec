@@ -1,0 +1,15 @@
+{
+  "content": {
+    "name": "data.csv",
+    "path": "data.csv",
+    "sha": "95b0a8e4d1b4a4b6b9f2a6ac1c8f0d2b6f7d1e3a",
+    "size": 27,
+    "url": "https://api.github.com/repos/test-user/test-repo/contents/data.csv?ref=main",
+    "html_url": "https://github.com/test-user/test-repo/blob/main/data.csv",
+    "type": "file"
+  },
+  "commit": {
+    "sha": "7638417db6d59f3c431d3e1f261cc637155684cd",
+    "message": "Added file \"data.csv\""
+  }
+}

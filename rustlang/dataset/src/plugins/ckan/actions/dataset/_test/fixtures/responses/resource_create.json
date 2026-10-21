@@ -1,0 +1,22 @@
+{
+  "cache_last_updated": null,
+  "cache_url": null,
+  "created": "2026-10-20T10:00:01.000000",
+  "datastore_active": false,
+  "description": "",
+  "format": "CSV",
+  "hash": "",
+  "id": "660de433-447b-40ad-9aaf-77c98f8c2ba9",
+  "last_modified": "2026-10-20T10:00:01.000000",
+  "metadata_modified": "2026-10-20T10:00:01.000000",
+  "mimetype": null,
+  "mimetype_inner": null,
+  "name": "data.csv",
+  "package_id": "78941769-a224-41d2-bdd5-527e9bbd9757",
+  "position": 0,
+  "resource_type": null,
+  "size": null,
+  "state": "active",
+  "url": "https://ckan.example.com/dataset/78941769-a224-41d2-bdd5-527e9bbd9757/resource/660de433-447b-40ad-9aaf-77c98f8c2ba9/download/data.csv",
+  "url_type": "upload"
+}

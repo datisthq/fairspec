@@ -1,0 +1,10 @@
+{
+  "checksum": "2942bfabb3d05332b66eb128e0842cff",
+  "filename": "data.csv",
+  "filesize": 27,
+  "id": "eb78d50b-ecd4-407a-9520-dfc7a9d1ab2c",
+  "links": {
+    "download": "https://sandbox.zenodo.org/api/files/568377dd-daf8-4235-85e1-a56011ad454b/data.csv",
+    "self": "https://sandbox.zenodo.org/api/deposit/depositions/12345/files/eb78d50b-ecd4-407a-9520-dfc7a9d1ab2c"
+  }
+}
