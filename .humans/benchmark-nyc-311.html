@@ -14,6 +14,7 @@
         --rule: #e2e1dc;
         --fairspec: #2a78d6;
         --rival: #b4b3ab;
+        --partial: #dcdbd6;
         --good: #0ca30c;
         --serious: #ec835a;
         --critical: #d03b3b;
@@ -28,6 +29,7 @@
           --rule: #383835;
           --fairspec: #3987e5;
           --rival: #6b6a64;
+          --partial: #42413d;
         }
       }
       :root[data-theme="dark"] {
@@ -39,6 +41,7 @@
         --rule: #383835;
         --fairspec: #3987e5;
         --rival: #6b6a64;
+        --partial: #42413d;
       }
       * {
         box-sizing: border-box;
@@ -139,6 +142,10 @@
       .swatch.rival,
       .bar.rival {
         background: var(--rival);
+      }
+      .swatch.partial,
+      .bar.partial {
+        background: var(--partial);
       }
       .charts {
         display: grid;
@@ -304,7 +311,8 @@
         <p class="caption">193,989 rows · median of 3 run(s) · shorter is better</p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
-          ><span><i class="swatch rival"></i>Other tools</span>
+          ><span><i class="swatch rival"></i>Other tools</span
+          ><span><i class="swatch partial"></i>Not full validators</span>
         </div>
         <div class="charts">
           <figure>
@@ -385,7 +393,7 @@
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 8.8%"></span
+                ><span class="bar partial" style="width: 8.8%"></span
                 ><span class="value">0.72 s</span></span
               >
             </div>
@@ -395,7 +403,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 9.6%"></span
+                ><span class="bar partial" style="width: 9.6%"></span
                 ><span class="value">0.78 s</span></span
               >
             </div>
@@ -405,7 +413,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 30.9%"></span
+                ><span class="bar partial" style="width: 30.9%"></span
                 ><span class="value">2.50 s</span></span
               >
             </div>
@@ -488,7 +496,7 @@
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 61.7%"></span
+                ><span class="bar partial" style="width: 61.7%"></span
                 ><span class="value">462 MB</span></span
               >
             </div>
@@ -498,7 +506,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 28.4%"></span
+                ><span class="bar partial" style="width: 28.4%"></span
                 ><span class="value">213 MB</span></span
               >
             </div>
@@ -508,7 +516,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 50.7%"></span
+                ><span class="bar partial" style="width: 50.7%"></span
                 ><span class="value">380 MB</span></span
               >
             </div>
@@ -626,7 +634,8 @@
         <p class="caption">1,939,898 rows · median of 3 run(s) · shorter is better</p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
-          ><span><i class="swatch rival"></i>Other tools</span>
+          ><span><i class="swatch rival"></i>Other tools</span
+          ><span><i class="swatch partial"></i>Not full validators</span>
         </div>
         <div class="charts">
           <figure>
@@ -707,7 +716,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 2%"></span
+                ><span class="bar partial" style="width: 2%"></span
                 ><span class="value">1.57 s</span></span
               >
             </div>
@@ -717,7 +726,7 @@
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 3.2%"></span
+                ><span class="bar partial" style="width: 3.2%"></span
                 ><span class="value">2.48 s</span></span
               >
             </div>
@@ -727,7 +736,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 5.3%"></span
+                ><span class="bar partial" style="width: 5.3%"></span
                 ><span class="value">4.05 s</span></span
               >
             </div>
@@ -810,7 +819,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 17.7%"></span
+                ><span class="bar partial" style="width: 17.7%"></span
                 ><span class="value">773 MB</span></span
               >
             </div>
@@ -820,7 +829,7 @@
             >
               <span class="name">patito (polars) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 71.4%"></span
+                ><span class="bar partial" style="width: 71.4%"></span
                 ><span class="value">3.1 GB</span></span
               >
             </div>
@@ -830,7 +839,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 21.6%"></span
+                ><span class="bar partial" style="width: 21.6%"></span
                 ><span class="value">947 MB</span></span
               >
             </div>
@@ -948,7 +957,8 @@
         <p class="caption">19,398,995 rows · median of 1 run(s) · shorter is better</p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
-          ><span><i class="swatch rival"></i>Other tools</span>
+          ><span><i class="swatch rival"></i>Other tools</span
+          ><span><i class="swatch partial"></i>Not full validators</span>
         </div>
         <div class="charts">
           <figure>
@@ -1034,7 +1044,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 1.3%"></span
+                ><span class="bar partial" style="width: 1.3%"></span
                 ><span class="value">9.95 s</span></span
               >
             </div>
@@ -1044,7 +1054,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 2.3%"></span
+                ><span class="bar partial" style="width: 2.3%"></span
                 ><span class="value">18.2 s</span></span
               >
             </div>
@@ -1141,7 +1151,7 @@
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 29.2%"></span
+                ><span class="bar partial" style="width: 29.2%"></span
                 ><span class="value">1.8 GB</span></span
               >
             </div>
@@ -1151,7 +1161,7 @@
             >
               <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 33.9%"></span
+                ><span class="bar partial" style="width: 33.9%"></span
                 ><span class="value">2.1 GB</span></span
               >
             </div>

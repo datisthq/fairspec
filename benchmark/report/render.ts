@@ -124,7 +124,7 @@ function renderGroup(group: Group) {
   return `<section>
   <h2>${escapeHtml(group.caseName)} · ${formatBytes(group.bytes)}</h2>
   <p class="caption">${group.rows.toLocaleString("en")} rows · median of ${results[0]?.runs || 1} run(s) · shorter is better</p>
-  <div class="legend"><span><i class="swatch fairspec"></i>Fairspec</span><span><i class="swatch rival"></i>Other tools</span></div>
+  <div class="legend"><span><i class="swatch fairspec"></i>Fairspec</span><span><i class="swatch rival"></i>Other tools</span><span><i class="swatch partial"></i>Not full validators</span></div>
   <div class="charts">
     ${renderBars("Time", results, result => result.wallMs?.median, maxTime, formatTime)}
     ${renderBars("Peak memory", results, result => result.peakMemoryMb, maxMemory, formatMemoryValue)}
@@ -150,7 +150,11 @@ function renderBars(
 ) {
   const rows = results.map(result => {
     const value = measure(result)
-    const kind = FAIRSPEC.has(result.tool) ? "fairspec" : "rival"
+    const kind = FAIRSPEC.has(result.tool)
+      ? "fairspec"
+      : result.isPartial
+        ? "partial"
+        : "rival"
     const bar =
       value === undefined
         ? `<span class="missing">${escapeHtml(formatOutcome(result))}</span>`
@@ -273,20 +277,20 @@ const STYLE = `
 :root {
   color-scheme: light;
   --ground: #f6f5f2; --panel: #fcfcfb; --ink: #0b0b0b; --muted: #52514e; --rule: #e2e1dc;
-  --fairspec: #2a78d6; --rival: #b4b3ab;
+  --fairspec: #2a78d6; --rival: #b4b3ab; --partial: #dcdbd6;
   --good: #0ca30c; --serious: #ec835a; --critical: #d03b3b;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --ground: #121211; --panel: #1a1a19; --ink: #f0efec; --muted: #c3c2b7; --rule: #383835;
-    --fairspec: #3987e5; --rival: #6b6a64;
+    --fairspec: #3987e5; --rival: #6b6a64; --partial: #42413d;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --ground: #121211; --panel: #1a1a19; --ink: #f0efec; --muted: #c3c2b7; --rule: #383835;
-  --fairspec: #3987e5; --rival: #6b6a64;
+  --fairspec: #3987e5; --rival: #6b6a64; --partial: #42413d;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--ground); color: var(--ink);
@@ -307,6 +311,7 @@ section { background: var(--panel); border: 1px solid var(--rule); border-radius
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 .swatch.fairspec, .bar.fairspec { background: var(--fairspec); }
 .swatch.rival, .bar.rival { background: var(--rival); }
+.swatch.partial, .bar.partial { background: var(--partial); }
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; margin-bottom: 16px; }
 figure { margin: 0; min-width: 0; }
 figcaption { font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
