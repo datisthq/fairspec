@@ -603,15 +603,25 @@ importers:
       json-colorizer:
         specifier: ^3.0.1
         version: 3.0.1
+      nodejs-polars:
+        specifier: ^0.26.1
+        version: 0.26.1(patch_hash=225b5ca75059ebcb416d6ad1fa0e742a257fc391420677d4c6661c0f535025d6)
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
       tasuku:
         specifier: ^2.0.5
         version: 2.0.5
+      xlsx:
+        specifier: 'catalog:'
+        version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
         specifier: ^4.4.1
         version: 4.6.6
+    devDependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.32.1
+        version: 1.32.1(supports-color@10.2.2)(zod@4.6.6)
 
 packages:
 

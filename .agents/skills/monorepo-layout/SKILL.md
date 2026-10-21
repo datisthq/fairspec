@@ -15,7 +15,7 @@ is specific to it.
 | `package.json` scripts, `pnpm-workspace.yaml` + its `catalog:`              | the section's `package.json` and its deps         |
 | `patches/`, the dependency patches `patchedDependencies` lists              |                                                   |
 | one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution)      |
-| `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` block only         |
+| `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` or `pack` block    |
 | `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`              |
 | `.github/`, `.release/`, `.agents/`, `.humans/`, `.scripts/`, `.skills/`    | `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`    |
 | the one `AGENTS.md`                                                         | its `<section>-development` skill (in `.agents/`) |

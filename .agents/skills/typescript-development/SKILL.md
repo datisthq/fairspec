@@ -14,7 +14,7 @@ plugins, a CLI and an MCP server.
 Run from the repo root; `pnpm -C typescript <script>` runs a script of this section.
 
 - `pnpm -C typescript test` — build + unit
-- `pnpm -C typescript build` — `tsgo` per package, emitting to `<pkg>/build`
+- `pnpm -C typescript build` — `tsgo` per package, emitting to `<pkg>/build`; `terminal` then bundles its bin with `vp pack`
 - `pnpm -C typescript check:types` — `tsgo --noEmit` per package; build first, packages type-check against each other's `build/`
 - `pnpm -C typescript test:unit` — `vp test` across every package
 - Single test — `pnpm -C typescript test:unit table/plugins/csv/actions/table/-test/load.unit.ts` (path relative to `typescript/`; bare `vitest` won't load the vite-plus test runtime and fails to collect `vite-plus/test` suites)
@@ -39,8 +39,8 @@ metadata ─┬─► dataset ───┐
 - `extension` — renderers turning a `TableSchema` into markdown or HTML.
 - `library` — the plugin registry (`system.ts`) and the facade actions every consumer calls: `loadTable`, `saveTable`, `loadDataset`, `saveDataset`, `validate*`, `infer*`.
 - `mcp-server` — MCP tools over the library actions (the official `@modelcontextprotocol/sdk` `McpServer`), served over stdio as `fairspec mcp`. Clients see each tool under its `name` (`inferTableSchemaTool`); the Python server registers the same names, so renaming one renames it for both.
-- `terminal` — the `fairspec` CLI, built with fireargs (zod input/output schemas over commander), one command group per entity.
-- `fairspec` — umbrella package re-exporting `@fairspec/library` and shipping the CLI binary.
+- `terminal` — the `fairspec` CLI, built with fireargs (zod input/output schemas over commander), one command group per entity. Its bin is a bundle (**CLI bundle**, below); its `program` export is plain tsgo output.
+- `fairspec` — umbrella package re-exporting `@fairspec/library`; its bin only imports `@fairspec/terminal/run`.
 - `project` — the documentation site in `typescript/project/docs/`. Private and outside the DAG: nothing depends on it.
 
 ## Code structure
@@ -98,6 +98,16 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every
   validation. Bumping nodejs-polars means re-creating the patch (`pnpm patch`), or dropping it
   once upstream builds the wrappers the same way
+- **CLI bundle**: `pnpm -C typescript build` bundles `terminal`'s bin with `vp pack`
+  (`typescript/terminal/vite.config.ts`) into `build/entrypoints/`, which cuts startup from
+  ~0.5s to ~0.3s by loading ~40 files instead of ~1250. Only `nodejs-polars` (native) and `xlsx`
+  (a peer) stay external, and `deps.onlyImport` fails the build if the bundle imports anything
+  else, so a new native or worker-thread dependency goes in that list and in `terminal`'s own
+  `dependencies`: the bundle resolves it from `terminal`, not from the package that uses it.
+  `entrypoints/run.ts` sets the warning filter and the compile cache, then `await import`s the
+  program so it lands in a later chunk; never re-add a side-effect-only module there, because
+  `sideEffects: false` lets the bundler drop it and the bin then prints nothing.
+  `typescript/terminal/entrypoints/-test/run.unit.ts` runs the built bin, so it needs a build first
 - **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
   row condition and one select per condition kind for the aggregates. Whether a check is a row
   or a table check comes from running it on two typed null rows (one row back means an
