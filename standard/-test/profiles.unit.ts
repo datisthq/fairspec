@@ -51,6 +51,48 @@ describe("table schemas", () => {
   })
 })
 
+describe.each(["datacite", "grei"])("%s extension", extension => {
+  const required = {
+    $schema: `${BASE_URL}${extension}/dataset.json`,
+    doi: "10.1234/5678",
+    creators: [{ name: "Jane" }],
+    titles: [{ title: "T" }],
+    publisher: { name: "P" },
+    publicationYear: "2024",
+    types: { resourceTypeGeneral: "Dataset" },
+    subjects: [{ subject: "S" }],
+    dates: [{ date: "2024", dateType: "Created" }],
+    relatedIdentifiers: [
+      {
+        relatedIdentifier: "10.1/x",
+        relatedIdentifierType: "DOI",
+        relationType: "Cites",
+      },
+    ],
+    version: "1",
+    rightsList: [{ rights: "CC0" }],
+    descriptions: [{ description: "D", descriptionType: "Abstract" }],
+    fundingReferences: [{ funderName: "F" }],
+  }
+
+  it.each([
+    { valid: true, note: "the required properties with types", descriptor: required },
+    {
+      valid: false,
+      note: "resourceType in place of types",
+      descriptor: { ...required, types: undefined, resourceType: "Dataset" },
+    },
+    {
+      valid: false,
+      note: "another profile as $schema",
+      descriptor: { ...required, $schema: "https://example.com/dataset.json" },
+    },
+  ])("validates $note as $valid", ({ descriptor, valid }) => {
+    const validate = getValidator(`${extension}/dataset.json`)
+    expect(validate(JSON.parse(JSON.stringify(descriptor)))).toBe(valid)
+  })
+})
+
 describe("examples", () => {
   it.each(["dataset", "table-schema"])("validates %s.json", async name => {
     const text = await readFile(join(STANDARD, "examples", `${name}.json`), "utf8")

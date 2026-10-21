@@ -38,4 +38,4 @@ A top-level descriptor object describing an individual dataset. It `MAY` have th
 - `titles`
 - `publisher`
 - `publicationYear`
-- `resourceType`
+- `types`, with its `resourceTypeGeneral`

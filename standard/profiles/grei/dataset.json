@@ -1,7 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Fairspec GREI Profile",
-  "allOf": [{ "$ref": "{dataset-ref}" }, { "$ref": "#/$defs/Dataset" }],
+  "allOf": [
+    {
+      "$ref": "{dataset-ref}"
+    },
+    {
+      "$ref": "#/$defs/Dataset"
+    }
+  ],
   "$defs": {
     "Dataset": {
       "type": "object",
@@ -12,7 +19,7 @@
         "titles",
         "publisher",
         "publicationYear",
-        "resourceType",
+        "types",
         "subjects",
         "dates",
         "relatedIdentifiers",
@@ -20,7 +27,13 @@
         "rightsList",
         "descriptions",
         "fundingReferences"
-      ]
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "pattern": "^https://fairspec\\.org/profiles/(\\d+\\.\\d+\\.\\d+|latest)/grei/dataset\\.json$"
+        }
+      }
     }
   }
 }
