@@ -8,3 +8,5 @@ export const ajv = new Ajv2020({
   validateFormats: false,
   loadSchema: uri => loadJsonSchema(uri, { onlyRemote: true }),
 })
+
+export const META_SCHEMA_URL = "https://json-schema.org/draft/2020-12/schema"

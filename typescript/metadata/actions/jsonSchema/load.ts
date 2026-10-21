@@ -1,5 +1,5 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
-import { ajv } from "./ajv.ts"
+import { META_SCHEMA_URL, ajv } from "./ajv.ts"
 import { cache } from "./cache.ts"
 import { assertJsonSchema } from "./assert.ts"
 
@@ -17,7 +17,7 @@ export async function loadJsonSchema(path: string, options?: { onlyRemote?: bool
   }
 
   if (!jsonSchema) {
-    const bundled = ajv.getSchema(path)?.schema
+    const bundled = path === META_SCHEMA_URL ? ajv.getSchema(path)?.schema : undefined
     if (typeof bundled === "object") jsonSchema = bundled
   }
 

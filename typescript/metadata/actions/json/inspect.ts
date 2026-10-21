@@ -1,4 +1,4 @@
-import { ajv } from "../../actions/jsonSchema/ajv.ts"
+import { META_SCHEMA_URL, ajv } from "../../actions/jsonSchema/ajv.ts"
 import { loadJsonSchema } from "../../actions/jsonSchema/load.ts"
 import type { JsonSchema } from "../../models/jsonSchema.ts"
 
@@ -18,8 +18,9 @@ export async function inspectJson(
       ? await loadJsonSchema(options.jsonSchema)
       : options.jsonSchema
 
-  const id = typeof jsonSchema.$id === "string" ? jsonSchema.$id : undefined
-  const validate = (id && ajv.getSchema(id)) || (await ajv.compileAsync(jsonSchema))
+  const metaSchema =
+    jsonSchema.$id === META_SCHEMA_URL ? ajv.getSchema(META_SCHEMA_URL) : undefined
+  const validate = metaSchema ?? (await ajv.compileAsync(jsonSchema))
   validate(value)
 
   const errors = validate.errors
