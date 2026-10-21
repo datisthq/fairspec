@@ -42,22 +42,25 @@ class KeyHashProbe:
     def get_has_duplicate_key(self) -> bool:
         if not self.hashes:
             return False
-        hashes = pl.concat(self.hashes)
+        hashes = pl.concat(self.hashes).drop_nulls()
         return hashes.n_unique() < hashes.len()
 
 
 def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
     hashes: list[pl.Series] = []
+    keys = check.key_columns
 
-    # Called per batch on polars worker threads; the GIL makes the append safe. It returns
+    # Called per batch on polars worker threads; the GIL makes the append safe, and polars
+    # hashes before the call, so the Python side only keeps the batch. It returns
     # all-false, so the flag joins the reading query's filter without changing its rows
-    def record_hashes(keys: pl.Series) -> pl.Series:
-        hashes.append(keys.filter(keys.is_not_null()).hash())
-        return pl.repeat(False, keys.len(), dtype=pl.Boolean, eager=True)
+    def record_hashes(batch: pl.Series) -> pl.Series:
+        hashes.append(batch)
+        return pl.repeat(False, batch.len(), dtype=pl.Boolean, eager=True)
 
+    key_expr = pl.col(keys[0]) if len(keys) == 1 else pl.struct(keys)
     flag_expr = (
-        pl.when(create_key_presence_expr(check.key_columns))
-        .then(pl.struct(check.key_columns))
+        pl.when(create_key_presence_expr(keys))
+        .then(key_expr.hash())
         .map_batches(record_hashes, return_dtype=pl.Boolean, is_elementwise=True)
     )
     return KeyHashProbe(flag_expr=flag_expr, hashes=hashes)
