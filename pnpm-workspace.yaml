@@ -4,6 +4,7 @@ packages:
   - typescript
   - typescript/*
   - python
+  - rustlang
   - catalog
   - benchmark
 

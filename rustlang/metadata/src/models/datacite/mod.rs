@@ -1,0 +1,23 @@
+pub mod alternate_identifier;
+pub mod common;
+pub mod content_type;
+pub mod contributor;
+pub mod creator;
+#[allow(clippy::module_inception)]
+pub mod datacite;
+pub mod date;
+pub mod description;
+pub mod formats;
+pub mod funding_reference;
+pub mod geo_location;
+pub mod identifier;
+pub mod language;
+pub mod publication_year;
+pub mod publisher;
+pub mod related_identifier;
+pub mod related_item;
+pub mod rights;
+pub mod size;
+pub mod subject;
+pub mod title;
+pub mod version;

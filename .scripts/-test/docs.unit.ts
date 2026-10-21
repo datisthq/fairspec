@@ -11,6 +11,7 @@ const SECTIONS = [
   "catalog",
   "desktop",
   "python",
+  "rustlang",
   "standard",
   "testsuite",
   "typescript",
@@ -37,6 +38,7 @@ const UNWALKED = [
   "coverage",
   "htmlcov",
   "__pycache__",
+  "target",
 ]
 const BUILTIN_COMMANDS = [
   "install",

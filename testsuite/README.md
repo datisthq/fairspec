@@ -96,6 +96,8 @@ A test has a `description`, its `data`, and exactly one outcome:
 
 - TypeScript: `typescript/library/-test/testsuite.unit.ts`, run by `pnpm -C typescript test:unit`
 - Python: `python/library/fairspec_library/_test/testsuite_unit.py`, run by `pnpm -C python test:unit`
+- Rust (partial): `rustlang/metadata/tests/testsuite.rs`, run by `pnpm -C rustlang test:unit`; it
+  skips the operations the Rust port does not implement yet
 
 Each runner:
 

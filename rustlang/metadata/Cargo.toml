@@ -1,0 +1,28 @@
+[package]
+name = "fairspec-metadata"
+description = "Fairspec metadata: models, profiles and descriptor validation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "fairspec_metadata"
+
+[dependencies]
+indexmap = { version = "2.14", features = ["serde"] }
+jsonschema = { version = "0.59", default-features = false }
+lru = "0.19"
+referencing = "0.59"
+regex = "1.13"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+thiserror = "2.0"
+unicode-normalization = "0.1"
+ureq = "3.5"
+url = "2.5"
+
+[dev-dependencies]
+tempfile = "3.27"

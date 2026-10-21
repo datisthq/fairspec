@@ -64,7 +64,7 @@ describe.each(LIBRARIES)("bundled profiles in $profiles", library => {
 
   it("pin the current standard version", async () => {
     const settings = await readFile(library.settings, "utf8")
-    expect(VERSION_SETTING.exec(settings)?.[1]).toBe(VERSION)
+    expect(VERSION_SETTING.exec(settings)?.[2]).toBe(VERSION)
   })
 })
 

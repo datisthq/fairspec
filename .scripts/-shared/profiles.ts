@@ -17,9 +17,13 @@ export const LIBRARIES = [
     profiles: join(ROOT, "python", "metadata", "fairspec_metadata", "profiles"),
     settings: join(ROOT, "python", "metadata", "fairspec_metadata", "settings.py"),
   },
+  {
+    profiles: join(ROOT, "rustlang", "metadata", "profiles"),
+    settings: join(ROOT, "rustlang", "metadata", "src", "settings.rs"),
+  },
 ]
 
-export const VERSION_SETTING = /FAIRSPEC_VERSION = "([^"]*)"/
+export const VERSION_SETTING = /(FAIRSPEC_VERSION(?:: &str)? = )"([^"]*)"/
 
 export type Checksums = Record<string, Record<string, string>>
 

@@ -17,6 +17,8 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 - `pnpm -C python test:unit library/fairspec_library/_test/testsuite_unit.py` — the Python runner
 - A section-wide `pnpm -C typescript test:unit` or `pnpm -C python test:unit` runs it too. CI runs both runners
   on Linux, macOS and Windows whenever `testsuite/**` changes
+- `pnpm -C rustlang test:unit` — the partial Rust runner, `rustlang/metadata/tests/testsuite.rs`: it
+  runs only the operations the Rust port implements and lists the rest in `SKIPPED`
 
 ## Format
 
@@ -55,7 +57,8 @@ Add the directory and a function to the `OPERATIONS` map in **both**
 `typescript/library/-test/testsuite.unit.ts` and
 `python/library/fairspec_library/_test/testsuite_unit.py`, under the same name. Each runner also
 checks that every operation directory is one it knows, so an operation added to only one runner
-fails the other. Document the operation in the table in `testsuite/README.md`.
+fails the other. The Rust runner checks the same, so a new operation also goes into its
+`OPERATIONS` or its `SKIPPED` list. Document the operation in the table in `testsuite/README.md`.
 
 ## When a test fails
 

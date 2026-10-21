@@ -23,6 +23,6 @@ for (const library of LIBRARIES) {
   }
 
   const settings = await readFile(library.settings, "utf8")
-  const pinned = `FAIRSPEC_VERSION = "${standardPackage.version}"`
+  const pinned = `$1"${standardPackage.version}"`
   await writeFile(library.settings, settings.replace(VERSION_SETTING, pinned))
 }

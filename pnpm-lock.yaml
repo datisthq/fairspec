@@ -362,6 +362,8 @@ importers:
 
   python: {}
 
+  rustlang: {}
+
   standard:
     devDependencies:
       '@types/node':
