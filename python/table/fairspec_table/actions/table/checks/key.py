@@ -48,14 +48,20 @@ class KeyHashProbe:
 
 def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
     hashes: list[pl.Series] = []
+    falses: dict[int, pl.Series] = {}
     keys = check.key_columns
 
     # Called per batch on polars worker threads; the GIL makes the append safe, and polars
     # hashes before the call, so the Python side only keeps the batch. It returns
-    # all-false, so the flag joins the reading query's filter without changing its rows
+    # all-false, so the flag joins the reading query's filter without changing its rows;
+    # the result is cached by length, as a polars call here waits ~1ms to regain the GIL
     def record_hashes(batch: pl.Series) -> pl.Series:
         hashes.append(batch)
-        return pl.repeat(False, batch.len(), dtype=pl.Boolean, eager=True)
+        size = len(batch)
+        result = falses.get(size)
+        if result is None:
+            result = falses[size] = pl.repeat(False, size, dtype=pl.Boolean, eager=True)
+        return result
 
     key_expr = pl.col(keys[0]) if len(keys) == 1 else pl.struct(keys)
     flag_expr = (
