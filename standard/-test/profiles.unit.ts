@@ -63,6 +63,11 @@ describe("table schema columns", () => {
     { valid: false, column: { type: "string", format: "bogus" } },
     { valid: false, column: { type: "array", const: "x" } },
     { valid: false, column: { type: "object", format: "bogus" } },
+    { valid: true, column: { default: "x", const: "x", examples: ["x", 1] } },
+    { valid: true, column: { enum: ["a", 1, true] } },
+    { valid: true, column: { missingValues: ["NA"] } },
+    { valid: true, column: { type: "string", default: "x" } },
+    { valid: false, column: { type: "integer", default: "x" } },
   ])("validates $column as $valid", ({ column, valid }) => {
     const validate = getValidator("table-schema.json")
     expect(validate({ properties: { column } })).toBe(valid)

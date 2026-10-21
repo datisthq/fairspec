@@ -6,22 +6,16 @@ export const UnknownColumnProperty = BaseColumnProperty.extend({
   format: z.never().optional(),
 
   enum: z
-    .array(z.array(z.unknown()))
+    .array(z.unknown())
     .optional()
     .describe("An optional array of allowed values for the column"),
 
-  const: z
-    .array(z.unknown())
-    .optional()
-    .describe("An optional const that all values must match"),
+  const: z.unknown().optional().describe("An optional const that all values must match"),
 
-  default: z
-    .array(z.unknown())
-    .optional()
-    .describe("An optional default value for the column"),
+  default: z.unknown().optional().describe("An optional default value for the column"),
 
   examples: z
-    .array(z.array(z.unknown()))
+    .array(z.unknown())
     .optional()
     .describe("An optional array of examples for the column"),
 

@@ -187,6 +187,8 @@ def _inspect_cells_in_polars(
     # check. Templates are resolved back in Python once the frame is filtered down.
     checked: list[tuple[int, ColumnMapping, list[CellError], pl.Expr]] = []
     for index, mapping in enumerate(mappings):
+        if mapping.target.type == "unknown":
+            continue
         cell_mapping = CellMapping(
             source=pl.col(_get_source_name(index)),
             target=pl.col(_get_target_name(index)),

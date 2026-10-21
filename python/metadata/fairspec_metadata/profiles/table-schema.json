@@ -58,27 +58,45 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/BooleanType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/BooleanType" } }
+          },
           "then": { "$ref": "#/$defs/BooleanColumnProperty" }
         },
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/IntegerType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/IntegerType" } }
+          },
           "then": { "$ref": "#/$defs/IntegerColumnPropertyGroup" }
         },
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/NumberType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/NumberType" } }
+          },
           "then": { "$ref": "#/$defs/NumberColumnProperty" }
         },
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/StringType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/StringType" } }
+          },
           "then": { "$ref": "#/$defs/StringColumnPropertyGroup" }
         },
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/ArrayType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/ArrayType" } }
+          },
           "then": { "$ref": "#/$defs/ArrayColumnProperty" }
         },
         {
-          "if": { "properties": { "type": { "$ref": "#/$defs/ObjectType" } } },
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "$ref": "#/$defs/ObjectType" } }
+          },
           "then": { "$ref": "#/$defs/ObjectColumnPropertyGroup" }
         }
       ]
@@ -90,7 +108,10 @@
           "then": { "$ref": "#/$defs/IntegerColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "categorical" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "categorical" } }
+          },
           "then": { "$ref": "#/$defs/IntegerCategoricalColumnProperty" }
         }
       ]
@@ -123,19 +144,31 @@
           "then": { "$ref": "#/$defs/StringColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "categorical" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "categorical" } }
+          },
           "then": { "$ref": "#/$defs/StringCategoricalColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "decimal" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "decimal" } }
+          },
           "then": { "$ref": "#/$defs/DecimalColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "list" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "list" } }
+          },
           "then": { "$ref": "#/$defs/ListColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "hex" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "hex" } }
+          },
           "then": { "$ref": "#/$defs/HexColumnProperty" }
         },
         {
@@ -143,43 +176,73 @@
           "then": { "$ref": "#/$defs/Base64ColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "email" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "email" } }
+          },
           "then": { "$ref": "#/$defs/EmailColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "url" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "url" } }
+          },
           "then": { "$ref": "#/$defs/UrlColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "date-time" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "date-time" } }
+          },
           "then": { "$ref": "#/$defs/DateTimeColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "date" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "date" } }
+          },
           "then": { "$ref": "#/$defs/DateColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "time" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "time" } }
+          },
           "then": { "$ref": "#/$defs/TimeColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "local-time" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "local-time" } }
+          },
           "then": { "$ref": "#/$defs/LocalTimeColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "local-date-time" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "local-date-time" } }
+          },
           "then": { "$ref": "#/$defs/LocalDateTimeColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "duration" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "duration" } }
+          },
           "then": { "$ref": "#/$defs/DurationColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "wkt" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "wkt" } }
+          },
           "then": { "$ref": "#/$defs/WktColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "wkb" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "wkb" } }
+          },
           "then": { "$ref": "#/$defs/WkbColumnProperty" }
         }
       ]
@@ -196,11 +259,17 @@
           "then": { "$ref": "#/$defs/ObjectColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "geojson" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "geojson" } }
+          },
           "then": { "$ref": "#/$defs/GeojsonColumnProperty" }
         },
         {
-          "if": { "properties": { "format": { "const": "topojson" } } },
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "topojson" } }
+          },
           "then": { "$ref": "#/$defs/TopojsonColumnProperty" }
         }
       ]

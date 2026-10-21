@@ -186,6 +186,7 @@ async function inspectCellsInPolars(
   }[] = []
 
   for (const [index, mapping] of mappings.entries()) {
+    if (mapping.target.type === "unknown") continue
     const cellMapping = {
       source: pl.col(getSourceName(index)),
       target: pl.col(getTargetName(index)),

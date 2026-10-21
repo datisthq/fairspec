@@ -1,0 +1,29 @@
+[
+  {
+    "description": "a column without a type, documented with default, examples and enum",
+    "specification": ["https://fairspec.org/specs/table-schema/#unknown"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "default": "a",
+          "const": "a",
+          "examples": ["a", 1],
+          "enum": ["a", 1, true]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "any value is valid",
+        "data": "id,x\n1,a\n2,1\n3,zzz\n",
+        "valid": true
+      },
+      {
+        "description": "a missing value is valid",
+        "data": "id,x\n1,\n",
+        "valid": true
+      }
+    ]
+  }
+]
