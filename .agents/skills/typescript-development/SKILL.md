@@ -92,7 +92,9 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   while key checks compare partial nulls and skip only all-null keys (`createKeyPresenceExpr`).
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
-  `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read
+  `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.
+  The Python twin hashes keys inside the cell checks' read instead of probing; nodejs-polars has
+  no lazy batch function to do the same, so this probe's second read stays
 - **nodejs-polars is patched** (`patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every

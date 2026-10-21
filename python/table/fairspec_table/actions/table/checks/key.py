@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
 import polars as pl
@@ -30,6 +30,37 @@ def create_row_key_checks(mapping: SchemaMapping) -> list[RowKeyCheck]:
         checks.append(_create_row_key_check(key, key_type="unique"))
 
     return checks
+
+
+@dataclass
+class KeyHashProbe:
+    """Records the hash of every present key while another query reads the table."""
+
+    flag_expr: pl.Expr
+    hashes: list[pl.Series] = field(default_factory=list)
+
+    def get_has_duplicate_key(self) -> bool:
+        if not self.hashes:
+            return False
+        hashes = pl.concat(self.hashes)
+        return hashes.n_unique() < hashes.len()
+
+
+def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
+    hashes: list[pl.Series] = []
+
+    # Called per batch on polars worker threads; the GIL makes the append safe. It returns
+    # all-false, so the flag joins the reading query's filter without changing its rows
+    def record_hashes(keys: pl.Series) -> pl.Series:
+        hashes.append(keys.filter(keys.is_not_null()).hash())
+        return pl.repeat(False, keys.len(), dtype=pl.Boolean, eager=True)
+
+    flag_expr = (
+        pl.when(create_key_presence_expr(check.key_columns))
+        .then(pl.struct(check.key_columns))
+        .map_batches(record_hashes, return_dtype=pl.Boolean, is_elementwise=True)
+    )
+    return KeyHashProbe(flag_expr=flag_expr, hashes=hashes)
 
 
 def create_key_presence_expr(key_columns: list[str]) -> pl.Expr:

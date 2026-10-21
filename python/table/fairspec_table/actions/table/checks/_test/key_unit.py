@@ -259,6 +259,61 @@ class TestInspectTableRowUnique:
         assert len(errors) == 2
         assert [error.rowNumber for error in pk_errors] == [2, 3]
 
+    def test_should_find_a_duplicate_key_beside_cell_errors(self):
+        table = pl.DataFrame({"id": ["1", "2", "x", "2"]}).lazy()
+        table_schema = TableSchema(
+            properties={"id": IntegerColumnProperty()},
+            primaryKey=["id"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [(error.type, getattr(error, "rowNumber", None)) for error in errors] == [
+            ("cell/type", 3),
+            ("row/primaryKey", 4),
+        ]
+
+    def test_should_find_a_duplicate_key_without_cell_checks(self):
+        table = pl.DataFrame({"name": ["a", "b", "a"]}).lazy()
+        table_schema = TableSchema(
+            properties={"name": StringColumnProperty()},
+            uniqueKeys=[["name"]],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [(error.type, getattr(error, "rowNumber", None)) for error in errors] == [
+            ("row/uniqueKey", 3)
+        ]
+
+    def test_should_find_a_duplicate_key_across_read_batches(self):
+        ids = [str(index) for index in range(300_000)] + ["0"]
+        table = pl.DataFrame({"id": ids}).lazy()
+        table_schema = TableSchema(
+            properties={"id": IntegerColumnProperty()},
+            primaryKey=["id"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [(error.type, getattr(error, "rowNumber", None)) for error in errors] == [
+            ("row/primaryKey", 300_001)
+        ]
+
+    def test_should_leave_key_errors_out_once_cell_errors_fill_the_report(self):
+        table = pl.DataFrame({"id": ["x", "y", "1", "1"]}).lazy()
+        table_schema = TableSchema(
+            properties={"id": IntegerColumnProperty()},
+            primaryKey=["id"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema, max_errors=2)
+
+        assert [(error.type, getattr(error, "rowNumber", None)) for error in errors] == [
+            ("cell/type", 1),
+            ("cell/type", 2),
+        ]
+
 
 class TestInspectTableRowChecksConcurrency:
     def test_should_keep_row_check_order_under_concurrency(self):

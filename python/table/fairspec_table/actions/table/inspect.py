@@ -16,14 +16,18 @@ from fairspec_table.actions.column.inspect import inspect_columns
 from fairspec_table.helpers.schema import get_polars_schema
 from fairspec_table.models import ColumnMapping, SchemaMapping, Table, TableCheck
 from fairspec_table.settings import (
-    COUNT_COLUMN_NAME,
     ERROR_COLUMN_NAME,
     NUMBER_COLUMN_NAME,
     QUERY_ENGINE,
 )
 
 from ._shared.helpers import merge_missing_values
-from .checks.key import RowKeyCheck, create_key_presence_expr, create_row_key_checks
+from .checks.key import (
+    KeyHashProbe,
+    RowKeyCheck,
+    create_key_hash_probe,
+    create_row_key_checks,
+)
 
 _row_error_adapter = TypeAdapter(RowError)
 
@@ -45,13 +49,28 @@ def inspect_table(
         polars_schema = get_polars_schema(dict(sample.schema))
         mapping = SchemaMapping(source=polars_schema, target=table_schema)
 
-        column_errors = _inspect_columns(mapping, table, max_errors=max_errors)
+        key_checks = create_row_key_checks(mapping)
+        key_probes = [create_key_hash_probe(check) for check in key_checks]
+        column_errors = _inspect_columns(
+            mapping,
+            table,
+            max_errors=max_errors,
+            flag_exprs=[probe.flag_expr for probe in key_probes],
+        )
         errors.extend(column_errors)
 
-        row_errors = _inspect_rows(
-            mapping, table, max_errors=max_errors, concurrency=concurrency
-        )
-        errors.extend(row_errors)
+        # The cell checks stop reading at max_errors, leaving the key hashes partial, but
+        # only once their errors fill the report, which then has no room for row errors
+        if len(errors) < max_errors:
+            row_errors = _inspect_rows(
+                mapping,
+                table,
+                key_checks=key_checks,
+                key_probes=key_probes,
+                max_errors=max_errors,
+                concurrency=concurrency,
+            )
+            errors.extend(row_errors)
 
     if checks and len(errors) < max_errors:
         check_errors = inspect_table_checks(
@@ -67,6 +86,7 @@ def _inspect_columns(
     table: Table,
     *,
     max_errors: int,
+    flag_exprs: list[pl.Expr],
 ) -> list[TableError]:
     errors: list[TableError] = []
     columns = get_columns(mapping.target.model_dump())
@@ -93,7 +113,9 @@ def _inspect_columns(
         merged_column = merge_missing_values(column, mapping.target)
         column_mappings.append(ColumnMapping(source=polars_column, target=merged_column))
 
-    cell_errors = inspect_columns(column_mappings, table, max_errors=max_errors)
+    cell_errors = inspect_columns(
+        column_mappings, table, max_errors=max_errors, flag_exprs=flag_exprs
+    )
     for column in columns:
         errors.extend(missing_errors.get(column.name) or cell_errors.get(column.name, []))
 
@@ -104,6 +126,8 @@ def _inspect_rows(
     mapping: SchemaMapping,
     table: Table,
     *,
+    key_checks: list[RowKeyCheck],
+    key_probes: list[KeyHashProbe],
     max_errors: int,
     concurrency: int | None = None,
 ) -> list[TableError]:
@@ -111,8 +135,9 @@ def _inspect_rows(
     columns = get_columns(mapping.target.model_dump())
     max_row_errors = math.ceil(max_errors / len(columns)) if columns else max_errors
 
-    def inspect(check: RowKeyCheck) -> list[TableError]:
-        if not _get_has_duplicate_key(table, check):
+    def inspect(entry: tuple[RowKeyCheck, KeyHashProbe]) -> list[TableError]:
+        check, probe = entry
+        if not probe.get_has_duplicate_key():
             return []
 
         # A literal is broadcast to every row, so flag the error with a boolean rather
@@ -139,8 +164,8 @@ def _inspect_rows(
 
         return check_errors
 
-    checks = create_row_key_checks(mapping)
-    for chunk in iter_concurrent_chunks(inspect, checks, concurrency=concurrency):
+    entries = list(zip(key_checks, key_probes))
+    for chunk in iter_concurrent_chunks(inspect, entries, concurrency=concurrency):
         for check_errors in chunk:
             errors.extend(check_errors)
 
@@ -148,18 +173,3 @@ def _inspect_rows(
             break
 
     return errors
-
-
-def _get_has_duplicate_key(table: Table, check: RowKeyCheck) -> bool:
-    # Grouping reads only the key columns and builds no per-row expression, so a clean key
-    # costs a fraction of the locating query, which runs only once a duplicate is known
-    probe: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
-        table.select(check.key_columns)
-        .filter(create_key_presence_expr(check.key_columns))
-        .group_by(check.key_columns)
-        .len(name=COUNT_COLUMN_NAME)
-        .filter(pl.col(COUNT_COLUMN_NAME) > 1)
-        .head(1)
-        .collect(engine=QUERY_ENGINE)
-    )
-    return probe.height > 0

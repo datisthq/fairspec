@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 
 import polars as pl
 from fairspec_metadata import ColumnType
@@ -39,8 +41,12 @@ def inspect_columns(
     table: Table,
     *,
     max_errors: int,
+    flag_exprs: Sequence[pl.Expr] = (),
 ) -> dict[str, list[TableError]]:
-    """Check every column against its schema, keyed by column name in mapping order."""
+    """Check every column against its schema, keyed by column name in mapping order.
+
+    Each of `flag_exprs`, an always-false Boolean, is evaluated in the same read.
+    """
     errors: dict[str, list[TableError]] = {}
     polars_mappings: list[ColumnMapping] = []
 
@@ -50,9 +56,11 @@ def inspect_columns(
         if is_checked and mapping.target.type not in ROW_INSPECTED_TYPES:
             polars_mappings.append(mapping)
 
-    if polars_mappings:
+    if polars_mappings or flag_exprs:
         errors.update(
-            _inspect_cells_in_polars(polars_mappings, table, max_errors=max_errors)
+            _inspect_cells_in_polars(
+                polars_mappings, table, max_errors=max_errors, flag_exprs=flag_exprs
+            )
         )
 
     error_count = 0
@@ -168,8 +176,11 @@ def _inspect_cells_in_polars(
     table: Table,
     *,
     max_errors: int,
+    flag_exprs: Sequence[pl.Expr],
 ) -> dict[str, list[TableError]]:
     errors: dict[str, list[TableError]] = {m.target.name: [] for m in mappings}
+    flags = [expr.alias(_get_flag_name(index)) for index, expr in enumerate(flag_exprs)]
+    is_flagged = [pl.col(_get_flag_name(index)) for index in range(len(flags))]
 
     # The error columns carry a tag, not the error itself: a literal is broadcast to
     # every row, so a JSON template would materialize a full-length string column per
@@ -202,12 +213,17 @@ def _inspect_cells_in_polars(
         checked.append((index, mapping, templates, error_expr))
 
     if not checked:
+        if flags:
+            table.select(flags).filter(pl.any_horizontal(is_flagged)).collect(
+                engine=QUERY_ENGINE
+            )
         return errors
 
     check_table = (
         table.with_row_index(NUMBER_COLUMN_NAME, 1)
         .select(
             pl.col(NUMBER_COLUMN_NAME),
+            *flags,
             *(
                 expr
                 for index, mapping, _, _ in checked
@@ -227,11 +243,16 @@ def _inspect_cells_in_polars(
     )
 
     # A lazy frame caches nothing, so every column shares this one collect: a collect
-    # per column would parse the whole source once for each
+    # per column would parse the whole source once for each. The flags join the filter
+    # only so the optimizer keeps them; they are never true
     check_frame: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         check_table.filter(
             pl.any_horizontal(
-                pl.col(_get_error_name(index)).is_not_null() for index, _, _, _ in checked
+                *(
+                    pl.col(_get_error_name(index)).is_not_null()
+                    for index, _, _, _ in checked
+                ),
+                *is_flagged,
             )
         )
         .select(
@@ -275,6 +296,10 @@ def _get_source_name(index: int) -> str:
 
 def _get_cell_name(index: int) -> str:
     return f"fairspec:cell:{index}"
+
+
+def _get_flag_name(index: int) -> str:
+    return f"fairspec:flag:{index}"
 
 
 def _get_error_name(index: int) -> str:

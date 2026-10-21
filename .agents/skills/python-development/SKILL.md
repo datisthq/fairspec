@@ -124,13 +124,19 @@ relative import reaches beyond the top-level package.
   puts each column's target, source, cell and UInt8 tag columns into one frame, filters rows
   with any tag, takes one global `head(max_errors)` and expands errors column by column, so the
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
-  wkt, array, object, geojson, topojson) and the row key checks keep their own scan. Collect
-  with `engine=QUERY_ENGINE`
-- **A row key check probes before it locates.** `_inspect_rows` first runs a `group_by(key).len()`
-  probe on the key columns alone, and only on a duplicate runs the row-indexed
-  `pl.struct(key).is_first_distinct()` query; a clean key (the usual case) skips that costly
-  pass. Never locate rows with a join: joins drop null keys, while key checks compare partial
-  nulls and skip only all-null keys (`create_key_presence_expr`)
+  wkt, array, object, geojson, topojson) and a key's locating query keep their own scan.
+  Collect with `engine=QUERY_ENGINE`
+- **A row key check hashes in the cell checks' read, then locates.** `create_key_hash_probe`
+  (`python/table/fairspec_table/actions/table/checks/key.py`) is an always-false flag in that
+  read's filter whose `map_batches` keeps each batch's key hashes; only when they repeat does
+  the row-indexed `pl.struct(key).is_first_distinct()` query run. That read stops at
+  `head(max_errors)`, so the hashes are complete only while the report has room, and
+  `inspect_table` skips the row checks once it is full. Never locate rows with a join: joins
+  drop null keys, while key checks compare partial nulls and skip only all-null keys
+  (`create_key_presence_expr`)
+- **Never share one read between two queries** with a diagonal `pl.concat` or `pl.collect_all`:
+  polars holds the shared scan in memory, so a 10GB validation runs out of memory under a 10G
+  cap. Ride along in the one query instead, as the key hashes do
 - **A column mapping keeps the dtype's class, not the dtype**: `PolarsColumn.type` is
   `type(dtype)`, so a Datetime's zone lives in `PolarsColumn.time_zone`. A zoned Datetime is a
   `date-time`, a naive one a `local-date-time`, a Time either `time` or `local-time`; check the
