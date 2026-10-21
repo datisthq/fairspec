@@ -1,39 +1,37 @@
-from fairspec_dataset import describe_file
+from fairspec_dataset import FileDescription, describe_file
+from fireargs import Context, command
 
 from fairspec_terminal.helpers.file import select_file
+from fairspec_terminal.models.input import CommandInput
 from fairspec_terminal.params import (
     Debug,
+    FilePath,
     FromDataset,
     FromResource,
     HashType,
-    Json,
-    OptionalPath,
     Silent,
 )
-from fairspec_terminal.program import file_program
 from fairspec_terminal.session import Session
 
 
-@file_program.command()
-def describe(
-    path: OptionalPath = None,
-    dataset: FromDataset = None,
-    resource: FromResource = None,
-    hash_type: HashType = "sha256",
-    silent: Silent = False,
-    debug: Debug = False,
-    json: Json = False,
-) -> None:
-    """Show stats for a local or remote file."""
-    session = Session(silent=silent, debug=debug, json=json)
+class DescribeFileInput(CommandInput):
+    path: FilePath = None
+    dataset: FromDataset = None
+    resource: FromResource = None
+    hash_type: HashType = "sha256"
+    silent: Silent = False
+    debug: Debug = False
 
-    if not path:
-        path = select_file(session, dataset=dataset, resource=resource)
 
-    def _describe() -> object:
-        assert path
-        return describe_file(path, hash_type=hash_type)
+@command(description="Show stats for a local or remote file")
+def describe_file_command(input: DescribeFileInput, context: Context) -> FileDescription:
+    session = Session(silent=input.silent, debug=input.debug, json=context.json)
+    path = input.path or select_file(
+        session, dataset=input.dataset, resource=input.resource
+    )
 
-    stats = session.task("Describing file", _describe)
+    stats = session.task(
+        "Describing file", lambda: describe_file(path, hash_type=input.hash_type)
+    )
 
-    session.render_data_result(stats)
+    return session.render_data_result(stats)

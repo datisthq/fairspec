@@ -4,14 +4,13 @@ import json
 import os
 
 from fairspec_dataset import get_temp_folder_path
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
-from fairspec_terminal.program import dataset_program, register_commands
+from fairspec_terminal.program import dataset_program
 
 
 class TestDatasetQueryCommand:
     def test_should_join_two_resources_by_name(self):
-        register_commands()
         folder = get_temp_folder_path()
         descriptor = {
             "resources": [

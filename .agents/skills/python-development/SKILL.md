@@ -50,7 +50,7 @@ becomes an underscore: `mcp-server/fairspec_mcp_server/`), except the meta-packa
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlsx.
 - `library` — the plugin registry and the facade actions every consumer calls: `load_table`, `save_table`, `load_dataset`, `save_dataset`, `validate_*`, `infer_*`.
 - `mcp-server` — MCP tools over the library actions (the `mcp` SDK's `MCPServer`), served over stdio as `fairspec mcp`.
-- `terminal` — the `fairspec` CLI (typer), one command group per entity.
+- `terminal` — the `fairspec` CLI, built with fireargs (pydantic input/output models over click), one command group per entity.
 - `fairspec` — umbrella package re-exporting `fairspec_library` and shipping the CLI binary.
 - `project` — the documentation site in `python/project/docs/`. Not a uv workspace member and nothing imports it.
 
@@ -108,8 +108,10 @@ relative import reaches beyond the top-level package.
   A number pattern therefore takes an optional fraction and sits after its integer pattern;
   the TypeScript twin keeps the same keys in the same order
 - **A terminal command that declares the Table Schema inference flags must pass them on**: build them
-  with `create_infer_table_schema_options(...)` and splat into the library call
-  (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing
+  with `create_infer_table_schema_options(input)` and splat into the library call
+  (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing. The
+  same holds for a hand-built options TypedDict: its keys are snake_case where the twin is not
+  (`InferFileDialectOptions` takes `sample_bytes`), so let `ty` check the key
 - **A remote API response is parsed at the service boundary** — a dataset plugin's
   `make_*_api_request` takes a required `model` and returns `model.model_validate(...)`; never
   `Model(**dict)` or raw `dict["key"]` reads. Response models keep the same required fields as
@@ -144,7 +146,20 @@ relative import reaches beyond the top-level package.
   `pl.exceptions.PolarsError`
 - **An options TypedDict holding a `pl.Expr` cannot be an MCP parameter**: pydantic builds no
   JSON schema for it. The tool takes a string-only twin (`SqlTableCheck` for `TableCheck`)
-- A typer option parsed with `parser=` shows the parser's name as its metavar; set `metavar=`
+- **A terminal command is `@command(...)` (fireargs) on `def verb_noun_command(input: XInput,
+context: Context) -> Output`**, routed in `program.py`. Inputs extend `CommandInput`
+  (`terminal/fairspec_terminal/models/input.py`), whose camelCase alias generator gives `--json`
+  and `--llms` the TypeScript twin's keys while flags stay kebab-case; the shared option blocks
+  are the `DialectParams` and `TableSchemaParams` mixins. Keep `fairspec --llms` tool names,
+  input keys, required fields and descriptions equal to the TypeScript CLI's
+- Build the `Session` from `json=context.json` and `return session.render_*_result(...)`: it
+  prints only in human mode and returns what fireargs writes under `--json`. Report items and
+  table rows stay `object` (`models/output.py`); fireargs validates every output. An invalid
+  report exits 1 through `ctx.call_on_close`, after fireargs has printed the result
+- Shell syntax (comma lists, `false|1,2`, JSON) goes in `Option(parse=...)`; a field with `parse`
+  takes one value, so a repeatable flag such as `--check` validates with `AfterValidator`
+  instead. A field named `schema` shadows `BaseModel.schema`: name it `table_schema` with
+  `Option(name="schema", alias="schema")`
 
 ## MCP server
 

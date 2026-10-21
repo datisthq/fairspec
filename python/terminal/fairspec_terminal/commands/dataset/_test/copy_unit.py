@@ -4,14 +4,13 @@ import json
 import os
 
 from fairspec_dataset import get_temp_folder_path
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
-from fairspec_terminal.program import dataset_program, register_commands
+from fairspec_terminal.program import dataset_program
 
 
 class TestDatasetCopyCommand:
     def test_should_copy_dataset_to_folder(self, monkeypatch):
-        register_commands()
         source = get_temp_folder_path()
         with open(os.path.join(source, "users.csv"), "w") as file:
             file.write("id,name\n1,Alice\n")

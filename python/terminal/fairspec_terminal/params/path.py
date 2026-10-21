@@ -1,10 +1,20 @@
 from typing import Annotated
 
-import typer
+from fireargs import Argument
+from pydantic import Field
 
-OptionalPath = Annotated[str | None, typer.Argument(help="local or remote path")]
-RequiredPath = Annotated[str, typer.Argument(help="local or remote path")]
-RequiredFilePath = Annotated[str, typer.Argument(help="local or remote path to the file")]
-VariadicPaths = Annotated[list[str], typer.Argument(help="local paths to files")]
-ToPath = Annotated[str | None, typer.Option("--to-path", help="a local output path")]
-ToPathRequired = Annotated[str, typer.Option("--to-path", help="a local output path")]
+DescriptorPath = Annotated[
+    str, Argument(description="local or remote path to the descriptor")
+]
+TablePath = Annotated[
+    str | None, Argument(description="local or remote path to the table")
+]
+FilePath = Annotated[str | None, Argument(description="local or remote path to the file")]
+RequiredFilePath = Annotated[
+    str, Argument(description="local or remote path to the file")
+]
+FilePaths = Annotated[
+    list[str], Argument(name="path", description="local paths to files")
+]
+ToPath = Annotated[str | None, Field(description="a local output path")]
+ToPathRequired = Annotated[str, Field(description="a local output path")]

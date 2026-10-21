@@ -1,32 +1,31 @@
 from fairspec_library import validate_data
-from fairspec_metadata import Report, load_data_schema
+from fairspec_metadata import Resource, load_data_schema
+from fireargs import Context, command
 
-from fairspec_terminal.params import DataSchemaPath, Debug, Json, RequiredFilePath, Silent
-from fairspec_terminal.program import data_program
+from fairspec_terminal.models.input import CommandInput
+from fairspec_terminal.models.output import ReportResult
+from fairspec_terminal.params import DataSchemaPath, Debug, RequiredFilePath, Silent
 from fairspec_terminal.session import Session
 
 
-@data_program.command()
-def validate(
-    path: RequiredFilePath,
-    schema: DataSchemaPath,
-    silent: Silent = False,
-    debug: Debug = False,
-    json: Json = False,
-) -> None:
-    """Validate a JSON Data from a local or remote path."""
-    session = Session(silent=silent, debug=debug, json=json)
+class ValidateDataInput(CommandInput):
+    path: RequiredFilePath
+    data_schema: DataSchemaPath
+    silent: Silent = False
+    debug: Debug = False
 
-    def _load_schema() -> object:
-        if not schema:
-            raise ValueError("No data schema provided")
-        return load_data_schema(schema)
 
-    data_schema = session.task("Loading data schema", _load_schema)
+@command(description="Validate a JSON Data from a local or remote path")
+def validate_data_command(input: ValidateDataInput, context: Context) -> ReportResult:
+    session = Session(silent=input.silent, debug=input.debug, json=context.json)
 
-    def _validate() -> Report:
-        return validate_data({"data": path, "dataSchema": data_schema})  # type: ignore[arg-type]
+    data_schema = session.task(
+        "Loading data schema", lambda: load_data_schema(input.data_schema)
+    )
 
-    report = session.task("Validating data", _validate)
+    report = session.task(
+        "Validating data",
+        lambda: validate_data(Resource(data=input.path, dataSchema=data_schema)),
+    )
 
-    session.render_report_result(report)
+    return session.render_report_result(report)

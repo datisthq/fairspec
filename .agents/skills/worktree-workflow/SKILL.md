@@ -20,7 +20,9 @@ pnpm install
 ```
 
 `pnpm install` also links the skills and, when `uv` is on the PATH, sets up the Python
-environment. Run `pnpm -C typescript build` before typing or testing `typescript/` or `desktop/`:
+environment. uv picks the newest interpreter it finds, and one without wheels for the native
+dependencies fails to build them: check `python/.venv/bin/python -V`, and if it is not the
+root's version, `rm -rf python/.venv && uv sync --all-packages -p 3.12` in `python/`. Run `pnpm -C typescript build` before typing or testing `typescript/` or `desktop/`:
 the packages type-check against each other's `build/`, and a fresh worktree has none.
 
 ## Landing

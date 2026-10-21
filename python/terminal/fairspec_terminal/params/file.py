@@ -1,18 +1,13 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
-import typer
+from pydantic import Field
 
-HashType = Annotated[str, typer.Option("--hash-type", help="hash type")]
-Bytes_ = Annotated[
-    str | None, typer.Option("--bytes", help="expected file size in bytes")
+HashType = Annotated[
+    Literal["md5", "sha1", "sha256", "sha512"], Field(description="hash type")
 ]
-SampleBytes = Annotated[
-    int | None, typer.Option("--sample-bytes", help="sample size in bytes")
-]
-Hash_ = Annotated[
+SampleBytes = Annotated[int | None, Field(description="sample size in bytes")]
+Hash = Annotated[
     str | None,
-    typer.Option(
-        "--hash", help="expected file hash calculated with the specified hash type"
-    ),
+    Field(description="expected file hash calculated with the specified hash type"),
 ]
-Lines = Annotated[int | None, typer.Option("--lines", help="maximum number of lines")]
+Lines = Annotated[int | None, Field(description="maximum number of lines")]

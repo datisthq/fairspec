@@ -1,23 +1,16 @@
 from typing import Annotated
 
-import typer
+from fireargs import Argument, Option
 
-WithRemote = Annotated[
-    bool, typer.Option("--with-remote", help="include remote resources")
-]
 FromDataset = Annotated[
-    str | None, typer.Option("-d", "--dataset", help="dataset to select resource from")
+    str | None, Option(short="d", description="dataset to select resource from")
 ]
 FromResource = Annotated[
-    str | None, typer.Option("-r", "--resource", help="resource in provided dataset")
-]
-ToFolder = Annotated[str, typer.Option("--to-folder", help="a local output folder path")]
-ToArchive = Annotated[
-    str, typer.Option("--to-archive", help="a local output zip file path")
+    str | None, Option(short="r", description="resource in provided dataset")
 ]
 DatasetQuery = Annotated[
     str,
-    typer.Argument(
-        help="a SQL query to execute against a dataset (refer to each table by its resource name)"
+    Argument(
+        description="a SQL query to execute against a dataset (refer to each table by its resource name)"
     ),
 ]

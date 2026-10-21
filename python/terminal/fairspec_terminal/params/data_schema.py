@@ -1,7 +1,12 @@
 from typing import Annotated
 
-import typer
+from fireargs import Option
 
 DataSchemaPath = Annotated[
-    str, typer.Option("--schema", help="path to a data schema descriptor (JSON Schema)")
+    str,
+    Option(
+        name="schema",
+        alias="schema",
+        description="path to a data schema descriptor (JSON Schema)",
+    ),
 ]

@@ -1,25 +1,26 @@
 import polars as pl
 from fairspec_library import query_dataset
+from fireargs import Context, command
 
-from fairspec_terminal.params import DatasetQuery, Debug, Json, RequiredPath
-from fairspec_terminal.program import dataset_program
+from fairspec_terminal.models.input import CommandInput
+from fairspec_terminal.models.output import Records
+from fairspec_terminal.params import DatasetQuery, Debug, DescriptorPath
 from fairspec_terminal.session import Session
 
 
-@dataset_program.command()
-def query(
-    path: RequiredPath,
-    sql_query: DatasetQuery,
-    json: Json = False,
-    debug: Debug = False,
-) -> None:
-    """Query a dataset from a local or remote path with SQL."""
-    session = Session(debug=debug, json=json)
+class QueryDatasetInput(CommandInput):
+    path: DescriptorPath
+    query: DatasetQuery
+    debug: Debug = False
 
-    def _query() -> pl.LazyFrame:
-        return query_dataset(path, sql_query)
 
-    table = session.task("Executing query", _query)
+@command(description="Query a dataset from a local or remote path with SQL")
+def query_dataset_command(input: QueryDatasetInput, context: Context) -> Records:
+    session = Session(debug=input.debug, json=context.json)
+
+    table = session.task(
+        "Executing query", lambda: query_dataset(input.path, input.query)
+    )
 
     def _collect() -> pl.DataFrame:
         result = table.collect()
@@ -28,4 +29,4 @@ def query(
 
     frame = session.task("Collecting data", _collect)
 
-    session.render_frame_result(frame)
+    return session.render_frame_result(frame)

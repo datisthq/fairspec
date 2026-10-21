@@ -24,7 +24,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["fairspec-library", "fairspec-mcp-server", "typer>=0.15"]
+dependencies = ["fairspec-library", "fairspec-mcp-server", "fireargs>=0.1", "rich>=14"]
 
 [project.scripts]
 fairspec = "fairspec_terminal.main:main"

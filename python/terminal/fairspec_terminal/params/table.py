@@ -1,33 +1,27 @@
 from typing import Annotated
 
-import typer
-from fairspec_library import TableCheck
+from fireargs import Argument, Option
+from pydantic import AfterValidator
 
-Query = Annotated[
+TableQuery = Annotated[
     str | None,
-    typer.Argument(
-        help="a SQL query to execute against a table (use `self` to refer to the table)"
+    Argument(
+        description="a SQL query to execute against a table (use `self` to refer to the table)"
     ),
 ]
-Overwrite = Annotated[
-    bool,
-    typer.Option("--overwrite", help="whether to overwrite a file if it already exists"),
-]
 
 
-def parse_table_check(value: str) -> TableCheck:
-    name, separator, condition = value.partition("=")
+def assert_table_check(value: str) -> str:
+    name, separator, _ = value.partition("=")
     if not name or not separator:
-        raise typer.BadParameter('Expected "name=condition"')
-    return {"name": name, "condition": condition}
+        raise ValueError('Expected "name=condition"')
+    return value
 
 
 Check = Annotated[
-    list[TableCheck] | None,
-    typer.Option(
-        "--check",
-        parser=parse_table_check,
-        metavar="CHECK",
-        help="a named SQL condition every row must satisfy, as name=condition (repeatable)",
+    list[Annotated[str, AfterValidator(assert_table_check)]] | None,
+    Option(
+        help_group="Checks",
+        description="a named SQL condition every row must satisfy, as name=condition (repeatable)",
     ),
 ]

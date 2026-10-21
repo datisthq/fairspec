@@ -1,6 +1,5 @@
-from fairspec_terminal.program import program, register_commands
+from fairspec_terminal.program import program
 
 
 def main() -> None:
-    register_commands()
     program()

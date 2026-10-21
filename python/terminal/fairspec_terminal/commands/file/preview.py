@@ -1,45 +1,41 @@
-from fairspec_dataset import preview_file
+from fairspec_dataset import FilePreview, preview_file
+from fireargs import Context, command
 
 from fairspec_terminal.helpers.file import select_file
+from fairspec_terminal.models.input import CommandInput
 from fairspec_terminal.params import (
     Debug,
+    FilePath,
     FromDataset,
     FromResource,
-    Json,
     Lines,
-    OptionalPath,
     SampleBytes,
     Silent,
 )
-from fairspec_terminal.program import file_program
 from fairspec_terminal.session import Session
 
 
-@file_program.command()
-def preview(
-    path: OptionalPath = None,
-    dataset: FromDataset = None,
-    resource: FromResource = None,
-    lines: Lines = None,
-    sample_bytes: SampleBytes = None,
-    silent: Silent = False,
-    debug: Debug = False,
-    json: Json = False,
-) -> None:
-    """Show the raw source of a local or remote file."""
-    session = Session(silent=silent, debug=debug, json=json)
+class PreviewFileInput(CommandInput):
+    path: FilePath = None
+    dataset: FromDataset = None
+    resource: FromResource = None
+    lines: Lines = None
+    sample_bytes: SampleBytes = None
+    silent: Silent = False
+    debug: Debug = False
 
-    if not path:
-        path = select_file(session, dataset=dataset, resource=resource)
 
-    def _preview():
-        assert path
-        return preview_file(path, max_lines=lines, max_bytes=sample_bytes)
+@command(description="Show the raw source of a local or remote file")
+def preview_file_command(input: PreviewFileInput, context: Context) -> FilePreview:
+    session = Session(silent=input.silent, debug=input.debug, json=context.json)
+    path = input.path or select_file(
+        session, dataset=input.dataset, resource=input.resource
+    )
 
-    result = session.task("Loading file preview", _preview)
+    preview = session.task(
+        "Loading file preview",
+        lambda: preview_file(path, max_lines=input.lines, max_bytes=input.sample_bytes),
+    )
 
-    if json:
-        session.render_data_result(result.model_dump())
-        return
-
-    session.render_raw_result(result.text)
+    session.render_raw_result(preview.text)
+    return preview

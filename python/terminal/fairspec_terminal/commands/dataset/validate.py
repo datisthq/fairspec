@@ -1,23 +1,23 @@
 from fairspec_library import validate_dataset
-from fairspec_metadata import Report
+from fireargs import Context, command
 
-from fairspec_terminal.params import Debug, Json, RequiredPath
-from fairspec_terminal.program import dataset_program
+from fairspec_terminal.models.input import CommandInput
+from fairspec_terminal.models.output import ReportResult
+from fairspec_terminal.params import Debug, DescriptorPath
 from fairspec_terminal.session import Session
 
 
-@dataset_program.command()
-def validate(
-    path: RequiredPath,
-    json: Json = False,
-    debug: Debug = False,
-) -> None:
-    """Validate a dataset from a local or remote path."""
-    session = Session(debug=debug, json=json)
+class ValidateDatasetInput(CommandInput):
+    path: DescriptorPath
+    debug: Debug = False
 
-    def _validate() -> Report:
-        return validate_dataset(path)
 
-    report = session.task("Validating dataset", _validate)
+@command(description="Validate a dataset from a local or remote path")
+def validate_dataset_command(
+    input: ValidateDatasetInput, context: Context
+) -> ReportResult:
+    session = Session(debug=input.debug, json=context.json)
 
-    session.render_report_result(report)
+    report = session.task("Validating dataset", lambda: validate_dataset(input.path))
+
+    return session.render_report_result(report)

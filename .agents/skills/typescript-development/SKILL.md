@@ -130,7 +130,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `.transform()`, which breaks `--llms`; a repeatable flag such as `--check` is a `z.array(...)` option
 - A fireargs `f.program` registers an action for `--llms`, which drops commander's implicit
   `help [command]` subcommand; `program.ts` restores it with `helpCommand: { name: "help [command]" }`
-  on every program. `--llms` and JSON input (`--json '<value>'`) exist only in the TypeScript CLI
+  on every program
 - An exported function whose inferred type names a `nodejs-polars` type outside `table` fails
   the build with TS2883 ("cannot be named without a reference to … LazyDataFrame"); annotate it
   with the `Table` type (`Promise<Table>`), the one place an explicit return type is required

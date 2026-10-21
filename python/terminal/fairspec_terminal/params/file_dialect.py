@@ -1,79 +1,117 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
-import typer
+from fireargs import Option
 
-Dialect = Annotated[
-    str | None, typer.Option("--dialect", help="path to a Dialect descriptor")
-]
-Format = Annotated[
-    str | None, typer.Option("--format", help="format type (csv, json, xlsx, etc)")
-]
-Delimiter = Annotated[
-    str | None,
-    typer.Option("--delimiter", help="character used to separate fields in the data"),
-]
-LineTerminator = Annotated[
-    str | None,
-    typer.Option("--line-terminator", help="character sequence used to terminate rows"),
-]
-QuoteChar = Annotated[
-    str | None, typer.Option("--quote-char", help="character used to quote fields")
-]
-NullSequence = Annotated[
-    str | None,
-    typer.Option(
-        "--null-sequence", help="character sequence representing null or missing values"
-    ),
-]
-HeaderRows = Annotated[
-    str | None,
-    typer.Option(
-        "--header-rows",
-        help="comma-separated row numbers (1-indexed) for headers, or 'false' to disable",
-    ),
-]
-HeaderJoin = Annotated[
-    str | None,
-    typer.Option("--header-join", help="character used to join multi-line headers"),
-]
-CommentRows = Annotated[
-    str | None,
-    typer.Option(
-        "--comment-rows",
-        help="comma-separated row numbers (1-indexed) to exclude from data",
-    ),
-]
-CommentPrefix = Annotated[
-    str | None,
-    typer.Option(
-        "--comment-prefix", help="character sequence denoting the start of a comment line"
-    ),
-]
-ColumnNamesParam = Annotated[
-    str | None,
-    typer.Option("--column-names", help="comma-separated list of column names"),
-]
-JsonPointer = Annotated[
-    str | None,
-    typer.Option(
-        "--json-pointer", help="JSON pointer to the data array within the JSON document"
-    ),
-]
-RowType = Annotated[
-    str | None, typer.Option("--row-type", help="the type of each row in the data")
-]
-SheetNumber = Annotated[
-    int | None,
-    typer.Option(
-        "--sheet-number",
-        help="for spreadsheet data, the sheet number to read (0-indexed)",
-    ),
-]
-SheetName = Annotated[
-    str | None,
-    typer.Option("--sheet-name", help="for spreadsheet data, the sheet name to read"),
-]
-TableName = Annotated[
-    str | None,
-    typer.Option("--table-name", help="for database sources, the table name to read"),
-]
+from fairspec_terminal.models.input import CommandInput
+
+
+def parse_header_rows(value: str) -> Literal[False] | list[int]:
+    return False if value == "false" else parse_row_numbers(value)
+
+
+def parse_row_numbers(value: str) -> list[int]:
+    return [int(item) for item in value.split(",")]
+
+
+class DialectParams(CommandInput):
+    dialect: Annotated[
+        str | None,
+        Option(help_group="Dialect", description="path to a Dialect descriptor"),
+    ] = None
+    format: Annotated[
+        str | None,
+        Option(help_group="Dialect", description="format type (csv, json, xlsx, etc)"),
+    ] = None
+    delimiter: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="character used to separate fields in the data",
+        ),
+    ] = None
+    line_terminator: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect", description="character sequence used to terminate rows"
+        ),
+    ] = None
+    quote_char: Annotated[
+        str | None,
+        Option(help_group="Dialect", description="character used to quote fields"),
+    ] = None
+    null_sequence: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="character sequence representing null or missing values",
+        ),
+    ] = None
+    header_rows: Annotated[
+        Literal[False] | list[int] | None,
+        Option(
+            help_group="Dialect",
+            parse=parse_header_rows,
+            description="comma-separated row numbers (1-indexed) for headers, or 'false' to disable",
+        ),
+    ] = None
+    header_join: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect", description="character used to join multi-line headers"
+        ),
+    ] = None
+    comment_rows: Annotated[
+        list[int] | None,
+        Option(
+            help_group="Dialect",
+            parse=parse_row_numbers,
+            description="comma-separated row numbers (1-indexed) to exclude from data",
+        ),
+    ] = None
+    comment_prefix: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="character sequence denoting the start of a comment line",
+        ),
+    ] = None
+    column_names: Annotated[
+        list[str] | None,
+        Option(
+            help_group="Dialect",
+            parse=lambda value: value.split(","),
+            description="comma-separated list of column names",
+        ),
+    ] = None
+    json_pointer: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="JSON pointer to the data array within the JSON document",
+        ),
+    ] = None
+    row_type: Annotated[
+        Literal["array", "object"] | None,
+        Option(help_group="Dialect", description="the type of each row in the data"),
+    ] = None
+    sheet_number: Annotated[
+        int | None,
+        Option(
+            help_group="Dialect",
+            description="for spreadsheet data, the sheet number to read (0-indexed)",
+        ),
+    ] = None
+    sheet_name: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="for spreadsheet data, the sheet name to read",
+        ),
+    ] = None
+    table_name: Annotated[
+        str | None,
+        Option(
+            help_group="Dialect",
+            description="for database sources, the table name to read",
+        ),
+    ] = None

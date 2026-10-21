@@ -4,14 +4,13 @@ import json
 import os
 
 from fairspec_dataset import get_temp_folder_path
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
-from fairspec_terminal.program import register_commands, table_program
+from fairspec_terminal.program import table_program
 
 
 class TestTableValidateExitCode:
     def test_should_keep_zero_exit_code_for_valid_table(self, monkeypatch):
-        register_commands()
         folder = get_temp_folder_path()
         with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
             file.write("id,age\n1,25\n2,30\n")
@@ -27,7 +26,6 @@ class TestTableValidateExitCode:
         assert json.loads(result.stdout)["valid"] is True
 
     def test_should_set_non_zero_exit_code_for_invalid_table(self, monkeypatch):
-        register_commands()
         folder = get_temp_folder_path()
         with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
             file.write("id,age\n1,200\n")
@@ -43,7 +41,6 @@ class TestTableValidateExitCode:
         assert json.loads(result.stdout)["valid"] is False
 
     def test_should_apply_column_properties_without_a_schema(self, monkeypatch):
-        register_commands()
         folder = get_temp_folder_path()
         with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
             file.write("id,age\n1,200\n")
@@ -64,7 +61,6 @@ class TestTableValidateExitCode:
         assert json.loads(result.stdout)["valid"] is False
 
     def test_should_report_rows_failing_a_check(self, monkeypatch):
-        register_commands()
         folder = get_temp_folder_path()
         with open(os.path.join(folder, "data.csv"), "w", newline="") as file:
             file.write("id,start,end\n1,1,2\n2,3,2")
@@ -89,11 +85,10 @@ class TestTableValidateExitCode:
         ]
 
     def test_should_reject_a_check_without_a_name(self):
-        register_commands()
 
         result = CliRunner().invoke(
             table_program, ["validate", "data.csv", "--check", "=count(*) = 2"]
         )
 
-        assert result.exit_code == 2
-        assert "name=condition" in result.output
+        assert result.exit_code == 1
+        assert "name=condition" in result.stderr

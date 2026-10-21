@@ -1,14 +1,8 @@
 from typing import Annotated
 
-import typer
+from pydantic import Field
 
-Json = Annotated[bool, typer.Option("--json", help="output as JSON")]
 Debug = Annotated[
-    bool,
-    typer.Option(
-        "--debug", help="Enable debug mode to print exception details to stderr"
-    ),
+    bool, Field(description="Enable debug mode to print exception details to stderr")
 ]
-Silent = Annotated[
-    bool, typer.Option("--silent", help="suppress all output except errors")
-]
+Silent = Annotated[bool, Field(description="suppress all output except errors")]

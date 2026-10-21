@@ -18,4 +18,4 @@ Every command takes `--json` to write its result as JSON. Given a value, `--json
 fairspec table validate --json '{"path": "data.csv", "check": ["positive-price=price > 0"]}'
 ```
 
-`fairspec --llms` prints every command's input and output as JSON Schema, in the shape of an MCP `tools/list` response. The Python CLI does not have `--llms` or JSON input yet.
+`fairspec --llms` prints every command's input and output as JSON Schema, in the shape of an MCP `tools/list` response.
