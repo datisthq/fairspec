@@ -25,6 +25,10 @@ Run from the repo root; `pnpm -C python <script>` runs a script of this section,
 - `pnpm -C python build` — `uv build --all-packages` into `build/`
 - `pnpm -C python release` — `uv publish build/*` (CI only)
 
+`[tool.uv] exclude-newer = "7 days"` quarantines new releases like pnpm's `minimumReleaseAge`:
+`uv lock` won't pick a version under a week old, so pin a dev tool to one that already passed it.
+A genuine hotfix goes through `exclude-newer-package`, never a shorter window for the whole tree.
+
 ## Modules
 
 Packages form a strict DAG — `metadata` depends on nothing and everything layers up from it.
