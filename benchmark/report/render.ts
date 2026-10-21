@@ -1,5 +1,6 @@
 import { formatBytes } from "../generate/size.ts"
 import type { Result } from "../harness/measure.ts"
+import { getProfile } from "../profiles/index.ts"
 
 export type Machine = {
   cpu: string
@@ -60,6 +61,7 @@ type Group = {
   caseName: string
   size: string
   rows: number
+  columns: number
   bytes: number
   results: Result[]
 }
@@ -73,6 +75,7 @@ function groupResults(results: Result[]) {
       caseName: result.case,
       size: result.size,
       rows: result.rows,
+      columns: getProfile(result.profile).columns.length,
       bytes: result.bytes,
       results: [],
     }
@@ -106,7 +109,7 @@ function renderHeadline(group: Group) {
   ].filter(tile => tile !== undefined)
 
   return `<section aria-label="Headline">
-  <p class="caption">${escapeHtml(group.caseName)}, ${formatBytes(group.bytes)} · ${group.rows.toLocaleString("en")} rows</p>
+  <p class="caption">${escapeHtml(group.caseName)}, ${formatBytes(group.bytes)} · ${formatShape(group)}</p>
   <div class="tiles">${tiles
     .map(
       ([label, value, note]) =>
@@ -123,7 +126,7 @@ function renderGroup(group: Group) {
 
   return `<section>
   <h2>${escapeHtml(group.caseName)} · ${formatBytes(group.bytes)}</h2>
-  <p class="caption">${group.rows.toLocaleString("en")} rows · median of ${results[0]?.runs || 1} run(s) · shorter is better</p>
+  <p class="caption">${formatShape(group)} · median of ${results[0]?.runs || 1} run(s) · shorter is better</p>
   <div class="legend"><span><i class="swatch fairspec"></i>Fairspec</span><span><i class="swatch rival"></i>Other tools</span><span><i class="swatch partial"></i>Not full validators</span></div>
   <div class="charts">
     ${renderBars("Time", results, result => result.wallMs?.median, maxTime, formatTime)}
@@ -232,6 +235,14 @@ function compareResults(left: Result, right: Result) {
 
 function formatTitle(result: Result) {
   return result.isPartial ? `${result.title} (not a full validator)` : result.title
+}
+
+function formatShape(group: Group) {
+  const count = new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumSignificantDigits: 3,
+  })
+  return `${count.format(group.rows)} rows · ${group.columns} columns · ${count.format(group.rows * group.columns)} cells`
 }
 
 function formatOutcome(result: Result) {

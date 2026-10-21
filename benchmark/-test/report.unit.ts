@@ -83,6 +83,16 @@ describe("renderReport", () => {
     )
   })
 
+  it("describes the table shape in short counts", () => {
+    const html = renderReport({
+      measuredAt: "2026-10-20T00:00:00.000Z",
+      machine,
+      results: [createResult({})],
+    })
+
+    expect(html).toContain("30M rows · 41 columns · 1.23B cells")
+  })
+
   it("escapes text from tool output", () => {
     const html = renderReport({
       measuredAt: "2026-10-20T00:00:00.000Z",
