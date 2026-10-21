@@ -1,5 +1,5 @@
 import { writeTempFile } from "@fairspec/dataset"
-import { strToU8, zipSync } from "fflate"
+import { strToU8, Zip, ZipDeflate, zipSync } from "fflate"
 import { describe, expect, it } from "vite-plus/test"
 import { assertSheetSize } from "../guard.ts"
 
@@ -74,12 +74,72 @@ describe("assertSheetSize", () => {
     const path = await writeTempFile("id,name\n1,a\n")
     await expect(assertSheetSize(path)).resolves.toBeUndefined()
   })
+  it("should find a zip archive behind prepended data", async () => {
+    const archive = zipSync({
+      "xl/worksheets/sheet1.xml": strToU8(createSheet(FAR_CELLS)),
+    })
+    const path = await writeTempFile(Buffer.concat([Buffer.from("junk"), archive]))
+    await expect(assertSheetSize(path)).rejects.toThrow(TOO_LARGE)
+  })
+
+  it("should scan a sheet the workbook relationships place elsewhere", async () => {
+    const relationships = `<Relationships><Relationship Id="rId1" Target="data/s.xml"/></Relationships>`
+    const archive = zipSync({
+      "xl/_rels/workbook.xml.rels": strToU8(relationships),
+      "xl/data/s.xml": strToU8(createSheet(FAR_CELLS)),
+    })
+    const path = await writeTempFile(Buffer.from(archive))
+    await expect(assertSheetSize(path)).rejects.toThrow(TOO_LARGE)
+  })
+
+  it("should reject an archive with duplicate entries", async () => {
+    const path = await writeTempFile(
+      createZip([
+        [
+          "xl/worksheets/sheet1.xml",
+          createSheet(`<row r="1"><c r="A1"><v>1</v></c></row>`),
+        ],
+        ["xl/worksheets/sheet1.xml", createSheet(FAR_CELLS)],
+      ]),
+    )
+    await expect(assertSheetSize(path)).rejects.toThrow("duplicate entries")
+  })
+
+  it("should decode a UTF-16 sheet", async () => {
+    const sheet = Buffer.from(`\ufeff${createSheet(FAR_CELLS)}`, "utf16le")
+    const path = await writeTempFile(
+      Buffer.from(zipSync({ "xl/worksheets/sheet1.xml": new Uint8Array(sheet) })),
+    )
+    await expect(assertSheetSize(path)).rejects.toThrow(TOO_LARGE)
+  })
 })
 
+const FAR_CELLS =
+  `<row r="1"><c r="A1"><v>1</v></c></row>` +
+  `<row r="1048576"><c r="XFD1048576"><v>1</v></c></row>`
+
+function createSheet(sheetData: string) {
+  return `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetData}</sheetData></worksheet>`
+}
+
+function createZip(files: [string, string][]) {
+  const chunks: Uint8Array[] = []
+  const zip = new Zip((error, chunk) => {
+    if (error) throw error
+    chunks.push(chunk)
+  })
+  for (const [name, text] of files) {
+    const file = new ZipDeflate(name)
+    zip.add(file)
+    file.push(strToU8(text), true)
+  }
+  zip.end()
+  return Buffer.concat(chunks)
+}
+
 async function writeXlsx(sheetData: string) {
-  const sheet = `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetData}</sheetData></worksheet>`
   return await writeTempFile(
-    Buffer.from(zipSync({ "xl/worksheets/sheet1.xml": strToU8(sheet) })),
+    Buffer.from(zipSync({ "xl/worksheets/sheet1.xml": strToU8(createSheet(sheetData)) })),
   )
 }
 

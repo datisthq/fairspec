@@ -120,8 +120,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   which is why the ODS writer emits none. Both dependencies are third-party and pinned exactly.
   calamine allocates the whole used range natively before `maxCells` is checked, so a 5 KB file
   naming `XFD1048576` aborts the process: `readSheetRows` first runs `assertSheetSize`
-  (`helpers/guard.ts`), which streams the sheet XML and refuses more than 50M cells. Its tag
-  pattern honours quotes, since an unquoted scan lets a `>` in an attribute hide the `r` after it
+  (`helpers/guard.ts`), which streams the sheet XML and refuses more than 50M cells. It must
+  see what calamine sees: entries from the zip's central directory (`helpers/zip.ts`, which allows
+  prepended data), sheets from `xl/_rels/workbook.xml.rels`, UTF-16 decoded, duplicate names
+  refused, and a tag pattern that honours quotes, since a `>` in an attribute can hide the `r`
+  after it. A file passes once per size and mtime, so dialect inference and the load share it
 - **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
   row condition and one select per condition kind for the aggregates. Whether a check is a row
   or a table check comes from running it on two typed null rows (one row back means an

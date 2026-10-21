@@ -1,5 +1,7 @@
-import { open } from "node:fs/promises"
-import { Unzip, UnzipInflate } from "fflate"
+import { stat } from "node:fs/promises"
+import { posix } from "node:path"
+import type { ZipEntry } from "./zip.ts"
+import { readZipEntries, readZipEntry } from "./zip.ts"
 
 export const MAX_SHEET_CELLS = 50_000_000
 
@@ -9,59 +11,23 @@ export const MAX_SHEET_CELLS = 50_000_000
  * so a tiny file naming a far cell would abort the process.
  */
 export async function assertSheetSize(path: string) {
-  let total = 0
-  let error: unknown
-  let isXlsb = false
+  const { size, mtimeMs } = await stat(path)
+  const key = `${path}\0${size}\0${mtimeMs}`
+  if (CHECKED.has(key)) return
 
-  const checkCells = (cells: number) => {
-    if (total + cells > MAX_SHEET_CELLS) {
-      throw new Error(
-        `Sheet is too large to load: it spans more than ${MAX_SHEET_CELLS} cells`,
-      )
-    }
+  // Not a zip archive: calamine then reads it as xls, which caps a sheet's size
+  const entries = await readZipEntries(path)
+  if (entries) await assertArchiveSize(path, entries)
+
+  CHECKED.add(key)
+  for (const old of CHECKED) {
+    if (CHECKED.size <= MAX_CHECKED) break
+    CHECKED.delete(old)
   }
-
-  const unzip = new Unzip(file => {
-    if (file.name === "xl/workbook.bin") isXlsb = true
-
-    const scanner = XLSX_SHEET.test(file.name)
-      ? createXlsxScanner(checkCells)
-      : file.name === "content.xml"
-        ? createOdsScanner(checkCells)
-        : undefined
-    if (!scanner) return
-
-    const decoder = new TextDecoder()
-    file.ondata = (fileError, chunk, final) => {
-      if (error) return
-      try {
-        if (fileError) throw fileError
-        scanner.push(decoder.decode(chunk, { stream: !final }))
-        if (final) total += scanner.finish()
-      } catch (cause) {
-        error = cause
-      }
-    }
-    file.start()
-  })
-  unzip.register(UnzipInflate)
-
-  await using handle = await open(path)
-  const buffer = Buffer.alloc(1 << 20)
-  let first = true
-  while (!error) {
-    const { bytesRead } = await handle.read(buffer, 0, buffer.length, null)
-    if (first && !buffer.subarray(0, Math.min(bytesRead, 4)).equals(ZIP_MAGIC)) return
-    first = false
-    unzip.push(new Uint8Array(buffer.subarray(0, bytesRead)), bytesRead === 0)
-    if (bytesRead === 0) break
-  }
-
-  if (error) throw error
-  if (isXlsb) throw new Error("Spreadsheet format xlsb is not supported")
 }
 
-const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04])
+const CHECKED = new Set<string>()
+const MAX_CHECKED = 64
 const XLSX_SHEET = /^xl\/worksheets\/[^/]+\.xml$/
 const MAX_TAG_LENGTH = 1 << 24
 
@@ -72,9 +38,94 @@ const ODS_TAG = new RegExp(
   `<(\\/?)(?:[\\w.-]+:)?(table-row|table-cell|covered-table-cell|table)(?=[\\s/>])${ATTRS}>`,
   "g",
 )
+const RELATIONSHIP_TAG = new RegExp(
+  `<(?:[\\w.-]+:)?Relationship(?=[\\s/>])${ATTRS}>`,
+  "g",
+)
 const ATTRIBUTES = new Map<string, RegExp>()
 
 type CheckCells = (cells: number) => void
+
+async function assertArchiveSize(path: string, entries: ZipEntry[]) {
+  const byName = new Map<string, ZipEntry>()
+  for (const entry of entries) {
+    const name = entry.name.toLowerCase()
+    if (byName.has(name)) throw new Error("Spreadsheet archive has duplicate entries")
+    byName.set(name, entry)
+  }
+
+  if (byName.has("xl/workbook.bin")) {
+    throw new Error("Spreadsheet format xlsb is not supported")
+  }
+
+  // calamine opens the sheets the workbook's relationships name, wherever they live
+  const sheets = new Set(
+    entries.filter(entry => XLSX_SHEET.test(entry.name.toLowerCase())),
+  )
+  const relationships = byName.get("xl/_rels/workbook.xml.rels")
+  if (relationships) {
+    for (const target of await readRelationshipTargets(path, relationships)) {
+      const entry = byName.get(target.toLowerCase())
+      if (entry) sheets.add(entry)
+    }
+  }
+
+  let total = 0
+  const checkCells = (cells: number) => {
+    if (total + cells > MAX_SHEET_CELLS) {
+      throw new Error(
+        `Sheet is too large to load: it spans more than ${MAX_SHEET_CELLS} cells`,
+      )
+    }
+  }
+
+  for (const sheet of sheets) {
+    total += await scanZipEntry(path, sheet, createXlsxScanner(checkCells))
+  }
+
+  const content = byName.get("content.xml")
+  if (content) total += await scanZipEntry(path, content, createOdsScanner(checkCells))
+}
+
+async function readRelationshipTargets(path: string, entry: ZipEntry) {
+  const targets: string[] = []
+  const scanner = {
+    push: createTagReader(RELATIONSHIP_TAG, match => {
+      const target = getAttribute(match[1] ?? "", "Target")
+      if (!target) return
+      if (target.startsWith("/")) targets.push(target.slice(1))
+      else targets.push(posix.join("xl", target), `xl/${target}`)
+    }),
+    finish: () => 0,
+  }
+
+  await scanZipEntry(path, entry, scanner)
+  return targets
+}
+
+async function scanZipEntry(
+  path: string,
+  entry: ZipEntry,
+  scanner: { push: (text: string) => void; finish: () => number },
+) {
+  let decoder: InstanceType<typeof TextDecoder> | undefined
+  for await (const chunk of readZipEntry(path, entry)) {
+    decoder ??= new TextDecoder(detectEncoding(chunk))
+    scanner.push(decoder.decode(chunk, { stream: true }))
+  }
+  if (decoder) scanner.push(decoder.decode())
+
+  return scanner.finish()
+}
+
+// calamine decodes UTF-16 sheets too, which read as UTF-8 would show no tags
+function detectEncoding(bytes: Buffer) {
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) return "utf-16le"
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) return "utf-16be"
+  if (bytes[0] === 0x3c && bytes[1] === 0x00) return "utf-16le"
+  if (bytes[0] === 0x00 && bytes[1] === 0x3c) return "utf-16be"
+  return "utf-8"
+}
 
 function createXlsxScanner(checkCells: CheckCells) {
   const bounds = createBounds(checkCells)

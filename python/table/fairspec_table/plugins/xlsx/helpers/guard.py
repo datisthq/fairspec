@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import codecs
+import os
+import posixpath
 import re
 import zipfile
 from collections.abc import Callable
@@ -14,9 +16,45 @@ def assert_sheet_size(path: str) -> None:
     calamine allocates every cell between the first and the last used one before
     returning, so a tiny file naming a far cell would abort the process.
     """
-    with open(path, "rb") as file:
-        if file.read(4) != ZIP_MAGIC:
-            return
+    status = os.stat(path)
+    key = (path, status.st_size, status.st_mtime_ns)
+    if key in _CHECKED:
+        return
+
+    # Not a zip archive: calamine then reads it as xls, which caps a sheet's size
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as archive:
+            _assert_archive_size(archive)
+
+    _CHECKED[key] = None
+    while len(_CHECKED) > _MAX_CHECKED:
+        del _CHECKED[next(iter(_CHECKED))]
+
+
+_CHECKED: dict[tuple[str, int, int], None] = {}
+_MAX_CHECKED = 64
+_XLSX_SHEET = re.compile(r"^xl/worksheets/[^/]+\.xml$")
+
+
+def _assert_archive_size(archive: zipfile.ZipFile) -> None:
+    by_name: dict[str, zipfile.ZipInfo] = {}
+    for info in archive.infolist():
+        name = info.filename.lower()
+        if name in by_name:
+            raise Exception("Spreadsheet archive has duplicate entries")
+        by_name[name] = info
+
+    if "xl/workbook.bin" in by_name:
+        raise Exception("Spreadsheet format xlsb is not supported")
+
+    # calamine opens the sheets the workbook's relationships name, wherever they live
+    sheets = {name: info for name, info in by_name.items() if _XLSX_SHEET.match(name)}
+    relationships = by_name.get("xl/_rels/workbook.xml.rels")
+    if relationships:
+        for target in _read_relationship_targets(archive, relationships):
+            info = by_name.get(target.lower())
+            if info:
+                sheets[info.filename.lower()] = info
 
     total = 0
 
@@ -26,29 +64,54 @@ def assert_sheet_size(path: str) -> None:
                 f"Sheet is too large to load: it spans more than {MAX_SHEET_CELLS} cells"
             )
 
-    with zipfile.ZipFile(path) as archive:
-        names = archive.namelist()
-        for name in names:
-            if _XLSX_SHEET.match(name):
-                scanner = _XlsxScanner(check_cells)
-            elif name == "content.xml":
-                scanner = _OdsScanner(check_cells)
-            else:
-                continue
+    for info in sheets.values():
+        fast = _scan_zip_entry(archive, info, _XlsxFastScanner())
+        if fast is None or total + fast > MAX_SHEET_CELLS:
+            fast = _scan_zip_entry(archive, info, _XlsxScanner(check_cells))
+        total += fast or 0
 
-            decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
-            with archive.open(name) as stream:
-                while chunk := stream.read(1 << 20):
-                    scanner.push(decoder.decode(chunk))
-                scanner.push(decoder.decode(b"", final=True), final=True)
-            total += scanner.finish()
-
-        if "xl/workbook.bin" in names:
-            raise Exception("Spreadsheet format xlsb is not supported")
+    content = by_name.get("content.xml")
+    if content:
+        total += _scan_zip_entry(archive, content, _OdsScanner(check_cells)) or 0
 
 
-ZIP_MAGIC = b"PK\x03\x04"
-_XLSX_SHEET = re.compile(r"^xl/worksheets/[^/]+\.xml$")
+def _read_relationship_targets(
+    archive: zipfile.ZipFile, info: zipfile.ZipInfo
+) -> list[str]:
+    reader = _RelationshipReader()
+    _scan_zip_entry(archive, info, reader)
+    return reader.targets
+
+
+def _scan_zip_entry(
+    archive: zipfile.ZipFile, info: zipfile.ZipInfo, scanner: _TagReader
+) -> int | None:
+    if info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+        raise Exception("Spreadsheet archive uses an unsupported compression method")
+
+    decoder = None
+    with archive.open(info) as stream:
+        while chunk := stream.read(1 << 20):
+            if decoder is None:
+                decoder = codecs.getincrementaldecoder(_detect_encoding(chunk))(
+                    errors="replace"
+                )
+            scanner.push(decoder.decode(chunk))
+    if decoder is not None:
+        scanner.push(decoder.decode(b"", final=True), final=True)
+
+    return scanner.finish()
+
+
+# calamine decodes UTF-16 sheets too, which read as UTF-8 would show no tags
+def _detect_encoding(data: bytes) -> str:
+    if data[:2] == b"\xff\xfe" or data[:2] == b"<\x00":
+        return "utf-16-le"
+    if data[:2] == b"\xfe\xff" or data[:2] == b"\x00<":
+        return "utf-16-be"
+    return "utf-8"
+
+
 _MAX_TAG_LENGTH = 1 << 24
 
 # Quoted attribute values may hold ">", which must not end the tag early
@@ -57,6 +120,10 @@ _XLSX_TAG = re.compile(rf"<(?:[\w.-]+:)?(c|row)(?=[\s/>]){_ATTRS}>")
 _ODS_TAG = re.compile(
     rf"<(/?)(?:[\w.-]+:)?(table-row|table-cell|covered-table-cell|table)(?=[\s/>]){_ATTRS}>"
 )
+_XLSX_FAST_TAG = re.compile(
+    r"""<(?:[\w.-]+:)?c(?=[\s/>])(?:\s+r="([A-Za-z]{1,3})(\d{1,7})")?"""
+)
+_RELATIONSHIP_TAG = re.compile(rf"<(?:[\w.-]+:)?(Relationship)(?=[\s/>]){_ATTRS}>")
 _DIGITS = "0123456789"
 _ATTRIBUTES: dict[str, re.Pattern[str]] = {}
 
@@ -107,8 +174,57 @@ class _TagReader:
     def on_tags(self, tags: list[tuple[str, ...]]) -> None:
         raise NotImplementedError
 
-    def finish(self) -> int:
+    def finish(self) -> int | None:
         raise NotImplementedError
+
+
+class _RelationshipReader(_TagReader):
+    def __init__(self) -> None:
+        super().__init__(_RELATIONSHIP_TAG)
+        self.targets: list[str] = []
+
+    def on_tags(self, tags: list[tuple[str, ...]]) -> None:
+        for _, attrs in tags:
+            target = _get_attribute(attrs, "Target")
+            if not target:
+                continue
+            if target.startswith("/"):
+                self.targets.append(target[1:])
+            else:
+                self.targets += [posixpath.normpath(f"xl/{target}"), f"xl/{target}"]
+
+    def finish(self) -> None:
+        return None
+
+
+# Writers put r="A1" first on every cell, so the used range comes from a single
+# regex. It counts empty cells too, an upper bound: on no answer the exact scan runs
+class _XlsxFastScanner(_TagReader):
+    def __init__(self) -> None:
+        super().__init__(_XLSX_FAST_TAG)
+        self.is_exact = True
+        self.letters: set[str] = set()
+        self.min_row = self.max_row = 0
+
+    def on_tags(self, tags: list[tuple[str, ...]]) -> None:
+        if not tags or not self.is_exact:
+            return
+        letters, digits = zip(*tags, strict=True)
+        if "" in letters:
+            self.is_exact = False
+            return
+        rows = list(map(int, digits))
+        self.letters.update(letters)
+        self.min_row = min(rows + ([self.min_row] if self.min_row else []))
+        self.max_row = max(rows + [self.max_row])
+
+    def finish(self) -> int | None:
+        if not self.is_exact:
+            return None
+        if not self.letters:
+            return 0
+        cols = [_parse_column_letters(letters) for letters in self.letters]
+        return (self.max_row - self.min_row + 1) * (max(cols) - min(cols) + 1)
 
 
 class _XlsxScanner(_TagReader):

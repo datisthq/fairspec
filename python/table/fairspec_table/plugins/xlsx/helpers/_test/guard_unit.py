@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import warnings
 import zipfile
 
 import pytest
@@ -78,14 +79,67 @@ class TestAssertSheetSize:
         path = write_temp_file("id,name\n1,a\n")
         assert_sheet_size(path)
 
+    def test_should_find_a_zip_archive_behind_prepended_data(self):
+        archive = _zip({"xl/worksheets/sheet1.xml": _create_sheet(FAR_CELLS)})
+        path = write_temp_file(b"junk" + archive)
+        with pytest.raises(Exception, match=TOO_LARGE):
+            assert_sheet_size(path)
 
-def _write_xlsx(sheet_data: str) -> str:
-    sheet = (
+    def test_should_scan_a_sheet_the_workbook_relationships_place_elsewhere(self):
+        relationships = (
+            '<Relationships><Relationship Id="rId1" Target="data/s.xml"/></Relationships>'
+        )
+        path = write_temp_file(
+            _zip(
+                {
+                    "xl/_rels/workbook.xml.rels": relationships,
+                    "xl/data/s.xml": _create_sheet(FAR_CELLS),
+                }
+            )
+        )
+        with pytest.raises(Exception, match=TOO_LARGE):
+            assert_sheet_size(path)
+
+    def test_should_reject_an_archive_with_duplicate_entries(self):
+        buffer = io.BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            with zipfile.ZipFile(buffer, "w") as archive:
+                archive.writestr(
+                    "xl/worksheets/sheet1.xml",
+                    _create_sheet('<row r="1"><c r="A1"><v>1</v></c></row>'),
+                )
+                archive.writestr("xl/worksheets/sheet1.xml", _create_sheet(FAR_CELLS))
+        path = write_temp_file(buffer.getvalue())
+        with pytest.raises(Exception, match="duplicate entries"):
+            assert_sheet_size(path)
+
+    def test_should_decode_a_utf_16_sheet(self):
+        sheet = ("\ufeff" + _create_sheet(FAR_CELLS)).encode("utf-16-le")
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("xl/worksheets/sheet1.xml", sheet)
+        path = write_temp_file(buffer.getvalue())
+        with pytest.raises(Exception, match=TOO_LARGE):
+            assert_sheet_size(path)
+
+
+FAR_CELLS = (
+    '<row r="1"><c r="A1"><v>1</v></c></row>'
+    '<row r="1048576"><c r="XFD1048576"><v>1</v></c></row>'
+)
+
+
+def _create_sheet(sheet_data: str) -> str:
+    return (
         '<?xml version="1.0" encoding="UTF-8"?><worksheet '
         'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
         f"<sheetData>{sheet_data}</sheetData></worksheet>"
     )
-    return write_temp_file(_zip({"xl/worksheets/sheet1.xml": sheet}))
+
+
+def _write_xlsx(sheet_data: str) -> str:
+    return write_temp_file(_zip({"xl/worksheets/sheet1.xml": _create_sheet(sheet_data)}))
 
 
 def _write_ods(rows: str) -> str:
