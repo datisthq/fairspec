@@ -1,7 +1,7 @@
-import { loadFile } from "@fairspec/dataset"
 import type { OdsFileDialect, Resource, XlsxFileDialect } from "@fairspec/metadata"
 import { getDataFirstPath, getSupportedFileDialect } from "@fairspec/metadata"
-import { read, utils } from "xlsx"
+import { readSheetRows } from "../../helpers/sheet.ts"
+import { formatSheetCell } from "../../helpers/table.ts"
 import { Sniffer } from "../../../../utils/sniffer/sniffer.ts"
 
 export async function inferXlsxFileDialect(
@@ -22,28 +22,10 @@ export async function inferXlsxFileDialect(
     return undefined
   }
 
-  const buffer = await loadFile(dataPath)
-  const book = read(buffer, { type: "buffer" })
-
-  const sheetIndex = fileDialect?.sheetNumber ? fileDialect.sheetNumber - 1 : 0
-  const sheetName = fileDialect?.sheetName ?? book.SheetNames[sheetIndex]
-
-  if (!sheetName) {
+  const rows = await readSheetRows(dataPath, fileDialect, { maxRows: sampleRows })
+  if (!rows) {
     return { format: fileDialect.format }
   }
-
-  const sheet = book.Sheets[sheetName]
-  if (!sheet) {
-    return { format: fileDialect.format }
-  }
-
-  const allRows = utils.sheet_to_json(sheet, {
-    header: 1,
-    raw: true,
-    defval: null,
-  }) as unknown[][]
-
-  const rows = allRows.slice(0, sampleRows)
 
   if (rows.length === 0) {
     return { format: fileDialect.format }
@@ -53,7 +35,7 @@ export async function inferXlsxFileDialect(
   let detection: ReturnType<typeof sniffer.sniffRows>
 
   try {
-    detection = sniffer.sniffRows(rows)
+    detection = sniffer.sniffRows(rows.map(row => row.map(formatSheetCell)))
   } catch {
     return { format: fileDialect.format }
   }

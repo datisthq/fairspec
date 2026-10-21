@@ -38,6 +38,10 @@ Run from the repo root; `pnpm -C desktop <script>` runs a script of this section
   i18n workflow
 - The site has no article section for Desktop, so `desktop/CHANGELOG.md` is not rendered on
   fairspec.org; the landing page's hero links to it on GitHub
+- The main process bundles the library but externalises `desktop/package.json`'s own
+  `dependencies`, so a native or wasm dependency of the library (`nodejs-polars`,
+  `calamine-node`, `wasm-xlsxwriter`) is listed there, and a native one's platform packages go
+  in `asarUnpack` in `desktop/electron-builder.yaml`
 - `desktop/package.json` pins `productName: fairspec`: Electron derives the user-data directory
   from it, so renaming it would orphan every user's settings
 

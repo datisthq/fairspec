@@ -4,16 +4,22 @@ from typing import TYPE_CHECKING, Unpack
 
 import polars as pl
 
-from fairspec_dataset import load_file, prefetch_files
-from fairspec_metadata import Resource, get_supported_file_dialect, resolve_table_schema
+from fairspec_dataset import prefetch_files
+from fairspec_metadata import (
+    OdsFileDialect,
+    Resource,
+    XlsxFileDialect,
+    get_supported_file_dialect,
+    resolve_table_schema,
+)
 
-from fairspec_table.actions.data.file_dialect import get_records_from_rows
 from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
-from fairspec_table.plugins.xlsx.actions.buffer.decode import decode_xlsx_buffer
 from fairspec_table.plugins.xlsx.actions.file_dialect.infer import (
     infer_xlsx_file_dialect,
 )
+from fairspec_table.plugins.xlsx.helpers.sheet import read_sheet_rows
+from fairspec_table.plugins.xlsx.helpers.table import create_table_from_sheet_rows
 
 if TYPE_CHECKING:
     from fairspec_metadata.models.file_dialect.file_dialect import FileDialect
@@ -35,23 +41,14 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
         if inferred:
             file_dialect = inferred
 
-    format = getattr(file_dialect, "format", "xlsx")
-    sheet_name = getattr(file_dialect, "sheetName", None)
-    sheet_number = getattr(file_dialect, "sheetNumber", None)
+    if not isinstance(file_dialect, XlsxFileDialect | OdsFileDialect):
+        raise Exception("Resource data is not compatible")
 
     tables: list[Table] = []
     for path in paths:
-        buffer = load_file(path)
-        rows = decode_xlsx_buffer(
-            buffer,
-            format=format,
-            sheet_name=sheet_name,
-            sheet_number=sheet_number,
-        )
-        if rows:
-            records = get_records_from_rows(rows, file_dialect)  # type: ignore[arg-type]
-            table = pl.DataFrame(records).lazy()
-            tables.append(table)
+        rows = read_sheet_rows(path, file_dialect)
+        if rows is not None:
+            tables.append(create_table_from_sheet_rows(rows, file_dialect))
 
     result = pl.concat(tables)
 

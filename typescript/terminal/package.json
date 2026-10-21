@@ -46,18 +46,17 @@
     "@bomb.sh/tab": "^0.0.12",
     "@fairspec/library": "workspace:*",
     "@fairspec/mcp-server": "workspace:*",
+    "calamine-node": "0.2.0",
     "commander": "^14.0.3",
     "fireargs": "^0.6.0",
     "json-colorizer": "^3.0.1",
     "nodejs-polars": "^0.26.1",
     "picocolors": "^1.1.1",
     "tasuku": "^2.0.5",
+    "wasm-xlsxwriter": "0.13.1",
     "zod": "^4.4.1"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1"
-  },
-  "peerDependencies": {
-    "xlsx": "catalog:"
   }
 }

@@ -13,11 +13,12 @@ files:
   - "build/preload/**/*"
   - "build/renderer/**/*"
 
-# nodejs-polars ships its native binary in a platform-specific optional
-# dependency; it must live outside the asar to be loadable.
+# nodejs-polars and calamine-node ship their native binaries in platform-specific
+# optional dependencies; they must live outside the asar to be loadable.
 asarUnpack:
   - "**/*.node"
   - "**/node_modules/nodejs-polars-*/**"
+  - "**/node_modules/calamine-node-*/**"
 
 # Linux
 

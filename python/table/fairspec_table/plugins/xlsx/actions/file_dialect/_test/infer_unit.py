@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from io import BytesIO
-
 from fairspec_dataset import write_temp_file
 from fairspec_metadata import CsvFileDialect, OdsFileDialect, Resource, XlsxFileDialect
 
-from fairspec_table.plugins.xlsx.actions.buffer.encode import encode_xlsx_buffer
+from fairspec_table.plugins.xlsx.helpers.write import (
+    SheetValue,
+    write_ods_buffer,
+    write_xlsx_buffer,
+)
 
 from ..infer import infer_xlsx_file_dialect
 
 
-def _create_xlsx_file(rows: list[list[object]]) -> str:
-    buffer = encode_xlsx_buffer(rows, book_type="xlsx")
+def _create_xlsx_file(rows: list[list[SheetValue]]) -> str:
+    buffer = write_xlsx_buffer([{"name": "Sheet1", "rows": rows}])
     return write_temp_file(buffer, format="xlsx")
 
 
@@ -97,19 +99,13 @@ class TestInferXlsxFileDialect:
         assert file_dialect is None
 
     def test_should_respect_sheet_number_from_existing_dialect(self):
-        import openpyxl
-
-        wb = openpyxl.Workbook()
-        wb.remove(wb.active)
-        ws1 = wb.create_sheet("Sheet1")
-        for row in [[1, 2, 3], [4, 5, 6]]:
-            ws1.append(row)
-        ws2 = wb.create_sheet("Sheet2")
-        for row in [["id", "name"], [1, "Alice"], [2, "Bob"]]:
-            ws2.append(row)
-        buf = BytesIO()
-        wb.save(buf)
-        path = write_temp_file(buf.getvalue())
+        buffer = write_xlsx_buffer(
+            [
+                {"name": "Sheet1", "rows": [[1, 2, 3], [4, 5, 6]]},
+                {"name": "Sheet2", "rows": [["id", "name"], [1, "Alice"], [2, "Bob"]]},
+            ]
+        )
+        path = write_temp_file(buffer)
 
         file_dialect = infer_xlsx_file_dialect(
             Resource(data=path, fileDialect=XlsxFileDialect(sheetNumber=2))
@@ -118,18 +114,13 @@ class TestInferXlsxFileDialect:
         assert file_dialect == XlsxFileDialect(headerRows=[1])
 
     def test_should_respect_sheet_name_from_existing_dialect(self):
-        import openpyxl
-
-        wb = openpyxl.Workbook()
-        wb.remove(wb.active)
-        ws1 = wb.create_sheet("Data")
-        ws1.append([1, 2, 3])
-        ws2 = wb.create_sheet("Headers")
-        for row in [["id", "name"], [1, "Alice"]]:
-            ws2.append(row)
-        buf = BytesIO()
-        wb.save(buf)
-        path = write_temp_file(buf.getvalue())
+        buffer = write_xlsx_buffer(
+            [
+                {"name": "Data", "rows": [[1, 2, 3]]},
+                {"name": "Headers", "rows": [["id", "name"], [1, "Alice"]]},
+            ]
+        )
+        path = write_temp_file(buffer)
 
         file_dialect = infer_xlsx_file_dialect(
             Resource(data=path, fileDialect=XlsxFileDialect(sheetName="Headers"))
@@ -138,9 +129,13 @@ class TestInferXlsxFileDialect:
         assert file_dialect == XlsxFileDialect(headerRows=[1])
 
     def test_should_support_ods_format(self):
-        buffer = encode_xlsx_buffer(
-            [["id", "name", "age"], [1, "Alice", 25], [2, "Bob", 30]],
-            book_type="ods",
+        buffer = write_ods_buffer(
+            [
+                {
+                    "name": "Sheet1",
+                    "rows": [["id", "name", "age"], [1, "Alice", 25], [2, "Bob", 30]],
+                }
+            ]
         )
         path = write_temp_file(buffer)
 

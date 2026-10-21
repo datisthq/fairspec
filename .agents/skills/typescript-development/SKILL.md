@@ -102,14 +102,22 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   once upstream builds the wrappers the same way
 - **CLI bundle**: `pnpm -C typescript build` bundles `terminal`'s bin with `vp pack`
   (`typescript/terminal/vite.config.ts`) into `build/entrypoints/`, which cuts startup from
-  ~0.5s to ~0.3s by loading ~40 files instead of ~1250. Only `nodejs-polars` (native) and `xlsx`
-  (a peer) stay external, and `deps.onlyImport` fails the build if the bundle imports anything
-  else, so a new native or worker-thread dependency goes in that list and in `terminal`'s own
-  `dependencies`: the bundle resolves it from `terminal`, not from the package that uses it.
+  ~0.5s to ~0.3s by loading ~40 files instead of ~1250. Only `nodejs-polars` and `calamine-node`
+  (native) and `wasm-xlsxwriter` (reads its `.wasm` beside it) stay external, and
+  `deps.onlyImport` fails the build if the bundle imports anything else, so a new native, wasm
+  or worker-thread dependency goes in that list, in `terminal`'s own `dependencies` and in
+  `desktop/package.json`'s: the bundle resolves it from `terminal`, not from the package that uses it.
   `entrypoints/run.ts` sets the warning filter and the compile cache, then `await import`s the
   program so it lands in a later chunk; never re-add a side-effect-only module there, because
   `sideEffects: false` lets the bundler drop it and the bin then prints nothing.
   `typescript/terminal/entrypoints/-test/run.unit.ts` runs the built bin, so it needs a build first
+- **Spreadsheets** (`typescript/table/plugins/xlxs/`) read with `calamine-node` and write with
+  `wasm-xlsxwriter` and our own ODS writer. Python reads the same cells with `python-calamine`,
+  and `helpers/table.ts` owns the typing rule both share (`testsuite/tests/table-load/format-xlsx-cells.json`):
+  data starts after the last header row, a column keeps its cells' one type, and a mixed column
+  becomes text (numbers as `String(n)`, dates as ISO). calamine-node caps input at 64 MiB unless
+  `maxInputBytes` is raised, needs ODS opted into, and rejects whitespace between ODS cells,
+  which is why the ODS writer emits none. Both dependencies are third-party and pinned exactly
 - **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
   row condition and one select per condition kind for the aggregates. Whether a check is a row
   or a table check comes from running it on two typed null rows (one row back means an

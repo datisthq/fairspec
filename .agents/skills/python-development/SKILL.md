@@ -28,6 +28,7 @@ Run from the repo root; `pnpm -C python <script>` runs a script of this section,
 `[tool.uv] exclude-newer = "7 days"` quarantines new releases like pnpm's `minimumReleaseAge`:
 `uv lock` won't pick a version under a week old, so pin a dev tool to one that already passed it.
 A genuine hotfix goes through `exclude-newer-package`, never a shorter window for the whole tree.
+Our own packages (`fireargs`) are exempt there, as in pnpm's `minimumReleaseAgeExclude`.
 
 ## Modules
 
@@ -145,6 +146,12 @@ relative import reaches beyond the top-level package.
   `profiles/` copies must stay byte-identical to `standard/profiles/`
 - Import heavy optional dependencies (`shapely`, which pulls numpy) inside the function that
   needs them: everything `fairspec_terminal` reaches at import time is paid on every CLI start
+- **Spreadsheets** (`python/table/fairspec_table/plugins/xlsx/`) read cells with
+  `python-calamine` and write with `xlsxwriter` and our own ODS writer, matching TypeScript's
+  `calamine-node` and `wasm-xlsxwriter` cell for cell (`helpers/table.py` mirrors
+  `helpers/table.ts`; `_format_number` ports JavaScript's `String(n)`). Not `fastexcel`: it nulls
+  off-type cells after its 1000 sample rows and rounds mixed-column numbers to 9 decimals. Not
+  `pl.write_excel`: it always adds an Excel table, autofilter and display formats
 - **Custom table checks** (`python/table/fairspec_table/actions/check/inspect.py`) turn a SQL
   condition into an expression with `pl.sql_expr`, which takes aggregates and `OVER (…)` windows,
   so SQL and Polars conditions share one select. A check is a row or a table check by running it

@@ -1,15 +1,13 @@
 import { writeTempFile } from "@fairspec/dataset"
 import type { Resource } from "@fairspec/metadata"
 import { describe, expect, it } from "vite-plus/test"
-import { utils, write } from "xlsx"
+import type { SheetValue } from "../../../helpers/write.ts"
+import { writeOdsBuffer, writeXlsxBuffer } from "../../../helpers/write.ts"
 import { inferXlsxFileDialect } from "../infer.ts"
 
 describe("inferXlsxFileDialect", () => {
-  async function createXlsxFile(rows: unknown[][]): Promise<string> {
-    const ws = utils.aoa_to_sheet(rows)
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, "Sheet1")
-    const buffer = write(wb, { type: "buffer", bookType: "xlsx" })
+  async function createXlsxFile(rows: SheetValue[][]) {
+    const buffer = writeXlsxBuffer([{ name: "Sheet1", rows }])
     return await writeTempFile(buffer, { format: "xlsx" })
   }
 
@@ -114,19 +112,23 @@ describe("inferXlsxFileDialect", () => {
   })
 
   it("should respect sheetNumber from existing dialect", async () => {
-    const ws1 = utils.aoa_to_sheet([
-      [1, 2, 3],
-      [4, 5, 6],
+    const buffer = writeXlsxBuffer([
+      {
+        name: "Sheet1",
+        rows: [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+      },
+      {
+        name: "Sheet2",
+        rows: [
+          ["id", "name"],
+          [1, "Alice"],
+          [2, "Bob"],
+        ],
+      },
     ])
-    const ws2 = utils.aoa_to_sheet([
-      ["id", "name"],
-      [1, "Alice"],
-      [2, "Bob"],
-    ])
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws1, "Sheet1")
-    utils.book_append_sheet(wb, ws2, "Sheet2")
-    const buffer = write(wb, { type: "buffer", bookType: "xlsx" })
     const path = await writeTempFile(buffer, { format: "xlsx" })
 
     const fileDialect = await inferXlsxFileDialect({
@@ -141,15 +143,16 @@ describe("inferXlsxFileDialect", () => {
   })
 
   it("should respect sheetName from existing dialect", async () => {
-    const ws1 = utils.aoa_to_sheet([[1, 2, 3]])
-    const ws2 = utils.aoa_to_sheet([
-      ["id", "name"],
-      [1, "Alice"],
+    const buffer = writeXlsxBuffer([
+      { name: "Data", rows: [[1, 2, 3]] },
+      {
+        name: "Headers",
+        rows: [
+          ["id", "name"],
+          [1, "Alice"],
+        ],
+      },
     ])
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws1, "Data")
-    utils.book_append_sheet(wb, ws2, "Headers")
-    const buffer = write(wb, { type: "buffer", bookType: "xlsx" })
     const path = await writeTempFile(buffer, { format: "xlsx" })
 
     const fileDialect = await inferXlsxFileDialect({
@@ -164,14 +167,16 @@ describe("inferXlsxFileDialect", () => {
   })
 
   it("should support ODS format", async () => {
-    const ws = utils.aoa_to_sheet([
-      ["id", "name", "age"],
-      [1, "Alice", 25],
-      [2, "Bob", 30],
+    const buffer = writeOdsBuffer([
+      {
+        name: "Sheet1",
+        rows: [
+          ["id", "name", "age"],
+          [1, "Alice", 25],
+          [2, "Bob", 30],
+        ],
+      },
     ])
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, "Sheet1")
-    const buffer = write(wb, { type: "buffer", bookType: "ods" })
     const path = await writeTempFile(buffer, { format: "ods" })
 
     const fileDialect = await inferXlsxFileDialect({

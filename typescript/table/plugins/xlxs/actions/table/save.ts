@@ -1,13 +1,11 @@
 import { saveFile } from "@fairspec/dataset"
 import { getSupportedFileDialect } from "@fairspec/metadata"
-import { utils, write } from "xlsx"
 import { denormalizeTable } from "../../../../actions/table/denormalize.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import type { SaveTableOptions, Table } from "../../../../models/table.ts"
 import { NATIVE_TYPES } from "../../settings.ts"
-
-// Currently, we use slow non-rust implementation as in the future
-// polars-rust might be able to provide a faster native implementation
+import type { SheetValue } from "../../helpers/write.ts"
+import { writeOdsBuffer, writeXlsxBuffer } from "../../helpers/write.ts"
 
 export async function saveXlsxTable(table: Table, options: SaveTableOptions) {
   const { path, overwrite } = options
@@ -32,13 +30,22 @@ export async function saveXlsxTable(table: Table, options: SaveTableOptions) {
   const frame = await table.collect()
   const sheetName = fileDialect?.sheetName ?? "Sheet1"
 
-  const sheet = utils.json_to_sheet(frame.toRecords())
-  const book = utils.book_new()
-  utils.book_append_sheet(book, sheet, sheetName)
+  const rows: SheetValue[][] = [
+    frame.columns,
+    ...frame.rows().map(row => row.map(toSheetValue)),
+  ]
 
-  const bookType = fileDialect?.format === "ods" ? "ods" : "xlsx"
-  const buffer = write(book, { type: "buffer", bookType })
+  const sheets = [{ name: sheetName, rows }]
+  const buffer =
+    fileDialect?.format === "ods" ? writeOdsBuffer(sheets) : writeXlsxBuffer(sheets)
   await saveFile(path, buffer, { overwrite })
 
   return path
+}
+
+function toSheetValue(value: unknown) {
+  if (value === null || value === undefined) return null
+  if (typeof value === "number" || typeof value === "boolean") return value
+  if (typeof value === "bigint") return Number(value)
+  return String(value)
 }

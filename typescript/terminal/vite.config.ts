@@ -1,7 +1,7 @@
 import { defineConfig } from "vite-plus"
 
-// Native and peer packages the user installs; everything else is inlined
-const EXTERNAL = ["nodejs-polars", "xlsx"]
+// Native and wasm packages that load files beside them; everything else is inlined
+const EXTERNAL = ["calamine-node", "nodejs-polars", "wasm-xlsxwriter"]
 
 export default defineConfig({
   pack: {

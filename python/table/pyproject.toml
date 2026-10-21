@@ -34,11 +34,11 @@ dependencies = [
   "fairspec-dataset",
   "fairspec-metadata",
   "isodate>=0.7",
-  "odfpy>=1.4",
-  "openpyxl>=3.1",
   "polars>=1.0",
+  "python-calamine>=0.6",
   "shapely>=2.0",
   "tzdata>=2024.1",
+  "xlsxwriter>=3.2",
 ]
 
 [[project.authors]]

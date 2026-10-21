@@ -31,6 +31,8 @@ index-out-of-bounds = "ignore"
 # Same seven-day quarantine as minimumReleaseAge in pnpm-workspace.yaml; pin a hotfix
 # through exclude-newer-package instead of shortening this for the whole tree
 exclude-newer = "7 days"
+# Our own packages are exempt, as in minimumReleaseAgeExclude
+exclude-newer-package = { fireargs = false }
 package = false
 dev-dependencies = [
   "pytest==9.0.2",

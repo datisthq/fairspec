@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fairspec_dataset import load_file
 from fairspec_metadata import (
     OdsFileDialect,
     XlsxFileDialect,
@@ -10,7 +9,8 @@ from fairspec_metadata import (
     get_supported_file_dialect,
 )
 
-from fairspec_table.plugins.xlsx.actions.buffer.decode import decode_xlsx_buffer
+from fairspec_table.plugins.xlsx.helpers.sheet import read_sheet_rows
+from fairspec_table.plugins.xlsx.helpers.table import format_sheet_cell
 from fairspec_table.utils.sniffer.sniffer import Sniffer
 
 if TYPE_CHECKING:
@@ -28,25 +28,13 @@ def infer_xlsx_file_dialect(
         return None
 
     file_dialect = get_supported_file_dialect(resource, ["xlsx", "ods"])
-    if not file_dialect:
+    if not isinstance(file_dialect, XlsxFileDialect | OdsFileDialect):
         return None
 
     format: str = getattr(file_dialect, "format", "xlsx")
 
     try:
-        buffer = load_file(data_path)
-    except Exception:
-        return _make_dialect(format)
-
-    try:
-        sheet_name: str | None = getattr(file_dialect, "sheetName", None)
-        sheet_number: int | None = getattr(file_dialect, "sheetNumber", None)
-        rows = decode_xlsx_buffer(
-            buffer,
-            format=format,
-            sheet_name=sheet_name,
-            sheet_number=sheet_number,
-        )
+        rows = read_sheet_rows(data_path, file_dialect, max_rows=100)
     except Exception:
         return _make_dialect(format)
 
@@ -55,7 +43,9 @@ def infer_xlsx_file_dialect(
 
     sniffer = Sniffer()
     try:
-        detection = sniffer.sniff_rows(rows[:100])
+        detection = sniffer.sniff_rows(
+            [[format_sheet_cell(cell) for cell in row] for row in rows]
+        )
     except Exception:
         return _make_dialect(format)
 

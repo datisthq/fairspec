@@ -9,7 +9,12 @@ from fairspec_metadata import Resource, TableSchema, get_supported_file_dialect
 
 from fairspec_table.actions.table.denormalize import denormalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
-from fairspec_table.plugins.xlsx.actions.buffer.encode import encode_xlsx_buffer
+from fairspec_table.plugins.xlsx.helpers.write import (
+    SheetData,
+    SheetValue,
+    write_ods_buffer,
+    write_xlsx_buffer,
+)
 from fairspec_table.plugins.xlsx.settings import NATIVE_TYPES
 from fairspec_table.settings import QUERY_ENGINE
 
@@ -37,16 +42,18 @@ def save_xlsx_table(table: Table, **options: Unpack[SaveTableOptions]) -> str:
     frame = cast("pl.DataFrame", table.collect(engine=QUERY_ENGINE))
     sheet_name = getattr(file_dialect, "sheetName", None) or "Sheet1"
     format = getattr(file_dialect, "format", "xlsx")
-    book_type = "ods" if format == "ods" else "xlsx"
 
-    records = frame.to_dicts()
-    rows: list[list[object]] = []
-    if records:
-        rows.append(list(records[0].keys()))
-        for record in records:
-            rows.append(list(record.values()))
+    rows: list[list[SheetValue]] = [list(frame.columns)]
+    rows.extend([_to_sheet_value(value) for value in row] for row in frame.iter_rows())
 
-    buffer = encode_xlsx_buffer(rows, sheet_name=sheet_name, book_type=book_type)
+    sheets: list[SheetData] = [{"name": sheet_name, "rows": rows}]
+    buffer = write_ods_buffer(sheets) if format == "ods" else write_xlsx_buffer(sheets)
     save_file(path, buffer, overwrite=bool(options.get("overwrite")))
 
     return path
+
+
+def _to_sheet_value(value: object) -> SheetValue:
+    if value is None or isinstance(value, bool | int | float | str):
+        return value
+    return str(value)
