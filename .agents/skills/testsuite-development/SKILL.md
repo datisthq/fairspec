@@ -32,7 +32,8 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
   table, give the resource `"fileDialect": { "format": "csv", "headerRows": [1] }`
 - The only runner-side rules: `data`/`metadata`/`cell/json` errors drop `message` (validator
   text, not normative), and temporal columns render as ISO text through the library's table
-  query. Anything else that differs is a library divergence
+  query, and `data-validate-schema` compares the report without its parsed `dataSchema`.
+  Anything else that differs is a library divergence
 - Binary inputs are tiny files written once by the Python library and embedded as base64; say
   how in the group's `comment`. A dataset test can only hold files at its top level, since the
   runners create no directories

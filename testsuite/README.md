@@ -74,22 +74,23 @@ A test has a `description`, its `data`, and exactly one outcome:
 
 ## Operations
 
-| operation             | runs                                                                  | compared                                  |
-| --------------------- | --------------------------------------------------------------------- | ----------------------------------------- |
-| `data-infer-schema`   | infer the data schema                                                 | `expected`: the JSON Schema               |
-| `data-validate`       | validate the data against the group's `dataSchema`                    | `valid`, `errors`                         |
-| `dataset-infer`       | write the dataset, infer it, make paths relative again                | `expected`: the dataset                   |
-| `dataset-list`        | write the dataset, list its resource names (inferred when absent)     | `expected`: the names                     |
-| `dataset-query`       | write the dataset and run the group's `query`, each resource by name  | `expected`: `{columns, rows}`             |
-| `dataset-validate`    | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
-| `file-describe`       | describe the file written from `data`                                 | `expected`: `{bytes, textual, integrity}` |
-| `file-preview`        | preview the file written from `data`                                  | `expected`: `{text, truncated}`           |
-| `file-validate`       | validate a resource with the group's `integrity` / `textual`          | `valid`, `errors`                         |
-| `table-infer-dialect` | infer the file dialect                                                | `expected`: the dialect                   |
-| `table-infer-schema`  | infer the table schema                                                | `expected`: the schema                    |
-| `table-load`          | load the table                                                        | `expected`: `{columns, rows}`             |
-| `table-query`         | load the table and run the group's `query` against it as `self`       | `expected`: `{columns, rows}`             |
-| `table-validate`      | validate the table                                                    | `valid`, `errors`                         |
+| operation              | runs                                                                  | compared                                  |
+| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------- |
+| `data-infer-schema`    | infer the data schema                                                 | `expected`: the JSON Schema               |
+| `data-validate`        | validate the data against the group's `dataSchema`                    | `valid`, `errors`                         |
+| `data-validate-schema` | validate the test's `data` as a Data Schema                           | `valid`, `errors`                         |
+| `dataset-infer`        | write the dataset, infer it, make paths relative again                | `expected`: the dataset                   |
+| `dataset-list`         | write the dataset, list its resource names (inferred when absent)     | `expected`: the names                     |
+| `dataset-query`        | write the dataset and run the group's `query`, each resource by name  | `expected`: `{columns, rows}`             |
+| `dataset-validate`     | write the files and the `dataset` as `dataset.json`, then validate it | `valid`, `errors`                         |
+| `file-describe`        | describe the file written from `data`                                 | `expected`: `{bytes, textual, integrity}` |
+| `file-preview`         | preview the file written from `data`                                  | `expected`: `{text, truncated}`           |
+| `file-validate`        | validate a resource with the group's `integrity` / `textual`          | `valid`, `errors`                         |
+| `table-infer-dialect`  | infer the file dialect                                                | `expected`: the dialect                   |
+| `table-infer-schema`   | infer the table schema                                                | `expected`: the schema                    |
+| `table-load`           | load the table                                                        | `expected`: `{columns, rows}`             |
+| `table-query`          | load the table and run the group's `query` against it as `self`       | `expected`: `{columns, rows}`             |
+| `table-validate`       | validate the table                                                    | `valid`, `errors`                         |
 
 ## Runners
 

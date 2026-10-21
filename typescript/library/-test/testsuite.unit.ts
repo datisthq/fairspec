@@ -30,6 +30,7 @@ import {
   queryTable,
   ValidateTableOptions,
   validateData,
+  validateDataSchema,
   validateDataset,
   validateFile,
   validateTable,
@@ -77,6 +78,13 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
   "data-infer-schema": async (group, test) =>
     inferDataSchema(await createResource(group, test)),
   "data-validate": async (group, test) => validateData(await createResource(group, test)),
+  "data-validate-schema": async (_group, test) => {
+    if (typeof test.data !== "object" || Array.isArray(test.data)) {
+      throw new Error("data-validate-schema data must be a schema object")
+    }
+    const { valid, errors } = await validateDataSchema(test.data)
+    return { valid, errors }
+  },
   "dataset-infer": async (group, test) => {
     const path = await writeDataset(group, test)
     const dataset = await inferDataset(

@@ -1,4 +1,5 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
+import { ajv } from "./ajv.ts"
 import { cache } from "./cache.ts"
 import { assertJsonSchema } from "./assert.ts"
 
@@ -13,6 +14,11 @@ export async function loadJsonSchema(path: string, options?: { onlyRemote?: bool
         break
       }
     }
+  }
+
+  if (!jsonSchema) {
+    const bundled = ajv.getSchema(path)?.schema
+    if (typeof bundled === "object") jsonSchema = bundled
   }
 
   if (!jsonSchema) {

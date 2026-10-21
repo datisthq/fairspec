@@ -1,0 +1,38 @@
+[
+  {
+    "description": "a data schema declaring the JSON Schema 2020-12 dialect",
+    "specification": ["https://fairspec.org/specs/data-schema/#profile"],
+    "tests": [
+      {
+        "description": "a valid schema is valid",
+        "data": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": { "name": { "type": "string" } }
+        },
+        "valid": true
+      },
+      {
+        "description": "an invalid keyword value is a metadata error",
+        "data": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "required": "name"
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/required" }]
+      }
+    ]
+  },
+  {
+    "description": "a data schema without $schema",
+    "specification": ["https://fairspec.org/specs/data-schema/#profile"],
+    "tests": [
+      {
+        "description": "a valid schema is valid",
+        "data": { "type": "object", "properties": { "name": { "type": "string" } } },
+        "valid": true
+      }
+    ]
+  }
+]

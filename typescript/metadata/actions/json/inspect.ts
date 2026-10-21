@@ -18,7 +18,8 @@ export async function inspectJson(
       ? await loadJsonSchema(options.jsonSchema)
       : options.jsonSchema
 
-  const validate = await ajv.compileAsync(jsonSchema)
+  const id = typeof jsonSchema.$id === "string" ? jsonSchema.$id : undefined
+  const validate = (id && ajv.getSchema(id)) || (await ajv.compileAsync(jsonSchema))
   validate(value)
 
   const errors = validate.errors

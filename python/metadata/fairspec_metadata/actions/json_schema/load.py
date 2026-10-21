@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from jsonschema import Draft202012Validator
+
 from fairspec_metadata.actions.descriptor.load import load_descriptor
 from .assert_ import assert_json_schema
 from fairspec_metadata.models.json_schema import JsonSchema
@@ -18,6 +20,9 @@ def load_json_schema(
     for item in profile_registry:
         if item.path == path:
             return item.profile
+
+    if path == Draft202012Validator.META_SCHEMA["$id"]:
+        return Draft202012Validator.META_SCHEMA
 
     descriptor = load_descriptor(path, only_remote=only_remote)
     return assert_json_schema(descriptor)
