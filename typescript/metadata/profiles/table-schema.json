@@ -569,12 +569,6 @@
         },
         "withText": {
           "type": "boolean"
-        },
-        "categories": {
-          "$ref": "#/$defs/IntegerCategories"
-        },
-        "categoriesOrdered": {
-          "type": "boolean"
         }
       }
     },
@@ -583,7 +577,11 @@
         {
           "$ref": "#/$defs/BaseIntegerColumnProperty"
         }
-      ]
+      ],
+      "properties": {
+        "categories": false,
+        "withOrder": false
+      }
     },
     "IntegerCategoricalColumnProperty": {
       "allOf": [
@@ -687,12 +685,8 @@
         }
       ],
       "properties": {
-        "categories": {
-          "$ref": "#/$defs/StringCategories"
-        },
-        "categoriesOrdered": {
-          "type": "boolean"
-        }
+        "categories": false,
+        "withOrder": false
       }
     },
     "StringCategoricalColumnProperty": {

@@ -135,6 +135,10 @@ describe("table schema columns", () => {
     { valid: false, column: { anyOf: [{ type: "string" }] } },
     { valid: false, column: { type: "string", $ref: "#/$defs/x" } },
     { valid: false, column: { type: "string", format: "list", delimiter: 5 } },
+    { valid: false, column: { type: "integer", categories: [1, 2] } },
+    { valid: false, column: { type: "string", withOrder: true } },
+    { valid: true, column: { type: "string", format: "categorical", withOrder: true } },
+    { valid: true, column: { type: "integer", format: "categorical", categories: [1] } },
   ])("validates $column as $valid", ({ column, valid }) => {
     const validate = getValidator("table-schema.json")
     expect(validate({ properties: { column } })).toBe(valid)
