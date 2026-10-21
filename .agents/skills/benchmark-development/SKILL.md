@@ -65,8 +65,8 @@ profiles. Read the CSV as text and let the tool do the typing — reading typed 
 errors. Pin new Python packages in `rivals/pyproject.toml`; `exclude-newer` enforces the
 repo's seven-day quarantine, and a downloaded binary is pinned to a release at least that old.
 A tool whose exit code for invalid data is not 1 sets `okExitCodes` on its `Command`; anything
-else counts as a crash. A data-quality tool that is not a full validator (Soda Core counts
-failing rows per check) sets `isPartial`: the report lists it after every validator, labels it,
+else counts as a crash. A tool that reports only counts, never the failing rows or cells
+(Soda Core, datacontract-cli, patito), is not a full validator and sets `isPartial`: the report lists it after every validator, labels it,
 and leaves it out of the validator count and the fastest-rival tile.
 
 ## Traps

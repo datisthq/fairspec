@@ -271,7 +271,7 @@
         <p class="eyebrow">Fairspec benchmark</p>
         <h1>How fast does a 10GB table validate?</h1>
         <p class="lede">
-          Fairspec's Python and TypeScript CLIs against 10 other validators, all checking
+          Fairspec's Python and TypeScript CLIs against 8 other validators, all checking
           the same generated CSV against the same Table Schema. Measured 2026-10-21 on AMD
           Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB RAM, capped at 12G
           per tool, linux 7.0.0-34-generic.
@@ -290,8 +290,7 @@
           </div>
           <div class="tile">
             <span class="label">Fastest correct rival</span
-            ><span class="value">18.2 s</span
-            ><span class="note">datacontract-cli (DuckDB)</span>
+            ><span class="value">1 min 4 s</span><span class="note">qsv</span>
           </div>
           <div class="tile">
             <span class="label">Did not finish</span><span class="value">5 of 13</span
@@ -323,13 +322,6 @@
                 ><span class="value">0.65 s</span></span
               >
             </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: 0.72 s">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 8.8%"></span
-                ><span class="value">0.72 s</span></span
-              >
-            </div>
             <div class="row" data-tip="qsv 24.0.0: 0.76 s">
               <span class="name">qsv</span
               ><span class="track"
@@ -356,13 +348,6 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 12.5%"></span
                 ><span class="value">1.01 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 2.50 s">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 30.9%"></span
-                ><span class="value">2.50 s</span></span
               >
             </div>
             <div class="row" data-tip="pandera (DuckDB) 0.34.1: 2.81 s">
@@ -395,12 +380,32 @@
             </div>
             <div
               class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: 0.72 s"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 8.8%"></span
+                ><span class="value">0.72 s</span></span
+              >
+            </div>
+            <div
+              class="row"
               data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 0.78 s"
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
                 ><span class="bar rival" style="width: 9.6%"></span
                 ><span class="value">0.78 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 2.50 s"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 30.9%"></span
+                ><span class="value">2.50 s</span></span
               >
             </div>
           </figure>
@@ -418,13 +423,6 @@
               ><span class="track"
                 ><span class="bar fairspec" style="width: 53.2%"></span
                 ><span class="value">399 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: 462 MB">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 61.7%"></span
-                ><span class="value">462 MB</span></span
               >
             </div>
             <div class="row" data-tip="qsv 24.0.0: 62 MB">
@@ -453,13 +451,6 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 67.4%"></span
                 ><span class="value">505 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 380 MB">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 50.7%"></span
-                ><span class="value">380 MB</span></span
               >
             </div>
             <div class="row" data-tip="pandera (DuckDB) 0.34.1: 526 MB">
@@ -492,12 +483,32 @@
             </div>
             <div
               class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: 462 MB"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 61.7%"></span
+                ><span class="value">462 MB</span></span
+              >
+            </div>
+            <div
+              class="row"
               data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 213 MB"
             >
               <span class="name">Soda Core (DuckDB) (not a full validator)</span
               ><span class="track"
                 ><span class="bar rival" style="width: 28.4%"></span
                 ><span class="value">213 MB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 380 MB"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 50.7%"></span
+                ><span class="value">380 MB</span></span
               >
             </div>
           </figure>
@@ -529,13 +540,6 @@
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
-                <td>patito (polars)</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.72 s</td>
-                <td class="num">462 MB</td>
-                <td class="num">80 of 80</td>
-              </tr>
-              <tr>
                 <td>qsv</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">0.76 s</td>
@@ -562,13 +566,6 @@
                 <td class="num">1.01 s</td>
                 <td class="num">505 MB</td>
                 <td class="num">80 of 80</td>
-              </tr>
-              <tr>
-                <td>datacontract-cli (DuckDB)</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.50 s</td>
-                <td class="num">380 MB</td>
-                <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>pandera (DuckDB)</td>
@@ -599,10 +596,24 @@
                 <td class="num">80 of 80</td>
               </tr>
               <tr>
+                <td>patito (polars) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.72 s</td>
+                <td class="num">462 MB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
                 <td>Soda Core (DuckDB) (not a full validator)</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">0.78 s</td>
                 <td class="num">213 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">2.50 s</td>
+                <td class="num">380 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
             </tbody>
@@ -633,13 +644,6 @@
                 ><span class="value">2.17 s</span></span
               >
             </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: 2.48 s">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 3.2%"></span
-                ><span class="value">2.48 s</span></span
-              >
-            </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 2.71 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
@@ -652,13 +656,6 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 3.8%"></span
                 ><span class="value">2.94 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 4.05 s">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 5.3%"></span
-                ><span class="value">4.05 s</span></span
               >
             </div>
             <div class="row" data-tip="pointblank (polars) 1.0.1: 6.65 s">
@@ -713,6 +710,26 @@
                 ><span class="value">1.57 s</span></span
               >
             </div>
+            <div
+              class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: 2.48 s"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 3.2%"></span
+                ><span class="value">2.48 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 4.05 s"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 5.3%"></span
+                ><span class="value">4.05 s</span></span
+              >
+            </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
@@ -730,13 +747,6 @@
                 ><span class="value">873 MB</span></span
               >
             </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: 3.1 GB">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 71.4%"></span
-                ><span class="value">3.1 GB</span></span
-              >
-            </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 1.2 GB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
@@ -749,13 +759,6 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 67%"></span
                 ><span class="value">2.9 GB</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 947 MB">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 21.6%"></span
-                ><span class="value">947 MB</span></span
               >
             </div>
             <div class="row" data-tip="pointblank (polars) 1.0.1: 3.0 GB">
@@ -810,6 +813,26 @@
                 ><span class="value">773 MB</span></span
               >
             </div>
+            <div
+              class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: 3.1 GB"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 71.4%"></span
+                ><span class="value">3.1 GB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 947 MB"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 21.6%"></span
+                ><span class="value">947 MB</span></span
+              >
+            </div>
           </figure>
         </div>
         <div class="table-wrap">
@@ -839,13 +862,6 @@
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
-                <td>patito (polars)</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.48 s</td>
-                <td class="num">3.1 GB</td>
-                <td class="num">80 of 80</td>
-              </tr>
-              <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">2.71 s</td>
@@ -858,13 +874,6 @@
                 <td class="num">2.94 s</td>
                 <td class="num">2.9 GB</td>
                 <td class="num">80 of 100</td>
-              </tr>
-              <tr>
-                <td>datacontract-cli (DuckDB)</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">4.05 s</td>
-                <td class="num">947 MB</td>
-                <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>pointblank (polars)</td>
@@ -915,6 +924,20 @@
                 <td class="num">773 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
+              <tr>
+                <td>patito (polars) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">2.48 s</td>
+                <td class="num">3.1 GB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">4.05 s</td>
+                <td class="num">947 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -934,13 +957,6 @@
               ><span class="track"
                 ><span class="bar fairspec" style="width: 2%"></span
                 ><span class="value">15.9 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 18.2 s">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 2.3%"></span
-                ><span class="value">18.2 s</span></span
               >
             </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 21.7 s">
@@ -1002,12 +1018,6 @@
                 ><span class="missing">out of memory after 20.8 s</span></span
               >
             </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: out of memory after 7.31 s">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="missing">out of memory after 7.31 s</span></span
-              >
-            </div>
             <div
               class="row"
               data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
@@ -1027,6 +1037,25 @@
                 ><span class="value">9.95 s</span></span
               >
             </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 18.2 s"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 2.3%"></span
+                ><span class="value">18.2 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.31 s"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="missing">out of memory after 7.31 s</span></span
+              >
+            </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
@@ -1035,13 +1064,6 @@
               ><span class="track"
                 ><span class="bar fairspec" style="width: 37.1%"></span
                 ><span class="value">2.3 GB</span></span
-              >
-            </div>
-            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 2.1 GB">
-              <span class="name">datacontract-cli (DuckDB)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 33.9%"></span
-                ><span class="value">2.1 GB</span></span
               >
             </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 2.1 GB">
@@ -1103,12 +1125,6 @@
                 ><span class="missing">out of memory after 20.8 s</span></span
               >
             </div>
-            <div class="row" data-tip="patito (polars) 0.8.6: out of memory after 7.31 s">
-              <span class="name">patito (polars)</span
-              ><span class="track"
-                ><span class="missing">out of memory after 7.31 s</span></span
-              >
-            </div>
             <div
               class="row"
               data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
@@ -1126,6 +1142,25 @@
               ><span class="track"
                 ><span class="bar rival" style="width: 29.2%"></span
                 ><span class="value">1.8 GB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="datacontract-cli (DuckDB) (not a full validator) 1.2.5: 2.1 GB"
+            >
+              <span class="name">datacontract-cli (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 33.9%"></span
+                ><span class="value">2.1 GB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="patito (polars) (not a full validator) 0.8.6: out of memory after 7.31 s"
+            >
+              <span class="name">patito (polars) (not a full validator)</span
+              ><span class="track"
+                ><span class="missing">out of memory after 7.31 s</span></span
               >
             </div>
           </figure>
@@ -1147,13 +1182,6 @@
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">15.9 s</td>
                 <td class="num">2.3 GB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
-                <td>datacontract-cli (DuckDB)</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">18.2 s</td>
-                <td class="num">2.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
@@ -1213,13 +1241,6 @@
                 <td class="num">– of 100</td>
               </tr>
               <tr>
-                <td>patito (polars)</td>
-                <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 7.31 s</td>
-                <td class="num">–</td>
-                <td class="num">– of 80</td>
-              </tr>
-              <tr>
                 <td>pointblank (polars)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
                 <td class="num">out of memory after 6.78 s</td>
@@ -1232,6 +1253,20 @@
                 <td class="num">9.95 s</td>
                 <td class="num">1.8 GB</td>
                 <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">18.2 s</td>
+                <td class="num">2.1 GB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>patito (polars) (not a full validator)</td>
+                <td><span class="chip critical">✕ out of memory</span></td>
+                <td class="num">out of memory after 7.31 s</td>
+                <td class="num">–</td>
+                <td class="num">– of 80</td>
               </tr>
             </tbody>
           </table>
@@ -1336,30 +1371,6 @@
                 </td>
               </tr>
               <tr>
-                <td>patito (polars)</td>
-                <td>0.8.6</td>
-                <td>type</td>
-                <td>
-                  numeric columns are cast non-strictly first, so a bad number becomes
-                  null<br />date-time and boolean are matched by regex, since polars
-                  cannot cast text to them<br />enums are checked as a custom constraint,
-                  as patito's own enum check reports values, not rows<br />the whole table
-                  is read into memory, as patito validates a DataFrame
-                </td>
-              </tr>
-              <tr>
-                <td>datacontract-cli (DuckDB)</td>
-                <td>1.2.5</td>
-                <td>–</td>
-                <td>
-                  the CSV is read as text through a DuckDB view, since its local CSV
-                  server aborts the whole run on one unparsable cell<br />types are
-                  matched by regex, as datacontract checks column types only and skips
-                  them for CSV<br />ranges are checked on a second view that casts numbers
-                  non-strictly, read separately from the first
-                </td>
-              </tr>
-              <tr>
                 <td>CSV Validator</td>
                 <td>1.4.4</td>
                 <td>–</td>
@@ -1370,12 +1381,38 @@
                 </td>
               </tr>
               <tr>
+                <td>patito (polars) (not a full validator)</td>
+                <td>0.8.6</td>
+                <td>type</td>
+                <td>
+                  reports a count per check in its messages, not the failing rows<br />numeric
+                  columns are cast non-strictly first, so a bad number becomes null<br />date-time
+                  and boolean are matched by regex, since polars cannot cast text to
+                  them<br />enums are checked as a custom constraint, as patito's own enum
+                  check reports values, not rows<br />the whole table is read into memory,
+                  as patito validates a DataFrame
+                </td>
+              </tr>
+              <tr>
                 <td>Soda Core (DuckDB) (not a full validator)</td>
                 <td>4.26.0</td>
                 <td>–</td>
                 <td>
                   types are matched by regex over text, and ranges checked on a TRY_CAST
                   of the column<br />failing rows are counted per check, not per cell
+                </td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB) (not a full validator)</td>
+                <td>1.2.5</td>
+                <td>–</td>
+                <td>
+                  reports a count per check, not the failing rows<br />the CSV is read as
+                  text through a DuckDB view, since its local CSV server aborts the whole
+                  run on one unparsable cell<br />types are matched by regex, as
+                  datacontract checks column types only and skips them for CSV<br />ranges
+                  are checked on a second view that casts numbers non-strictly, read
+                  separately from the first
                 </td>
               </tr>
             </tbody>

@@ -80,8 +80,10 @@ export const patitoTool = createRivalTool({
   name: "patito",
   title: "patito (polars)",
   distribution: "patito",
+  isPartial: true,
   unsupported: ["type"],
   caveats: [
+    "reports a count per check in its messages, not the failing rows",
     TYPE_CAVEAT,
     ...POLARS_CAVEATS,
     "enums are checked as a custom constraint, as patito's own enum check reports values, not rows",
@@ -105,8 +107,10 @@ export const datacontractTool = createRivalTool({
   name: "datacontract",
   title: "datacontract-cli (DuckDB)",
   distribution: "datacontract-cli",
+  isPartial: true,
   unsupported: [],
   caveats: [
+    "reports a count per check, not the failing rows",
     "the CSV is read as text through a DuckDB view, since its local CSV server aborts the whole run on one unparsable cell",
     "types are matched by regex, as datacontract checks column types only and skips them for CSV",
     "ranges are checked on a second view that casts numbers non-strictly, read separately from the first",
