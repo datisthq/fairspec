@@ -1,6 +1,7 @@
 import type { OdsFileDialect, XlsxFileDialect } from "@fairspec/metadata"
 import type { Cell } from "calamine-node"
 import { createReader } from "calamine-node"
+import { assertSheetSize } from "./guard.ts"
 
 export type SheetCell = string | number | boolean | Date | null
 
@@ -21,6 +22,7 @@ export async function readSheetRows(
   const maxRows = options?.maxRows
   const index = fileDialect.sheetNumber ? fileDialect.sheetNumber - 1 : 0
 
+  await assertSheetSize(path)
   await using book = await reader.openFile(path)
   const name = fileDialect.sheetName ?? book.sheets[index]?.name
   if (!name || !book.sheets.some(sheet => sheet.name === name)) return undefined

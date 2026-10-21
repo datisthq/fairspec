@@ -117,7 +117,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   data starts after the last header row, a column keeps its cells' one type, and a mixed column
   becomes text (numbers as `String(n)`, dates as ISO). calamine-node caps input at 64 MiB unless
   `maxInputBytes` is raised, needs ODS opted into, and rejects whitespace between ODS cells,
-  which is why the ODS writer emits none. Both dependencies are third-party and pinned exactly
+  which is why the ODS writer emits none. Both dependencies are third-party and pinned exactly.
+  calamine allocates the whole used range natively before `maxCells` is checked, so a 5 KB file
+  naming `XFD1048576` aborts the process: `readSheetRows` first runs `assertSheetSize`
+  (`helpers/guard.ts`), which streams the sheet XML and refuses more than 50M cells. Its tag
+  pattern honours quotes, since an unquoted scan lets a `>` in an attribute hide the `r` after it
 - **Custom table checks** (`typescript/table/actions/check/inspect.ts`) add one scan for every
   row condition and one select per condition kind for the aggregates. Whether a check is a row
   or a table check comes from running it on two typed null rows (one row back means an

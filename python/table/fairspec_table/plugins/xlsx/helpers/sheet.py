@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from python_calamine import CalamineWorkbook
 
+from .guard import assert_sheet_size
+
 if TYPE_CHECKING:
     from fairspec_metadata import OdsFileDialect, XlsxFileDialect
 
@@ -24,6 +26,7 @@ def read_sheet_rows(
     """
     index = file_dialect.sheetNumber - 1 if file_dialect.sheetNumber else 0
 
+    assert_sheet_size(path)
     workbook = CalamineWorkbook.from_path(path)
     try:
         names = workbook.sheet_names

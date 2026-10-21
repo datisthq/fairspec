@@ -151,7 +151,9 @@ relative import reaches beyond the top-level package.
   `calamine-node` and `wasm-xlsxwriter` cell for cell (`helpers/table.py` mirrors
   `helpers/table.ts`; `_format_number` ports JavaScript's `String(n)`). Not `fastexcel`: it nulls
   off-type cells after its 1000 sample rows and rounds mixed-column numbers to 9 decimals. Not
-  `pl.write_excel`: it always adds an Excel table, autofilter and display formats
+  `pl.write_excel`: it always adds an Excel table, autofilter and display formats. `helpers/guard.py`
+  twins TypeScript's size guard; its xlsx loop runs over `findall` tuples, because a call or a
+  regex per cell makes the scan of 2M cells take seconds
 - **Custom table checks** (`python/table/fairspec_table/actions/check/inspect.py`) turn a SQL
   condition into an expression with `pl.sql_expr`, which takes aggregates and `OVER (…)` windows,
   so SQL and Polars conditions share one select. A check is a row or a table check by running it
