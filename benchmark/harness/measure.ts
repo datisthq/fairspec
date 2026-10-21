@@ -30,6 +30,7 @@ export type Result = {
   correct: boolean
   unsupported: Check[]
   caveats: string[]
+  isPartial?: boolean
   stderr?: string
 }
 
@@ -110,6 +111,7 @@ export async function measureTool(options: {
     correct: outcome === "ok" && counts.every(count => count === expectedErrors),
     unsupported: tool.unsupported,
     caveats: tool.caveats,
+    isPartial: tool.isPartial,
     stderr,
   }
   return result

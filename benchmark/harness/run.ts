@@ -100,6 +100,7 @@ export async function runCommand(
       spawnFailed,
       exitCode,
       capped: Boolean(options.memoryMax),
+      okExitCodes: command.okExitCodes ?? [0, 1],
     }),
     wallMs,
     peakMemoryMb,
@@ -117,14 +118,15 @@ function classifyOutcome(options: {
   spawnFailed: boolean
   exitCode: number | null
   capped: boolean
+  okExitCodes: number[]
 }) {
-  const { timedOut, spawnFailed, exitCode, capped } = options
+  const { timedOut, spawnFailed, exitCode, capped, okExitCodes } = options
   if (timedOut) return "timeout"
   if (spawnFailed) return "crash"
   // a cgroup OOM kill can take the whole scope, `time` included, so no exit code survives
   const isCappedKill = capped && (exitCode === 143 || exitCode === null)
   if (exitCode === 137 || isCappedKill) return "oom"
-  if (exitCode === 0 || exitCode === 1) return "ok"
+  if (exitCode !== null && okExitCodes.includes(exitCode)) return "ok"
   return "crash"
 }
 

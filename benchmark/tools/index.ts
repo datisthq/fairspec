@@ -1,11 +1,16 @@
+import { csvValidatorTool } from "./csv-validator.ts"
 import { fairspecPythonTool, fairspecTypescriptTool } from "./fairspec.ts"
 import { qsvTool } from "./qsv.ts"
 import {
+  datacontractTool,
   dataframelyTool,
   frictionlessTool,
   greatExpectationsTool,
+  panderaIbisTool,
   panderaTool,
+  patitoTool,
   pointblankTool,
+  sodaTool,
 } from "./rivals.ts"
 import type { Tool } from "./types.ts"
 
@@ -18,6 +23,11 @@ export const TOOLS: Tool[] = [
   dataframelyTool,
   pointblankTool,
   greatExpectationsTool,
+  panderaIbisTool,
+  patitoTool,
+  sodaTool,
+  datacontractTool,
+  csvValidatorTool,
 ]
 
 export function selectTools(names?: string[]) {

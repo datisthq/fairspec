@@ -64,12 +64,62 @@ export const greatExpectationsTool = createRivalTool({
   ],
 })
 
+export const panderaIbisTool = createRivalTool({
+  name: "pandera-ibis",
+  title: "pandera (DuckDB)",
+  distribution: "pandera",
+  unsupported: ["type"],
+  caveats: [
+    TYPE_CAVEAT,
+    "date-time and boolean are matched by regex",
+    "the CSV is loaded into an on-disk DuckDB table first, as pandera re-reads a view over it once per check",
+  ],
+})
+
+export const patitoTool = createRivalTool({
+  name: "patito",
+  title: "patito (polars)",
+  distribution: "patito",
+  unsupported: ["type"],
+  caveats: [
+    TYPE_CAVEAT,
+    ...POLARS_CAVEATS,
+    "enums are checked as a custom constraint, as patito's own enum check reports values, not rows",
+    "the whole table is read into memory, as patito validates a DataFrame",
+  ],
+})
+
+export const sodaTool = createRivalTool({
+  name: "soda",
+  title: "Soda Core (DuckDB)",
+  distribution: "soda-core",
+  isPartial: true,
+  unsupported: [],
+  caveats: [
+    "types are matched by regex over text, and ranges checked on a TRY_CAST of the column",
+    "failing rows are counted per check, not per cell",
+  ],
+})
+
+export const datacontractTool = createRivalTool({
+  name: "datacontract",
+  title: "datacontract-cli (DuckDB)",
+  distribution: "datacontract-cli",
+  unsupported: [],
+  caveats: [
+    "the CSV is read as text through a DuckDB view, since its local CSV server aborts the whole run on one unparsable cell",
+    "types are matched by regex, as datacontract checks column types only and skips them for CSV",
+    "ranges are checked on a second view that casts numbers non-strictly, read separately from the first",
+  ],
+})
+
 function createRivalTool(options: {
   name: string
   title: string
   distribution: string
   unsupported: Check[]
   caveats: string[]
+  isPartial?: boolean
 }): Tool {
   const script = join(RIVALS, `validate_${options.name.replaceAll("-", "_")}.py`)
   return {
@@ -77,6 +127,7 @@ function createRivalTool(options: {
     title: options.title,
     unsupported: options.unsupported,
     caveats: options.caveats,
+    isPartial: options.isPartial,
     getVersion: async () => {
       const { stdout } = await promisify(execFile)(RIVALS_PYTHON, [
         "-c",

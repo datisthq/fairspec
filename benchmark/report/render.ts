@@ -22,6 +22,11 @@ export function renderReport(report: Report) {
   const headline = groups
     .filter(group => group.results.some(result => FAIRSPEC.has(result.tool)))
     .sort((left, right) => right.bytes - left.bytes)[0]
+  const rivals = new Set(
+    report.results
+      .filter(result => !FAIRSPEC.has(result.tool) && !result.isPartial)
+      .map(result => result.tool),
+  ).size
 
   return `<!doctype html>
 <html lang="en">
@@ -36,7 +41,7 @@ export function renderReport(report: Report) {
 <header>
   <p class="eyebrow">Fairspec benchmark</p>
   <h1>How fast does a ${headline ? formatBytes(headline.bytes) : "large"} table validate?</h1>
-  <p class="lede">Fairspec's Python and TypeScript CLIs against six other validators, all
+  <p class="lede">Fairspec's Python and TypeScript CLIs against ${rivals} other validators, all
   checking the same generated CSV against the same Table Schema. Measured
   ${escapeHtml(report.measuredAt.slice(0, 10))} on ${escapeHtml(describeMachine(report.machine))}.</p>
 </header>
@@ -83,7 +88,7 @@ function groupResults(results: Result[]) {
 function renderHeadline(group: Group) {
   const correct = group.results.filter(result => result.correct && result.wallMs)
   const fastestRival = correct
-    .filter(result => !FAIRSPEC.has(result.tool))
+    .filter(result => !FAIRSPEC.has(result.tool) && !result.isPartial)
     .sort((left, right) => (left.wallMs?.median ?? 0) - (right.wallMs?.median ?? 0))[0]
   const failed = group.results.filter(result => result.outcome !== "ok").length
   const tiles = [
@@ -129,7 +134,7 @@ function renderGroup(group: Group) {
     <tbody>${results
       .map(
         result =>
-          `<tr><td>${escapeHtml(result.title)}</td><td>${renderStatus(result)}</td><td class="num">${escapeHtml(formatOutcome(result))}</td><td class="num">${escapeHtml(formatMemory(result))}</td><td class="num">${result.errorCount ?? "–"} of ${result.expectedErrors}</td></tr>`,
+          `<tr><td>${escapeHtml(formatTitle(result))}</td><td>${renderStatus(result)}</td><td class="num">${escapeHtml(formatOutcome(result))}</td><td class="num">${escapeHtml(formatMemory(result))}</td><td class="num">${result.errorCount ?? "–"} of ${result.expectedErrors}</td></tr>`,
       )
       .join("")}</tbody>
   </table></div>
@@ -150,7 +155,7 @@ function renderBars(
       value === undefined
         ? `<span class="missing">${escapeHtml(formatOutcome(result))}</span>`
         : `<span class="bar ${kind}" style="width:${Math.max((value / max) * 100, 0.5).toFixed(1)}%"></span><span class="value">${escapeHtml(format(value))}</span>`
-    return `<div class="row" data-tip="${escapeHtml(`${result.title} ${result.version}: ${value === undefined ? formatOutcome(result) : format(value)}`)}"><span class="name">${escapeHtml(result.title)}</span><span class="track">${bar}</span></div>`
+    return `<div class="row" data-tip="${escapeHtml(`${formatTitle(result)} ${result.version}: ${value === undefined ? formatOutcome(result) : format(value)}`)}"><span class="name">${escapeHtml(formatTitle(result))}</span><span class="track">${bar}</span></div>`
   })
   return `<figure><figcaption>${title}</figcaption>${rows.join("")}</figure>`
 }
@@ -174,9 +179,13 @@ function renderTools(results: Result[]) {
   <div class="table-wrap"><table>
     <thead><tr><th>Tool</th><th>Version</th><th>Cannot check</th><th>Caveats</th></tr></thead>
     <tbody>${[...tools.values()]
+      .toSorted(
+        (left, right) =>
+          Number(Boolean(left.isPartial)) - Number(Boolean(right.isPartial)),
+      )
       .map(
         result =>
-          `<tr><td>${escapeHtml(result.title)}</td><td>${escapeHtml(result.version)}</td><td>${escapeHtml(result.unsupported.join(", ") || "–")}</td><td>${result.caveats.map(escapeHtml).join("<br>") || "–"}</td></tr>`,
+          `<tr><td>${escapeHtml(formatTitle(result))}</td><td>${escapeHtml(result.version)}</td><td>${escapeHtml(result.unsupported.join(", ") || "–")}</td><td>${result.caveats.map(escapeHtml).join("<br>") || "–"}</td></tr>`,
       )
       .join("")}</tbody>
   </table></div>
@@ -209,7 +218,15 @@ function renderMethod() {
 function compareResults(left: Result, right: Result) {
   const leftTime = left.wallMs?.median ?? Number.POSITIVE_INFINITY
   const rightTime = right.wallMs?.median ?? Number.POSITIVE_INFINITY
-  return leftTime - rightTime || left.title.localeCompare(right.title)
+  return (
+    Number(Boolean(left.isPartial)) - Number(Boolean(right.isPartial)) ||
+    leftTime - rightTime ||
+    left.title.localeCompare(right.title)
+  )
+}
+
+function formatTitle(result: Result) {
+  return result.isPartial ? `${result.title} (not a full validator)` : result.title
 }
 
 function formatOutcome(result: Result) {

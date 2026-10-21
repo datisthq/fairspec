@@ -35,7 +35,12 @@ const out = resolve(values.out ?? join(import.meta.dirname, ".cache", "report.ht
 const results = [...latest.values()].map(result => {
   const tool = TOOLS.find(item => item.name === result.tool)
   return tool
-    ? { ...result, caveats: tool.caveats, unsupported: tool.unsupported }
+    ? {
+        ...result,
+        caveats: tool.caveats,
+        unsupported: tool.unsupported,
+        isPartial: tool.isPartial,
+      }
     : result
 })
 await writeFile(out, renderReport({ ...report, results }))

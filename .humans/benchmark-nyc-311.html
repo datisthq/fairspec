@@ -269,31 +269,32 @@
     <main>
       <header>
         <p class="eyebrow">Fairspec benchmark</p>
-        <h1>How fast does a 16GB table validate?</h1>
+        <h1>How fast does a 10GB table validate?</h1>
         <p class="lede">
-          Fairspec's Python and TypeScript CLIs against six other validators, all checking
-          the same generated CSV against the same Table Schema. Measured 2026-10-20 on AMD
+          Fairspec's Python and TypeScript CLIs against 10 other validators, all checking
+          the same generated CSV against the same Table Schema. Measured 2026-10-21 on AMD
           Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB RAM, capped at 12G
           per tool, linux 7.0.0-34-generic.
         </p>
       </header>
       <section aria-label="Headline">
-        <p class="caption">nyc-311, 16GB · 31,038,392 rows</p>
+        <p class="caption">nyc-311, 10GB · 19,398,995 rows</p>
         <div class="tiles">
           <div class="tile">
-            <span class="label">Fairspec Python</span><span class="value">49.4 s</span
-            ><span class="note">2.5 GB</span>
+            <span class="label">Fairspec Python</span><span class="value">15.9 s</span
+            ><span class="note">2.3 GB</span>
           </div>
           <div class="tile">
-            <span class="label">Fairspec TypeScript</span><span class="value">52.9 s</span
-            ><span class="note">3.3 GB</span>
+            <span class="label">Fairspec TypeScript</span><span class="value">21.7 s</span
+            ><span class="note">2.1 GB</span>
           </div>
           <div class="tile">
             <span class="label">Fastest correct rival</span
-            ><span class="value">3 min 8 s</span><span class="note">qsv</span>
+            ><span class="value">18.2 s</span
+            ><span class="note">datacontract-cli (DuckDB)</span>
           </div>
           <div class="tile">
-            <span class="label">Did not finish</span><span class="value">4 of 8</span
+            <span class="label">Did not finish</span><span class="value">5 of 13</span
             ><span class="note">timed out, ran out of memory or crashed</span>
           </div>
         </div>
@@ -308,119 +309,195 @@
         <div class="charts">
           <figure>
             <figcaption>Wall time</figcaption>
-            <div class="row" data-tip="dataframely 3.1.2: 0.45 s">
+            <div class="row" data-tip="dataframely 3.1.2: 0.44 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="bar rival" style="width: 5.6%"></span
-                ><span class="value">0.45 s</span></span
+                ><span class="bar rival" style="width: 5.4%"></span
+                ><span class="value">0.44 s</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 0.74 s">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 0.65 s">
+              <span class="name">Fairspec TypeScript</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 8%"></span
+                ><span class="value">0.65 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="patito (polars) 0.8.6: 0.72 s">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 8.8%"></span
+                ><span class="value">0.72 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="qsv 24.0.0: 0.76 s">
               <span class="name">qsv</span
               ><span class="track"
-                ><span class="bar rival" style="width: 9.2%"></span
-                ><span class="value">0.74 s</span></span
+                ><span class="bar rival" style="width: 9.4%"></span
+                ><span class="value">0.76 s</span></span
               >
             </div>
-            <div class="row" data-tip="pandera (polars) 0.34.1: 0.80 s">
-              <span class="name">pandera (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 9.9%"></span
-                ><span class="value">0.80 s</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 0.82 s">
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 0.83 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
                 ><span class="bar fairspec" style="width: 10.2%"></span
-                ><span class="value">0.82 s</span></span
+                ><span class="value">0.83 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 0.89 s">
-              <span class="name">Fairspec TypeScript</span
+            <div class="row" data-tip="pandera (polars) 0.34.1: 0.83 s">
+              <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 11%"></span
-                ><span class="value">0.89 s</span></span
+                ><span class="bar rival" style="width: 10.3%"></span
+                ><span class="value">0.83 s</span></span
               >
             </div>
-            <div class="row" data-tip="pointblank (polars) 1.0.1: 1.00 s">
+            <div class="row" data-tip="pointblank (polars) 1.0.1: 1.01 s">
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 12.4%"></span
-                ><span class="value">1.00 s</span></span
+                ><span class="bar rival" style="width: 12.5%"></span
+                ><span class="value">1.01 s</span></span
               >
             </div>
-            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 7.26 s">
-              <span class="name">Great Expectations (pandas)</span
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 2.50 s">
+              <span class="name">datacontract-cli (DuckDB)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 90.4%"></span
-                ><span class="value">7.26 s</span></span
+                ><span class="bar rival" style="width: 30.9%"></span
+                ><span class="value">2.50 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 2.81 s">
+              <span class="name">pandera (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 34.7%"></span
+                ><span class="value">2.81 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="CSV Validator 1.4.4: 6.44 s">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 79.5%"></span
+                ><span class="value">6.44 s</span></span
               >
             </div>
             <div class="row" data-tip="frictionless-py 5.20.0: 8.04 s">
               <span class="name">frictionless-py</span
               ><span class="track"
-                ><span class="bar rival" style="width: 100%"></span
+                ><span class="bar rival" style="width: 99.4%"></span
                 ><span class="value">8.04 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 8.09 s">
+              <span class="name">Great Expectations (pandas)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 100%"></span
+                ><span class="value">8.09 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 0.78 s"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 9.6%"></span
+                ><span class="value">0.78 s</span></span
               >
             </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
-            <div class="row" data-tip="dataframely 3.1.2: 433 MB">
+            <div class="row" data-tip="dataframely 3.1.2: 429 MB">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="bar rival" style="width: 85.7%"></span
-                ><span class="value">433 MB</span></span
+                ><span class="bar rival" style="width: 57.3%"></span
+                ><span class="value">429 MB</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 63 MB">
-              <span class="name">qsv</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 12.5%"></span
-                ><span class="value">63 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="pandera (polars) 0.34.1: 472 MB">
-              <span class="name">pandera (polars)</span
-              ><span class="track"
-                ><span class="bar rival" style="width: 93.6%"></span
-                ><span class="value">472 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 436 MB">
-              <span class="name">Fairspec Python</span
-              ><span class="track"
-                ><span class="bar fairspec" style="width: 86.3%"></span
-                ><span class="value">436 MB</span></span
-              >
-            </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 426 MB">
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 399 MB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 84.4%"></span
-                ><span class="value">426 MB</span></span
+                ><span class="bar fairspec" style="width: 53.2%"></span
+                ><span class="value">399 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="patito (polars) 0.8.6: 462 MB">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 61.7%"></span
+                ><span class="value">462 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="qsv 24.0.0: 62 MB">
+              <span class="name">qsv</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 8.3%"></span
+                ><span class="value">62 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 450 MB">
+              <span class="name">Fairspec Python</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 60%"></span
+                ><span class="value">450 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="pandera (polars) 0.34.1: 477 MB">
+              <span class="name">pandera (polars)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 63.6%"></span
+                ><span class="value">477 MB</span></span
               >
             </div>
             <div class="row" data-tip="pointblank (polars) 1.0.1: 505 MB">
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 100%"></span
+                ><span class="bar rival" style="width: 67.4%"></span
                 ><span class="value">505 MB</span></span
               >
             </div>
-            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 406 MB">
-              <span class="name">Great Expectations (pandas)</span
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 380 MB">
+              <span class="name">datacontract-cli (DuckDB)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 80.4%"></span
-                ><span class="value">406 MB</span></span
+                ><span class="bar rival" style="width: 50.7%"></span
+                ><span class="value">380 MB</span></span
               >
             </div>
-            <div class="row" data-tip="frictionless-py 5.20.0: 81 MB">
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 526 MB">
+              <span class="name">pandera (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 70.2%"></span
+                ><span class="value">526 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="CSV Validator 1.4.4: 749 MB">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 100%"></span
+                ><span class="value">749 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="frictionless-py 5.20.0: 82 MB">
               <span class="name">frictionless-py</span
               ><span class="track"
-                ><span class="bar rival" style="width: 16.1%"></span
-                ><span class="value">81 MB</span></span
+                ><span class="bar rival" style="width: 11%"></span
+                ><span class="value">82 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 644 MB">
+              <span class="name">Great Expectations (pandas)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 85.9%"></span
+                ><span class="value">644 MB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 213 MB"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 28.4%"></span
+                ><span class="value">213 MB</span></span
               >
             </div>
           </figure>
@@ -440,57 +517,92 @@
               <tr>
                 <td>dataframely</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.45 s</td>
-                <td class="num">433 MB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
-                <td>qsv</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.74 s</td>
-                <td class="num">63 MB</td>
-                <td class="num">100 of 100</td>
-              </tr>
-              <tr>
-                <td>pandera (polars)</td>
-                <td><span class="chip serious">≠ wrong count</span></td>
-                <td class="num">0.80 s</td>
-                <td class="num">472 MB</td>
-                <td class="num">80 of 100</td>
-              </tr>
-              <tr>
-                <td>Fairspec Python</td>
-                <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.82 s</td>
-                <td class="num">436 MB</td>
+                <td class="num">0.44 s</td>
+                <td class="num">429 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">0.89 s</td>
-                <td class="num">426 MB</td>
+                <td class="num">0.65 s</td>
+                <td class="num">399 MB</td>
                 <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>patito (polars)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.72 s</td>
+                <td class="num">462 MB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>qsv</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.76 s</td>
+                <td class="num">62 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>Fairspec Python</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.83 s</td>
+                <td class="num">450 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>pandera (polars)</td>
+                <td><span class="chip serious">≠ wrong count</span></td>
+                <td class="num">0.83 s</td>
+                <td class="num">477 MB</td>
+                <td class="num">80 of 100</td>
               </tr>
               <tr>
                 <td>pointblank (polars)</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">1.00 s</td>
+                <td class="num">1.01 s</td>
                 <td class="num">505 MB</td>
                 <td class="num">80 of 80</td>
               </tr>
               <tr>
-                <td>Great Expectations (pandas)</td>
+                <td>datacontract-cli (DuckDB)</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">7.26 s</td>
-                <td class="num">406 MB</td>
+                <td class="num">2.50 s</td>
+                <td class="num">380 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>pandera (DuckDB)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">2.81 s</td>
+                <td class="num">526 MB</td>
                 <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>CSV Validator</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">6.44 s</td>
+                <td class="num">749 MB</td>
+                <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>frictionless-py</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">8.04 s</td>
-                <td class="num">81 MB</td>
+                <td class="num">82 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>Great Expectations (pandas)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">8.09 s</td>
+                <td class="num">644 MB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>Soda Core (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.78 s</td>
+                <td class="num">213 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
             </tbody>
@@ -507,53 +619,81 @@
         <div class="charts">
           <figure>
             <figcaption>Wall time</figcaption>
-            <div class="row" data-tip="dataframely 3.1.2: 1.63 s">
+            <div class="row" data-tip="dataframely 3.1.2: 1.78 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="bar rival" style="width: 2.1%"></span
-                ><span class="value">1.63 s</span></span
+                ><span class="bar rival" style="width: 2.3%"></span
+                ><span class="value">1.78 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 2.08 s">
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 2.17 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 2.7%"></span
-                ><span class="value">2.08 s</span></span
+                ><span class="bar fairspec" style="width: 2.8%"></span
+                ><span class="value">2.17 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 2.69 s">
+            <div class="row" data-tip="patito (polars) 0.8.6: 2.48 s">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 3.2%"></span
+                ><span class="value">2.48 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 2.71 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
                 ><span class="bar fairspec" style="width: 3.5%"></span
-                ><span class="value">2.69 s</span></span
+                ><span class="value">2.71 s</span></span
               >
             </div>
-            <div class="row" data-tip="pandera (polars) 0.34.1: 2.77 s">
+            <div class="row" data-tip="pandera (polars) 0.34.1: 2.94 s">
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 3.6%"></span
-                ><span class="value">2.77 s</span></span
+                ><span class="bar rival" style="width: 3.8%"></span
+                ><span class="value">2.94 s</span></span
               >
             </div>
-            <div class="row" data-tip="pointblank (polars) 1.0.1: 6.27 s">
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 4.05 s">
+              <span class="name">datacontract-cli (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 5.3%"></span
+                ><span class="value">4.05 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="pointblank (polars) 1.0.1: 6.65 s">
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 8.2%"></span
-                ><span class="value">6.27 s</span></span
+                ><span class="bar rival" style="width: 8.6%"></span
+                ><span class="value">6.65 s</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 6.60 s">
+            <div class="row" data-tip="qsv 24.0.0: 6.69 s">
               <span class="name">qsv</span
               ><span class="track"
-                ><span class="bar rival" style="width: 8.6%"></span
-                ><span class="value">6.60 s</span></span
+                ><span class="bar rival" style="width: 8.7%"></span
+                ><span class="value">6.69 s</span></span
               >
             </div>
-            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 58.1 s">
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 13.6 s">
+              <span class="name">pandera (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 17.6%"></span
+                ><span class="value">13.6 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="CSV Validator 1.4.4: 54.3 s">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 70.4%"></span
+                ><span class="value">54.3 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 56.2 s">
               <span class="name">Great Expectations (pandas)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 75.5%"></span
-                ><span class="value">58.1 s</span></span
+                ><span class="bar rival" style="width: 72.9%"></span
+                ><span class="value">56.2 s</span></span
               >
             </div>
             <div class="row" data-tip="frictionless-py 5.20.0: 1 min 17 s">
@@ -563,63 +703,111 @@
                 ><span class="value">1 min 17 s</span></span
               >
             </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 1.57 s"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 2%"></span
+                ><span class="value">1.57 s</span></span
+              >
+            </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
             <div class="row" data-tip="dataframely 3.1.2: 3.1 GB">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="bar rival" style="width: 100%"></span
+                ><span class="bar rival" style="width: 71.8%"></span
                 ><span class="value">3.1 GB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 961 MB">
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 873 MB">
               <span class="name">Fairspec Python</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 30.7%"></span
-                ><span class="value">961 MB</span></span
+                ><span class="bar fairspec" style="width: 20%"></span
+                ><span class="value">873 MB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 1.1 GB">
+            <div class="row" data-tip="patito (polars) 0.8.6: 3.1 GB">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 71.4%"></span
+                ><span class="value">3.1 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+a951e9f: 1.2 GB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 36.6%"></span
-                ><span class="value">1.1 GB</span></span
+                ><span class="bar fairspec" style="width: 27.4%"></span
+                ><span class="value">1.2 GB</span></span
               >
             </div>
             <div class="row" data-tip="pandera (polars) 0.34.1: 2.9 GB">
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 93.6%"></span
+                ><span class="bar rival" style="width: 67%"></span
                 ><span class="value">2.9 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 947 MB">
+              <span class="name">datacontract-cli (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 21.6%"></span
+                ><span class="value">947 MB</span></span
               >
             </div>
             <div class="row" data-tip="pointblank (polars) 1.0.1: 3.0 GB">
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 97.9%"></span
+                ><span class="bar rival" style="width: 69.6%"></span
                 ><span class="value">3.0 GB</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 497 MB">
+            <div class="row" data-tip="qsv 24.0.0: 498 MB">
               <span class="name">qsv</span
               ><span class="track"
-                ><span class="bar rival" style="width: 15.9%"></span
-                ><span class="value">497 MB</span></span
+                ><span class="bar rival" style="width: 11.4%"></span
+                ><span class="value">498 MB</span></span
               >
             </div>
-            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 2.6 GB">
-              <span class="name">Great Expectations (pandas)</span
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 2.6 GB">
+              <span class="name">pandera (DuckDB)</span
               ><span class="track"
-                ><span class="bar rival" style="width: 86.2%"></span
+                ><span class="bar rival" style="width: 60.5%"></span
                 ><span class="value">2.6 GB</span></span
               >
             </div>
-            <div class="row" data-tip="frictionless-py 5.20.0: 338 MB">
+            <div class="row" data-tip="CSV Validator 1.4.4: 1.1 GB">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 26.6%"></span
+                ><span class="value">1.1 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Great Expectations (pandas) 1.24.0: 4.3 GB">
+              <span class="name">Great Expectations (pandas)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 100%"></span
+                ><span class="value">4.3 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="frictionless-py 5.20.0: 339 MB">
               <span class="name">frictionless-py</span
               ><span class="track"
-                ><span class="bar rival" style="width: 10.8%"></span
-                ><span class="value">338 MB</span></span
+                ><span class="bar rival" style="width: 7.8%"></span
+                ><span class="value">339 MB</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 773 MB"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 17.7%"></span
+                ><span class="value">773 MB</span></span
               >
             </div>
           </figure>
@@ -639,57 +827,92 @@
               <tr>
                 <td>dataframely</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">1.63 s</td>
+                <td class="num">1.78 s</td>
                 <td class="num">3.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>Fairspec Python</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.08 s</td>
-                <td class="num">961 MB</td>
+                <td class="num">2.17 s</td>
+                <td class="num">873 MB</td>
                 <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>patito (polars)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">2.48 s</td>
+                <td class="num">3.1 GB</td>
+                <td class="num">80 of 80</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">2.69 s</td>
-                <td class="num">1.1 GB</td>
+                <td class="num">2.71 s</td>
+                <td class="num">1.2 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>pandera (polars)</td>
                 <td><span class="chip serious">≠ wrong count</span></td>
-                <td class="num">2.77 s</td>
+                <td class="num">2.94 s</td>
                 <td class="num">2.9 GB</td>
                 <td class="num">80 of 100</td>
               </tr>
               <tr>
+                <td>datacontract-cli (DuckDB)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">4.05 s</td>
+                <td class="num">947 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
                 <td>pointblank (polars)</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">6.27 s</td>
+                <td class="num">6.65 s</td>
                 <td class="num">3.0 GB</td>
                 <td class="num">80 of 80</td>
               </tr>
               <tr>
                 <td>qsv</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">6.60 s</td>
-                <td class="num">497 MB</td>
+                <td class="num">6.69 s</td>
+                <td class="num">498 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>pandera (DuckDB)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">13.6 s</td>
+                <td class="num">2.6 GB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>CSV Validator</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">54.3 s</td>
+                <td class="num">1.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>Great Expectations (pandas)</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">58.1 s</td>
-                <td class="num">2.6 GB</td>
+                <td class="num">56.2 s</td>
+                <td class="num">4.3 GB</td>
                 <td class="num">80 of 80</td>
               </tr>
               <tr>
                 <td>frictionless-py</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">1 min 17 s</td>
-                <td class="num">338 MB</td>
+                <td class="num">339 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>Soda Core (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">1.57 s</td>
+                <td class="num">773 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
             </tbody>
@@ -697,8 +920,8 @@
         </div>
       </section>
       <section>
-        <h2>nyc-311 · 16GB</h2>
-        <p class="caption">31,038,392 rows · median of 1 run(s) · shorter is better</p>
+        <h2>nyc-311 · 10GB</h2>
+        <p class="caption">19,398,995 rows · median of 1 run(s) · shorter is better</p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
           ><span><i class="swatch rival"></i>Other tools</span>
@@ -706,129 +929,203 @@
         <div class="charts">
           <figure>
             <figcaption>Wall time</figcaption>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 49.4 s">
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 15.9 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 3.9%"></span
-                ><span class="value">49.4 s</span></span
+                ><span class="bar fairspec" style="width: 2%"></span
+                ><span class="value">15.9 s</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 52.9 s">
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 18.2 s">
+              <span class="name">datacontract-cli (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 2.3%"></span
+                ><span class="value">18.2 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 21.7 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 4.1%"></span
-                ><span class="value">52.9 s</span></span
+                ><span class="bar fairspec" style="width: 2.8%"></span
+                ><span class="value">21.7 s</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 3 min 8 s">
+            <div class="row" data-tip="qsv 24.0.0: 1 min 4 s">
               <span class="name">qsv</span
               ><span class="track"
-                ><span class="bar rival" style="width: 14.7%"></span
-                ><span class="value">3 min 8 s</span></span
+                ><span class="bar rival" style="width: 8.2%"></span
+                ><span class="value">1 min 4 s</span></span
               >
             </div>
-            <div class="row" data-tip="frictionless-py 5.20.0: 21 min 19 s">
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 1 min 5 s">
+              <span class="name">pandera (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 8.2%"></span
+                ><span class="value">1 min 5 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="CSV Validator 1.4.4: 8 min 50 s">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 67.3%"></span
+                ><span class="value">8 min 50 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="frictionless-py 5.20.0: 13 min 8 s">
               <span class="name">frictionless-py</span
               ><span class="track"
                 ><span class="bar rival" style="width: 100%"></span
-                ><span class="value">21 min 19 s</span></span
+                ><span class="value">13 min 8 s</span></span
               >
             </div>
-            <div class="row" data-tip="dataframely 3.1.2: out of memory after 10.1 s">
+            <div class="row" data-tip="dataframely 3.1.2: out of memory after 8.73 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="missing">out of memory after 10.1 s</span></span
+                ><span class="missing">out of memory after 8.73 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 8 s"
+              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 51 s"
             >
               <span class="name">Great Expectations (pandas)</span
               ><span class="track"
-                ><span class="missing">out of memory after 1 min 8 s</span></span
+                ><span class="missing">out of memory after 1 min 51 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pandera (polars) 0.34.1: out of memory after 25.8 s"
+              data-tip="pandera (polars) 0.34.1: out of memory after 20.8 s"
             >
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 25.8 s</span></span
+                ><span class="missing">out of memory after 20.8 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="patito (polars) 0.8.6: out of memory after 7.31 s">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="missing">out of memory after 7.31 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pointblank (polars) 1.0.1: out of memory after 9.83 s"
+              data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
             >
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 9.83 s</span></span
+                ><span class="missing">out of memory after 6.78 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 9.95 s"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 1.3%"></span
+                ><span class="value">9.95 s</span></span
               >
             </div>
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
-            <div class="row" data-tip="Fairspec Python 0.2.0+cac2830: 2.5 GB">
+            <div class="row" data-tip="Fairspec Python 0.2.0+6987c98: 2.3 GB">
               <span class="name">Fairspec Python</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 38.9%"></span
-                ><span class="value">2.5 GB</span></span
+                ><span class="bar fairspec" style="width: 37.1%"></span
+                ><span class="value">2.3 GB</span></span
               >
             </div>
-            <div class="row" data-tip="Fairspec TypeScript 0.12.4+cac2830: 3.3 GB">
+            <div class="row" data-tip="datacontract-cli (DuckDB) 1.2.5: 2.1 GB">
+              <span class="name">datacontract-cli (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 33.9%"></span
+                ><span class="value">2.1 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec TypeScript 0.12.4+7a3366e: 2.1 GB">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
-                ><span class="bar fairspec" style="width: 50.5%"></span
-                ><span class="value">3.3 GB</span></span
+                ><span class="bar fairspec" style="width: 34.7%"></span
+                ><span class="value">2.1 GB</span></span
               >
             </div>
-            <div class="row" data-tip="qsv 24.0.0: 6.4 GB">
+            <div class="row" data-tip="qsv 24.0.0: 3.8 GB">
               <span class="name">qsv</span
               ><span class="track"
-                ><span class="bar rival" style="width: 100%"></span
-                ><span class="value">6.4 GB</span></span
+                ><span class="bar rival" style="width: 60.9%"></span
+                ><span class="value">3.8 GB</span></span
               >
             </div>
-            <div class="row" data-tip="frictionless-py 5.20.0: 4.5 GB">
+            <div class="row" data-tip="pandera (DuckDB) 0.34.1: 6.2 GB">
+              <span class="name">pandera (DuckDB)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 100%"></span
+                ><span class="value">6.2 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="CSV Validator 1.4.4: 3.1 GB">
+              <span class="name">CSV Validator</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 51%"></span
+                ><span class="value">3.1 GB</span></span
+              >
+            </div>
+            <div class="row" data-tip="frictionless-py 5.20.0: 2.7 GB">
               <span class="name">frictionless-py</span
               ><span class="track"
-                ><span class="bar rival" style="width: 70.6%"></span
-                ><span class="value">4.5 GB</span></span
+                ><span class="bar rival" style="width: 43.8%"></span
+                ><span class="value">2.7 GB</span></span
               >
             </div>
-            <div class="row" data-tip="dataframely 3.1.2: out of memory after 10.1 s">
+            <div class="row" data-tip="dataframely 3.1.2: out of memory after 8.73 s">
               <span class="name">dataframely</span
               ><span class="track"
-                ><span class="missing">out of memory after 10.1 s</span></span
+                ><span class="missing">out of memory after 8.73 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 8 s"
+              data-tip="Great Expectations (pandas) 1.24.0: out of memory after 1 min 51 s"
             >
               <span class="name">Great Expectations (pandas)</span
               ><span class="track"
-                ><span class="missing">out of memory after 1 min 8 s</span></span
+                ><span class="missing">out of memory after 1 min 51 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pandera (polars) 0.34.1: out of memory after 25.8 s"
+              data-tip="pandera (polars) 0.34.1: out of memory after 20.8 s"
             >
               <span class="name">pandera (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 25.8 s</span></span
+                ><span class="missing">out of memory after 20.8 s</span></span
+              >
+            </div>
+            <div class="row" data-tip="patito (polars) 0.8.6: out of memory after 7.31 s">
+              <span class="name">patito (polars)</span
+              ><span class="track"
+                ><span class="missing">out of memory after 7.31 s</span></span
               >
             </div>
             <div
               class="row"
-              data-tip="pointblank (polars) 1.0.1: out of memory after 9.83 s"
+              data-tip="pointblank (polars) 1.0.1: out of memory after 6.78 s"
             >
               <span class="name">pointblank (polars)</span
               ><span class="track"
-                ><span class="missing">out of memory after 9.83 s</span></span
+                ><span class="missing">out of memory after 6.78 s</span></span
+              >
+            </div>
+            <div
+              class="row"
+              data-tip="Soda Core (DuckDB) (not a full validator) 4.26.0: 1.8 GB"
+            >
+              <span class="name">Soda Core (DuckDB) (not a full validator)</span
+              ><span class="track"
+                ><span class="bar rival" style="width: 29.2%"></span
+                ><span class="value">1.8 GB</span></span
               >
             </div>
           </figure>
@@ -848,58 +1145,93 @@
               <tr>
                 <td>Fairspec Python</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">49.4 s</td>
-                <td class="num">2.5 GB</td>
+                <td class="num">15.9 s</td>
+                <td class="num">2.3 GB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">18.2 s</td>
+                <td class="num">2.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">52.9 s</td>
-                <td class="num">3.3 GB</td>
+                <td class="num">21.7 s</td>
+                <td class="num">2.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>qsv</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">3 min 8 s</td>
-                <td class="num">6.4 GB</td>
+                <td class="num">1 min 4 s</td>
+                <td class="num">3.8 GB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>pandera (DuckDB)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">1 min 5 s</td>
+                <td class="num">6.2 GB</td>
+                <td class="num">80 of 80</td>
+              </tr>
+              <tr>
+                <td>CSV Validator</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">8 min 50 s</td>
+                <td class="num">3.1 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>frictionless-py</td>
                 <td><span class="chip good">✓ correct</span></td>
-                <td class="num">21 min 19 s</td>
-                <td class="num">4.5 GB</td>
+                <td class="num">13 min 8 s</td>
+                <td class="num">2.7 GB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
                 <td>dataframely</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 10.1 s</td>
+                <td class="num">out of memory after 8.73 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 100</td>
               </tr>
               <tr>
                 <td>Great Expectations (pandas)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 1 min 8 s</td>
+                <td class="num">out of memory after 1 min 51 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 80</td>
               </tr>
               <tr>
                 <td>pandera (polars)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 25.8 s</td>
+                <td class="num">out of memory after 20.8 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 100</td>
               </tr>
               <tr>
-                <td>pointblank (polars)</td>
+                <td>patito (polars)</td>
                 <td><span class="chip critical">✕ out of memory</span></td>
-                <td class="num">out of memory after 9.83 s</td>
+                <td class="num">out of memory after 7.31 s</td>
                 <td class="num">–</td>
                 <td class="num">– of 80</td>
+              </tr>
+              <tr>
+                <td>pointblank (polars)</td>
+                <td><span class="chip critical">✕ out of memory</span></td>
+                <td class="num">out of memory after 6.78 s</td>
+                <td class="num">–</td>
+                <td class="num">– of 80</td>
+              </tr>
+              <tr>
+                <td>Soda Core (DuckDB) (not a full validator)</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">9.95 s</td>
+                <td class="num">1.8 GB</td>
+                <td class="num">100 of 100</td>
               </tr>
             </tbody>
           </table>
@@ -924,13 +1256,13 @@
             <tbody>
               <tr>
                 <td>Fairspec Python</td>
-                <td>0.2.0+cac2830</td>
+                <td>0.2.0+6987c98</td>
                 <td>–</td>
                 <td>–</td>
               </tr>
               <tr>
                 <td>Fairspec TypeScript</td>
-                <td>0.12.4+cac2830</td>
+                <td>0.12.4+7a3366e</td>
                 <td>–</td>
                 <td>–</td>
               </tr>
@@ -990,6 +1322,60 @@
                   numeric columns are cast non-strictly first, so a bad number becomes
                   null<br />the whole table is loaded into pandas, its default engine; on
                   Spark it ran 1.8x faster at 1GB with 2.6x the memory
+                </td>
+              </tr>
+              <tr>
+                <td>pandera (DuckDB)</td>
+                <td>0.34.1</td>
+                <td>type</td>
+                <td>
+                  numeric columns are cast non-strictly first, so a bad number becomes
+                  null<br />date-time and boolean are matched by regex<br />the CSV is
+                  loaded into an on-disk DuckDB table first, as pandera re-reads a view
+                  over it once per check
+                </td>
+              </tr>
+              <tr>
+                <td>patito (polars)</td>
+                <td>0.8.6</td>
+                <td>type</td>
+                <td>
+                  numeric columns are cast non-strictly first, so a bad number becomes
+                  null<br />date-time and boolean are matched by regex, since polars
+                  cannot cast text to them<br />enums are checked as a custom constraint,
+                  as patito's own enum check reports values, not rows<br />the whole table
+                  is read into memory, as patito validates a DataFrame
+                </td>
+              </tr>
+              <tr>
+                <td>datacontract-cli (DuckDB)</td>
+                <td>1.2.5</td>
+                <td>–</td>
+                <td>
+                  the CSV is read as text through a DuckDB view, since its local CSV
+                  server aborts the whole run on one unparsable cell<br />types are
+                  matched by regex, as datacontract checks column types only and skips
+                  them for CSV<br />ranges are checked on a second view that casts numbers
+                  non-strictly, read separately from the first
+                </td>
+              </tr>
+              <tr>
+                <td>CSV Validator</td>
+                <td>1.4.4</td>
+                <td>–</td>
+                <td>
+                  local-date-time is matched by regex, as are integer, number and
+                  boolean<br />errors are counted once per cell; a bad number fails both
+                  its type regex and its range
+                </td>
+              </tr>
+              <tr>
+                <td>Soda Core (DuckDB) (not a full validator)</td>
+                <td>4.26.0</td>
+                <td>–</td>
+                <td>
+                  types are matched by regex over text, and ranges checked on a TRY_CAST
+                  of the column<br />failing rows are counted per check, not per cell
                 </td>
               </tr>
             </tbody>

@@ -58,6 +58,31 @@ describe("renderReport", () => {
     expect(html).toContain("out of memory after 4 min 0 s")
   })
 
+  it("lists a partial tool after every validator and says so", () => {
+    const html = renderReport({
+      measuredAt: "2026-10-20T00:00:00.000Z",
+      machine,
+      results: [
+        createResult({}),
+        createResult({
+          tool: "soda",
+          title: "Soda Core",
+          isPartial: true,
+          wallMs: { median: 1000, min: 1000, max: 1000 },
+        }),
+        createResult({ tool: "qsv", title: "qsv" }),
+      ],
+    })
+
+    const rows = [...html.matchAll(/<tr><td>([^<]+)<\/td><td><span class="chip/g)].map(
+      match => match[1],
+    )
+    expect(rows).toEqual(["Fairspec Python", "qsv", "Soda Core (not a full validator)"])
+    expect(html).toContain(
+      '<span class="value">1 min 30 s</span><span class="note">qsv</span>',
+    )
+  })
+
   it("escapes text from tool output", () => {
     const html = renderReport({
       measuredAt: "2026-10-20T00:00:00.000Z",

@@ -14,17 +14,24 @@ against the same Table Schema:
 | dataframely         | a generated `dataframely` schema, `filter(cast=True)`            |
 | pointblank (polars) | a `pointblank.Validate` plan of column checks, over a read frame |
 | Great Expectations  | an ephemeral GX context over a pandas DataFrame                  |
+| pandera (DuckDB)    | a `pandera.ibis` schema over the CSV loaded into DuckDB          |
+| patito (polars)     | a generated `patito.Model`, over a read frame                    |
+| Soda Core (DuckDB)  | a Soda v4 contract over a DuckDB view of the CSV                 |
+| datacontract-cli    | an ODCS data contract tested against a DuckDB view of the CSV    |
+| CSV Validator       | the UK National Archives validator with a CSV Schema 1.1 file    |
 
-The other tools live in `rivals/`, a uv project of its own, so their dependencies never reach
-the Fairspec packages. Linux only: memory is the peak anonymous memory of the tool's processes,
-sampled from `/proc` (memory-mapped pages of the input are excluded, so polars and qsv compare
-fairly), and the cap comes from `systemd-run`.
+Every rival takes a declarative schema, as Fairspec does; libraries of hand-written checks
+(Deequ, cuallee, plain SQL) are out of scope. The Python ones live in `rivals/`, a uv project of
+its own, so their dependencies never reach the Fairspec packages; qsv and CSV Validator (Java)
+are downloaded by `setup:rivals`, which needs `java` on the PATH. Linux only: memory is the peak
+anonymous memory of the tool's processes, sampled from `/proc` (memory-mapped pages of the input
+are excluded, so polars and qsv compare fairly), and the cap comes from `systemd-run`.
 
 ## Usage
 
 ```bash
 pnpm -C python setup && pnpm -C typescript build   # the two Fairspec CLIs
-pnpm -C benchmark setup:rivals                     # uv sync rivals/, download qsv
+pnpm -C benchmark setup:rivals                     # uv sync rivals/, download qsv and CSV Validator
 pnpm -C benchmark measure --case nyc-311 --size 1GB
 pnpm -C benchmark show:report                      # .cache/report.html
 ```
@@ -45,7 +52,7 @@ pnpm -C benchmark generate:data --profile nyc-311 --size 10GB
 
 Every dataset is generated from a seed, so each tool reads identical bytes, and cached in
 `.cache/data/` until its profile, size, seed or fault count changes. A size is a row count or
-a byte target such as `16GB`. A profile in `profiles/` names its columns, how to draw each
+a byte target such as `10GB`. A profile in `profiles/` names its columns, how to draw each
 value, its Table Schema and its faults:
 
 - `simple` — ten columns of mixed types, one of each common constraint
@@ -59,6 +66,7 @@ A case in `cases/` picks a profile, its sizes and its fault count.
 Each file carries a fixed number of bad cells, spread over the whole file, each breaking exactly
 one check: a wrong type, a missing required value, an out-of-range number, a value outside an
 enum, a pattern mismatch. A tool's result counts only when it reports exactly the bad cells it
-is able to detect; a tool that cannot express a check (pointblank and Great Expectations have no
-per-cell type check over text) is not expected to find that check's faults. Everything a tool
+is able to detect; a tool that cannot express a check (pointblank, Great Expectations, patito and
+pandera on DuckDB have no per-cell type check over text) is not expected to find that check's
+faults. Everything a tool
 checks differently is listed in the report.

@@ -5,8 +5,9 @@ description: Use when working in benchmark/ — speed and memory of both Fairspe
 
 # Benchmark
 
-`benchmark/` measures `table validate` in both Fairspec CLIs against six other validators
-(frictionless-py, qsv, pandera, dataframely, pointblank, Great Expectations). It ships nothing
+`benchmark/` measures `table validate` in both Fairspec CLIs against eleven other validators
+(frictionless-py, qsv, pandera on polars and on DuckDB, dataframely, pointblank, Great
+Expectations, patito, Soda Core, datacontract-cli, CSV Validator). It ships nothing
 and is not a release component: its commits are `chore(benchmark)`. `benchmark/README.md` is the
 user reference; this skill is how to change it without making the numbers lie.
 
@@ -23,7 +24,7 @@ user reference; this skill is how to change it without making the numbers lie.
 - After a Fairspec change, re-measure only the tools that changed
   (`--tool fairspec-python --tool fairspec-typescript`); unchanged rivals carry over in the
   report. Rerunning them burns an hour at large sizes and only adds noise
-- `pnpm -C benchmark generate:data` — a dataset alone; at ~55 MB/s, 16GB takes about five minutes
+- `pnpm -C benchmark generate:data` — a dataset alone; at ~55 MB/s, 10GB takes about three minutes
 
 ## Layout
 
@@ -54,12 +55,19 @@ must be unambiguous:
 
 ## Adding a tool
 
+Only tools that take a declarative, JSON-Schema-like schema qualify (polars schema libraries
+included); libraries of hand-written checks (Deequ, cuallee, plain SQL) are out of scope.
+
 Write the adapter (`rivals/validate_<name>.py` printing `{"errorCount": n}`, or a `Tool` that
 builds a command, as `tools/qsv.ts` does), list it in `TOOLS` in `tools/index.ts`, and run
 `measure --size 10000 --size 100MB --tool <name>` until it reports the expected counts on both
 profiles. Read the CSV as text and let the tool do the typing — reading typed columns hides type
 errors. Pin new Python packages in `rivals/pyproject.toml`; `exclude-newer` enforces the
 repo's seven-day quarantine, and a downloaded binary is pinned to a release at least that old.
+A tool whose exit code for invalid data is not 1 sets `okExitCodes` on its `Command`; anything
+else counts as a crash. A data-quality tool that is not a full validator (Soda Core counts
+failing rows per check) sets `isPartial`: the report lists it after every validator, labels it,
+and leaves it out of the validator count and the fastest-rival tile.
 
 ## Traps
 
@@ -74,9 +82,20 @@ repo's seven-day quarantine, and a downloaded binary is pinned to a release at l
 - pandera coerces the whole frame at once: one bad cell leaves every column as text and its
   value checks never run (a real miss, reported as such). It also reports a null input as a
   failed cast, which the adapter drops
-- qsv copies every valid row to `<input>.valid` — 16GB more disk at 16GB — so the harness links
+- qsv copies every valid row to `<input>.valid` — 10GB more disk at 10GB — so the harness links
   that path to `/dev/null`; it reports an empty required enum cell twice, so its errors are
   counted per (row, field)
+- DuckDB-backed rivals re-read a `read_csv` view once per query: pandera on Ibis runs one query
+  per check, 5x slower than loading an on-disk DuckDB table first (about 0.2GB per GB of CSV in
+  the temp dir); Soda v4 batches every check into one query, so its view stays
+- datacontract-cli's local CSV server sniffs types and aborts the run on one unparsable cell,
+  and skips type checks for CSV; its adapter points a `duckdb` server at text views instead.
+  Soda and datacontract compare a text column to a numeric literal, which DuckDB refuses, so
+  ranges run on a `TRY_CAST`
+- patito's enum check reports the bad values, not the rows: enums go in `constraints`
+- CSV Validator exits 3 for invalid data, prints one line per failing rule (a bad number fails
+  its type regex and its range, so count per (row, column)), checks UTF-8 in a second pass,
+  and its `csv-validator-cmd` script forces `-Xmx1024m`, so the adapter runs `java -jar`
 - GNU `time` prefixes "Command exited with non-zero status" when a tool exits 1 for invalid data,
   or "Command terminated by signal N" (exiting 128 + N) when the kernel kills it; the figures are
   on the last line
