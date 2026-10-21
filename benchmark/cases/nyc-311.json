@@ -1,6 +1,6 @@
 {
   "description": "Validate NYC 311 Service Requests against their Table Schema, at growing sizes",
   "profile": "nyc-311",
-  "sizes": ["100MB", "1GB", "16GB"],
+  "sizes": ["100MB", "1GB", "10GB"],
   "faults": 100
 }

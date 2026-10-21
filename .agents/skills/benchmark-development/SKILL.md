@@ -32,7 +32,7 @@ user reference; this skill is how to change it without making the numbers lie.
   per validator, `report/` the HTML, `rivals/` the Python adapters and their uv project
 - Everything generated lives in `.cache/` (gitignored repo-wide): data, results, the report, qsv. A manifest's
   stored paths are recomputed on reuse, so the cache can move (or be symlinked into a worktree)
-  without regenerating 16GB
+  without regenerating 10GB
 
 ## Faults and the gate
 

@@ -38,7 +38,7 @@ size and tool, and `--out` writes the page elsewhere.
 `generate:data` writes a dataset without measuring anything:
 
 ```bash
-pnpm -C benchmark generate:data --profile nyc-311 --size 16GB
+pnpm -C benchmark generate:data --profile nyc-311 --size 10GB
 ```
 
 ## Data
@@ -50,7 +50,7 @@ value, its Table Schema and its faults:
 
 - `simple` — ten columns of mixed types, one of each common constraint
 - `nyc-311` — the 41 columns of NYC 311 Service Requests with plausible value spreads, about
-  31 million rows at 16GB
+  19 million rows at 10GB
 
 A case in `cases/` picks a profile, its sizes and its fault count.
 
