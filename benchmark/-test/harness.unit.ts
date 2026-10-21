@@ -126,6 +126,11 @@ describe.skipIf(process.platform !== "linux")("measureTool", () => {
     expect(result).toMatchObject({ correct: true, expectedErrors: 4 })
   })
 
+  it("times a run by the tool's own clock when it reports one", async () => {
+    const result = await measure({ ...createFakeTool(5), readElapsedMs: () => 42 })
+    expect(result.wallMs).toEqual({ median: 42, min: 42, max: 42 })
+  })
+
   it("marks unparseable output as a crash", async () => {
     const tool = {
       ...createFakeTool(5),

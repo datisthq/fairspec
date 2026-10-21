@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from dataclasses import dataclass
 from typing import Literal
 
@@ -24,6 +25,7 @@ class Schema:
     primary_key: list[str]
 
 
+_started = 0.0
 DATE_TIME_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
 BOOLEAN_PATTERN = r"^(true|false)$"
 
@@ -53,9 +55,13 @@ def load_schema(path: str) -> Schema:
 
 
 def print_result(error_count: int) -> None:
-    print(json.dumps({"errorCount": error_count}))
+    elapsed_ms = (time.perf_counter() - _started) * 1000
+    print(json.dumps({"errorCount": error_count, "elapsedMs": elapsed_ms}))
 
 
 def read_arguments() -> tuple[str, str]:
+    # every adapter calls this first, after its imports, so the clock leaves them out
+    global _started
+    _started = time.perf_counter()
     _, csv_path, schema_path = sys.argv
     return csv_path, schema_path

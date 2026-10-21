@@ -12,6 +12,7 @@
     "test:unit": "vp test"
   },
   "devDependencies": {
+    "@fairspec/library": "workspace:*",
     "@fairspec/metadata": "workspace:*",
     "@types/node": "catalog:",
     "vite-plus": "catalog:",

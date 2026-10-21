@@ -83,7 +83,7 @@ export async function measureTool(options: {
       break
     }
     if (index < warmup) continue
-    timings.push(run.wallMs)
+    timings.push(tool.readElapsedMs?.(run.stdout) ?? run.wallMs)
     if (run.peakMemoryMb !== undefined) memories.push(run.peakMemoryMb)
     if (run.peakRssMb !== undefined) residents.push(run.peakRssMb)
     counts.push(count)

@@ -143,7 +143,15 @@ function createRivalTool(options: {
       file: RIVALS_PYTHON,
       args: [script, basename(dataset.csvPath), basename(dataset.schemaPath)],
     }),
-    countErrors: async ({ stdout }) =>
-      JSON.parse(stdout.trim().split("\n").at(-1) ?? "").errorCount,
+    countErrors: async ({ stdout }) => readScriptResult(stdout).errorCount,
+    readElapsedMs: stdout => readScriptResult(stdout).elapsedMs,
   }
+}
+
+/** Reads the `{"errorCount", "elapsedMs"}` line an adapter script prints last. */
+export function readScriptResult(stdout: string): {
+  errorCount: number
+  elapsedMs: number
+} {
+  return JSON.parse(stdout.trim().split("\n").at(-1) ?? "")
 }

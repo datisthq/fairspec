@@ -1,24 +1,24 @@
 # Benchmark
 
 How fast, and in how much memory, Fairspec validates a large CSV table — its Python and
-TypeScript CLIs side by side with other validators, all checking the same generated data
+TypeScript libraries side by side with other validators, all checking the same generated data
 against the same Table Schema:
 
-| tool                | how it runs                                                      |
-| ------------------- | ---------------------------------------------------------------- |
-| Fairspec Python     | `fairspec table validate` from the `python/` workspace           |
-| Fairspec TypeScript | `fairspec table validate` from `typescript/terminal/build/`      |
-| frictionless-py     | `frictionless.validate` with the schema translated               |
-| qsv                 | `qsv validate` with the schema translated to JSON Schema         |
-| pandera (polars)    | a `pandera.polars` schema with coercion, over a read frame       |
-| dataframely         | a generated `dataframely` schema, `filter(cast=True)`            |
-| pointblank (polars) | a `pointblank.Validate` plan of column checks, over a read frame |
-| Great Expectations  | an ephemeral GX context over a pandas DataFrame                  |
-| pandera (DuckDB)    | a `pandera.ibis` schema over the CSV loaded into DuckDB          |
-| patito (polars)     | a generated `patito.Model`, over a read frame                    |
-| Soda Core (DuckDB)  | a Soda v4 contract over a DuckDB view of the CSV                 |
-| datacontract-cli    | an ODCS data contract tested against a DuckDB view of the CSV    |
-| CSV Validator       | the UK National Archives validator with a CSV Schema 1.1 file    |
+| tool                | how it runs                                                         |
+| ------------------- | ------------------------------------------------------------------- |
+| Fairspec Python     | `validate_table` from `fairspec/validate.py`, in the `python/` venv |
+| Fairspec TypeScript | `validateTable` from `fairspec/validate.ts`, on the workspace build |
+| frictionless-py     | `frictionless.validate` with the schema translated                  |
+| qsv                 | `qsv validate` with the schema translated to JSON Schema            |
+| pandera (polars)    | a `pandera.polars` schema with coercion, over a read frame          |
+| dataframely         | a generated `dataframely` schema, `filter(cast=True)`               |
+| pointblank (polars) | a `pointblank.Validate` plan of column checks, over a read frame    |
+| Great Expectations  | an ephemeral GX context over a pandas DataFrame                     |
+| pandera (DuckDB)    | a `pandera.ibis` schema over the CSV loaded into DuckDB             |
+| patito (polars)     | a generated `patito.Model`, over a read frame                       |
+| Soda Core (DuckDB)  | a Soda v4 contract over a DuckDB view of the CSV                    |
+| datacontract-cli    | an ODCS data contract tested against a DuckDB view of the CSV       |
+| CSV Validator       | the UK National Archives validator with a CSV Schema 1.1 file       |
 
 Every rival takes a declarative schema, as Fairspec does; libraries of hand-written checks
 (Deequ, cuallee, plain SQL) are out of scope. The Python ones live in `rivals/`, a uv project of
@@ -27,10 +27,14 @@ are downloaded by `setup:rivals`, which needs `java` on the PATH. Linux only: me
 anonymous memory of the tool's processes, sampled from `/proc` (memory-mapped pages of the input
 are excluded, so polars and qsv compare fairly), and the cap comes from `systemd-run`.
 
+Time leaves out interpreter start and imports: every script that calls a library (both Fairspec
+adapters and every rival in `rivals/`) starts its clock after its imports and prints
+`{"errorCount", "elapsedMs"}`. qsv and CSV Validator are CLIs and are timed as whole processes.
+
 ## Usage
 
 ```bash
-pnpm -C python setup && pnpm -C typescript build   # the two Fairspec CLIs
+pnpm -C python setup && pnpm -C typescript build   # the two Fairspec libraries
 pnpm -C benchmark setup:rivals                     # uv sync rivals/, download qsv and CSV Validator
 pnpm -C benchmark measure --case nyc-311 --size 1GB
 pnpm -C benchmark show:report                      # .cache/report.html
@@ -38,7 +42,7 @@ pnpm -C benchmark show:report                      # .cache/report.html
 
 `measure` runs every size of every case unless narrowed with `--case`, `--size` or `--tool`
 (each repeatable). `--runs` (3) and `--warmup` (1) set the series per tool, `--timeout` its
-limit in seconds (3600), and `--memory-max` caps each tool, for example `12G`. Results land in
+limit in seconds (3600), and `--memory-max` caps each tool, for example `10G`. Results land in
 `.cache/results/`, one file per invocation; `show:report` keeps the latest result per case,
 size and tool, and `--out` writes the page elsewhere.
 

@@ -14,6 +14,8 @@ export type Tool = {
   /** Returns the command validating the dataset, run from the dataset's directory. */
   createCommand: (dataset: Dataset) => Promise<Command>
   countErrors: (output: { stdout: string; dataset: Dataset }) => Promise<number>
+  /** The time the tool measured after its imports; replaces the process wall time. */
+  readElapsedMs?: (stdout: string) => number
 }
 
 export type Command = {

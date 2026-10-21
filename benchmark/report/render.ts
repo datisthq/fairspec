@@ -41,7 +41,7 @@ export function renderReport(report: Report) {
 <header>
   <p class="eyebrow">Fairspec benchmark</p>
   <h1>How fast does a ${headline ? formatBytes(headline.bytes) : "large"} table validate?</h1>
-  <p class="lede">Fairspec's Python and TypeScript CLIs against ${rivals} other validators, all
+  <p class="lede">Fairspec's Python and TypeScript libraries against ${rivals} other validators, all
   checking the same generated CSV against the same Table Schema. Measured
   ${escapeHtml(report.measuredAt.slice(0, 10))} on ${escapeHtml(describeMachine(report.machine))}.</p>
 </header>
@@ -126,7 +126,7 @@ function renderGroup(group: Group) {
   <p class="caption">${group.rows.toLocaleString("en")} rows · median of ${results[0]?.runs || 1} run(s) · shorter is better</p>
   <div class="legend"><span><i class="swatch fairspec"></i>Fairspec</span><span><i class="swatch rival"></i>Other tools</span></div>
   <div class="charts">
-    ${renderBars("Wall time", results, result => result.wallMs?.median, maxTime, formatTime)}
+    ${renderBars("Time", results, result => result.wallMs?.median, maxTime, formatTime)}
     ${renderBars("Peak memory", results, result => result.peakMemoryMb, maxMemory, formatMemoryValue)}
   </div>
   <div class="table-wrap"><table>
@@ -205,7 +205,8 @@ function renderMethod() {
     A fast wrong answer is not a result.</li>
     <li>Every column type in the schema is one Fairspec checks inside polars. Types it parses row
     by row (durations, geometries, JSON) would be slower, and are not measured here.</li>
-    <li>Every tool runs as its own process from a warm file cache. Time is wall clock. Memory is
+    <li>Every tool runs as its own process from a warm file cache. Time is clocked by the script
+    calling a library, after its imports; qsv and CSV Validator, two CLIs, are timed whole. Memory is
     the peak anonymous memory of the tool's processes, sampled every 50 ms: memory-mapped pages
     of the input file are excluded, since the kernel can drop them at any time. Each tool is
     capped at the memory the report header names; the machine was shared with other work.</li>

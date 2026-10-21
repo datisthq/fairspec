@@ -1,11 +1,11 @@
 ---
 name: benchmark-development
-description: Use when working in benchmark/ — speed and memory of both Fairspec CLIs against other validators on generated data. Covers commands, profiles and faults, the correctness gate, the rival adapters and their traps, and publishing the report.
+description: Use when working in benchmark/ — speed and memory of both Fairspec libraries against other validators on generated data. Covers commands, profiles and faults, the correctness gate, the rival adapters and their traps, and publishing the report.
 ---
 
 # Benchmark
 
-`benchmark/` measures `table validate` in both Fairspec CLIs against eleven other validators
+`benchmark/` measures table validation in both Fairspec libraries against eleven other validators
 (frictionless-py, qsv, pandera on polars and on DuckDB, dataframely, pointblank, Great
 Expectations, patito, Soda Core, datacontract-cli, CSV Validator). It ships nothing
 and is not a release component: its commits are `chore(benchmark)`. `benchmark/README.md` is the
@@ -17,7 +17,7 @@ user reference; this skill is how to change it without making the numbers lie.
   `test:unit` and `test` chains include it. Nothing here runs a real tool, and the section has
   no CI job by decision: its numbers need a fixed, idle machine, not a shared runner
 - `pnpm -C benchmark setup:rivals` — `uv sync --frozen` in `rivals/` and the pinned qsv binary
-  into `.cache/bin/`. The Fairspec CLIs need `pnpm -C python setup` and `pnpm -C typescript build`
+  into `.cache/bin/`. The Fairspec adapters (`fairspec/validate.{py,ts}`) need `pnpm -C python setup` and `pnpm -C typescript build`
 - `pnpm -C benchmark measure` — narrowed with `--case`, `--size`, `--tool`; set `--runs 1 --warmup 0`
   and a `--timeout` for multi-gigabyte sizes, and `--memory-max` below what the machine has free
 - `pnpm -C benchmark show:report` — merges `.cache/results/`, latest result per case, size and tool
@@ -71,8 +71,12 @@ and leaves it out of the validator count and the fastest-rival tile.
 
 ## Traps
 
-- The Python CLI rejects an absolute `--schema` path, so every command runs from the dataset's
-  directory with basenames
+- Every command runs from the dataset's directory with basenames (the Python CLI rejected an
+  absolute `--schema` path)
+- Time excludes imports: script adapters start the clock after them (`read_arguments` in
+  `rivals/common.py`) and print `elapsedMs`, which `Tool.readElapsedMs` reads in place of wall
+  time. Benchmark Fairspec through its library API, never its CLI: a CLI pays start-up the
+  library rivals do not. Only true CLIs (qsv, CSV Validator) are timed whole
 - frictionless imports every module on `sys.path` named `frictionless_*` as a plugin, which ran
   an adapter twice; adapters are `validate_<name>.py` behind `if __name__ == "__main__"`
 - polars cannot cast text to `Datetime` or `Boolean`, so the polars rivals match those by regex
