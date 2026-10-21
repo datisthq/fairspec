@@ -34,6 +34,56 @@ index 9c187ae69f43f4a45904bd5ebe1c465812f5193d..2d47756d4d214264f2c7a8f5d3460412
  };
  exports._Expr = _Expr;
  const isExpr = (anyVal) => {
+diff --git a/bin/lazy/expr/string.d.ts b/bin/lazy/expr/string.d.ts
+index 37a9a54446cbc86e110c3dbefab319de316c21d7..8d851a07190c02dc7b36707d6c841a206f249d86 100644
+--- a/bin/lazy/expr/string.d.ts
++++ b/bin/lazy/expr/string.d.ts
+@@ -487,9 +487,9 @@ export interface ExprString extends StringFunctions<Expr> {
+      * @param datatype Date or Datetime.
+      * @param fmt formatting syntax. [Read more](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html)
+      */
+-    strptime(datatype: DataType.Date, fmt?: string): Expr;
+-    strptime(datatype: DataType.Datetime, fmt?: string): Expr;
+-    strptime(datatype: typeof DataType.Datetime, fmt?: string): Expr;
++    strptime(datatype: DataType.Date, fmt?: string, options?: StrptimeOptions): Expr;
++    strptime(datatype: DataType.Datetime, fmt?: string, options?: StrptimeOptions): Expr;
++    strptime(datatype: typeof DataType.Datetime, fmt?: string, options?: StrptimeOptions): Expr;
+     /** Remove leading and trailing whitespace.
+      * @param prefix - Prefix substring or expression (null means whitespace)
+      * @example
+@@ -532,3 +532,9 @@ export interface ExprString extends StringFunctions<Expr> {
+     stripCharsStart(prefix: string | Expr): Expr;
+ }
+ export declare const ExprStringFunctions: (_expr: any) => ExprString;
++/** Options the native strptime takes: `exact` matches the whole text, not any part of it */
++export interface StrptimeOptions {
++    strict?: boolean;
++    exact?: boolean;
++    cache?: boolean;
++}
+diff --git a/bin/lazy/expr/string.js b/bin/lazy/expr/string.js
+index b43a30bcdd7844a91c1243009840f78b0f06ee2b..d7bcc180e069390f801fe7a9472a5f06290da0db 100644
+--- a/bin/lazy/expr/string.js
++++ b/bin/lazy/expr/string.js
+@@ -110,13 +110,15 @@ const ExprStringFunctions = (_expr) => {
+         stripCharsStart(pattern) {
+             return wrap("strStripChars", (0, expr_1.exprToLitOrExpr)(pattern)._expr, true, false);
+         },
+-        strptime(dtype, format) {
++        strptime(dtype, format, options = {}) {
++            // The binding takes strict, exact and cache; upstream hardcodes them to false
++            const { strict = false, exact = false, cache = false } = options;
+             const dt = dtype instanceof datatypes_1.DataType ? dtype : dtype();
+             if (dt.equals(datatypes_1.DataType.Date)) {
+-                return wrap("strToDate", format, false, false, false);
++                return wrap("strToDate", format, strict, exact, cache);
+             }
+             if (dt.equals(datatypes_1.DataType.Datetime("ms"))) {
+-                return wrap("strToDatetime", format, undefined, undefined, false, false, false, undefined);
++                return wrap("strToDatetime", format, undefined, undefined, strict, exact, cache, undefined);
+             }
+             throw new Error(`only "DataType.Date" and "DataType.Datetime" are supported`);
+         },
 diff --git a/bin/series/index.js b/bin/series/index.js
 index 139c72a6eb1fcb14c75d5efa663370c741fa9e7e..fc43af8b26299d2e9e16c4930434ca2f7548b1d1 100644
 --- a/bin/series/index.js

@@ -87,19 +87,6 @@ export function keepExactTemporal(textExpr: pl.Expr, valueExpr: pl.Expr, format:
     .otherwise(pl.lit(null))
 }
 
-/** The default patterns match only zero-padded fixed-width text, so it compares as is */
-export function keepExactDefaultTemporal(
-  textExpr: pl.Expr,
-  valueExpr: pl.Expr,
-  format: string,
-) {
-  // never for a custom temporalFormat: `%d` accepts `5`, which only normalising compares
-  return pl
-    .when(valueExpr.dt.strftime(format).eq(textExpr))
-    .then(valueExpr)
-    .otherwise(pl.lit(null))
-}
-
 function parseDefaultTemporal(
   columnExpr: pl.Expr,
   pattern: string,
@@ -112,11 +99,12 @@ function parseDefaultTemporal(
   )
   const fractionExpr = columnExpr.str.extract(pattern, 2).fillNull("")
   const fullFormat = `${createPrefixFormat(prefix)}${format}`
-  const valueExpr = pl.pl
-    .concatString([textExpr, fractionExpr], "")
-    .str.strptime(pl.Datetime, `${fullFormat}%.f`)
 
-  return keepExactDefaultTemporal(textExpr, valueExpr, fullFormat)
+  // The pattern already fixes a zero-padded shape; exact rejects what matches only in
+  // part, such as 2100-02-29, which a loose parse reads as year 0000
+  return pl.pl
+    .concatString([textExpr, fractionExpr], "")
+    .str.strptime(pl.Datetime, `${fullFormat}%.f`, { exact: true })
 }
 
 function applyOffset(localExpr: pl.Expr, offsetExpr: pl.Expr) {

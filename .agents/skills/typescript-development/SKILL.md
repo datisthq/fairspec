@@ -98,8 +98,9 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **nodejs-polars is patched** (`patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every
-  validation. Bumping nodejs-polars means re-creating the patch (`pnpm patch`), or dropping it
-  once upstream builds the wrappers the same way
+  validation. It also lets `Expr.str.strptime` take `{ strict, exact, cache }`, which the
+  native binding accepts but upstream's JS hardcodes to false. Bumping nodejs-polars means
+  re-creating the patch (`pnpm patch`), or dropping each part once upstream ships it
 - **CLI bundle**: `pnpm -C typescript build` bundles `terminal`'s bin with `vp pack`
   (`typescript/terminal/vite.config.ts`) into `build/entrypoints/`, which cuts startup from
   ~0.5s to ~0.3s by loading ~40 files instead of ~1250. Only `nodejs-polars` and `calamine-node`
@@ -165,12 +166,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column
-  cannot be collected to JS, so drop it before `toRecords()`; `str.strptime` hardcodes
-  `exact=false`, matching the format anywhere in the text (`2100-02-29` parses as year 0000), so
-  temporal parsers check that the value prints back to its text
-  (`typescript/table/actions/column/types/-shared/temporal.ts`): a custom `temporalFormat` through
-  the normalising `keepExactTemporal`, the zero-padded default patterns through the plain compare
-  of `keepExactDefaultTemporal`, which is about a second cheaper on 1GB of date-times. A value
+  cannot be collected to JS, so drop it before `toRecords()`; `str.strptime` defaults to
+  `exact: false`, matching the format anywhere in the text (`2100-02-29` parses as year 0000).
+  The zero-padded default patterns parse with `{ exact: true }` after their regex, as the Python
+  twin does — printing each value back to compare cost 22% of a 10GB validation — while a custom
+  `temporalFormat` keeps the normalising print-back of `keepExactTemporal`
+  (`typescript/table/actions/column/types/-shared/temporal.ts`), since `%d` accepts `5`. A value
   with a UTC offset (`date-time`, `time`) cannot print back once converted to UTC, so
   `parseOffsetTemporal` cuts the offset off with a regex built from the pattern, checks the local
   rest, then applies the offset; a naive Datetime dtype has `timeZone: ""`, not undefined

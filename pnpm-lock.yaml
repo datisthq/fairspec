@@ -60,7 +60,7 @@ overrides:
   vitest@*: 5.0.1
 
 patchedDependencies:
-  nodejs-polars@0.26.1: 225b5ca75059ebcb416d6ad1fa0e742a257fc391420677d4c6661c0f535025d6
+  nodejs-polars@0.26.1: 9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a
 
 importers:
 
@@ -575,7 +575,7 @@ importers:
         version: 1.2.1(kysely@0.28.17)
       nodejs-polars:
         specifier: ^0.26.1
-        version: 0.26.1(patch_hash=225b5ca75059ebcb416d6ad1fa0e742a257fc391420677d4c6661c0f535025d6)
+        version: 0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a)
       p-all:
         specifier: ^5.0.1
         version: 5.0.1
@@ -617,7 +617,7 @@ importers:
         version: 3.0.1
       nodejs-polars:
         specifier: ^0.26.1
-        version: 0.26.1(patch_hash=225b5ca75059ebcb416d6ad1fa0e742a257fc391420677d4c6661c0f535025d6)
+        version: 0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a)
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -17043,7 +17043,7 @@ snapshots:
       nodejs-polars-linux-x64-musl: 0.23.5
       nodejs-polars-win32-x64-msvc: 0.23.5
 
-  nodejs-polars@0.26.1(patch_hash=225b5ca75059ebcb416d6ad1fa0e742a257fc391420677d4c6661c0f535025d6):
+  nodejs-polars@0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a):
     optionalDependencies:
       nodejs-polars-android-arm64: 0.26.1
       nodejs-polars-darwin-arm64: 0.26.1

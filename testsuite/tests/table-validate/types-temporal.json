@@ -34,6 +34,20 @@
         ]
       },
       {
+        "description": "February 29 outside a leap year is a cell/type error",
+        "data": "id,x\n1,2024-02-29\n2,2100-02-29\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2100-02-29"
+          }
+        ]
+      },
+      {
         "description": "a day-first date is a cell/type error",
         "data": "id,x\n1,2024-01-15\n2,15/01/2024\n",
         "valid": false,
@@ -722,6 +736,20 @@
             "columnType": "local-date-time",
             "rowNumber": 2,
             "cell": "2024-01-15T14:30:00x"
+          }
+        ]
+      },
+      {
+        "description": "February 29 outside a leap year is a cell/type error",
+        "data": "id,x\n1,2024-02-29T00:00:00\n2,2100-02-29T00:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2100-02-29T00:00:00"
           }
         ]
       },
