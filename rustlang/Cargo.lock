@@ -733,6 +733,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "fairspec-library"
+version = "0.0.0"
+dependencies = [
+ "base64 0.23.1",
+ "fairspec-dataset",
+ "fairspec-metadata",
+ "fairspec-table",
+ "polars",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "fairspec-metadata"
 version = "0.0.0"
 dependencies = [
@@ -754,7 +768,6 @@ dependencies = [
 name = "fairspec-table"
 version = "0.0.0"
 dependencies = [
- "base64 0.23.1",
  "calamine",
  "chrono",
  "encoding_rs",

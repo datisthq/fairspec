@@ -52,5 +52,4 @@ thiserror = "2.0"
 zip = { version = "9.0", default-features = false, features = ["deflate"] }
 
 [dev-dependencies]
-base64 = "0.23.1"
 tempfile = "3.27"

@@ -1,15 +1,15 @@
 ---
 name: rustlang-development
-description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset, table). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
+description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset, table, library). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
 ---
 
 # Rust
 
 The `rustlang/` section is a Cargo workspace, a **third twin** of the libraries. The goal is a
 Fairspec implementation for users outside Python and TypeScript — a standalone binary they can
-wrap as a CLI. So far `rustlang/metadata/` (`fairspec-metadata`), `rustlang/dataset/` (`fairspec-dataset`)
-and `rustlang/table/` (`fairspec-table`, on Polars) exist, ported from their Python packages; the crates
-follow Python's package DAG. Nothing is published and the section has no release component.
+wrap as a CLI. `rustlang/metadata/` (`fairspec-metadata`), `rustlang/dataset/` (`fairspec-dataset`),
+`rustlang/table/` (`fairspec-table`, on Polars) and `rustlang/library/` (`fairspec-library`) are
+ported from their Python packages; the crates follow Python's package DAG. Nothing is published and the section has no release component.
 
 ## Commands
 
@@ -74,12 +74,28 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
 - shapely and isodate have no crates: WKT/WKB readers follow GEOS 3.13 and the duration parser
   ports `isodate.parse_duration`; both are checked against the venv on sample lists
 - `stringify_number` renders an integral float as Python's `str(int(x))` at any magnitude
+- Row key checks find a duplicate with `cum_count().over(key columns) > 1`, and the key probe
+  records raw key values, not hashes: `is_first_distinct` and `hash` need polars features the
+  crate does not enable. Nulls group as in `is_first_distinct`, so the same rows are flagged
+
+## Library
+
+- `SYSTEM` is Python's `system`: a `LazyLock<RwLock<System>>` whose `register` inserts at the
+  front, so xlsx is asked first and ckan last. `SystemPlugin` stores each plugin by its widest
+  trait (`Metadata`/`Dataset`/`Table`) and stands in for Python's `isinstance` checks
+- `lib.rs` re-exports `fairspec_metadata`, `fairspec_dataset` and `fairspec_table` whole where
+  Python star-imports them, then lists its own names one per line
+- A `Dataset | Descriptor | str` source is `impl Into<DatasetSource>`; Python's `ValueError` is
+  `Error::Invalid` with no report
+- The render actions only ask the plugins, as in Python, and no plugin renders yet, so they
+  return `None`
+- `validate_dataset` keeps the inferred resource names on the dataset, so foreign key errors carry
+  them too (Python mutates the same resource objects). It sets `resourceName` on every error by
+  going through JSON
 
 ## Testsuite
 
-`table/tests/testsuite.rs` is the third runner; it lives in the highest crate, so it moves up
-as crates are added. It checks every file against `testsuite/test-schema.json`, runs every
-operation the crates implement — mirroring library-level entry points (`load_table`,
-`validate_table`, `infer_table_schema`, …) as runner-local helpers that ask the plugins in the
-library's registry order (xlsx first, arrow last) — and lists the rest in `SKIPPED`. An unknown operation directory fails, so a new operation in
-`testsuite/` lands here too — implemented or skipped (**`testsuite-development`**).
+`library/tests/testsuite.rs` is the third runner; it lives in the highest crate and calls the
+library API (`validate_table`, `query_dataset`, …) as the Python runner does. It checks every
+file against `testsuite/test-schema.json` and runs every operation; an unknown operation directory
+fails, so a new operation in `testsuite/` lands here too (**`testsuite-development`**).

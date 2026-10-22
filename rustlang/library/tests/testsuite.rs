@@ -2,28 +2,24 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use base64::Engine;
-use fairspec_dataset::{
-    InferFileDialectOptions, describe_file, load_file, preview_file, validate_file, write_temp_file,
+use fairspec_library::fairspec_dataset::{
+    InferFileDialectOptions, describe_file, preview_file, validate_file, write_temp_file,
 };
-use fairspec_metadata::{
-    DataError, Dataset, Descriptor, ExpectedResourceType, FairspecError, FileDialect,
-    IntegrityType, PathOr, Report, Resource, ResourceError, ResourceTypeError, TableSchema,
-    create_report, get_data_first_path, get_data_value, get_supported_file_dialect,
-    infer_resource_name, inspect_json, load_dataset_descriptor, resolve_data_schema,
-    resolve_table_schema, validate_data_schema, validate_table_schema,
+use fairspec_library::fairspec_metadata::{
+    Dataset, Descriptor, IntegrityType, Resource, denormalize_dataset, infer_resource_name,
+    inspect_json, validate_data_schema, validate_table_schema,
 };
-use fairspec_table::polars::prelude::*;
-use fairspec_table::{
-    ArrowPlugin, CsvPlugin, InlinePlugin, JsonPlugin, LoadTableOptions, ParquetPlugin,
-    SqlTableCheck, SqlitePlugin, Table, TableCheck, TablePlugin, XlsxPlugin,
-    infer_table_schema_from_table, inspect_table, query_table,
+use fairspec_library::fairspec_table::polars::prelude::*;
+use fairspec_library::fairspec_table::{
+    InferTableSchemaOptions, LoadTableOptions, Table, query_table,
 };
-use serde_json::{Map, Value, json};
+use fairspec_library::{
+    ValidateTableOptions, infer_data_schema, infer_dataset, infer_file_dialect, infer_table_schema,
+    load_dataset, load_table, query_dataset, validate_data, validate_dataset, validate_table,
+};
+use serde_json::{Map, Value};
 
 const UNSPECIFIED_MESSAGE_ERRORS: [&str; 3] = ["data", "metadata", "cell/json"];
-
-/// Operations that need table checks, inference or the library layer, not ported yet.
-const SKIPPED: [&str; 3] = ["dataset-infer", "dataset-query", "dataset-validate"];
 
 type Operation = fn(&Value, &Value) -> Result<Value, String>;
 
@@ -45,9 +41,6 @@ fn test_testsuite() {
             Err(error) => failures.push(format!("{id}: cannot inspect: {error}")),
         }
 
-        if SKIPPED.contains(&operation.as_str()) {
-            continue;
-        }
         let Some(run) = get_operation(&operation) else {
             failures.push(format!("{id}: unknown operation {operation}"));
             continue;
@@ -78,7 +71,10 @@ fn get_operation(operation: &str) -> Option<Operation> {
         "data-infer-schema" => Some(run_data_infer_schema),
         "data-validate" => Some(run_data_validate),
         "data-validate-schema" => Some(run_data_validate_schema),
+        "dataset-infer" => Some(run_dataset_infer),
         "dataset-list" => Some(run_dataset_list),
+        "dataset-query" => Some(run_dataset_query),
+        "dataset-validate" => Some(run_dataset_validate),
         "file-describe" => Some(run_file_describe),
         "file-preview" => Some(run_file_preview),
         "file-validate" => Some(run_file_validate),
@@ -94,8 +90,8 @@ fn get_operation(operation: &str) -> Option<Operation> {
 
 fn run_data_infer_schema(group: &Value, test: &Value) -> Result<Value, String> {
     let resource = create_resource(group, test)?;
-    let data = load_data(&resource).map_err(|error| error.to_string())?;
-    Ok(data.as_ref().map_or(Value::Null, infer_value_schema))
+    let data_schema = infer_data_schema(&resource).map_err(|error| error.to_string())?;
+    serde_json::to_value(data_schema).map_err(|error| error.to_string())
 }
 
 fn run_data_validate(group: &Value, test: &Value) -> Result<Value, String> {
@@ -106,193 +102,9 @@ fn run_data_validate(group: &Value, test: &Value) -> Result<Value, String> {
 
 fn run_table_validate(group: &Value, test: &Value) -> Result<Value, String> {
     let resource = create_resource(group, test)?;
-    let options = group
-        .get("options")
-        .cloned()
-        .unwrap_or(Value::Object(Map::new()));
-    let report = validate_table(resource, &options).map_err(|error| error.to_string())?;
+    let options: ValidateTableOptions = get_options(group)?;
+    let report = validate_table(&resource, &options).map_err(|error| error.to_string())?;
     serde_json::to_value(report).map_err(|error| error.to_string())
-}
-
-/// The library's `validate_table`, over the table plugins ported so far.
-fn validate_table(mut resource: Resource, options: &Value) -> fairspec_metadata::Result<Report> {
-    if resource.file_dialect.is_none() {
-        resource.file_dialect =
-            infer_file_dialect(&resource, &Default::default())?.map(PathOr::Value);
-    }
-
-    let no_infer = options["noInfer"].as_bool().unwrap_or(false);
-    let max_errors = options["maxErrors"]
-        .as_u64()
-        .map_or(1000, |value| value as usize);
-    let checks: Vec<TableCheck> = match options.get("checks") {
-        Some(checks) => serde_json::from_value::<Vec<SqlTableCheck>>(checks.clone())
-            .map_err(parse_error)?
-            .into_iter()
-            .map(TableCheck::from)
-            .collect(),
-        None => Vec::new(),
-    };
-    let mut load_options: LoadTableOptions =
-        serde_json::from_value(options.clone()).map_err(parse_error)?;
-
-    let mut table_schema = resolve_table_schema(resource.table_schema.as_ref())?;
-    if table_schema.is_none() && !no_infer {
-        table_schema = infer_table_schema(&resource, &load_options)?;
-    }
-
-    if table_schema.is_none() && checks.is_empty() {
-        return Ok(create_report(Vec::new(), None));
-    }
-
-    load_options.denormalized = Some(true);
-    let Some(table) = load_table(&resource, &load_options)? else {
-        let error = ResourceTypeError {
-            resource_name: None,
-            expected_resource_type: ExpectedResourceType::Table,
-            referencing_resource_name: None,
-        };
-        return Ok(create_report(
-            vec![FairspecError::Resource(ResourceError::Type(error))],
-            None,
-        ));
-    };
-
-    let errors = inspect_table(
-        table,
-        table_schema.as_ref(),
-        Some(&checks),
-        None,
-        Some(max_errors),
-        load_options.infer_table_schema_options.concurrency,
-    )?;
-    Ok(create_report(
-        errors.into_iter().map(FairspecError::Table).collect(),
-        None,
-    ))
-}
-
-fn infer_file_dialect(
-    resource: &Resource,
-    options: &InferFileDialectOptions,
-) -> fairspec_metadata::Result<Option<FileDialect>> {
-    for plugin in get_table_plugins() {
-        if let Some(dialect) = plugin.infer_file_dialect(resource, options)? {
-            return Ok(Some(dialect));
-        }
-    }
-    Ok(None)
-}
-
-fn infer_table_schema(
-    resource: &Resource,
-    options: &LoadTableOptions,
-) -> fairspec_metadata::Result<Option<TableSchema>> {
-    let infer_options = &options.infer_table_schema_options;
-    for plugin in get_table_plugins() {
-        if let Some(table_schema) = plugin.infer_table_schema(resource, infer_options)? {
-            return Ok(Some(table_schema));
-        }
-    }
-    let load_options = LoadTableOptions {
-        denormalized: Some(true),
-        ..Default::default()
-    };
-    match load_table(resource, &load_options)? {
-        Some(table) => infer_table_schema_from_table(table, infer_options).map(Some),
-        None => Ok(None),
-    }
-}
-
-fn load_table(
-    resource: &Resource,
-    options: &LoadTableOptions,
-) -> fairspec_metadata::Result<Option<Table>> {
-    for plugin in get_table_plugins() {
-        if let Some(table) = plugin.load_table(resource, options)? {
-            return Ok(Some(table));
-        }
-    }
-    Ok(None)
-}
-
-/// The library's `validate_data`.
-fn validate_data(resource: &Resource) -> fairspec_metadata::Result<Report> {
-    let Some(data_schema) = resolve_data_schema(resource.data_schema.as_ref())? else {
-        return Ok(create_report(Vec::new(), None));
-    };
-
-    let Some(data) = load_data(resource)? else {
-        let error = ResourceTypeError {
-            resource_name: None,
-            expected_resource_type: ExpectedResourceType::Data,
-            referencing_resource_name: None,
-        };
-        return Ok(create_report(
-            vec![FairspecError::Resource(ResourceError::Type(error))],
-            None,
-        ));
-    };
-
-    let errors = inspect_json(&data, data_schema, None)?
-        .into_iter()
-        .map(|issue| {
-            FairspecError::Data(DataError {
-                r#type: Default::default(),
-                resource_name: None,
-                message: issue.message,
-                json_pointer: issue.json_pointer,
-            })
-        })
-        .collect();
-    Ok(create_report(errors, None))
-}
-
-/// The library's `load_data`.
-fn load_data(resource: &Resource) -> fairspec_metadata::Result<Option<Value>> {
-    if let Some(value) = get_data_value(resource) {
-        return Ok(Some(value.clone()));
-    }
-
-    if let Some(first_path) = get_data_first_path(resource)
-        && get_supported_file_dialect(resource, &["json"])?.is_some()
-    {
-        let bytes = load_file(&first_path, None)?;
-        return Ok(Some(serde_json::from_slice(&bytes).map_err(parse_error)?));
-    }
-
-    Ok(None)
-}
-
-/// The library's `infer_data_schema`, value by value.
-fn infer_value_schema(value: &Value) -> Value {
-    match value {
-        Value::Null => json!({"type": "null"}),
-        Value::Bool(_) => json!({"type": "boolean"}),
-        Value::Number(number) if number.is_f64() => {
-            let is_integer = number.as_f64().is_some_and(|value| value.fract() == 0.0);
-            json!({"type": if is_integer { "integer" } else { "number" }})
-        }
-        Value::Number(_) => json!({"type": "integer"}),
-        Value::String(_) => json!({"type": "string"}),
-        Value::Array(items) => {
-            let items: Vec<Value> = items.iter().map(infer_value_schema).collect();
-            match items.first() {
-                Some(first) if items.iter().all(|item| item == first) => {
-                    json!({"type": "array", "items": first})
-                }
-                _ => json!({"type": "array"}),
-            }
-        }
-        Value::Object(object) if object.is_empty() => json!({"type": "object"}),
-        Value::Object(object) => {
-            let properties: Map<String, Value> = object
-                .iter()
-                .map(|(key, item)| (key.clone(), infer_value_schema(item)))
-                .collect();
-            json!({"type": "object", "properties": properties})
-        }
-    }
 }
 
 fn run_data_validate_schema(_group: &Value, test: &Value) -> Result<Value, String> {
@@ -317,7 +129,7 @@ fn run_table_validate_schema(_group: &Value, test: &Value) -> Result<Value, Stri
 fn run_dataset_list(group: &Value, test: &Value) -> Result<Value, String> {
     let folder = tempfile::tempdir().map_err(|error| error.to_string())?;
     let path = write_dataset(folder.path(), group, test)?;
-    let dataset: Dataset = load_dataset_descriptor(&path).map_err(|error| error.to_string())?;
+    let dataset = load_test_dataset(&path)?;
     let names = dataset
         .resources
         .unwrap_or_default()
@@ -332,6 +144,51 @@ fn run_dataset_list(group: &Value, test: &Value) -> Result<Value, String> {
         })
         .collect();
     Ok(Value::Array(names))
+}
+
+fn run_dataset_infer(group: &Value, test: &Value) -> Result<Value, String> {
+    let folder = tempfile::tempdir().map_err(|error| error.to_string())?;
+    let path = write_dataset(folder.path(), group, test)?;
+    let dataset = load_test_dataset(&path)?;
+    let options: InferTableSchemaOptions = get_options(group)?;
+    let inferred = infer_dataset(&dataset, &options).map_err(|error| error.to_string())?;
+    let basepath = folder.path().to_string_lossy().replace('\\', "/");
+    let denormalized =
+        denormalize_dataset(&inferred, Some(&basepath)).map_err(|error| error.to_string())?;
+    serde_json::to_value(denormalized).map_err(|error| error.to_string())
+}
+
+fn run_dataset_query(group: &Value, test: &Value) -> Result<Value, String> {
+    let Some(query) = group["query"].as_str() else {
+        return Ok(Value::Null);
+    };
+    let folder = tempfile::tempdir().map_err(|error| error.to_string())?;
+    let path = write_dataset(folder.path(), group, test)?;
+    let table = query_dataset(path, query, &LoadTableOptions::default())
+        .map_err(|error| error.to_string())?;
+    read_rows(table)
+}
+
+fn run_dataset_validate(group: &Value, test: &Value) -> Result<Value, String> {
+    let folder = tempfile::tempdir().map_err(|error| error.to_string())?;
+    let path = write_dataset(folder.path(), group, test)?;
+    let report = validate_dataset(path, &ValidateTableOptions::default())
+        .map_err(|error| error.to_string())?;
+    serde_json::to_value(report).map_err(|error| error.to_string())
+}
+
+fn load_test_dataset(path: &str) -> Result<Dataset, String> {
+    let Some(descriptor) = load_dataset(path).map_err(|error| error.to_string())? else {
+        return Err(format!("No plugin can load the dataset: {path}"));
+    };
+    serde_json::from_value(Value::Object(descriptor)).map_err(|error| error.to_string())
+}
+
+fn get_options<T: serde::de::DeserializeOwned + Default>(group: &Value) -> Result<T, String> {
+    match group.get("options") {
+        Some(options) => serde_json::from_value(options.clone()).map_err(|error| error.to_string()),
+        None => Ok(T::default()),
+    }
 }
 
 fn run_file_describe(group: &Value, test: &Value) -> Result<Value, String> {
@@ -384,12 +241,7 @@ fn run_table_infer_dialect(group: &Value, test: &Value) -> Result<Value, String>
 }
 
 fn run_table_infer_schema(group: &Value, test: &Value) -> Result<Value, String> {
-    let options: LoadTableOptions = match group.get("options") {
-        Some(options) => {
-            serde_json::from_value(options.clone()).map_err(|error| error.to_string())?
-        }
-        None => LoadTableOptions::default(),
-    };
+    let options: InferTableSchemaOptions = get_options(group)?;
     let table_schema = infer_table_schema(&create_resource(group, test)?, &options)
         .map_err(|error| error.to_string())?;
     serde_json::to_value(table_schema).map_err(|error| error.to_string())
@@ -411,12 +263,7 @@ fn run_table_query(group: &Value, test: &Value) -> Result<Value, String> {
 }
 
 fn load_test_table(group: &Value, test: &Value) -> Result<Option<Table>, String> {
-    let options: LoadTableOptions = match group.get("options") {
-        Some(options) => {
-            serde_json::from_value(options.clone()).map_err(|error| error.to_string())?
-        }
-        None => LoadTableOptions::default(),
-    };
+    let options: LoadTableOptions = get_options(group)?;
     let resource = create_resource(group, test)?;
     load_table(&resource, &options).map_err(|error| error.to_string())
 }
@@ -584,10 +431,7 @@ fn write_dataset(folder: &Path, group: &Value, test: &Value) -> Result<String, S
         return Err("dataset data must map file names to contents".to_string());
     };
     for (name, content) in files {
-        let Value::String(content) = content else {
-            return Err(format!("unsupported data for {name}"));
-        };
-        fs::write(folder.join(name), content).map_err(|error| error.to_string())?;
+        fs::write(folder.join(name), encode_data(content)?).map_err(|error| error.to_string())?;
     }
 
     let path = folder.join("dataset.json");
@@ -620,24 +464,6 @@ fn list_files() -> Vec<(String, PathBuf)> {
         files.extend(entries.into_iter().map(|file| (name.clone(), file)));
     }
     files
-}
-
-fn parse_error(error: serde_json::Error) -> fairspec_metadata::Error {
-    fairspec_metadata::Error::Parse(error.to_string())
-}
-
-/// The library's registry order: each plugin registers at the front, so the last
-/// registered (xlsx) is asked first.
-fn get_table_plugins() -> [&'static dyn TablePlugin; 7] {
-    [
-        &XlsxPlugin,
-        &SqlitePlugin,
-        &ParquetPlugin,
-        &JsonPlugin,
-        &InlinePlugin,
-        &CsvPlugin,
-        &ArrowPlugin,
-    ]
 }
 
 fn get_suite_path(name: &str) -> String {

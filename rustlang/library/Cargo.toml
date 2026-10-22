@@ -1,0 +1,27 @@
+[package]
+name = "fairspec-library"
+description = "Fairspec library: the plugin registry and the actions every interface calls"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "fairspec_library"
+
+[dependencies]
+fairspec-dataset = { path = "../dataset" }
+fairspec-metadata = { path = "../metadata" }
+fairspec-table = { path = "../table" }
+polars = { version = "0.55", default-features = false, features = [
+  "lazy",
+  "semi_anti_join",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+
+[dev-dependencies]
+base64 = "0.23.1"
+tempfile = "3.27"
