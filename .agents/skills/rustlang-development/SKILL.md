@@ -1,14 +1,14 @@
 ---
 name: rustlang-development
-description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
+description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset, table). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
 ---
 
 # Rust
 
 The `rustlang/` section is a Cargo workspace, a **third twin** of the libraries. The goal is a
 Fairspec implementation for users outside Python and TypeScript — a standalone binary they can
-wrap as a CLI. So far `rustlang/metadata/` (`fairspec-metadata`) and `rustlang/dataset/`
-(`fairspec-dataset`, on top of metadata) exist, ported from their Python packages; the crates
+wrap as a CLI. So far `rustlang/metadata/` (`fairspec-metadata`), `rustlang/dataset/` (`fairspec-dataset`)
+and `rustlang/table/` (`fairspec-table`, on Polars) exist, ported from their Python packages; the crates
 follow Python's package DAG. Nothing is published and the section has no release component.
 
 ## Commands
@@ -64,10 +64,22 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - `infer_textual` is "no control bytes and valid UTF-8": Python's charset-normalizer fallback can never answer `utf-8`/`ascii` for non-UTF-8 bytes (it names codecs `utf_8`), so no detector is needed
 - Plugins implement `MetadataPlugin` (every hook defaults to `Ok(None)`) and `DatasetPlugin`
 
+## Table
+
+- `Table` is a polars `LazyFrame`; queries run on the default `collect()`, not py-polars'
+  streaming engine. Polars failures map to `Error::Load` through `helpers::error::PolarsResultExt`
+- Column normalization builds the same expressions as Python (`str().strptime` with `strict:
+false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl.Decimal` is
+  `Decimal(38, 18)`
+- shapely and isodate have no crates: WKT/WKB readers follow GEOS 3.13 and the duration parser
+  ports `isodate.parse_duration`; both are checked against the venv on sample lists
+- `stringify_number` renders an integral float as Python's `str(int(x))` at any magnitude
+
 ## Testsuite
 
-`dataset/tests/testsuite.rs` is the third runner; it lives in the highest crate, so it moves up
-as crates are added. It checks every file against `testsuite/test-schema.json`, runs
-`data-validate-schema`, `table-validate-schema`, `dataset-list` and the three `file-*`
-operations, and lists every other operation in `SKIPPED`. An unknown operation directory fails, so a new operation in
+`table/tests/testsuite.rs` is the third runner; it lives in the highest crate, so it moves up
+as crates are added. It checks every file against `testsuite/test-schema.json`, runs every
+operation the crates implement — mirroring library-level entry points (`load_table`,
+`validate_table`, `infer_table_schema`, …) as runner-local helpers that ask the plugins in the
+library's registry order (xlsx first, arrow last) — and lists the rest in `SKIPPED`. An unknown operation directory fails, so a new operation in
 `testsuite/` lands here too — implemented or skipped (**`testsuite-development`**).

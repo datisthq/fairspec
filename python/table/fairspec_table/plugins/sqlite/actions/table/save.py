@@ -10,6 +10,7 @@ from fairspec_metadata import Resource, TableSchema, get_supported_file_dialect
 from fairspec_table.actions.table.denormalize import denormalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.plugins.sqlite.actions.database.connect import connect_database
+from fairspec_table.plugins.sqlite.actions.database.quote import quote_identifier
 from fairspec_table.plugins.sqlite.actions.table_schema.to_database import (
     convert_table_schema_to_database,
 )
@@ -65,18 +66,18 @@ def _define_table(
     conn: sqlite3.Connection, schema: SqliteSchema, *, overwrite: bool
 ) -> None:
     if overwrite:
-        conn.execute(f'DROP TABLE IF EXISTS "{schema.name}"')
+        conn.execute(f"DROP TABLE IF EXISTS {quote_identifier(schema.name)}")
 
     cols: list[str] = []
     for col in schema.columns:
         null = "" if col.isNullable else " NOT NULL"
-        cols.append(f'"{col.name}" {col.dataType}{null}')
+        cols.append(f"{quote_identifier(col.name)} {col.dataType}{null}")
 
     if schema.primaryKey:
-        pk_cols = ", ".join(f'"{c}"' for c in schema.primaryKey)
+        pk_cols = ", ".join(quote_identifier(c) for c in schema.primaryKey)
         cols.append(f"PRIMARY KEY ({pk_cols})")
 
-    sql = f'CREATE TABLE "{schema.name}" ({", ".join(cols)})'
+    sql = f"CREATE TABLE {quote_identifier(schema.name)} ({', '.join(cols)})"
     conn.execute(sql)
 
 
@@ -88,8 +89,11 @@ def _populate_table(conn: sqlite3.Connection, table_name: str, table: Table) -> 
 
     columns = list(records[0].keys())
     placeholders = ", ".join("?" * len(columns))
-    col_names = ", ".join(f'"{c}"' for c in columns)
-    sql = f'INSERT INTO "{table_name}" ({col_names}) VALUES ({placeholders})'
+    col_names = ", ".join(quote_identifier(c) for c in columns)
+    sql = (
+        f"INSERT INTO {quote_identifier(table_name)} ({col_names}) "
+        f"VALUES ({placeholders})"
+    )
 
     for i in range(0, len(records), BUFFER_SIZE):
         batch = records[i : i + BUFFER_SIZE]

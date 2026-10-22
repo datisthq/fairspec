@@ -1,5 +1,5 @@
 [workspace]
-members = ["metadata", "dataset"]
+members = ["metadata", "dataset", "table"]
 resolver = "3"
 
 [workspace.package]

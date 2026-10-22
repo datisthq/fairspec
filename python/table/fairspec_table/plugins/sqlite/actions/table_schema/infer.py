@@ -3,6 +3,7 @@ from __future__ import annotations
 from fairspec_metadata import Resource, get_data_first_path, get_supported_file_dialect
 
 from fairspec_table.plugins.sqlite.actions.database.connect import connect_database
+from fairspec_table.plugins.sqlite.actions.database.quote import quote_identifier
 from fairspec_table.plugins.sqlite.actions.table_schema.from_database import (
     convert_table_schema_from_database,
 )
@@ -33,7 +34,9 @@ def infer_table_schema_from_sqlite(resource: Resource) -> dict:
         if not table_name:
             raise Exception("Table name is not defined")
 
-        pragma_rows = cursor.execute(f'PRAGMA table_info("{table_name}")').fetchall()
+        pragma_rows = cursor.execute(
+            f"PRAGMA table_info({quote_identifier(table_name)})"
+        ).fetchall()
 
         columns: list[SqliteColumn] = []
         pk_columns: list[str] = []

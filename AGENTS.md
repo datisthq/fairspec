@@ -174,7 +174,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | ------------------------ | ---------------------------------------------------------------------- |
 | `typescript-development` | the npm packages, CLI or MCP server in `typescript/`                   |
 | `python-development`     | the PyPI packages, CLI or MCP server in `python/`                      |
-| `rustlang-development`   | the Cargo workspace in `rustlang/`, the Rust twin (metadata, dataset)  |
+| `rustlang-development`   | the Cargo workspace in `rustlang/`, the Rust twin (no CLI yet)         |
 | `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
 | `testsuite-development`  | the shared test suite in `testsuite/` and its runners                  |
 | `benchmark-development`  | the benchmark in `benchmark/`: generated data, rival validators        |

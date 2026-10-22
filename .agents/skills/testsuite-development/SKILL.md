@@ -17,7 +17,7 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 - `pnpm -C python test:unit library/fairspec_library/_test/testsuite_unit.py` — the Python runner
 - A section-wide `pnpm -C typescript test:unit` or `pnpm -C python test:unit` runs it too. CI runs both runners
   on Linux, macOS and Windows whenever `testsuite/**` changes
-- `pnpm -C rustlang test:unit` — the partial Rust runner, `rustlang/dataset/tests/testsuite.rs`: it
+- `pnpm -C rustlang test:unit` — the partial Rust runner, `rustlang/table/tests/testsuite.rs`: it
   runs only the operations the Rust port implements and lists the rest in `SKIPPED`
 
 ## Format

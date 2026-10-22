@@ -15,6 +15,7 @@ from fairspec_metadata.models.file_dialect.file_dialect import FileDialect
 
 from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.plugins.sqlite.actions.database.connect import connect_database
+from fairspec_table.plugins.sqlite.actions.database.quote import quote_identifier
 from fairspec_table.plugins.sqlite.actions.table_schema.infer import (
     infer_table_schema_from_sqlite,
 )
@@ -46,7 +47,7 @@ def load_sqlite_table(resource: Resource, **options: Unpack[LoadTableOptions]) -
         if not table_name:
             raise Exception("Table name is not defined")
 
-        rows = cursor.execute(f'SELECT * FROM "{table_name}"').fetchall()
+        rows = cursor.execute(f"SELECT * FROM {quote_identifier(table_name)}").fetchall()
         records = [dict(row) for row in rows]
         table: Table = pl.DataFrame(records).lazy()
 

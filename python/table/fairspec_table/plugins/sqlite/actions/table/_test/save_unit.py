@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sqlite3
+
 import polars as pl
 from fairspec_dataset import get_temp_file_path
 from fairspec_metadata import Resource, SqliteFileDialect
@@ -75,3 +77,27 @@ class TestSaveSqliteTable:
                 "string": "string",
             },
         ]
+
+    def test_should_quote_table_and_column_names(self):
+        path = get_temp_file_path()
+        dialect = SqliteFileDialect(tableName='x"; DROP TABLE y; --')
+
+        conn = sqlite3.connect(path)
+        conn.execute('CREATE TABLE "y" ("id" integer)')
+        conn.commit()
+        conn.close()
+
+        source = pl.DataFrame({'a"b': [1, 2], 'c"; DROP TABLE y; --': ["x", "y"]}).lazy()
+        save_sqlite_table(source, path=path, fileDialect=dialect, overwrite=True)
+
+        target = load_sqlite_table(Resource(data=path, fileDialect=dialect))
+        frame: pl.DataFrame = target.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [
+            {'a"b': 1, 'c"; DROP TABLE y; --': "x"},
+            {'a"b': 2, 'c"; DROP TABLE y; --': "y"},
+        ]
+        conn = sqlite3.connect(path)
+        tables = conn.execute("SELECT name FROM sqlite_master ORDER BY name").fetchall()
+        conn.close()
+        assert tables == [('x"; DROP TABLE y; --',), ("y",)]
