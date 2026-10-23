@@ -30,7 +30,7 @@ A Fairspec Table Schema is a [JSON](https://json.org/) resource that `MUST` be a
 
 ## Table Schema
 
-A top-level descriptor object defining a schema of tabular data resources. It `MIGHT` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object defining a schema of tabular data resources. It `MAY` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 
@@ -314,7 +314,7 @@ For example, to allow only the listed columns:
 ### `missingValues`
 
 > [!NOTE]
-> Table Schema level missing values works in addition to [Format](../dataset#format) level missing values or null sequences. For example, CSV Format treats no values between commas (`,,`) as `null` so there is no need to provide `''` as a Table Schema missing value in this case.
+> Table Schema level missing values works in addition to [File Dialect](../file-dialect#nullsequence) null sequences. For example, CSV Format treats no values between commas (`,,`) as `null` so there is no need to provide `''` as a Table Schema missing value in this case.
 
 An optional list of values that represent missing or null data across all columns in the table. Each item can be either a simple value or an object with `value` and `label` properties for documentation purposes. The values type `MUST` be `"string"` or `"integer"`.
 
@@ -1330,7 +1330,7 @@ coordinates
 
 Type properties:
 
-- [`<jsonSchema>`](#jsonSchema)
+- [`<jsonSchema>`](#jsonschema)
 
 #### Object
 
@@ -1359,7 +1359,7 @@ metadata
 
 Type properties:
 
-- [`<jsonSchema>`](#jsonSchema)
+- [`<jsonSchema>`](#jsonschema)
 
 #### GeoJSON
 
@@ -1389,7 +1389,7 @@ location
 
 Type properties:
 
-- [`<jsonSchema>`](#jsonSchema)
+- [`<jsonSchema>`](#jsonschema)
 
 #### TopoJSON
 
@@ -1419,7 +1419,7 @@ topology
 
 Type properties:
 
-- [`<jsonSchema>`](#jsonSchema)
+- [`<jsonSchema>`](#jsonschema)
 
 #### Unknown
 
@@ -1452,7 +1452,7 @@ false
 #### `format`
 
 > [!NOTE]
-> Supported types: **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**, **GeoJSON**, **TopoJSON**
+> Supported types: **Categorical**, **Decimal**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**, **GeoJSON**, **TopoJSON**
 
 An optional format qualifier that specifies a more specific subtype of the base type. A `format` takes effect only when it is one listed above for the column's type; any other `format`, on any type, is an annotation, as in JSON Schema, and the column is the plain column of its type. A validator `SHOULD` warn about a `format` it does not recognise.
 

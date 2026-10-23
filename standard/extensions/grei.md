@@ -18,7 +18,7 @@ order: 4
   </tr>
 </table>
 
-Fairspec GREI is a [Fairspec Dataset](../dataset) extension that requires the use of the [GREI](https://datascience.nih.gov/data-ecosystem/generalist-repository-ecosystem-initiative)'s required properties.
+Fairspec GREI is a [Fairspec Dataset](/specs/dataset/) extension that requires the use of the [GREI](https://datascience.nih.gov/data-ecosystem/generalist-repository-ecosystem-initiative)'s required properties.
 
 ## Language
 

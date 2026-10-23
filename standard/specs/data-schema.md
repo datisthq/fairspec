@@ -30,7 +30,7 @@ A Fairspec Data Schema is a [JSON](https://json.org/) resource that `MUST` be an
 
 ## Data Schema
 
-A top-level descriptor object defining a schema of structured data resources. This includes a JSON file whose top-level value is an object, read without a [`jsonPointer`](../file-dialect#jsonpointer): such a file is not a table, so a Table Schema does not apply to it. It `MIGHT` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object defining a schema of structured data resources. This includes a JSON file whose top-level value is an object, read without a [`jsonPointer`](../file-dialect#jsonpointer): such a file is not a table, so a Table Schema does not apply to it. It `MAY` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 
@@ -49,7 +49,7 @@ For example for version X.Y.Z of the profile:
 
 ### `<jsonSchema>`
 
-Dataset supports all the properties defined in [Json Schema Draft 2020-12](https://json-schema.org/draft/2020-12).
+Data Schema supports all the properties defined in [Json Schema Draft 2020-12](https://json-schema.org/draft/2020-12).
 For example:
 
 ```json
@@ -78,7 +78,7 @@ For example:
 
 ```json
 {
-  "data": "https://example.com/datasets/measurements.csv"
+  "$schema": "https://example.com/profiles/data-schema.json"
 }
 ```
 

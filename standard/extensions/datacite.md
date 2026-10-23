@@ -18,7 +18,7 @@ order: 3
   </tr>
 </table>
 
-Fairspec DataCite is a [Fairspec Dataset](../dataset) extension that requires the use of the [DataCite](https://datacite.org/)'s required properties.
+Fairspec DataCite is a [Fairspec Dataset](/specs/dataset/) extension that requires the use of the [DataCite](https://datacite.org/)'s required properties.
 
 ## Language
 

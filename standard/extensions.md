@@ -42,7 +42,7 @@ A dataset using a custom spectroscopy profile:
 
 ```json
 {
-  "$schema": "https://spectroscopy.org/profiels/1.0.0/dataset.json",
+  "$schema": "https://spectroscopy.org/profiles/1.0.0/dataset.json",
   "title": "Infrared Spectroscopy Data",
   "resources": [
     {
@@ -61,7 +61,7 @@ The extension schema that enables this:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Fairspec Spectroscopy Profile",
   "allOf": [
     { "$ref": "https://fairspec.org/profiles/1.0.0/dataset.json" },

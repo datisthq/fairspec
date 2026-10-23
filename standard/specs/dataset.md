@@ -33,7 +33,7 @@ A Fairspec Dataset is a [JSON](https://json.org/) resource that `MUST` be an obj
 
 ## Dataset
 
-A top-level descriptor object describing an individual dataset. It `MIGHT` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object describing an individual dataset. It `MAY` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 
@@ -52,7 +52,7 @@ For example for version X.Y.Z of the profile:
 
 ### `resources`
 
-A list of resources. It `MUST` be an array with search item `MUST` be a [Resource](#resource).
+A list of resources. It `MUST` be an array where each item `MUST` be a [Resource](#resource).
 
 For example for a single resource:
 
@@ -173,7 +173,7 @@ For a JSON array of objects:
 
 ### `name`
 
-An optional name for the resource. It `MUST` be a string consisting of alphanumeric characters and underscores. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table#foreign-keys) specified in [Fairspec Schema](../table-schema).
+An optional name for the resource. It `MUST` be a string consisting of alphanumeric characters and underscores. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table-schema#foreignkeys) specified in [Fairspec Table Schema](../table-schema).
 
 For example:
 
@@ -339,7 +339,7 @@ Common properties shared by multiple entities in the descriptor.
 
 ### Path
 
-It `MUST` be is a string representing a file location. It `MUST` be one of the following:
+It `MUST` be a string representing a file location. It `MUST` be one of the following:
 
 - [Internal Path](#internal-path)
 - [External Path](#external-path)
@@ -440,8 +440,8 @@ The extension profile would include the base Fairspec Dataset schema and add dom
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft/2020-12/schema",
-  "title": "Faispec Spectroscopy Profile",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fairspec Spectroscopy Profile",
   "allOf": [
     { "$ref": "https://fairspec.org/profiles/1.0.0/dataset.json" },
     { "$ref": "#/$defs/spectroscopyMixin" }

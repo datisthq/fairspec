@@ -30,7 +30,7 @@ A Fairspec File Dialect is a [JSON](https://json.org/) resource that `MUST` be a
 
 ## File Dialect
 
-A top-level descriptor object describing a file dialect. It `MIGHT` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object describing a file dialect. It `MAY` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 
@@ -129,7 +129,7 @@ Format properties:
 
 #### TSV
 
-A format for tab-separated values files. It `MUST` have [`format`](#format) set to `"tsv"`. It `MUST` be `utf-8` encoded. Empty cells (`,,`) are `null` values.
+A format for tab-separated values files. It `MUST` have [`format`](#format) set to `"tsv"`. It `MUST` be `utf-8` encoded. Empty cells (two adjacent tabs) are `null` values.
 
 Metadata example:
 
@@ -356,13 +356,13 @@ Format properties:
 
 #### Unknown
 
-A format for custom data. It `MUST` have [`format`](#type) not supported by the formats above.
+A format for custom data. It `MUST` have [`format`](#format) not supported by the formats above.
 
 Metadata example:
 
 ```json
 {
-  "format": {
+  "fileDialect": {
     "format": "custom",
     "title": "Custom format",
     "description": "Custom format description"
@@ -377,25 +377,6 @@ Data example:
 ```
 
 ### Format Properties
-
-#### `name`
-
-> [!NOTE]
-> Supported formats: **custom**
-
-The name of the custom format. It `MUST` be a string.
-
-For example:
-
-```json
-{
-  "fileDialect": {
-    "name": "custom",
-    "title": "Custom format",
-    "description": "Custom format description"
-  }
-}
-```
 
 #### `delimiter`
 
