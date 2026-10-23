@@ -1,0 +1,19 @@
+[package]
+name = "fairspec-benchmark"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+fairspec-library = { path = "../../../rustlang/library" }
+serde_json = "1.0"
+
+[[bin]]
+name = "validate"
+path = "src/main.rs"
+
+[workspace]
+
+[profile.release]
+lto = "thin"
+strip = true

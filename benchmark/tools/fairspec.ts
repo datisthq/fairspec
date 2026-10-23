@@ -25,12 +25,36 @@ export const fairspecTypescriptTool = createFairspecTool({
   script: join(SCRIPTS, "validate.ts"),
 })
 
+const RUSTLANG = join(SCRIPTS, "rustlang")
+const RUSTLANG_TARGET = join(import.meta.dirname, "..", ".cache", "rustlang")
+
+export const fairspecRustlangTool: Tool = {
+  ...createFairspecTool({
+    name: "fairspec-rustlang",
+    title: "Fairspec Rust",
+    section: "rustlang",
+    file: join(RUSTLANG_TARGET, "release", "validate"),
+  }),
+  // cargo is a no-op when the build is fresh, and runs before the clock starts
+  createCommand: async (dataset: Dataset) => {
+    await promisify(execFile)(
+      "cargo",
+      ["build", "--release", "--quiet", "--target-dir", RUSTLANG_TARGET],
+      { cwd: RUSTLANG, maxBuffer: 64 * 1024 * 1024 },
+    )
+    return {
+      file: join(RUSTLANG_TARGET, "release", "validate"),
+      args: [basename(dataset.csvPath), basename(dataset.schemaPath)],
+    }
+  },
+}
+
 function createFairspecTool(options: {
   name: string
   title: string
-  section: "python" | "typescript"
+  section: "python" | "typescript" | "rustlang"
   file: string
-  script: string
+  script?: string
 }): Tool {
   return {
     name: options.name,
@@ -48,11 +72,15 @@ function createFairspecTool(options: {
           cwd: ROOT,
         },
       )
-      return `${manifest[options.section]}+${stdout.trim()}`
+      return `${manifest[options.section] ?? "0.0.0"}+${stdout.trim()}`
     },
     createCommand: async (dataset: Dataset) => ({
       file: options.file,
-      args: [options.script, basename(dataset.csvPath), basename(dataset.schemaPath)],
+      args: [
+        ...(options.script ? [options.script] : []),
+        basename(dataset.csvPath),
+        basename(dataset.schemaPath),
+      ],
     }),
     countErrors: async ({ stdout }) => readScriptResult(stdout).errorCount,
     readElapsedMs: stdout => readScriptResult(stdout).elapsedMs,

@@ -1,5 +1,9 @@
 import { csvValidatorTool } from "./csv-validator.ts"
-import { fairspecPythonTool, fairspecTypescriptTool } from "./fairspec.ts"
+import {
+  fairspecPythonTool,
+  fairspecRustlangTool,
+  fairspecTypescriptTool,
+} from "./fairspec.ts"
 import { qsvTool } from "./qsv.ts"
 import {
   datacontractTool,
@@ -17,6 +21,7 @@ import type { Tool } from "./types.ts"
 export const TOOLS: Tool[] = [
   fairspecPythonTool,
   fairspecTypescriptTool,
+  fairspecRustlangTool,
   frictionlessTool,
   qsvTool,
   panderaTool,

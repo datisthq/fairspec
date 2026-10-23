@@ -16,7 +16,7 @@ export type Report = {
   results: Result[]
 }
 
-const FAIRSPEC = new Set(["fairspec-python", "fairspec-typescript"])
+const FAIRSPEC = new Set(["fairspec-python", "fairspec-typescript", "fairspec-rustlang"])
 
 export function renderReport(report: Report) {
   const groups = groupResults(report.results)
