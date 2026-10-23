@@ -9,7 +9,7 @@ export const BasePropertyType = z.enum([
   "object",
 ])
 
-export const BaseColumnProperty = z.object({
+export const BaseColumnProperty = z.looseObject({
   title: z
     .string()
     .optional()

@@ -1,5 +1,6 @@
 {
   "AlternateIdentifier": {
+    "additionalProperties": true,
     "properties": {
       "alternateIdentifier": {
         "description": "An identifier or identifiers other than the primary Identifier applied to the resource being registered",
@@ -17,6 +18,7 @@
     "type": "object"
   },
   "ArrayColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -360,6 +362,7 @@
     "type": "object"
   },
   "ArrayMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -375,6 +378,7 @@
     "type": "object"
   },
   "ArrowFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -426,6 +430,7 @@
     "type": "object"
   },
   "Base64ColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -630,6 +635,7 @@
     "type": "object"
   },
   "BooleanColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -834,6 +840,7 @@
     "type": "object"
   },
   "CellCheckError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/check",
@@ -893,6 +900,7 @@
     "type": "object"
   },
   "CellConstError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/const",
@@ -939,6 +947,7 @@
     "type": "object"
   },
   "CellEnumError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/enum",
@@ -988,6 +997,7 @@
     "type": "object"
   },
   "CellExclusiveMaximumError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/exclusiveMaximum",
@@ -1034,6 +1044,7 @@
     "type": "object"
   },
   "CellExclusiveMinimumError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/exclusiveMinimum",
@@ -1080,6 +1091,7 @@
     "type": "object"
   },
   "CellJsonError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/json",
@@ -1131,6 +1143,7 @@
     "type": "object"
   },
   "CellMaxItemsError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/maxItems",
@@ -1177,6 +1190,7 @@
     "type": "object"
   },
   "CellMaxLengthError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/maxLength",
@@ -1223,6 +1237,7 @@
     "type": "object"
   },
   "CellMaximumError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/maximum",
@@ -1269,6 +1284,7 @@
     "type": "object"
   },
   "CellMinItemsError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/minItems",
@@ -1315,6 +1331,7 @@
     "type": "object"
   },
   "CellMinLengthError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/minLength",
@@ -1361,6 +1378,7 @@
     "type": "object"
   },
   "CellMinimumError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/minimum",
@@ -1407,6 +1425,7 @@
     "type": "object"
   },
   "CellMissingError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/missing",
@@ -1448,6 +1467,7 @@
     "type": "object"
   },
   "CellMultipleOfError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/multipleOf",
@@ -1501,6 +1521,7 @@
     "type": "object"
   },
   "CellPatternError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/pattern",
@@ -1547,6 +1568,7 @@
     "type": "object"
   },
   "CellTypeError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/type",
@@ -1592,6 +1614,7 @@
     "type": "object"
   },
   "CellUniqueError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "cell/unique",
@@ -1633,6 +1656,7 @@
     "type": "object"
   },
   "CheckError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "check",
@@ -1669,6 +1693,7 @@
     "type": "object"
   },
   "ColumnExtraError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "column/extra",
@@ -1700,6 +1725,7 @@
     "type": "object"
   },
   "ColumnMissingError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "column/missing",
@@ -1761,6 +1787,7 @@
     "type": "string"
   },
   "ColumnTypeError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "column/type",
@@ -1838,6 +1865,7 @@
     "type": "string"
   },
   "ContentTypes": {
+    "additionalProperties": true,
     "properties": {
       "resourceType": {
         "anyOf": [
@@ -1862,6 +1890,7 @@
     "type": "object"
   },
   "Contributor": {
+    "additionalProperties": true,
     "properties": {
       "name": {
         "description": "The main researchers involved in producing the data, or the authors of the publication in priority order",
@@ -1989,6 +2018,7 @@
     "type": "string"
   },
   "Creator": {
+    "additionalProperties": true,
     "properties": {
       "name": {
         "description": "The main researchers involved in producing the data, or the authors of the publication in priority order",
@@ -2084,6 +2114,7 @@
     "type": "object"
   },
   "CreatorAffiliation": {
+    "additionalProperties": true,
     "properties": {
       "name": {
         "description": "The organizational or institutional affiliation of the creator",
@@ -2135,6 +2166,7 @@
     "type": "object"
   },
   "CreatorNameIdentifier": {
+    "additionalProperties": true,
     "properties": {
       "nameIdentifier": {
         "description": "Uniquely identifies an individual or legal entity, according to various schemas",
@@ -2170,6 +2202,7 @@
     "type": "string"
   },
   "CsvFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -2342,6 +2375,7 @@
     "type": "object"
   },
   "DataError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "data",
@@ -2378,6 +2412,7 @@
     "type": "object"
   },
   "DataciteDate": {
+    "additionalProperties": true,
     "properties": {
       "date": {
         "description": "The date associated with an event in the lifecycle of the resource",
@@ -2407,6 +2442,7 @@
     "type": "object"
   },
   "DataciteDescription": {
+    "additionalProperties": true,
     "properties": {
       "description": {
         "description": "All additional information that does not fit in any of the other categories",
@@ -2436,6 +2472,7 @@
     "type": "object"
   },
   "Dataset": {
+    "additionalProperties": true,
     "properties": {
       "doi": {
         "anyOf": [
@@ -2823,6 +2860,7 @@
     "type": "object"
   },
   "DateColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -3040,6 +3078,7 @@
     "type": "object"
   },
   "DateTimeColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -3275,6 +3314,7 @@
     "type": "string"
   },
   "DecimalColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -3600,6 +3640,7 @@
     "type": "string"
   },
   "DurationColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -3804,6 +3845,7 @@
     "type": "object"
   },
   "EmailColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -4008,6 +4050,7 @@
     "type": "object"
   },
   "ForeignKey": {
+    "additionalProperties": true,
     "properties": {
       "columns": {
         "description": "Source column(s) in this table",
@@ -4027,6 +4070,7 @@
     "type": "object"
   },
   "ForeignKeyError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "foreignKey",
@@ -4065,6 +4109,7 @@
     "type": "object"
   },
   "ForeignKeyReference": {
+    "additionalProperties": true,
     "properties": {
       "resource": {
         "anyOf": [
@@ -4098,6 +4143,7 @@
     "type": "string"
   },
   "FundingReference": {
+    "additionalProperties": true,
     "properties": {
       "funderName": {
         "description": "Name of the funding provider",
@@ -4174,6 +4220,7 @@
     "type": "object"
   },
   "GeoLocation": {
+    "additionalProperties": true,
     "properties": {
       "geoLocationPlace": {
         "anyOf": [
@@ -4233,6 +4280,7 @@
     "type": "object"
   },
   "GeoLocationBox": {
+    "additionalProperties": true,
     "properties": {
       "westBoundLongitude": {
         "description": "Western longitudinal dimension of box",
@@ -4273,6 +4321,7 @@
     "type": "object"
   },
   "GeoLocationPoint": {
+    "additionalProperties": true,
     "properties": {
       "pointLongitude": {
         "description": "Longitudinal dimension of point",
@@ -4294,6 +4343,7 @@
     "type": "object"
   },
   "GeoLocationPolygonItem": {
+    "additionalProperties": true,
     "properties": {
       "polygonPoint": {
         "anyOf": [
@@ -4324,6 +4374,7 @@
     "type": "object"
   },
   "GeojsonColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -4677,6 +4728,7 @@
     "type": "object"
   },
   "HexColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -5008,6 +5060,7 @@
     "type": "object"
   },
   "IntegerCategoricalColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -5304,6 +5357,7 @@
     "type": "object"
   },
   "IntegerCategoryItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -5319,6 +5373,7 @@
     "type": "object"
   },
   "IntegerColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -5585,6 +5640,7 @@
     "type": "object"
   },
   "IntegerMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "anyOf": [
@@ -5607,6 +5663,7 @@
     "type": "object"
   },
   "Integrity": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "$ref": "#/$defs/IntegrityType"
@@ -5621,6 +5678,7 @@
     "type": "object"
   },
   "IntegrityError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "file/integrity",
@@ -5667,6 +5725,7 @@
     "type": "string"
   },
   "JsonFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -5815,6 +5874,7 @@
   },
   "JsonValue": {},
   "JsonlFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -5950,6 +6010,7 @@
     "type": "object"
   },
   "ListColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -6224,6 +6285,7 @@
     "type": "string"
   },
   "LocalDateTimeColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -6441,6 +6503,7 @@
     "type": "object"
   },
   "LocalTimeColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -6658,6 +6721,7 @@
     "type": "object"
   },
   "MetadataError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "metadata",
@@ -6694,6 +6758,7 @@
     "type": "object"
   },
   "NumberColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -6975,6 +7040,7 @@
     "type": "object"
   },
   "NumberMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "anyOf": [
@@ -7002,6 +7068,7 @@
     "type": "string"
   },
   "ObjectColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -7355,6 +7422,7 @@
     "type": "object"
   },
   "ObjectMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -7370,6 +7438,7 @@
     "type": "object"
   },
   "OdsFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -7518,6 +7587,7 @@
     "type": "object"
   },
   "ParquetFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -7569,6 +7639,7 @@
     "type": "object"
   },
   "Publisher": {
+    "additionalProperties": true,
     "properties": {
       "name": {
         "description": "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource",
@@ -7633,6 +7704,7 @@
     "type": "object"
   },
   "RelatedIdentifier": {
+    "additionalProperties": true,
     "properties": {
       "relationType": {
         "$ref": "#/$defs/RelationType",
@@ -7731,6 +7803,7 @@
     "type": "string"
   },
   "RelatedItem": {
+    "additionalProperties": true,
     "properties": {
       "relationType": {
         "$ref": "#/$defs/RelationType",
@@ -7968,6 +8041,7 @@
     "type": "object"
   },
   "RelatedItemIdentifier": {
+    "additionalProperties": true,
     "properties": {
       "relatedItemIdentifier": {
         "description": "Identifier for the related item",
@@ -8028,6 +8102,7 @@
     "type": "string"
   },
   "Report": {
+    "additionalProperties": true,
     "properties": {
       "valid": {
         "description": "Whether the validation passed without errors",
@@ -8217,6 +8292,7 @@
     "type": "object"
   },
   "Resource": {
+    "additionalProperties": true,
     "properties": {
       "doi": {
         "anyOf": [
@@ -8745,6 +8821,7 @@
     "type": "object"
   },
   "ResourceMissingError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "resource/missing",
@@ -8776,6 +8853,7 @@
     "type": "object"
   },
   "ResourceTypeError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "resource/type",
@@ -8821,6 +8899,7 @@
     "type": "object"
   },
   "Rights": {
+    "additionalProperties": true,
     "properties": {
       "rights": {
         "anyOf": [
@@ -8905,6 +8984,7 @@
     "type": "object"
   },
   "RowCheckError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "row/check",
@@ -8954,6 +9034,7 @@
     "type": "object"
   },
   "RowPrimaryKeyError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "row/primaryKey",
@@ -8998,6 +9079,7 @@
     "type": "string"
   },
   "RowUniqueKeyError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "row/uniqueKey",
@@ -9065,6 +9147,7 @@
     "type": "object"
   },
   "SqliteFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -9128,6 +9211,7 @@
     "type": "object"
   },
   "StringCategoricalColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -9368,6 +9452,7 @@
     "type": "object"
   },
   "StringCategoryItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -9383,6 +9468,7 @@
     "type": "object"
   },
   "StringColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -9593,6 +9679,7 @@
     "type": "object"
   },
   "StringIntMissingValue": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "anyOf": [
@@ -9615,6 +9702,7 @@
     "type": "object"
   },
   "StringMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -9630,6 +9718,7 @@
     "type": "object"
   },
   "Subject": {
+    "additionalProperties": true,
     "properties": {
       "subject": {
         "description": "Subject, keyword, classification code, or key phrase describing the resource",
@@ -9707,6 +9796,7 @@
     "type": "object"
   },
   "TableCheckError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "table/check",
@@ -9751,6 +9841,7 @@
     "type": "object"
   },
   "TableSchema": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -10054,6 +10145,7 @@
     "type": "object"
   },
   "TableSchemaMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "anyOf": [
@@ -10079,6 +10171,7 @@
     "type": "object"
   },
   "TextualError": {
+    "additionalProperties": true,
     "properties": {
       "type": {
         "const": "file/textual",
@@ -10118,6 +10211,7 @@
     "type": "object"
   },
   "TimeColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -10335,6 +10429,7 @@
     "type": "object"
   },
   "Title": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "description": "A name or title by which a resource is known",
@@ -10377,6 +10472,7 @@
     "type": "string"
   },
   "TopojsonColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -10730,6 +10826,7 @@
     "type": "object"
   },
   "TsvFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [
@@ -10878,6 +10975,7 @@
     "type": "object"
   },
   "UnknownColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -11015,6 +11113,7 @@
     "type": "object"
   },
   "UnknownMissingValueItem": {
+    "additionalProperties": true,
     "properties": {
       "value": {
         "title": "Value",
@@ -11030,6 +11129,7 @@
     "type": "object"
   },
   "UrlColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -11379,6 +11479,7 @@
     "type": "object"
   },
   "WkbColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -11583,6 +11684,7 @@
     "type": "object"
   },
   "WktColumnProperty": {
+    "additionalProperties": true,
     "properties": {
       "title": {
         "anyOf": [
@@ -11787,6 +11889,7 @@
     "type": "object"
   },
   "XlsxFileDialect": {
+    "additionalProperties": true,
     "properties": {
       "$schema": {
         "anyOf": [

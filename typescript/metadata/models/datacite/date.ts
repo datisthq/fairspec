@@ -7,7 +7,7 @@ export const DateValue = z
     "Different date formats are supported: YYYY, YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, YYYY-MM-DDThh:mm:ssTZD, or any of these formats with ranges separated by /",
   )
 
-export const Date = z.object({
+export const Date = z.looseObject({
   date: DateValue.describe(
     "The date associated with an event in the lifecycle of the resource",
   ),

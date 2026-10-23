@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use super::common::{ContentTypeGeneral, NumberType, RelatedIdentifierType, RelationType};
 use super::contributor::Contributors;
@@ -11,6 +12,8 @@ pub type RelatedItems = Vec<RelatedItem>;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RelatedItem {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub related_item_identifier: Option<RelatedItemIdentifier>,
     pub related_item_type: ContentTypeGeneral,
@@ -51,6 +54,8 @@ pub struct RelatedItem {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RelatedItemIdentifier {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub related_item_identifier: String,
     pub related_item_identifier_type: RelatedIdentifierType,
 }

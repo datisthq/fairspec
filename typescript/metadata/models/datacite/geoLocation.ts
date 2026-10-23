@@ -1,26 +1,26 @@
 import { z } from "zod"
 import { Latitude, Longitude } from "./common.ts"
 
-export const GeoLocationPoint = z.object({
+export const GeoLocationPoint = z.looseObject({
   pointLongitude: Longitude.describe("Longitudinal dimension of point"),
   pointLatitude: Latitude.describe("Latitudinal dimension of point"),
 })
 
-export const GeoLocationBox = z.object({
+export const GeoLocationBox = z.looseObject({
   westBoundLongitude: Longitude.describe("Western longitudinal dimension of box"),
   eastBoundLongitude: Longitude.describe("Eastern longitudinal dimension of box"),
   southBoundLatitude: Latitude.describe("Southern latitudinal dimension of box"),
   northBoundLatitude: Latitude.describe("Northern latitudinal dimension of box"),
 })
 
-export const GeoLocationPolygonItem = z.object({
+export const GeoLocationPolygonItem = z.looseObject({
   polygonPoint: GeoLocationPoint.optional().describe("A point location in a polygon"),
   inPolygonPoint: GeoLocationPoint.optional().describe(
     "For any bound area that is larger than half the earth, define a (random) point inside",
   ),
 })
 
-export const GeoLocation = z.object({
+export const GeoLocation = z.looseObject({
   geoLocationPlace: z
     .string()
     .optional()

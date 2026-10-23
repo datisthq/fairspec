@@ -20,7 +20,7 @@ import { Subjects } from "./subject.ts"
 import { Titles } from "./title.ts"
 import { Version } from "./version.ts"
 
-export const Datacite = z.object({
+export const Datacite = z.looseObject({
   doi: Doi.optional().describe("The Digital Object Identifier (DOI) for the resource"),
   prefix: DoiPrefix.optional().describe("The DOI prefix for the resource"),
   suffix: DoiSuffix.optional().describe("The DOI suffix for the resource"),

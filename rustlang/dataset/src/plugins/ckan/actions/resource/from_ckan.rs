@@ -15,6 +15,7 @@ pub fn convert_resource_from_ckan(ckan_resource: &CkanResource) -> Resource {
 
     let descriptions = get_text(&ckan_resource.description).map(|description| {
         vec![DataciteDescription {
+            extra: Default::default(),
             description: description.to_string(),
             description_type: DescriptionType::Abstract,
             lang: None,
@@ -27,6 +28,7 @@ pub fn convert_resource_from_ckan(ckan_resource: &CkanResource) -> Resource {
         .map(|size| vec![format!("{size} bytes")]);
 
     let integrity = get_text(&ckan_resource.hash).map(|hash| Integrity {
+        extra: Default::default(),
         r#type: IntegrityType::Md5,
         hash: hash.to_string(),
     });
@@ -78,6 +80,7 @@ fn get_text(value: &Option<String>) -> Option<&str> {
 
 fn create_date(date: &str, date_type: DateType) -> DataciteDate {
     DataciteDate {
+        extra: Default::default(),
         date: date.to_string(),
         date_type,
         date_information: None,

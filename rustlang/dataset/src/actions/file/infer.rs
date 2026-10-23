@@ -37,6 +37,7 @@ pub fn infer_integrity(
         return Ok(None);
     }
     Ok(Some(Integrity {
+        extra: Default::default(),
         r#type: hash_type,
         hash,
     }))

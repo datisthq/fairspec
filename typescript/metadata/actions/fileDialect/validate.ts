@@ -1,8 +1,9 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
+import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
-import type { FileDialect } from "../../models/fileDialect/fileDialect.ts"
+import { FileDialect } from "../../models/fileDialect/fileDialect.ts"
 
 export async function validateFileDialect(
   source: FileDialect | Descriptor | string,
@@ -29,8 +30,13 @@ export async function validateFileDialect(
 
   let fileDialect: FileDialect | undefined
   if (report.valid) {
-    // Valid -> we can cast it
-    fileDialect = descriptor as FileDialect
+    const parsed = inspectModel(descriptor, {
+      model: FileDialect,
+      rootJsonPointer: options?.rootJsonPointer,
+    })
+    fileDialect = parsed.data
+    report.errors.push(...parsed.errors)
+    report.valid = report.errors.length === 0
   }
 
   return { ...report, fileDialect }

@@ -3,7 +3,7 @@ import { ColumnProperty } from "./column/column.ts"
 import { ForeignKey } from "./foreignKey.ts"
 import { UniqueKey } from "./uniqueKey.ts"
 
-export const TableSchema = z.object({
+export const TableSchema = z.looseObject({
   $schema: z.httpUrl().optional().describe("Fairspec Schema profile url."),
 
   title: z.string().optional().describe("A human-readable title of the table schema"),
@@ -41,7 +41,7 @@ export const TableSchema = z.object({
         z.string(),
         z.int(),
         z.number(),
-        z.object({
+        z.looseObject({
           value: z.union([z.string(), z.int(), z.number()]),
           label: z.string(),
         }),
@@ -71,15 +71,15 @@ export const TableSchema = z.object({
     .describe("An optional array of foreign key constraints"),
 })
 
-export const RenderTableSchemaOptions = z.object({
+export const RenderTableSchemaOptions = z.looseObject({
   format: z.string(),
 })
 
-export const ConvertTableSchemaToOptions = z.object({
+export const ConvertTableSchemaToOptions = z.looseObject({
   format: z.string(),
 })
 
-export const ConvertTableSchemaFromOptions = z.object({
+export const ConvertTableSchemaFromOptions = z.looseObject({
   format: z.string(),
 })
 

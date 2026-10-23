@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const Publisher = z.object({
+export const Publisher = z.looseObject({
   name: z
     .string()
     .describe(

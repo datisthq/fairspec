@@ -54,6 +54,7 @@ pub fn render_table_schema_command(
 
     let rendered = session.task("Rendering table schema", || {
         let options = RenderTableSchemaOptions {
+            extra: Default::default(),
             format: to_format.to_string(),
         };
         Ok(render_table_schema_as(&table_schema, &options)?.unwrap_or_default())

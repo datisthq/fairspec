@@ -3,8 +3,10 @@ from __future__ import annotations
 from pydantic import TypeAdapter
 
 from fairspec_metadata.actions.descriptor.load import load_descriptor
+from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.profile.load import load_profile
+from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.file_dialect.file_dialect import FileDialect
 from fairspec_metadata.models.profile import ProfileType
@@ -39,8 +41,12 @@ def validate_file_dialect(
 
     file_dialect: FileDialect | None = None
     if report.valid:
-        # Valid -> we can cast
-        file_dialect = TypeAdapter(FileDialect).validate_python(descriptor)
+        file_dialect, model_errors = inspect_model(
+            descriptor,
+            model=TypeAdapter(FileDialect),
+            root_json_pointer=root_json_pointer,
+        )
+        report = create_report([*report.errors, *model_errors])
 
     return FileDialectValidationResult(
         valid=report.valid,

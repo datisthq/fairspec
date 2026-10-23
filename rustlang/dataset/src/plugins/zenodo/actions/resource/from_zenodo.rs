@@ -21,6 +21,7 @@ pub fn convert_resource_from_zenodo(zenodo_file: &ZenodoFile) -> Resource {
         data: Some(Value::String(path)),
         name: Some(name),
         integrity: Some(Integrity {
+            extra: Default::default(),
             r#type: IntegrityType::Md5,
             hash: zenodo_file.checksum.replace("md5:", ""),
         }),

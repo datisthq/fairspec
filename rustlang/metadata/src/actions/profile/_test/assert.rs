@@ -107,3 +107,30 @@ fn test_json_schema_draft_only_for_data_schema() {
     );
     assert!(matches!(result, Err(Error::Profile(_))));
 }
+
+#[test]
+fn test_valid_profile_via_allof_ref() {
+    let schema = create_schema(json!({
+        "allOf": [
+            {"$ref": "https://fairspec.org/profiles/1.0.0/dataset.json"},
+            {"$ref": "#/$defs/Dataset"}
+        ]
+    }));
+    let result = assert_profile(
+        schema.clone(),
+        "https://example.com/extension/dataset.json",
+        ProfileType::Dataset,
+    );
+    assert_eq!(result.unwrap(), schema);
+}
+
+#[test]
+fn test_allof_ref_without_official_profile() {
+    let schema = create_schema(json!({"allOf": [{"$ref": "#/$defs/Dataset"}]}));
+    let result = assert_profile(
+        schema,
+        "https://example.com/extension/dataset.json",
+        ProfileType::Dataset,
+    );
+    assert!(matches!(result, Err(Error::Profile(_))));
+}

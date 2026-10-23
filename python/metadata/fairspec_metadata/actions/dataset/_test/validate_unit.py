@@ -2,6 +2,14 @@ from ..validate import validate_dataset_descriptor
 
 
 class TestValidateDatasetDescriptor:
+    def test_keeps_extension_properties(self):
+        dataset = {"resources": [{"data": "data.csv", "spectralRange": {"min": 400}}]}
+        result = validate_dataset_descriptor(dataset)
+        assert result.valid
+        assert result.dataset is not None
+        resources = result.dataset.model_dump(exclude_none=True)["resources"]
+        assert resources[0]["spectralRange"] == {"min": 400}
+
     def test_valid_dataset(self):
         dataset = {"resources": [{"data": "data.csv"}]}
         result = validate_dataset_descriptor(dataset)

@@ -117,10 +117,9 @@ fn test_float_fields_serialize_as_floats() {
 }
 
 #[test]
-fn test_unknown_fields_are_dropped() {
-    let output =
-        round_trip::<ColumnProperty>(&json!({"type": "string", "format": "date", "minimum": 1}));
-    assert_eq!(output, json!({"type": "string", "format": "date"}));
+fn test_unknown_fields_are_kept() {
+    let input = json!({"type": "string", "format": "date", "minimum": 1});
+    assert_eq!(round_trip::<ColumnProperty>(&input), input);
 }
 
 #[test]

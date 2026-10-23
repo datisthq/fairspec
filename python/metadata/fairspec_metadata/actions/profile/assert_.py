@@ -20,11 +20,7 @@ def assert_profile(
         rf"^https://fairspec\.org/profiles/(\d+\.\d+\.\d+|latest)/{re.escape(type.value)}\.json$"
     )
 
-    paths = [path]
-    if isinstance(json_schema.get("allOf"), list):
-        for ref in json_schema["allOf"]:
-            if isinstance(ref, str):
-                paths.append(ref)
+    paths = [path, *_get_all_of_paths(json_schema)]
 
     if type == ProfileType.data_schema:
         if path == "https://json-schema.org/draft/2020-12/schema":
@@ -35,3 +31,13 @@ def assert_profile(
             return json_schema
 
     raise Error(f"Profile at path {path} is not a valid {type.value} profile")
+
+
+def _get_all_of_paths(json_schema: JsonSchema) -> list[str]:
+    paths: list[str] = []
+    for item in json_schema.get("allOf") or []:
+        if isinstance(item, str):
+            paths.append(item)
+        elif isinstance(item, dict) and isinstance(item.get("$ref"), str):
+            paths.append(item["$ref"])
+    return paths

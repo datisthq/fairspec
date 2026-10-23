@@ -11,6 +11,9 @@ from fairspec_table.helpers import stringify_number
 from fairspec_table.models import CellMapping
 
 
+NUMERIC_COLUMN_TYPES = ("integer", "number", "decimal")
+
+
 @dataclass
 class ColumnCheck:
     is_error_expr: pl.Expr
@@ -21,6 +24,8 @@ def create_check_cell_maximum(
     *, is_exclusive: bool = False
 ) -> Callable[[Column, CellMapping], ColumnCheck | None]:
     def check_cell_maximum(column: Column, mapping: CellMapping) -> ColumnCheck | None:
+        if column.type not in NUMERIC_COLUMN_TYPES:
+            return None
         if not hasattr(column.property, "maximum") and not hasattr(
             column.property, "exclusiveMaximum"
         ):

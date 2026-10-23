@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use super::base::{NumberNullablePropertyType, StringOrInteger, ValueOrItem};
 
@@ -44,12 +45,16 @@ pub type NumberMissingValue = ValueOrItem<StringOrInteger, NumberMissingValueIte
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NumberMissingValueItem {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub value: StringOrInteger,
     pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct NumberColumnProperty {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub format: Option<String>,
     #[serde(flatten)]

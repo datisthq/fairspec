@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const Rights = z.object({
+export const Rights = z.looseObject({
   rights: z.string().optional().describe("Any rights information for this resource"),
   rightsUri: z.string().optional().describe("The URI of the license"),
   rightsIdentifier: z

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use super::common::{
     ColumnNames, CommentPrefix, CommentRows, Delimiter, HeaderJoin, HeaderRows, LineTerminator,
@@ -10,6 +11,8 @@ define_literal!(CsvFormat, Csv, "csv");
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CsvFileDialect {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     #[serde(rename = "$schema", default, skip_serializing_if = "Option::is_none")]
     pub profile: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

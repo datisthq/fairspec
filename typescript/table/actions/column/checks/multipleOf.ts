@@ -10,7 +10,7 @@ export function checkCellMultipleOf(column: Column, mapping: CellMapping) {
   if (!("multipleOf" in property)) return undefined
 
   const multipleOf = property.multipleOf
-  if (multipleOf === undefined) return undefined
+  if (typeof multipleOf !== "number") return undefined
 
   const errorTemplate: CellMultipleOfError = {
     type: "cell/multipleOf",

@@ -140,4 +140,32 @@ describe("assertProfile", () => {
 
     expect(profile).toEqual(jsonSchema)
   })
+
+  it("returns profile when custom profile extends official profile via allOf $ref", async () => {
+    const jsonSchema = {
+      type: "object",
+      allOf: [
+        { $ref: "https://fairspec.org/profiles/1.0.0/dataset.json" },
+        { $ref: "#/$defs/Dataset" },
+      ],
+    }
+
+    const profile = await assertProfile(jsonSchema, {
+      path: "https://example.com/extension/dataset.json",
+      type: "dataset",
+    })
+
+    expect(profile).toEqual(jsonSchema)
+  })
+
+  it("throws when no allOf $ref is an official profile", async () => {
+    const jsonSchema = { allOf: [{ $ref: "#/$defs/Dataset" }] }
+
+    await expect(
+      assertProfile(jsonSchema, {
+        path: "https://example.com/extension/dataset.json",
+        type: "dataset",
+      }),
+    ).rejects.toThrow("is not a valid dataset profile")
+  })
 })

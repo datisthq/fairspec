@@ -1,10 +1,11 @@
 use crate::actions::data_schema::validate::validate_data_schema;
+use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
 use crate::actions::file_dialect::validate::validate_file_dialect;
 use crate::actions::table_schema::validate::validate_table_schema;
 use crate::models::dataset::{Dataset, DatasetValidationResult};
 use crate::models::descriptor::Descriptor;
-use crate::models::exception::{Error, Result};
+use crate::models::exception::Result;
 use crate::models::path::PathOr;
 use crate::models::profile::ProfileType;
 
@@ -25,8 +26,14 @@ pub fn validate_dataset_descriptor(
         });
     }
 
-    let dataset: Dataset = serde_json::from_value(descriptor.into())
-        .map_err(|error| Error::Parse(error.to_string()))?;
+    let (dataset, errors) = inspect_model::<Dataset>(&descriptor, None);
+    let Some(dataset) = dataset else {
+        return Ok(DatasetValidationResult {
+            valid: false,
+            errors: [report.errors, errors].concat(),
+            dataset: None,
+        });
+    };
     let dataset = normalize_dataset(&dataset, basepath)?;
 
     for (index, resource) in dataset.resources.iter().flatten().enumerate() {

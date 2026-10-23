@@ -87,7 +87,7 @@ function FieldRow(props: { column: Column; isRequired: boolean }) {
       <td>
         {columnDescription && <p>{columnDescription}</p>}
         {constraints.length > 0 && <ConstraintsList constraints={constraints} />}
-        {"categories" in property && property.categories !== undefined && (
+        {"categories" in property && Array.isArray(property.categories) && (
           <CategoriesList categories={property.categories} />
         )}
       </td>
@@ -150,7 +150,7 @@ function extractConstraints(property: Column["property"]): Constraint[] {
   if ("maxLength" in property && property.maxLength !== undefined) {
     constraints.push({ name: "maxLength", value: String(property.maxLength) })
   }
-  if ("pattern" in property && property.pattern) {
+  if ("pattern" in property && typeof property.pattern === "string") {
     constraints.push({ name: "pattern", value: property.pattern })
   }
   if ("enum" in property && property.enum) {

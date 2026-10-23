@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { ContentTypeGeneral, RelatedIdentifierType, RelationType } from "./common.ts"
 
-export const RelatedObject = z.object({
+export const RelatedObject = z.looseObject({
   relationType: RelationType.describe(
     "Description of the relationship of the resource being registered and the related resource",
   ),

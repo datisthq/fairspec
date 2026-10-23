@@ -5,6 +5,35 @@ import { validateDatasetDescriptor } from "../validate.ts"
 useRecording()
 
 describe("validateDatasetDescriptor", () => {
+  it("reports what the profile accepts but the model rejects", async () => {
+    const dataset = {
+      resources: [
+        { data: "data.csv", tableSchema: { $schema: "http://", properties: {} } },
+      ],
+    }
+
+    const report = await validateDatasetDescriptor(dataset)
+
+    expect(report.valid).toBe(false)
+    expect(report.dataset).toBe(undefined)
+    expect(report.errors).toEqual([
+      expect.objectContaining({
+        type: "metadata",
+        jsonPointer: "/resources/0/tableSchema/$schema",
+      }),
+    ])
+  })
+
+  it("keeps properties an extension adds on top of the core model", async () => {
+    const dataset = { resources: [{ data: "data.csv", spectralRange: { min: 400 } }] }
+
+    const report = await validateDatasetDescriptor(dataset)
+
+    expect(report.dataset?.resources?.[0]).toEqual(
+      expect.objectContaining({ spectralRange: { min: 400 } }),
+    )
+  })
+
   it("returns valid result for valid dataset", async () => {
     const dataset = {
       resources: [

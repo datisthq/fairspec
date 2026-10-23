@@ -20,7 +20,11 @@ pub fn assert_profile(
 
     let mut paths = vec![path];
     if let Some(Value::Array(refs)) = json_schema.get("allOf") {
-        paths.extend(refs.iter().filter_map(Value::as_str));
+        paths.extend(refs.iter().filter_map(|item| match item {
+            Value::String(path) => Some(path.as_str()),
+            Value::Object(object) => object.get("$ref").and_then(Value::as_str),
+            _ => None,
+        }));
     }
 
     if profile_type == ProfileType::DataSchema

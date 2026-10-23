@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const Integrity = z.object({
+export const Integrity = z.looseObject({
   type: z.enum(["md5", "sha1", "sha256", "sha512"]),
   hash: z.string(),
 })

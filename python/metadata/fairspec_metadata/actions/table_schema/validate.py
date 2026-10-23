@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from jsonschema import Draft202012Validator
+from pydantic import TypeAdapter
 
 from fairspec_metadata.actions.descriptor.load import load_descriptor
+from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.profile.load import load_profile
+from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.profile import ProfileType
 from fairspec_metadata.models.report import Report
@@ -39,8 +42,12 @@ def validate_table_schema(
 
     table_schema: TableSchema | None = None
     if report.valid:
-        # Valid -> we can cast
-        table_schema = TableSchema(**descriptor)
+        table_schema, model_errors = inspect_model(
+            descriptor,
+            model=TypeAdapter(TableSchema),
+            root_json_pointer=root_json_pointer,
+        )
+        report = create_report([*report.errors, *model_errors])
 
     return TableSchemaValidationResult(
         valid=report.valid,

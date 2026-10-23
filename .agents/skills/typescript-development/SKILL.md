@@ -70,6 +70,8 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 
 ## Conventions
 
+- **Descriptors are typed only by the model step.** `validate*` runs the declared profile, then `inspectModel` (`metadata/actions/descriptor/inspect.ts`) with the zod model; never cast a descriptor after the profile. Descriptor models are `z.looseObject`, so extension properties pass through — a check reading a keyword guards by column kind, not by `"x" in property`, since a stray key survives on any kind
+
 - Package manager pnpm `^11`, Node `^24`, ES Modules throughout
 - Formatting is configured in the root `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
 - Function names are **verbNoun** — a verb plus the noun it acts on (`saveArrowTable`, `inferTableSchemaFromTable`, `createColumnFromProperty`), never a bare verb or bare noun

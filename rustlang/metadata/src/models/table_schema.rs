@@ -1,5 +1,6 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use super::column::base::ValueOrItem;
 use super::column::column::ColumnProperty;
@@ -10,6 +11,8 @@ use super::unique_key::UniqueKey;
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TableSchema {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     #[serde(rename = "$schema", default, skip_serializing_if = "Option::is_none")]
     pub profile: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -38,6 +41,8 @@ pub type TableSchemaMissingValue = ValueOrItem<StringOrNumber, TableSchemaMissin
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TableSchemaMissingValueItem {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub value: StringOrNumber,
     pub label: String,
 }
@@ -53,16 +58,22 @@ pub enum StringOrNumber {
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct RenderTableSchemaOptions {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub format: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct ConvertTableSchemaToOptions {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub format: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct ConvertTableSchemaFromOptions {
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    pub extra: Map<String, Value>,
     pub format: String,
 }
 

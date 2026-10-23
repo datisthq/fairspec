@@ -6,7 +6,7 @@ import { PublicationYear } from "./publicationYear.ts"
 import { RelatedObject } from "./relatedIdentifier.ts"
 import { Titles } from "./title.ts"
 
-export const RelatedItemIdentifier = z.object({
+export const RelatedItemIdentifier = z.looseObject({
   relatedItemIdentifier: z.string().describe("Identifier for the related item"),
   relatedItemIdentifierType: RelatedIdentifierType.describe(
     "The type of the RelatedItemIdentifier",

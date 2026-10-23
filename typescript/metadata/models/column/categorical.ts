@@ -10,7 +10,7 @@ export const IntegerCategoricalColumnProperty = BaseIntegerColumnProperty.extend
     .array(
       z.union([
         z.int(),
-        z.object({
+        z.looseObject({
           value: z.int(),
           label: z.string(),
         }),
@@ -32,7 +32,7 @@ export const StringCategoricalColumnProperty = BaseStringColumnProperty.extend({
     .array(
       z.union([
         z.string(),
-        z.object({
+        z.looseObject({
           value: z.string(),
           label: z.string(),
         }),

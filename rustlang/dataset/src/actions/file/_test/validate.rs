@@ -30,6 +30,7 @@ fn get_hash(path: &str, hash_type: IntegrityType) -> String {
 
 fn create_integrity(hash_type: IntegrityType, hash: &str) -> Option<Integrity> {
     Some(Integrity {
+        extra: Default::default(),
         r#type: hash_type,
         hash: hash.to_string(),
     })

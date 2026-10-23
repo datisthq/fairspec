@@ -36,6 +36,28 @@ class TestAssertProfileValid:
         )
         assert result == schema
 
+    def test_valid_profile_via_allof_ref(self):
+        schema = {
+            "allOf": [
+                {"$ref": "https://fairspec.org/profiles/1.0.0/dataset.json"},
+                {"$ref": "#/$defs/Dataset"},
+            ],
+        }
+        result = assert_profile(
+            schema,
+            path="https://example.com/extension/dataset.json",
+            type=ProfileType.dataset,
+        )
+        assert result == schema
+
+    def test_allof_ref_without_official_profile(self):
+        with pytest.raises(Exception, match="not a valid dataset profile"):
+            assert_profile(
+                {"allOf": [{"$ref": "#/$defs/Dataset"}]},
+                path="https://example.com/extension/dataset.json",
+                type=ProfileType.dataset,
+            )
+
     def test_data_schema_accepts_json_schema_draft(self):
         schema = {"type": "object"}
         result = assert_profile(

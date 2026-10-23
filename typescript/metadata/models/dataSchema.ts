@@ -3,7 +3,7 @@ import { JsonSchema } from "./jsonSchema.ts"
 
 export const DataSchema = JsonSchema
 
-export const RenderDataSchemaOptions = z.object({
+export const RenderDataSchemaOptions = z.looseObject({
   format: z.string(),
 })
 

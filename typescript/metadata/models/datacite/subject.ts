@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const Subject = z.object({
+export const Subject = z.looseObject({
   subject: z
     .string()
     .describe(

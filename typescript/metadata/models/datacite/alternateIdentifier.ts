@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const AlternateIdentifier = z.object({
+export const AlternateIdentifier = z.looseObject({
   alternateIdentifier: z
     .string()
     .describe(

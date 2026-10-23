@@ -49,6 +49,7 @@ pub fn validate_file_command(
         .clone()
         .filter(|hash| !hash.is_empty())
         .map(|hash| Integrity {
+            extra: Default::default(),
             r#type: parse_hash_type(input.hash_type.as_deref()),
             hash,
         });

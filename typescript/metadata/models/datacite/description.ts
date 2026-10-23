@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { DescriptionType } from "./common.ts"
 
-export const Description = z.object({
+export const Description = z.looseObject({
   description: z
     .string()
     .describe(

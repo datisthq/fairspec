@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from pydantic import TypeAdapter
+
 from fairspec_metadata.actions.data_schema.validate import validate_data_schema
 from fairspec_metadata.actions.descriptor.load import load_descriptor
+from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.file_dialect.validate import validate_file_dialect
 from fairspec_metadata.actions.profile.load import load_profile
+from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
 from fairspec_metadata.models.descriptor import Descriptor
@@ -38,8 +42,10 @@ def validate_dataset_descriptor(
 
     normalized: Dataset | None = None
     if report.valid:
-        # Valid -> we can cast
-        normalized = normalize_dataset(Dataset(**descriptor), basepath=basepath)
+        dataset, model_errors = inspect_model(descriptor, model=TypeAdapter(Dataset))
+        report = create_report([*report.errors, *model_errors])
+        if dataset:
+            normalized = normalize_dataset(dataset, basepath=basepath)
 
     if normalized:
         for index, resource in enumerate(normalized.resources or []):

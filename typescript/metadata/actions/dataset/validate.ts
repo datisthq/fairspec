@@ -1,10 +1,11 @@
 import { validateDataSchema } from "../../actions/dataSchema/validate.ts"
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
+import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { validateFileDialect } from "../../actions/fileDialect/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import { validateTableSchema } from "../../actions/tableSchema/validate.ts"
-import type { Dataset } from "../../models/dataset.ts"
+import { Dataset } from "../../models/dataset.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
 import { normalizeDataset } from "./normalize.ts"
 
@@ -32,8 +33,12 @@ export async function validateDatasetDescriptor(
 
   let dataset: Dataset | undefined
   if (report.valid) {
-    // Valid -> we can cast it
-    dataset = descriptor as Dataset
+    const parsed = inspectModel(descriptor, {
+      model: Dataset,
+    })
+    dataset = parsed.data
+    report.errors.push(...parsed.errors)
+    report.valid = report.errors.length === 0
   }
 
   if (dataset) {

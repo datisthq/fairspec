@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const CatalogDataset = z.object({
+export const CatalogDataset = z.looseObject({
   loc: z.url().describe("The location (URI) of the dataset"),
   upd: z.iso
     .datetime({ offset: true })

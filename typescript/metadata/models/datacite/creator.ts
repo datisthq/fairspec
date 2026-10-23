@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { CreatorNameType } from "./common.ts"
 
-export const CreatorNameIdentifier = z.object({
+export const CreatorNameIdentifier = z.looseObject({
   nameIdentifier: z
     .string()
     .describe(
@@ -19,7 +19,7 @@ export const CreatorNameIdentifiers = z
     "Uniquely identifies an individual or legal entity, according to various schemas",
   )
 
-export const CreatorAffiliation = z.object({
+export const CreatorAffiliation = z.looseObject({
   name: z
     .string()
     .describe("The organizational or institutional affiliation of the creator"),
@@ -41,7 +41,7 @@ export const CreatorAffiliations = z
   .array(CreatorAffiliation)
   .describe("The organizational or institutional affiliation of the creator")
 
-export const Creator = z.object({
+export const Creator = z.looseObject({
   name: z
     .string()
     .describe(

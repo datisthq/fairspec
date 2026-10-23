@@ -28,6 +28,7 @@ pub fn convert_dataset_from_ckan(ckan_dataset: &CkanDataset) -> Dataset {
 
     datacite.descriptions = get_text(&ckan_dataset.notes).map(|notes| {
         vec![DataciteDescription {
+            extra: Default::default(),
             description: notes.to_string(),
             description_type: DescriptionType::Abstract,
             lang: None,
@@ -57,6 +58,7 @@ pub fn convert_dataset_from_ckan(ckan_dataset: &CkanDataset) -> Dataset {
 
     datacite.contributors = get_text(&ckan_dataset.maintainer).map(|maintainer| {
         vec![Contributor {
+            extra: Default::default(),
             name: maintainer.to_string(),
             name_type: Some(CreatorNameType::Personal),
             given_name: None,
@@ -97,6 +99,7 @@ fn get_text(value: &Option<String>) -> Option<&str> {
 
 fn create_date(date: &str, date_type: DateType) -> DataciteDate {
     DataciteDate {
+        extra: Default::default(),
         date: date.to_string(),
         date_type,
         date_information: None,

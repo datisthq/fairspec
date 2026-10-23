@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { TitleType } from "./common.ts"
 
-export const Title = z.object({
+export const Title = z.looseObject({
   title: z.string().describe("A name or title by which a resource is known"),
   titleType: TitleType.optional().describe(
     "The type of title (e.g., AlternativeTitle, Subtitle, TranslatedTitle, Other)",

@@ -96,6 +96,8 @@ relative import reaches beyond the top-level package.
 
 ## Conventions
 
+- **Descriptors are typed only by the model step.** `validate_*` runs the declared profile, then `inspect_model` (`metadata/fairspec_metadata/actions/descriptor/inspect.py`); never build a model straight from a profile-valid descriptor. `FairspecModel` has `extra="allow"`, so extension properties pass through — a check reading a keyword guards by column kind, not by `hasattr`, since a stray key survives on any kind
+
 - uv workspace, Python `>=3.12`, hatchling per member; tasks are scripts in `python/package.json`
 - Ruff is configured at `line-length = 90` with `E501` ignored
 - Function names are **verb_noun** — a verb plus the noun it acts on (`load_descriptor`, `inspect_json_schema`, `create_column_from_property`), never a bare verb or bare noun

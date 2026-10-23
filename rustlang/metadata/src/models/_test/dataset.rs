@@ -50,8 +50,7 @@ fn test_path_or_value() {
 }
 
 #[test]
-fn test_unknown_fields_are_dropped() {
-    let output =
-        round_trip::<Dataset>(&json!({"extra": 1, "resources": [{"data": "a.csv", "extra": 2}]}));
-    assert_eq!(output, json!({"resources": [{"data": "a.csv"}]}));
+fn test_unknown_fields_are_kept() {
+    let input = json!({"extra": 1, "resources": [{"data": "a.csv", "extra": 2}]});
+    assert_eq!(round_trip::<Dataset>(&input), input);
 }

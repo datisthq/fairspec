@@ -1,9 +1,10 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
+import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { META_SCHEMA_URL } from "../../actions/jsonSchema/ajv.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
-import type { TableSchema } from "../../models/tableSchema.ts"
+import { TableSchema } from "../../models/tableSchema.ts"
 
 export async function validateTableSchema(
   source: TableSchema | Descriptor | string,
@@ -30,8 +31,13 @@ export async function validateTableSchema(
 
   let tableSchema: TableSchema | undefined
   if (report.valid) {
-    // Valid -> we can cast it
-    tableSchema = descriptor as TableSchema
+    const parsed = inspectModel(descriptor, {
+      model: TableSchema,
+      rootJsonPointer: options?.rootJsonPointer,
+    })
+    tableSchema = parsed.data
+    report.errors.push(...parsed.errors)
+    report.valid = report.errors.length === 0
   }
 
   return { ...report, tableSchema }

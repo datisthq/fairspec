@@ -114,6 +114,7 @@
         }
       },
       "type": "object",
+      "additionalProperties": true,
       "title": "InferDataSchemaResult"
     }
   },
@@ -309,6 +310,7 @@
         "WktColumnProperty",
         "XlsxFileDialect"
       ],
+      "additionalProperties": true,
       "title": "InferDatasetResult"
     }
   },
@@ -493,6 +495,7 @@
         "TsvFileDialect",
         "XlsxFileDialect"
       ],
+      "additionalProperties": true,
       "title": "InferFileDialectResult"
     }
   },
@@ -663,6 +666,7 @@
         "WkbColumnProperty",
         "WktColumnProperty"
       ],
+      "additionalProperties": true,
       "title": "InferTableSchemaResult"
     }
   },
@@ -726,6 +730,7 @@
       },
       "required": ["text", "truncated"],
       "type": "object",
+      "additionalProperties": true,
       "title": "PreviewFileResult"
     }
   },
@@ -870,6 +875,7 @@
       "required": ["records", "truncated"],
       "type": "object",
       "$defs": ["JsonValue"],
+      "additionalProperties": true,
       "title": "QueryDatasetResult"
     }
   },
@@ -1005,6 +1011,7 @@
       "required": ["records", "truncated"],
       "type": "object",
       "$defs": ["JsonValue"],
+      "additionalProperties": true,
       "title": "QueryTableResult"
     }
   },
@@ -1097,6 +1104,7 @@
         "TableCheckError",
         "TextualError"
       ],
+      "additionalProperties": true,
       "title": "ValidateDataSchemaResult"
     }
   },
@@ -1273,6 +1281,7 @@
         "TableCheckError",
         "TextualError"
       ],
+      "additionalProperties": true,
       "title": "ValidateDatasetResult"
     }
   },
@@ -1440,6 +1449,7 @@
         "TableCheckError",
         "TextualError"
       ],
+      "additionalProperties": true,
       "title": "ValidateDataResult"
     }
   },
@@ -1532,6 +1542,7 @@
         "TableCheckError",
         "TextualError"
       ],
+      "additionalProperties": true,
       "title": "ValidateTableSchemaResult"
     }
   },
@@ -1713,6 +1724,7 @@
         "TableCheckError",
         "TextualError"
       ],
+      "additionalProperties": true,
       "title": "ValidateTableResult"
     }
   }

@@ -37,6 +37,7 @@ pub fn convert_dataset_from_github(repository: &GithubRepository) -> Dataset {
         .filter(|description| !description.is_empty())
         .map(|description| {
             vec![DataciteDescription {
+                extra: Default::default(),
                 description: description.clone(),
                 description_type: DescriptionType::Abstract,
                 lang: None,
@@ -62,6 +63,7 @@ pub fn convert_dataset_from_github(repository: &GithubRepository) -> Dataset {
     let owner = &repository.owner;
     if owner.r#type == GithubOwnerType::Organization {
         datacite.contributors = Some(vec![Contributor {
+            extra: Default::default(),
             name: owner.login.clone(),
             name_type: Some(CreatorNameType::Organizational),
             given_name: None,
@@ -92,6 +94,7 @@ pub fn convert_dataset_from_github(repository: &GithubRepository) -> Dataset {
 
     datacite.dates = (!repository.created_at.is_empty()).then(|| {
         vec![DataciteDate {
+            extra: Default::default(),
             date: repository.created_at.clone(),
             date_type: DateType::Created,
             date_information: None,

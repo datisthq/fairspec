@@ -32,6 +32,7 @@ pub fn convert_dataset_from_zenodo(zenodo_record: &ZenodoRecord) -> Dataset {
 
     datacite.descriptions = get_text(&metadata.description).map(|description| {
         vec![DataciteDescription {
+            extra: Default::default(),
             description: description.to_string(),
             description_type: DescriptionType::Abstract,
             lang: None,
@@ -72,6 +73,7 @@ pub fn convert_dataset_from_zenodo(zenodo_record: &ZenodoRecord) -> Dataset {
 
     datacite.dates = get_text(&metadata.publication_date).map(|date| {
         vec![DataciteDate {
+            extra: Default::default(),
             date: date.to_string(),
             date_type: DateType::Issued,
             date_information: None,

@@ -21,6 +21,7 @@ pub fn convert_resource_from_github(github_file: &GithubFile, default_branch: &s
         data: Some(Value::String(path)),
         name: Some(name),
         integrity: Some(Integrity {
+            extra: Default::default(),
             r#type: IntegrityType::Sha1,
             hash: github_file.sha.clone(),
         }),

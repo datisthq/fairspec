@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { FunderIdentifierType } from "./common.ts"
 
-export const FundingReference = z.object({
+export const FundingReference = z.looseObject({
   funderName: z.string().describe("Name of the funding provider"),
   funderIdentifier: z
     .string()

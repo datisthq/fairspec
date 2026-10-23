@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const ForeignKey = z.object({
+export const ForeignKey = z.looseObject({
   columns: z.array(z.string()).describe("Source column(s) in this table"),
 
   reference: z

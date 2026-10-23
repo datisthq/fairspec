@@ -31,7 +31,7 @@ export const BaseStringColumnProperty = BaseColumnProperty.extend({
     .array(
       z.union([
         z.string(),
-        z.object({
+        z.looseObject({
           value: z.string(),
           label: z.string(),
         }),

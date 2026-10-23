@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { ContentTypeGeneral } from "./common.ts"
 
-export const ContentTypes = z.object({
+export const ContentTypes = z.looseObject({
   resourceType: z
     .string()
     .optional()
