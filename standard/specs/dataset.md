@@ -117,7 +117,7 @@ A resource within a dataset. It `MUST` have the following properties (all option
 Data or content of the resource. It `MUST` be in one of the following:
 
 - [Path](#path) to a file
-- Array of [Paths](#path) to files
+- Array of at least one [Path](#path) to files
 - Inline JSON object
 - Inline JSON array of objects
 

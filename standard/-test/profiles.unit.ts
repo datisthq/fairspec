@@ -45,6 +45,10 @@ describe("table schemas", () => {
     { valid: false, schema: { additionalProperties: { type: "string" } } },
     { valid: false, schema: { oneOf: [{ required: ["a"] }] } },
     { valid: false, schema: { $defs: { a: { type: "string" } } } },
+    {
+      valid: false,
+      schema: { foreignKeys: [{ columns: [], reference: { columns: [] } }] },
+    },
   ])("validates $schema as $valid", ({ schema, valid }) => {
     const validate = getValidator("table-schema.json")
     expect(validate(schema)).toBe(valid)
@@ -90,6 +94,38 @@ describe.each(["datacite", "grei"])("%s extension", extension => {
   ])("validates $note as $valid", ({ descriptor, valid }) => {
     const validate = getValidator(`${extension}/dataset.json`)
     expect(validate(JSON.parse(JSON.stringify(descriptor)))).toBe(valid)
+  })
+})
+
+describe("file dialects", () => {
+  it.each([
+    { valid: true, dialect: { format: "csv", delimiter: ";", quoteChar: "'" } },
+    { valid: true, dialect: { format: "xlsx", sheetNumber: 1 } },
+    { valid: false, dialect: { format: "csv", delimiter: "" } },
+    { valid: false, dialect: { format: "csv", quoteChar: "" } },
+    { valid: false, dialect: { format: "csv", quoteChar: "ab" } },
+    { valid: false, dialect: { format: "xlsx", sheetNumber: 0 } },
+  ])("validates $dialect as $valid", ({ dialect, valid }) => {
+    expect(getValidator("file-dialect.json")(dialect)).toBe(valid)
+  })
+})
+
+describe("dataset resources", () => {
+  it.each([
+    { valid: true, data: ".hidden/data.csv" },
+    { valid: true, data: "data..v2.csv" },
+    { valid: true, data: "times/10:30.csv" },
+    { valid: true, data: [] },
+    { valid: false, data: "../data.csv" },
+    { valid: false, data: "a/../data.csv" },
+    { valid: false, data: "/data.csv" },
+    { valid: false, data: "~/data.csv" },
+    { valid: false, data: "C:/data.csv" },
+    { valid: false, data: "a//b.csv" },
+    { valid: true, data: "./data.csv" },
+    { valid: false, data: "a\\data.csv" },
+  ])("validates data $data as $valid", ({ data, valid }) => {
+    expect(getValidator("dataset.json")({ resources: [{ data }] })).toBe(valid)
   })
 })
 
@@ -139,6 +175,9 @@ describe("table schema columns", () => {
     { valid: false, column: { type: "string", withOrder: true } },
     { valid: true, column: { type: "string", format: "categorical", withOrder: true } },
     { valid: true, column: { type: "integer", format: "categorical", categories: [1] } },
+    { valid: false, column: { type: "number", decimalChar: "" } },
+    { valid: false, column: { type: "number", groupChar: "" } },
+    { valid: false, column: { type: "string", format: "list", delimiter: "" } },
   ])("validates $column as $valid", ({ column, valid }) => {
     const validate = getValidator("table-schema.json")
     expect(validate({ properties: { column } })).toBe(valid)

@@ -218,7 +218,7 @@ For example, with multiple unique constraints:
 
 ### `foreignKeys`
 
-An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context).
+An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context). Both `columns` lists `MUST` name at least one column.
 
 A row in which any of the local `columns` is null is not checked against the reference. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource.
 

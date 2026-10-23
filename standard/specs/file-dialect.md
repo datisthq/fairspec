@@ -746,7 +746,7 @@ For data like:
 > [!NOTE]
 > Supported formats: **xlsx**, **ods**
 
-It `MUST` be an integer. This property specifies a sheet number of a table in the spreadsheet file. If not provided, a first sheet is used.
+It `MUST` be a positive integer, counting sheets from `1`. This property specifies a sheet number of a table in the spreadsheet file. If not provided, a first sheet is used.
 
 For example:
 
