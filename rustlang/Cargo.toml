@@ -1,5 +1,13 @@
 [workspace]
-members = ["metadata", "dataset", "table", "library"]
+members = [
+  "metadata",
+  "dataset",
+  "table",
+  "library",
+  "mcp-server",
+  "terminal",
+  "fairspec",
+]
 resolver = "3"
 
 [workspace.package]
@@ -8,3 +16,13 @@ edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/datisthq/fairspec"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+lto = "thin"
+strip = true

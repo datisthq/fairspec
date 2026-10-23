@@ -7,6 +7,7 @@
     "check:lint": "cargo fmt --check && cargo clippy --all-targets -- -D warnings",
     "check:types": "cargo check --all-targets",
     "format": "cargo fmt",
+    "sync:schemas": "uv run --project ../python python .scripts/sync-schemas.py && vp fmt mcp-server/schemas",
     "test": "pnpm check:types && pnpm test:unit",
     "test:unit": "cargo test"
   }

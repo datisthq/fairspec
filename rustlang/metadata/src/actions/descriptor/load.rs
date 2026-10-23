@@ -54,7 +54,9 @@ pub(crate) fn resolve_remote_url(url: &str) -> Result<String> {
 }
 
 fn load_local_descriptor(path: &str) -> Result<Descriptor> {
-    let text = fs::read_to_string(path)?;
+    // The io error alone does not name the file, which Python's message does
+    let text = fs::read_to_string(path)
+        .map_err(|error| std::io::Error::new(error.kind(), format!("{error}: '{path}'")))?;
     parse_descriptor(&text)
 }
 

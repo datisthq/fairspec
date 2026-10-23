@@ -1,6 +1,6 @@
 ---
 name: rustlang-development
-description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin (metadata, dataset, table, library). Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
+description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin with its CLI and MCP server. Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
 ---
 
 # Rust
@@ -9,7 +9,9 @@ The `rustlang/` section is a Cargo workspace, a **third twin** of the libraries.
 Fairspec implementation for users outside Python and TypeScript — a standalone binary they can
 wrap as a CLI. `rustlang/metadata/` (`fairspec-metadata`), `rustlang/dataset/` (`fairspec-dataset`),
 `rustlang/table/` (`fairspec-table`, on Polars) and `rustlang/library/` (`fairspec-library`) are
-ported from their Python packages; the crates follow Python's package DAG. Nothing is published and the section has no release component.
+ported from their Python packages; the crates follow Python's package DAG. `rustlang/terminal/`
+(`fairspec-terminal`) is the CLI and `rustlang/fairspec/` the umbrella crate whose `fairspec` binary
+runs it (`cargo build --release -p fairspec`). Nothing is published and the section has no release component.
 
 ## Commands
 
@@ -21,6 +23,7 @@ Run from the repo root; `pnpm -C rustlang <script>` calls `cargo` inside `rustla
 - `pnpm -C rustlang check:lint` — `cargo fmt --check` and clippy with `-D warnings`
 - `pnpm -C rustlang format` — `cargo fmt`
 - `pnpm -C rustlang build` — `cargo build --release`
+- `pnpm -C rustlang sync:schemas` — rewrite `mcp-server/schemas/` from Python's MCP server (**MCP server**)
 
 `rustlang/rust-toolchain.toml` pins **stable** (CI builds on stable on Linux, macOS and
 Windows); a local nightly can accept code CI rejects. rustfmt keeps its 4-space default, a
@@ -92,6 +95,36 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
 - `validate_dataset` keeps the inferred resource names on the dataset, so foreign key errors carry
   them too (Python mutates the same resource objects). It sets `resourceName` on every error by
   going through JSON
+
+## MCP server
+
+- `mcp-server` serves the twelve tools over rmcp stdio; `serve_stdio()` blocks on its own tokio
+  runtime and runs the sync library through `spawn_blocking`. Nothing may write to stdout:
+  `mcp-server/tests/stdout.rs` runs without the test harness, which would capture a stray
+  `println!`, and fails on any byte written to fd 1 during a tool call
+- The tool list is Python's, byte for byte: `mcp-server/schemas/defs.json` holds the shared
+  `$defs` and `tools.json` each schema with `$defs` as a list of names, which
+  `helpers/schema.rs` puts back in place. **Run `pnpm -C rustlang sync:schemas` after any
+  change to a Python MCP tool or to a model its schemas reach** — part of the twin rule; a
+  second run leaves no diff
+- Tool inputs are serde structs with the wire names (`maxErrors`); bounds the schema states
+  are checked by hand (`tools/_shared/schemas.rs`). A failure is `isError` with
+  `Error executing tool <name>: <message>`, as in Python
+
+## Terminal
+
+- clap derive mirrors Python's fireargs tree: the same groups, commands, args, flags, defaults and
+  help text; each input struct is also serde camelCase, so `--json '<value>'` drives input as in
+  Python. Help keeps click's layout (usage first, 80 columns); clap's wording otherwise
+- Required inputs are optional to clap and checked by `program.rs`, so `--json` input can supply
+  them and the messages and exit code 1 are fireargs' own
+- `--json` output goes through `helpers/json.rs` (Python's `json.dumps(indent=2)`, float `repr`);
+  frames become records with pydantic's JSON-mode temporal text (`helpers/frame.rs`)
+- `--llms` prints `rustlang/terminal/assets/manifest.json`, a snapshot of Python's `fairspec --llms`, re-run
+  it when a command or input changes; groups and leaves slice it by path as fireargs names them
+- `script` commands cannot embed Python's REPL: each line runs as SQL against the table or dataset
+- Spawned-process tests in `fairspec/tests/` read the child's stdout on a thread with a timeout and
+  close stdin, so a stuck `fairspec mcp` fails the test instead of hanging it
 
 ## Testsuite
 

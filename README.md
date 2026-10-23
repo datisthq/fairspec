@@ -10,7 +10,7 @@ This repository holds every part of the project:
 | [`standard/`](standard/)     | the specification, its JSON Schema profiles and examples |
 | [`python/`](python/)         | the Python framework, CLI and MCP server, on PyPI        |
 | [`typescript/`](typescript/) | the TypeScript framework, CLI and MCP server, on npm     |
-| [`rustlang/`](rustlang/)     | the Rust crates, a proof of concept                      |
+| [`rustlang/`](rustlang/)     | the Rust framework, CLI and MCP server, not yet released |
 | [`desktop/`](desktop/)       | the desktop application for macOS, Windows and Linux     |
 | [`catalog/`](catalog/)       | reserved for the catalog application                     |
 | [`testsuite/`](testsuite/)   | the test suite every implementation runs                 |

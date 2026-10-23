@@ -1,0 +1,24 @@
+[package]
+name = "fairspec-terminal"
+description = "Fairspec terminal: the fairspec command-line interface"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "fairspec_terminal"
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive", "wrap_help"] }
+fairspec-library = { path = "../library" }
+fairspec-mcp-server = { path = "../mcp-server" }
+indexmap = { version = "2.14.2", features = ["serde"] }
+regex = "1.13.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order"] }
+
+[dev-dependencies]
+tempfile = "3.27.0"

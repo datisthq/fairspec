@@ -1,0 +1,1719 @@
+[
+  {
+    "description": "Infer a data schema (JSON Schema) from data. Analyzes the data structure to determine types and properties.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The data resource to infer schema from"
+        }
+      },
+      "required": ["resource"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "infer_data_schema_toolArguments"
+    },
+    "name": "inferDataSchemaTool",
+    "outputSchema": {
+      "properties": {
+        "dataSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataschema"
+        }
+      },
+      "type": "object",
+      "title": "InferDataSchemaResult"
+    }
+  },
+  {
+    "description": "Infer metadata for all resources in a dataset. Analyzes each resource to determine schemas and dialects.",
+    "inputSchema": {
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/Dataset",
+          "description": "The dataset to infer metadata for"
+        }
+      },
+      "required": ["dataset"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "Dataset",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "infer_dataset_toolArguments"
+    },
+    "name": "inferDatasetTool",
+    "outputSchema": {
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/Dataset"
+        }
+      },
+      "required": ["dataset"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "Dataset",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "InferDatasetResult"
+    }
+  },
+  {
+    "description": "Infer the dialect (format and format-specific properties) from a resource. Analyzes the data to determine CSV delimiters, JSON structure, etc.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The resource to infer dialect from"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferFileDialectOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dialect inference options"
+        }
+      },
+      "required": ["resource"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "InferFileDialectOptions",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "infer_file_dialect_toolArguments"
+    },
+    "name": "inferFileDialectTool",
+    "outputSchema": {
+      "properties": {
+        "fileDialect": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "arrow": "#/$defs/ArrowFileDialect",
+                  "csv": "#/$defs/CsvFileDialect",
+                  "json": "#/$defs/JsonFileDialect",
+                  "jsonl": "#/$defs/JsonlFileDialect",
+                  "ods": "#/$defs/OdsFileDialect",
+                  "parquet": "#/$defs/ParquetFileDialect",
+                  "sqlite": "#/$defs/SqliteFileDialect",
+                  "tsv": "#/$defs/TsvFileDialect",
+                  "xlsx": "#/$defs/XlsxFileDialect"
+                },
+                "propertyName": "format"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/CsvFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/TsvFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/JsonFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/JsonlFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/XlsxFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/OdsFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/SqliteFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/ParquetFileDialect"
+                },
+                {
+                  "$ref": "#/$defs/ArrowFileDialect"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filedialect"
+        }
+      },
+      "type": "object",
+      "$defs": [
+        "ArrowFileDialect",
+        "CsvFileDialect",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "RowType",
+        "SqliteFileDialect",
+        "TsvFileDialect",
+        "XlsxFileDialect"
+      ],
+      "title": "InferFileDialectResult"
+    }
+  },
+  {
+    "description": "Infer a table schema from table resource data. Analyzes the data to determine column types and constraints.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The table resource to infer schema from"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferTableSchemaOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Schema inference options"
+        }
+      },
+      "required": ["resource"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "InferTableSchemaOptions",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "infer_table_schema_toolArguments"
+    },
+    "name": "inferTableSchemaTool",
+    "outputSchema": {
+      "properties": {
+        "tableSchema": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableSchema"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object",
+      "$defs": [
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DecimalColumnProperty",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "TopojsonColumnProperty",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty"
+      ],
+      "title": "InferTableSchemaResult"
+    }
+  },
+  {
+    "description": "Preview the raw source of a local or remote file as UTF-8 text: the first lines exactly as stored, before any parsing. Use it to see a CSV's delimiter, header and quoting, or a JSON file's structure. Stops at `maxLines` or `maxBytes`, whichever comes first; `truncated` is true when the file continues.",
+    "inputSchema": {
+      "properties": {
+        "path": {
+          "description": "Local or remote path of the file",
+          "title": "Path",
+          "type": "string"
+        },
+        "maxLines": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of lines (default 20)",
+          "title": "Maxlines"
+        },
+        "maxBytes": {
+          "anyOf": [
+            {
+              "maximum": 20000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of bytes (default 10000)",
+          "title": "Maxbytes"
+        }
+      },
+      "required": ["path"],
+      "type": "object",
+      "title": "preview_file_toolArguments"
+    },
+    "name": "previewFileTool",
+    "outputSchema": {
+      "properties": {
+        "text": {
+          "description": "The raw file source",
+          "title": "Text",
+          "type": "string"
+        },
+        "truncated": {
+          "description": "Whether the file continues past the preview",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["text", "truncated"],
+      "type": "object",
+      "title": "PreviewFileResult"
+    }
+  },
+  {
+    "description": "Query a dataset using SQL. Each table resource is available under its name, so a query can join several resources. Returns the results as an array of records. Returns at most `limit` records; `truncated` is true when more were left out.",
+    "inputSchema": {
+      "properties": {
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dataset"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The dataset to query (dataset object or file path)",
+          "title": "Source"
+        },
+        "query": {
+          "description": "SQL query to execute (use resource names as table names)",
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 100,
+          "description": "Maximum number of records to return (default 100)",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": ["source", "query"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "Dataset",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "query_dataset_toolArguments"
+    },
+    "name": "queryDatasetTool",
+    "outputSchema": {
+      "properties": {
+        "records": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Records",
+          "type": "array"
+        },
+        "truncated": {
+          "description": "Whether records were left out",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["records", "truncated"],
+      "type": "object",
+      "$defs": ["JsonValue"],
+      "title": "QueryDatasetResult"
+    }
+  },
+  {
+    "description": "Query a table using SQL. Loads the table, executes the SQL query, and returns the results as an array of records. Returns at most `limit` records; `truncated` is true when more were left out.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The table resource to query"
+        },
+        "query": {
+          "description": "SQL query to execute (use 'self' as table name)",
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 100,
+          "description": "Maximum number of records to return (default 100)",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": ["resource", "query"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "query_table_toolArguments"
+    },
+    "name": "queryTableTool",
+    "outputSchema": {
+      "properties": {
+        "records": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Records",
+          "type": "array"
+        },
+        "truncated": {
+          "description": "Whether records were left out",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["records", "truncated"],
+      "type": "object",
+      "$defs": ["JsonValue"],
+      "title": "QueryTableResult"
+    }
+  },
+  {
+    "description": "Validate a data schema (JSON Schema) against the Fairspec Data Schema specification. Returns validation report with errors if any.",
+    "inputSchema": {
+      "properties": {
+        "source": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The data schema to validate (descriptor object or file path)",
+          "title": "Source"
+        },
+        "maxErrors": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of errors to return (default 100)",
+          "title": "Maxerrors"
+        }
+      },
+      "required": ["source"],
+      "type": "object",
+      "title": "validate_data_schema_toolArguments"
+    },
+    "name": "validateDataSchemaTool",
+    "outputSchema": {
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/Report"
+        },
+        "truncated": {
+          "description": "Whether errors were left out of the report",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["report", "truncated"],
+      "type": "object",
+      "$defs": [
+        "CellCheckError",
+        "CellConstError",
+        "CellEnumError",
+        "CellExclusiveMaximumError",
+        "CellExclusiveMinimumError",
+        "CellJsonError",
+        "CellMaxItemsError",
+        "CellMaxLengthError",
+        "CellMaximumError",
+        "CellMinItemsError",
+        "CellMinLengthError",
+        "CellMinimumError",
+        "CellMissingError",
+        "CellMultipleOfError",
+        "CellPatternError",
+        "CellTypeError",
+        "CellUniqueError",
+        "CheckError",
+        "ColumnExtraError",
+        "ColumnMissingError",
+        "ColumnType",
+        "ColumnTypeError",
+        "DataError",
+        "ForeignKey",
+        "ForeignKeyError",
+        "ForeignKeyReference",
+        "IntegrityError",
+        "MetadataError",
+        "Report",
+        "ResourceMissingError",
+        "ResourceTypeError",
+        "RowCheckError",
+        "RowPrimaryKeyError",
+        "RowUniqueKeyError",
+        "TableCheckError",
+        "TextualError"
+      ],
+      "title": "ValidateDataSchemaResult"
+    }
+  },
+  {
+    "description": "Validate a dataset including all its resources and foreign keys. Returns a validation report with errors if any.",
+    "inputSchema": {
+      "properties": {
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dataset"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The dataset to validate (dataset object or file path)",
+          "title": "Source"
+        },
+        "maxErrors": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of errors to return (default 100)",
+          "title": "Maxerrors"
+        }
+      },
+      "required": ["source"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "Dataset",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "validate_dataset_toolArguments"
+    },
+    "name": "validateDatasetTool",
+    "outputSchema": {
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/Report"
+        },
+        "truncated": {
+          "description": "Whether errors were left out of the report",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["report", "truncated"],
+      "type": "object",
+      "$defs": [
+        "CellCheckError",
+        "CellConstError",
+        "CellEnumError",
+        "CellExclusiveMaximumError",
+        "CellExclusiveMinimumError",
+        "CellJsonError",
+        "CellMaxItemsError",
+        "CellMaxLengthError",
+        "CellMaximumError",
+        "CellMinItemsError",
+        "CellMinLengthError",
+        "CellMinimumError",
+        "CellMissingError",
+        "CellMultipleOfError",
+        "CellPatternError",
+        "CellTypeError",
+        "CellUniqueError",
+        "CheckError",
+        "ColumnExtraError",
+        "ColumnMissingError",
+        "ColumnType",
+        "ColumnTypeError",
+        "DataError",
+        "ForeignKey",
+        "ForeignKeyError",
+        "ForeignKeyReference",
+        "IntegrityError",
+        "MetadataError",
+        "Report",
+        "ResourceMissingError",
+        "ResourceTypeError",
+        "RowCheckError",
+        "RowPrimaryKeyError",
+        "RowUniqueKeyError",
+        "TableCheckError",
+        "TextualError"
+      ],
+      "title": "ValidateDatasetResult"
+    }
+  },
+  {
+    "description": "Validate data against a data schema (JSON Schema). Returns a validation report with errors if any.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The data resource to validate"
+        },
+        "maxErrors": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of errors to return (default 100)",
+          "title": "Maxerrors"
+        }
+      },
+      "required": ["resource"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "validate_data_toolArguments"
+    },
+    "name": "validateDataTool",
+    "outputSchema": {
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/Report"
+        },
+        "truncated": {
+          "description": "Whether errors were left out of the report",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["report", "truncated"],
+      "type": "object",
+      "$defs": [
+        "CellCheckError",
+        "CellConstError",
+        "CellEnumError",
+        "CellExclusiveMaximumError",
+        "CellExclusiveMinimumError",
+        "CellJsonError",
+        "CellMaxItemsError",
+        "CellMaxLengthError",
+        "CellMaximumError",
+        "CellMinItemsError",
+        "CellMinLengthError",
+        "CellMinimumError",
+        "CellMissingError",
+        "CellMultipleOfError",
+        "CellPatternError",
+        "CellTypeError",
+        "CellUniqueError",
+        "CheckError",
+        "ColumnExtraError",
+        "ColumnMissingError",
+        "ColumnType",
+        "ColumnTypeError",
+        "DataError",
+        "ForeignKey",
+        "ForeignKeyError",
+        "ForeignKeyReference",
+        "IntegrityError",
+        "MetadataError",
+        "Report",
+        "ResourceMissingError",
+        "ResourceTypeError",
+        "RowCheckError",
+        "RowPrimaryKeyError",
+        "RowUniqueKeyError",
+        "TableCheckError",
+        "TextualError"
+      ],
+      "title": "ValidateDataResult"
+    }
+  },
+  {
+    "description": "Validate a table schema against the Fairspec Table Schema specification. Returns validation report with errors if any.",
+    "inputSchema": {
+      "properties": {
+        "source": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The table schema to validate (descriptor object or file path)",
+          "title": "Source"
+        },
+        "maxErrors": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of errors to return (default 100)",
+          "title": "Maxerrors"
+        }
+      },
+      "required": ["source"],
+      "type": "object",
+      "title": "validate_table_schema_toolArguments"
+    },
+    "name": "validateTableSchemaTool",
+    "outputSchema": {
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/Report"
+        },
+        "truncated": {
+          "description": "Whether errors were left out of the report",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["report", "truncated"],
+      "type": "object",
+      "$defs": [
+        "CellCheckError",
+        "CellConstError",
+        "CellEnumError",
+        "CellExclusiveMaximumError",
+        "CellExclusiveMinimumError",
+        "CellJsonError",
+        "CellMaxItemsError",
+        "CellMaxLengthError",
+        "CellMaximumError",
+        "CellMinItemsError",
+        "CellMinLengthError",
+        "CellMinimumError",
+        "CellMissingError",
+        "CellMultipleOfError",
+        "CellPatternError",
+        "CellTypeError",
+        "CellUniqueError",
+        "CheckError",
+        "ColumnExtraError",
+        "ColumnMissingError",
+        "ColumnType",
+        "ColumnTypeError",
+        "DataError",
+        "ForeignKey",
+        "ForeignKeyError",
+        "ForeignKeyReference",
+        "IntegrityError",
+        "MetadataError",
+        "Report",
+        "ResourceMissingError",
+        "ResourceTypeError",
+        "RowCheckError",
+        "RowPrimaryKeyError",
+        "RowUniqueKeyError",
+        "TableCheckError",
+        "TextualError"
+      ],
+      "title": "ValidateTableSchemaResult"
+    }
+  },
+  {
+    "description": "Validate a table resource against its schema. Returns a validation report with errors if any.",
+    "inputSchema": {
+      "properties": {
+        "resource": {
+          "$ref": "#/$defs/Resource",
+          "description": "The table resource to validate"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidateTableToolOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Validation options"
+        },
+        "maxErrors": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum number of errors to return (default 100)",
+          "title": "Maxerrors"
+        }
+      },
+      "required": ["resource"],
+      "type": "object",
+      "$defs": [
+        "AlternateIdentifier",
+        "ArrayColumnProperty",
+        "ArrayMissingValueItem",
+        "ArrowFileDialect",
+        "Base64ColumnProperty",
+        "BooleanColumnProperty",
+        "ContentTypeGeneral",
+        "ContentTypes",
+        "Contributor",
+        "ContributorType",
+        "Creator",
+        "CreatorAffiliation",
+        "CreatorNameIdentifier",
+        "CreatorNameType",
+        "CsvFileDialect",
+        "DataciteDate",
+        "DataciteDescription",
+        "DateColumnProperty",
+        "DateTimeColumnProperty",
+        "DateType",
+        "DecimalColumnProperty",
+        "DescriptionType",
+        "DurationColumnProperty",
+        "EmailColumnProperty",
+        "ForeignKey",
+        "ForeignKeyReference",
+        "FunderIdentifierType",
+        "FundingReference",
+        "GeoLocation",
+        "GeoLocationBox",
+        "GeoLocationPoint",
+        "GeoLocationPolygonItem",
+        "GeojsonColumnProperty",
+        "HexColumnProperty",
+        "IntegerCategoricalColumnProperty",
+        "IntegerCategoryItem",
+        "IntegerColumnProperty",
+        "IntegerMissingValueItem",
+        "Integrity",
+        "IntegrityType",
+        "JsonFileDialect",
+        "JsonlFileDialect",
+        "ListColumnProperty",
+        "ListItemType",
+        "LocalDateTimeColumnProperty",
+        "LocalTimeColumnProperty",
+        "NumberColumnProperty",
+        "NumberMissingValueItem",
+        "NumberType",
+        "ObjectColumnProperty",
+        "ObjectMissingValueItem",
+        "OdsFileDialect",
+        "ParquetFileDialect",
+        "Publisher",
+        "RelatedIdentifier",
+        "RelatedIdentifierType",
+        "RelatedItem",
+        "RelatedItemIdentifier",
+        "RelationType",
+        "Resource",
+        "Rights",
+        "RowType",
+        "SqlTableCheck",
+        "SqliteFileDialect",
+        "StringCategoricalColumnProperty",
+        "StringCategoryItem",
+        "StringColumnProperty",
+        "StringIntMissingValue",
+        "StringMissingValueItem",
+        "Subject",
+        "TableSchema",
+        "TableSchemaMissingValueItem",
+        "TimeColumnProperty",
+        "Title",
+        "TitleType",
+        "TopojsonColumnProperty",
+        "TsvFileDialect",
+        "UnknownColumnProperty",
+        "UnknownMissingValueItem",
+        "UrlColumnProperty",
+        "ValidateTableToolOptions",
+        "WkbColumnProperty",
+        "WktColumnProperty",
+        "XlsxFileDialect"
+      ],
+      "title": "validate_table_toolArguments"
+    },
+    "name": "validateTableTool",
+    "outputSchema": {
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/Report"
+        },
+        "truncated": {
+          "description": "Whether errors were left out of the report",
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": ["report", "truncated"],
+      "type": "object",
+      "$defs": [
+        "CellCheckError",
+        "CellConstError",
+        "CellEnumError",
+        "CellExclusiveMaximumError",
+        "CellExclusiveMinimumError",
+        "CellJsonError",
+        "CellMaxItemsError",
+        "CellMaxLengthError",
+        "CellMaximumError",
+        "CellMinItemsError",
+        "CellMinLengthError",
+        "CellMinimumError",
+        "CellMissingError",
+        "CellMultipleOfError",
+        "CellPatternError",
+        "CellTypeError",
+        "CellUniqueError",
+        "CheckError",
+        "ColumnExtraError",
+        "ColumnMissingError",
+        "ColumnType",
+        "ColumnTypeError",
+        "DataError",
+        "ForeignKey",
+        "ForeignKeyError",
+        "ForeignKeyReference",
+        "IntegrityError",
+        "MetadataError",
+        "Report",
+        "ResourceMissingError",
+        "ResourceTypeError",
+        "RowCheckError",
+        "RowPrimaryKeyError",
+        "RowUniqueKeyError",
+        "TableCheckError",
+        "TextualError"
+      ],
+      "title": "ValidateTableResult"
+    }
+  }
+]
