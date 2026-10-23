@@ -7,6 +7,7 @@ use super::load::get_table_name;
 use crate::actions::table::denormalize::denormalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::DenormalizeColumnOptions;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::{SaveTableOptions, Table};
@@ -104,7 +105,7 @@ fn populate_table(
     table: Table,
 ) -> Result<()> {
     let to_error = |error: rusqlite::Error| Error::Load(error.to_string());
-    let frame = table.collect().into_result()?;
+    let frame = table.collect_table()?;
     if frame.height() == 0 {
         return Ok(());
     }

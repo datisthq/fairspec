@@ -6,6 +6,7 @@ use serde_json::Value;
 use crate::actions::table::denormalize::denormalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::DenormalizeColumnOptions;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::{SaveTableOptions, Table};
@@ -44,9 +45,7 @@ pub fn save_xlsx_table(table: Table, options: &SaveTableOptions) -> Result<Strin
     let denormalize_options = DenormalizeColumnOptions {
         native_types: Some(NATIVE_TYPES.iter().map(|value| value.to_string()).collect()),
     };
-    let frame = denormalize_table(table, &table_schema, &denormalize_options)?
-        .collect()
-        .into_result()?;
+    let frame = denormalize_table(table, &table_schema, &denormalize_options)?.collect_table()?;
 
     let (sheet_name, is_ods) = match &file_dialect {
         FileDialect::Xlsx(dialect) => (dialect.sheet_name.clone(), false),

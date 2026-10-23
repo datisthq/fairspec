@@ -28,6 +28,7 @@ use super::types::topojson::inspect_topojson_column;
 use super::types::wkb::inspect_wkb_column;
 use super::types::wkt::inspect_wkt_column;
 use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::cell::CellMapping;
 use crate::models::column::ColumnMapping;
 use crate::models::table::Table;
@@ -246,8 +247,7 @@ fn inspect_cells_in_polars(
             table
                 .select(flags)
                 .filter(any_horizontal(is_flagged).into_result()?)
-                .collect()
-                .into_result()?;
+                .collect_table()?;
         }
         return Ok(errors);
     }
@@ -292,8 +292,7 @@ fn inspect_cells_in_polars(
         .filter(any_horizontal(is_failed).into_result()?)
         .select(output)
         .limit(max_errors as IdxSize)
-        .collect()
-        .into_result()?;
+        .collect_table()?;
 
     let row_numbers = check_frame.column(NUMBER_COLUMN_NAME).into_result()?;
     let row_numbers = row_numbers.u64().into_result()?;

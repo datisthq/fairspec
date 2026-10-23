@@ -2,7 +2,7 @@ use fairspec_metadata::{
     Dataset, FairspecError, ForeignKey, ForeignKeyError, Report, Resource, ResourceError,
     ResourceMissingError, Result, TableError, create_report, resolve_table_schema,
 };
-use fairspec_table::LoadTableOptions;
+use fairspec_table::{LoadTableOptions, QUERY_ENGINE};
 use polars::prelude::*;
 
 use crate::actions::table::load::load_table;
@@ -81,7 +81,8 @@ fn validate_foreign_key(
         .drop_nulls(None)
         .join(ref_selected, on.clone(), on, JoinArgs::new(JoinType::Anti))
         .unique_stable(None, UniqueKeepStrategy::Any)
-        .collect()
+        .collect_with_engine(QUERY_ENGINE)
+        .map(|result| result.unwrap_single())
         .map_err(|error| fairspec_metadata::Error::Load(error.to_string()))?;
 
     let mut errors = Vec::new();

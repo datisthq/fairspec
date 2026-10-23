@@ -32,7 +32,7 @@ pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>
     Ok(checks)
 }
 
-/// Records every present key while another query reads the table.
+/// Records the hash of every present key while another query reads the table.
 #[derive(Clone)]
 pub struct KeyHashProbe {
     pub flag_expr: Expr,
@@ -77,8 +77,9 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     } else {
         as_struct(keys.iter().map(|name| col(name.as_str())).collect())
     };
+    // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
     let flag_expr = when(create_key_presence_expr(keys))
-        .then(key_expr)
+        .then(key_expr.hash(0, 0, 0, 0))
         .otherwise(lit(NULL))
         .map(record_hashes, |_, field| {
             Ok(Field::new(field.name().clone(), DataType::Boolean))

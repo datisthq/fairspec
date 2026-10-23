@@ -57,3 +57,4 @@ pub use plugins::xlsx::actions::file_dialect::infer::infer_xlsx_file_dialect;
 pub use plugins::xlsx::actions::table::load::load_xlsx_table;
 pub use plugins::xlsx::actions::table::save::save_xlsx_table;
 pub use plugins::xlsx::plugin::XlsxPlugin;
+pub use settings::QUERY_ENGINE;

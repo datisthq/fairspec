@@ -1,12 +1,10 @@
-use std::fs::File;
-
 use fairspec_dataset::assert_local_path_vacant;
 use fairspec_metadata::Result;
 use polars::prelude::*;
 
 use crate::actions::table::denormalize::denormalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
-use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::DenormalizeColumnOptions;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::{SaveTableOptions, Table};
@@ -35,9 +33,7 @@ pub fn save_parquet_table(table: Table, options: &SaveTableOptions) -> Result<St
     };
     let table = denormalize_table(table, &table_schema, &denormalize_options)?;
 
-    let mut frame = table.collect().into_result()?;
-    let file = File::create(path)?;
-    ParquetWriter::new(file).finish(&mut frame).into_result()?;
+    table.sink_table(path, FileWriteFormat::Parquet(Arc::default()))?;
 
     Ok(path.clone())
 }

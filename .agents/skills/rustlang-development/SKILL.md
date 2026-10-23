@@ -69,17 +69,22 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 
 ## Table
 
-- `Table` is a polars `LazyFrame`; queries run on the default `collect()`, not py-polars'
-  streaming engine. Polars failures map to `Error::Load` through `helpers::error::PolarsResultExt`
+- `Table` is a polars `LazyFrame`. Wherever Python passes `engine=QUERY_ENGINE`, Rust calls
+  `collect_table()` / `sink_table()` (`helpers::table::LazyFrameExt`, the crate's `streaming`
+  feature): the default `collect()` is the in-memory engine, which held 2.8GB per GB of CSV
+  and cannot validate 10GB under a 10GB cap. Small head reads stay on `collect()`, as in
+  Python. Polars failures map to `Error::Load` through `helpers::error::PolarsResultExt`
+- A CSV sink sets `check_extension: false`, or a `.tsv` path fails a check py-polars' `sink_csv` skips
 - Column normalization builds the same expressions as Python (`str().strptime` with `strict:
 false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl.Decimal` is
   `Decimal(38, 18)`
 - shapely and isodate have no crates: WKT/WKB readers follow GEOS 3.13 and the duration parser
   ports `isodate.parse_duration`; both are checked against the venv on sample lists
 - `stringify_number` renders an integral float as Python's `str(int(x))` at any magnitude
-- Row key checks find a duplicate with `cum_count().over(key columns) > 1`, and the key probe
-  records raw key values, not hashes: `is_first_distinct` and `hash` need polars features the
-  crate does not enable. Nulls group as in `is_first_distinct`, so the same rows are flagged
+- Row key checks find a duplicate with `cum_count().over(key columns) > 1`
+  (`is_first_distinct` needs a feature the crate does not enable); nulls group as in
+  `is_first_distinct`, so the same rows are flagged. The key probe hashes inside polars
+  (`row_hash`) before its callback, as Python does, so it keeps 8 bytes per key, not the keys
 
 ## Library
 

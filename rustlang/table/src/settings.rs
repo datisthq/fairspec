@@ -1,5 +1,9 @@
+use polars::prelude::Engine;
+
 pub const NUMBER_COLUMN_NAME: &str = "fairspec:number";
 pub const ERROR_COLUMN_NAME: &str = "fairspec:error";
+
+pub const QUERY_ENGINE: Engine = Engine::Streaming;
 
 pub const BASE64_REGEX: &str =
     r"^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$";

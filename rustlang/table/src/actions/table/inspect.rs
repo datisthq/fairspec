@@ -14,6 +14,7 @@ use crate::actions::check::inspect::inspect_table_checks;
 use crate::actions::column::inspect::inspect_columns;
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::schema::get_polars_schema;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::check::TableCheck;
 use crate::models::column::ColumnMapping;
 use crate::models::schema::SchemaMapping;
@@ -191,8 +192,7 @@ fn inspect_rows(
             .filter(col(ERROR_COLUMN_NAME).is_not_null())
             .select([col(NUMBER_COLUMN_NAME).cast(DataType::UInt64)])
             .limit(max_row_errors as IdxSize)
-            .collect()
-            .into_result()?;
+            .collect_table()?;
 
         let numbers = frame.column(NUMBER_COLUMN_NAME).into_result()?;
         let numbers = numbers.u64().into_result()?;

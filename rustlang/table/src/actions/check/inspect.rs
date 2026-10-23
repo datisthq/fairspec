@@ -10,6 +10,7 @@ use polars::sql::sql_expr;
 use crate::actions::column::_shared::python::stringify_cell;
 use crate::actions::table::normalize::normalize_columns;
 use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::check::{TableCheck, TableCheckCondition};
 use crate::models::schema::SchemaMapping;
 use crate::models::table::Table;
@@ -232,8 +233,7 @@ fn collect_failing_rows(
         .filter(any_horizontal(is_failing).into_result()?)
         .select(selected)
         .limit(max_errors as IdxSize)
-        .collect()
-        .into_result()?;
+        .collect_table()?;
 
     let numbers = frame
         .column(NUMBER_COLUMN_NAME)
@@ -289,7 +289,7 @@ fn collect_table_values(table: Table, items: &[&CheckItem]) -> Result<Vec<(usize
                 .alias(get_check_name(item.index)))
         })
         .collect::<Result<Vec<Expr>>>()?;
-    let frame = table.select(conditions).collect().into_result()?;
+    let frame = table.select(conditions).collect_table()?;
 
     let mut values = Vec::with_capacity(items.len());
     for item in items {

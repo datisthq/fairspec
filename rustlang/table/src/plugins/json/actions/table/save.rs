@@ -6,6 +6,7 @@ use serde_json::{Map, Value};
 use crate::actions::table::denormalize::denormalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::DenormalizeColumnOptions;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::{SaveTableOptions, Table};
@@ -47,7 +48,7 @@ pub fn save_json_table(table: Table, options: &SaveTableOptions) -> Result<Strin
     };
     let table = denormalize_table(table, &table_schema, &denormalize_options)?;
 
-    let mut frame = table.collect().into_result()?;
+    let mut frame = table.collect_table()?;
     let mut text = Vec::new();
     let format = if is_lines {
         JsonFormat::JsonLines

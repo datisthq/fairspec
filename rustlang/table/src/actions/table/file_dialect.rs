@@ -3,6 +3,7 @@ use polars::prelude::*;
 
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::file_dialect::{get_comment_rows, get_header_rows, join_header_labels};
+use crate::helpers::table::LazyFrameExt;
 use crate::helpers::value::get_json_value;
 use crate::models::data::DataRow;
 use crate::models::file_dialect::FileDialectWithHeaderAndCommentRows;
@@ -27,7 +28,7 @@ pub fn join_header_rows(
     }
 
     let height = header_rows[header_rows.len() - 1] - skipped_rows;
-    let header_frame = table.clone().limit(height as u32).collect().into_result()?;
+    let header_frame = table.clone().limit(height as u32).collect_table()?;
     let header: Vec<DataRow> = header_rows
         .iter()
         .map(|number| {

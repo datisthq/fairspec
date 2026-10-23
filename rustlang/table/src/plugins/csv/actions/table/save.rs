@@ -1,5 +1,3 @@
-use std::fs::File;
-
 use fairspec_dataset::assert_local_path_vacant;
 use fairspec_metadata::{Error, FileDialect, PathOr, Resource, Result, get_supported_file_dialect};
 use polars::prelude::*;
@@ -7,8 +5,8 @@ use serde_json::Value;
 
 use crate::actions::table::denormalize::denormalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
-use crate::helpers::error::PolarsResultExt;
 use crate::helpers::file_dialect::get_header_rows;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::DenormalizeColumnOptions;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::{SaveTableOptions, Table};
@@ -64,20 +62,23 @@ pub fn save_csv_table(table: Table, options: &SaveTableOptions) -> Result<String
         _ => (b',', b'"', None),
     };
 
-    let mut frame = table.collect().into_result()?;
-    let file = File::create(path)?;
-    CsvWriter::new(file)
-        .include_header(!header_rows.is_empty())
-        .with_separator(separator)
-        .with_quote_char(quote_char)
-        .with_line_terminator(
-            line_terminator
-                .filter(|t| !t.is_empty())
-                .unwrap_or_else(|| "\n".to_string())
-                .into(),
-        )
-        .finish(&mut frame)
-        .into_result()?;
+    let serialize_options = SerializeOptions {
+        separator,
+        quote_char,
+        line_terminator: line_terminator
+            .filter(|t| !t.is_empty())
+            .unwrap_or_else(|| "\n".to_string())
+            .into(),
+        ..SerializeOptions::default()
+    };
+    // A `.tsv` path fails the extension check that `sink_csv` skips in py-polars
+    let csv_options = CsvWriterOptions {
+        include_header: !header_rows.is_empty(),
+        check_extension: false,
+        serialize_options: Arc::new(serialize_options),
+        ..CsvWriterOptions::default()
+    };
+    table.sink_table(path, FileWriteFormat::Csv(csv_options))?;
 
     Ok(path.clone())
 }

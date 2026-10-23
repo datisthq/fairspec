@@ -42,6 +42,8 @@ polars = { version = "0.55", default-features = false, features = [
   "string_pad",
   "replace",
   "extract_jsonpath",
+  "row_hash",
+  "streaming",
 ] }
 regex = "1.13"
 rusqlite = { version = "0.40", features = ["bundled"] }

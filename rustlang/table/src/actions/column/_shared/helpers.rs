@@ -9,6 +9,7 @@ use super::python::stringify_cell;
 use crate::actions::column::substitute::substitute_column;
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::general::get_is_object;
+use crate::helpers::table::LazyFrameExt;
 use crate::models::column::{ColumnMapping, PolarsColumn};
 use crate::models::table::Table;
 use crate::settings::NUMBER_COLUMN_NAME;
@@ -130,8 +131,7 @@ fn collect_cell_rows(
             substitute_column(mapping, col(source_name)).alias("source"),
             col(source_name).alias("cell"),
         ])
-        .collect()
-        .into_result()?;
+        .collect_table()?;
 
     let numbers = frame.column(NUMBER_COLUMN_NAME).into_result()?;
     let numbers = numbers.u64().into_result()?;
