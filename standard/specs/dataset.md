@@ -211,7 +211,7 @@ The type of the integrity check. It `MUST` be one of the following values:
 
 **`hash`**
 
-The hash of the resource's content. It `MUST` be a string.
+The hash of the resource's content. It `MUST` be the digest in lowercase hexadecimal, of the length its `type` produces: 32 characters for `md5`, 40 for `sha1`, 64 for `sha256` and 128 for `sha512`. Hashes are compared exactly.
 
 For example for a file with SHA-256 hash:
 
@@ -223,6 +223,8 @@ For example for a file with SHA-256 hash:
   }
 }
 ```
+
+A resource with inline [Data](#data) has no file bytes to hash, so it `MUST NOT` have `integrity`.
 
 For a multipart resource, the hash `MUST` be computed over the concatenation of the parts' bytes, taken in the order the paths appear in [Data](#data). It covers every byte of every part, including any header rows, and reordering the parts changes the hash.
 

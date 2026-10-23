@@ -35,6 +35,21 @@
       "allOf": [
         {
           "$ref": "#/$defs/Datacite"
+        },
+        {
+          "if": {
+            "required": ["data"],
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/JsonData"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "integrity": false
+            }
+          }
         }
       ],
       "properties": {
@@ -144,7 +159,77 @@
           "type": "string"
         }
       },
-      "required": ["type", "hash"]
+      "required": ["type", "hash"],
+      "allOf": [
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "md5"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{32}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{40}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha256"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha512"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{128}$"
+              }
+            }
+          }
+        }
+      ]
     },
     "DataSchema": {
       "oneOf": [

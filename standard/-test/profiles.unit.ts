@@ -129,6 +129,51 @@ describe("dataset resources", () => {
   })
 })
 
+describe("integrity", () => {
+  const sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  it.each([
+    {
+      valid: true,
+      resource: { data: "a.csv", integrity: { type: "sha256", hash: sha256 } },
+    },
+    {
+      valid: true,
+      resource: {
+        data: "a.csv",
+        integrity: { type: "md5", hash: "d41d8cd98f00b204e9800998ecf8427e" },
+      },
+    },
+    {
+      valid: false,
+      resource: {
+        data: "a.csv",
+        integrity: { type: "sha256", hash: sha256.toUpperCase() },
+      },
+    },
+    {
+      valid: false,
+      resource: { data: "a.csv", integrity: { type: "md5", hash: sha256 } },
+    },
+    {
+      valid: false,
+      resource: { data: "a.csv", integrity: { type: "sha1", hash: "zz" } },
+    },
+    {
+      valid: false,
+      resource: { data: { a: 1 }, integrity: { type: "sha256", hash: sha256 } },
+    },
+    {
+      valid: false,
+      resource: { data: [{ a: 1 }], integrity: { type: "sha256", hash: sha256 } },
+    },
+  ])(
+    "validates $resource.integrity on $resource.data as $valid",
+    ({ resource, valid }) => {
+      expect(getValidator("dataset.json")({ resources: [resource] })).toBe(valid)
+    },
+  )
+})
+
 describe("examples", () => {
   it.each(["dataset", "table-schema"])("validates %s.json", async name => {
     const text = await readFile(join(STANDARD, "examples", `${name}.json`), "utf8")

@@ -1,0 +1,41 @@
+[
+  {
+    "description": "an uppercase hash",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "md5", "hash": "D41D8CD98F00B204E9800998ECF8427E" }
+        }
+      ]
+    },
+    "tests": [{ "description": "is invalid", "data": { "a.csv": "" }, "valid": false }]
+  },
+  {
+    "description": "a hash of the wrong length for its type",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "sha256", "hash": "d41d8cd98f00b204e9800998ecf8427e" }
+        }
+      ]
+    },
+    "tests": [{ "description": "is invalid", "data": { "a.csv": "" }, "valid": false }]
+  },
+  {
+    "description": "integrity on inline data",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": [{ "id": 1 }],
+          "integrity": { "type": "md5", "hash": "d41d8cd98f00b204e9800998ecf8427e" }
+        }
+      ]
+    },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  }
+]

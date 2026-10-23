@@ -130,7 +130,7 @@ fn test_saved_dataset_validates_offline() {
         "resources": [{
             "name": "test_resource",
             "data": to_string(&dir.path().join("data.csv")),
-            "integrity": {"type": "sha256", "hash": "abc"},
+            "integrity": {"type": "sha256", "hash": "0000000000000000000000000000000000000000000000000000000000000000"},
         }],
     }));
     save_dataset_descriptor(&dataset, &path, false).unwrap();

@@ -50,7 +50,7 @@
           "name": "people",
           "data": "users.csv",
           "textual": false,
-          "integrity": { "type": "md5", "hash": "abc" },
+          "integrity": { "type": "md5", "hash": "00000000000000000000000000000000" },
           "fileDialect": { "format": "csv", "delimiter": ";" },
           "tableSchema": { "properties": { "id": { "type": "string" } } }
         }
@@ -66,7 +66,7 @@
               "name": "people",
               "data": "users.csv",
               "textual": false,
-              "integrity": { "type": "md5", "hash": "abc" },
+              "integrity": { "type": "md5", "hash": "00000000000000000000000000000000" },
               "fileDialect": { "format": "csv", "delimiter": ";" },
               "tableSchema": { "properties": { "id": { "type": "string" } } }
             }

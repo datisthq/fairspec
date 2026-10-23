@@ -112,7 +112,7 @@ class TestSaveDatasetDescriptor:
                 Resource(
                     name="test_resource",
                     data=str(tmp_path / "data.csv"),
-                    integrity=Integrity(type=IntegrityType.sha256, hash="abc"),
+                    integrity=Integrity(type=IntegrityType.sha256, hash="0" * 64),
                 ),
             ],
         )
