@@ -52,3 +52,13 @@ class TestLoadDescriptor:
 
         request = mock.call_args.args[0]
         assert request.get_header("User-agent") == USER_AGENT
+
+    def test_load_remote_descriptor_rejects_non_object(self):
+        with patch(
+            "fairspec_metadata.actions.descriptor.load.urllib.request.urlopen"
+        ) as mock:
+            mock.return_value.__enter__ = lambda s: s
+            mock.return_value.__exit__ = lambda s, *a: None
+            mock.return_value.read.return_value = b"[1, 2]"
+            with pytest.raises(Exception, match="expected a JSON object, got array"):
+                load_descriptor("https://example.com/test.json")

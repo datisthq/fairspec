@@ -160,6 +160,15 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   the Python twin keeps the same keys in the same order
 - `columnProperties` overrides are zod-parsed, so one without a `type` matches `UnknownColumnProperty`
   and keeps only its annotations (`title`, `description`, `rdfType`); constraints need the `type`
+- **Every remote fetch goes through `fetchRemote`** (`typescript/metadata/actions/remote/fetch.ts`),
+  never bare `fetch`: it applies the host policy (`setHostPolicy`, `FAIRSPEC_HOST_POLICY`, default
+  `any`; `startServer` sets `public`, `createServer` does not). Under `public` in Node it passes an
+  npm `undici` `Agent` whose `connect.lookup` refuses non-public addresses, and follows redirects
+  by hand, checking literal IP hosts on each hop, because Node skips `lookup` for literals. Under
+  `any` it is plain global `fetch`, which Polly records. The Agent goes in through
+  `Object.assign` because `@types/node` pins older undici types. Outside real Node (a browser,
+  Bun, Deno) it cannot check names, so `public` fails closed there: only literal public IPs pass,
+  and redirects are refused (`redirect: "error"`)
 - **A remote API response is parsed at the service boundary** — a dataset plugin's
   `make*ApiRequest` takes a required zod `schema` and returns its output; never `as T`. A
   response model requires nothing the API may omit or null (real CKAN and Zenodo send `null`

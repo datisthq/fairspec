@@ -39,6 +39,8 @@ from .actions.file_dialect.validate import (
     FileDialectValidationResult,
     validate_file_dialect,
 )
+from .actions.host.address import get_is_public_address
+from .actions.host.policy import get_host_policy, set_host_policy
 from .actions.json.inspect import inspect_json
 from .actions.json_schema.assert_ import assert_json_schema
 from .actions.json_schema.inspect import inspect_json_schema
@@ -59,6 +61,7 @@ from .actions.path.normalize import normalize_path
 from .actions.profile.assert_ import assert_profile
 from .actions.profile.load import load_profile
 from .actions.profile.registry import profile_registry
+from .actions.remote.fetch import fetch_remote
 from .actions.report.create import create_report
 from .actions.resource.data import (
     get_data_first_path,
@@ -243,6 +246,7 @@ from .models.file_dialect.unknown import UnknownFileDialect
 from .models.file_dialect.xlsx import XlsxFileDialect
 from .models.foreign_key import ForeignKey, ForeignKeyReference
 from .models.integrity import Integrity, IntegrityType
+from .models.host import HostPolicy
 from .models.json_schema import JsonSchema
 from .models.path import ExternalPath, InternalPath, Path
 from .models.profile import Profile, ProfileRegistry, ProfileType
@@ -275,6 +279,7 @@ __all__ = [
     "denormalize_dataset",
     "denormalize_path",
     "denormalize_resource",
+    "fetch_remote",
     "FileDialectValidationResult",
     "get_base_property_type",
     "get_basepath",
@@ -290,8 +295,10 @@ __all__ = [
     "get_file_name",
     "get_file_name_slug",
     "get_file_protocol",
+    "get_host_policy",
     "get_is_descriptor",
     "get_is_nullable_property_type",
+    "get_is_public_address",
     "get_is_remote_path",
     "get_is_remote_resource",
     "get_supported_file_dialect",
@@ -322,6 +329,7 @@ __all__ = [
     "save_file_dialect",
     "save_json_schema",
     "save_table_schema",
+    "set_host_policy",
     "set_property_nullable",
     "stringify_descriptor",
     "TableSchemaValidationResult",
@@ -435,6 +443,7 @@ __all__ = [
     "GeojsonColumnProperty",
     "HexColumn",
     "HexColumnProperty",
+    "HostPolicy",
     "Integrity",
     "IntegerCategoricalColumnProperty",
     "IntegerCategoryItem",

@@ -24,6 +24,7 @@ pub mod error;
 pub mod exception;
 pub mod file_dialect;
 pub mod foreign_key;
+pub mod host;
 pub mod integrity;
 pub mod json_schema;
 pub mod path;

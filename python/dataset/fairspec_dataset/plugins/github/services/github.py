@@ -4,6 +4,7 @@ import json
 import urllib.request
 from typing import TYPE_CHECKING
 
+from fairspec_metadata import fetch_remote
 from fairspec_metadata.models.base import FairspecModel
 from pydantic import ValidationError
 
@@ -33,7 +34,7 @@ def make_github_api_request[M: FairspecModel](
 
     request = urllib.request.Request(url, data=data, headers=headers, method=method)
 
-    with urllib.request.urlopen(request) as response:
+    with fetch_remote(request) as response:
         data = json.loads(response.read().decode())
 
     try:

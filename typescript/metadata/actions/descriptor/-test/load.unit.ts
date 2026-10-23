@@ -35,13 +35,23 @@ describe("loadDescriptor", () => {
     const testUrl = "https://example.com/schema.json"
 
     globalThis.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve(expectedDescriptor),
+      text: () => Promise.resolve(JSON.stringify(expectedDescriptor)),
     })
 
     const descriptor = await loadDescriptor(testUrl)
 
     expect(descriptor).toEqual(expectedDescriptor)
-    expect(fetch).toHaveBeenCalledWith(testUrl)
+    expect(fetch).toHaveBeenCalledWith(testUrl, undefined)
+  })
+
+  it("rejects a remote descriptor that is not an object", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      text: () => Promise.resolve("[1, 2]"),
+    })
+
+    await expect(loadDescriptor("https://example.com/schema.json")).rejects.toThrow(
+      "Invalid descriptor: expected a JSON object, got array",
+    )
   })
 
   it("throws error for unsupported URL protocol", async () => {

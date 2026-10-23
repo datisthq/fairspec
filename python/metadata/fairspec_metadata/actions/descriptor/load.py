@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import urllib.request
 
 from .parse import parse_descriptor
@@ -8,6 +7,7 @@ from fairspec_metadata.actions.path.general import (
     get_file_protocol,
     get_is_remote_path,
 )
+from fairspec_metadata.actions.remote.fetch import fetch_remote
 from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.settings import USER_AGENT
 
@@ -43,7 +43,5 @@ def _load_remote_descriptor(path: str) -> Descriptor:
         raise Error(f"Unsupported remote protocol: {protocol}")
 
     request = urllib.request.Request(path, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request) as response:  # noqa: S310
-        descriptor: Descriptor = json.loads(response.read())
-
-    return descriptor
+    with fetch_remote(request) as response:
+        return parse_descriptor(response.read().decode("utf-8"))

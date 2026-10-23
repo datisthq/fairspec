@@ -46,6 +46,9 @@ report = validate_table(Resource(data="sales.csv", tableSchema="schema.json"))
   **`fairspec-inference`**, tighten it, then validate
 - Paths inside descriptors must be relative to the descriptor or `https://` URLs. Python
   rejects absolute paths, so run from the data's directory
+- The MCP server fetches only public URLs: one on `localhost` or a private network fails with
+  `Host … resolves to non-public address …`. Set `FAIRSPEC_HOST_POLICY=any` in the server's `env`
+  to reach it; the CLI and the libraries fetch any URL unless it is set to `public`
 - Validate a hand-written schema (`validate-schema`) before validating data against it. Otherwise
   a typo in the schema shows up as confusing data errors
 

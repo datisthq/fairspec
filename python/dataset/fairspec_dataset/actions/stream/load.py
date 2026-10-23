@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import urllib.request
 from io import BytesIO
 from typing import BinaryIO
 
-from fairspec_metadata import ResourceDataPath, get_is_remote_path
+from fairspec_metadata import ResourceDataPath, fetch_remote, get_is_remote_path
 
 
 def load_file_stream(
@@ -47,7 +46,7 @@ def _load_remote_file_stream(
     *,
     max_bytes: int | None = None,
 ) -> BinaryIO:
-    with urllib.request.urlopen(path) as response:
+    with fetch_remote(path) as response:
         if max_bytes is not None:
             data = response.read(max_bytes)
         else:

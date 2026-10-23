@@ -1,5 +1,7 @@
+import os
 from importlib.metadata import version
 
+from fairspec_library import set_host_policy
 from mcp.server.mcpserver import MCPServer
 
 from .helpers.tool import guard_tool
@@ -30,3 +32,10 @@ server.add_tool(guard_tool(validate_dataset_tool), name="validateDatasetTool")
 server.add_tool(guard_tool(validate_data_tool), name="validateDataTool")
 server.add_tool(guard_tool(validate_table_schema_tool), name="validateTableSchemaTool")
 server.add_tool(guard_tool(validate_table_tool), name="validateTableTool")
+
+
+def start_server() -> None:
+    """Serve over stdio; remote fetches reach only public hosts unless FAIRSPEC_HOST_POLICY is set."""
+    if not os.environ.get("FAIRSPEC_HOST_POLICY"):
+        set_host_policy("public")
+    server.run("stdio")

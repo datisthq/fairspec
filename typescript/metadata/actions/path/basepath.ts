@@ -1,4 +1,5 @@
 import { node } from "../../services/node.ts"
+import { fetchRemote } from "../remote/fetch.ts"
 import { getIsRemotePath } from "./general.ts"
 
 export async function resolveBasepath(path: string) {
@@ -7,7 +8,7 @@ export async function resolveBasepath(path: string) {
   // Resolves redirects
   if (isRemote) {
     const url = new URL(path)
-    const response = await fetch(url.toString(), { method: "HEAD" })
+    const response = await fetchRemote(url.toString(), { method: "HEAD" })
     path = response.url
   }
 

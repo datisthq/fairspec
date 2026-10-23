@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use fairspec_metadata::{Error, Result};
+use fairspec_metadata::{Error, Result, create_http_agent, create_http_error};
 use ureq::ResponseExt;
 
 const USER_AGENT: &str = "fairspec-rust";
@@ -20,7 +20,8 @@ pub struct HttpResponse {
     pub body: Vec<u8>,
 }
 
-/// Sends a request with the `fairspec-rust` user agent; non-2xx statuses are returned, not raised.
+/// Sends a request under the host policy with the `fairspec-rust` user agent; non-2xx
+/// statuses are returned, not raised.
 pub fn send_http_request(request: &HttpRequest) -> Result<HttpResponse> {
     check_network_access(&request.url)?;
     let mut builder = ureq::http::Request::builder()
@@ -34,13 +35,10 @@ pub fn send_http_request(request: &HttpRequest) -> Result<HttpResponse> {
         .body(request.body.clone().unwrap_or_default())
         .map_err(|error| create_error(&request.url, error))?;
 
-    let agent: ureq::Agent = ureq::Agent::config_builder()
-        .http_status_as_error(false)
-        .build()
-        .into();
+    let agent = create_http_agent(ureq::Agent::config_builder().http_status_as_error(false))?;
     let response = agent
         .run(http_request)
-        .map_err(|error| create_error(&request.url, error))?;
+        .map_err(|error| create_http_error(&request.url, error))?;
     let status = response.status().as_u16();
     let url = response.get_uri().to_string();
     let mut body = Vec::new();
@@ -52,13 +50,14 @@ pub fn send_http_request(request: &HttpRequest) -> Result<HttpResponse> {
     Ok(HttpResponse { status, url, body })
 }
 
-/// Streams a remote file, reading at most `max_bytes` when given.
+/// Streams a remote file under the host policy, reading at most `max_bytes` when given.
 pub fn load_remote_stream(url: &str, max_bytes: Option<usize>) -> Result<Box<dyn Read + Send>> {
     check_network_access(url)?;
-    let response = ureq::get(url)
+    let response = create_http_agent(ureq::Agent::config_builder())?
+        .get(url)
         .header("User-Agent", USER_AGENT)
         .call()
-        .map_err(|error| create_error(url, error))?;
+        .map_err(|error| create_http_error(url, error))?;
     let reader = response.into_body().into_reader();
     Ok(match max_bytes {
         Some(max_bytes) => Box::new(reader.take(max_bytes as u64)),

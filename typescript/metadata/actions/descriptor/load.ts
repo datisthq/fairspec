@@ -1,5 +1,6 @@
 import { node } from "../../services/node.ts"
 import { getFileProtocol, getIsRemotePath } from "../../actions/path/general.ts"
+import { fetchRemote } from "../../actions/remote/fetch.ts"
 import { parseDescriptor } from "./parse.ts"
 
 /**
@@ -40,8 +41,6 @@ async function loadRemoteDescriptor(path: string) {
     throw new Error(`Unsupported remote protocol: ${protocol}`)
   }
 
-  const response = await fetch(url.toString())
-  const descriptor = (await response.json()) as Record<string, any>
-
-  return descriptor
+  const response = await fetchRemote(url.toString())
+  return parseDescriptor(await response.text())
 }

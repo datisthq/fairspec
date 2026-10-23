@@ -137,6 +137,7 @@ pub use models::file_dialect::tsv::{TsvFileDialect, TsvFormat};
 pub use models::file_dialect::unknown::UnknownFileDialect;
 pub use models::file_dialect::xlsx::{XlsxFileDialect, XlsxFormat};
 pub use models::foreign_key::{ForeignKey, ForeignKeyReference};
+pub use models::host::HostPolicy;
 pub use models::integrity::{Integrity, IntegrityType};
 pub use models::json_schema::JsonSchema;
 pub use models::path::{
@@ -183,6 +184,8 @@ pub use actions::file_dialect::resolve::resolve_file_dialect;
 pub use actions::file_dialect::save::save_file_dialect;
 pub use actions::file_dialect::support::get_supported_file_dialect;
 pub use actions::file_dialect::validate::{FileDialectValidationResult, validate_file_dialect};
+pub use actions::host::address::get_is_public_address;
+pub use actions::host::policy::{get_host_policy, set_host_policy};
 pub use actions::json::inspect::{JsonIssue, inspect_json};
 pub use actions::json_schema::assert::assert_json_schema;
 pub use actions::json_schema::inspect::inspect_json_schema;
@@ -199,6 +202,7 @@ pub use actions::path::normalize::normalize_path;
 pub use actions::profile::assert::assert_profile;
 pub use actions::profile::load::load_profile;
 pub use actions::profile::registry::PROFILE_REGISTRY;
+pub use actions::remote::agent::{create_http_agent, create_http_error};
 pub use actions::report::create::create_report;
 pub use actions::resource::data::{
     get_data_first_path, get_data_path, get_data_paths, get_data_records, get_data_value,

@@ -1,4 +1,5 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { fetchRemote } from "@fairspec/metadata"
 import { z } from "zod"
 
 export async function makeZenodoApiRequest<S extends z.ZodType>(options: {
@@ -36,7 +37,7 @@ export async function makeZenodoApiRequest<S extends z.ZodType>(options: {
     headers["Content-Type"] = "application/json"
   }
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchRemote(url.toString(), {
     method,
     headers,
     body,

@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vite-plus/test"
+import { setHostPolicy } from "@fairspec/metadata"
+import { afterEach, describe, expect, it } from "vite-plus/test"
 import { writeTempFile } from "../../file/temp.ts"
 import { loadFileStream } from "../load.ts"
 
@@ -156,5 +157,19 @@ describe("loadFileStream", () => {
 
     const result = Buffer.concat(chunks).toString("utf-8")
     expect(result).toBe(content)
+  })
+})
+
+describe("loadFileStream host policy", () => {
+  afterEach(() => {
+    setHostPolicy(undefined)
+  })
+
+  it("blocks a non-public host under the public policy", async () => {
+    setHostPolicy("public")
+
+    await expect(
+      loadFileStream("http://169.254.169.254/latest/meta-data/"),
+    ).rejects.toThrow("non-public address 169.254.169.254")
   })
 })

@@ -19,3 +19,21 @@ fairspec table validate --json '{"path": "data.csv", "check": ["positive-price=p
 ```
 
 `fairspec --llms` prints every command's input and output as JSON Schema, in the shape of an MCP `tools/list` response.
+
+## Remote URLs
+
+Commands fetch any `http(s)` URL you give them, intranet and `localhost` included. Set `FAIRSPEC_HOST_POLICY=public` to refuse hosts that resolve to a loopback, private, link-local (cloud metadata at `169.254.169.254` among them) or other non-public address. The check runs on the address actually connected to and again on every redirect, and proxy settings are ignored under it.
+
+`fairspec mcp` takes URLs from model input, so it starts with the `public` policy unless `FAIRSPEC_HOST_POLICY` is set; `FAIRSPEC_HOST_POLICY=any` lets it reach intranet hosts again:
+
+```json
+{
+  "mcpServers": {
+    "fairspec": {
+      "command": "npx",
+      "args": ["fairspec@latest", "mcp"],
+      "env": { "FAIRSPEC_HOST_POLICY": "any" }
+    }
+  }
+}
+```

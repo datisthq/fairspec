@@ -1,4 +1,5 @@
 import pytest
+from fairspec_metadata import set_host_policy
 
 from fairspec_dataset.actions.file.temp import write_temp_file
 
@@ -67,3 +68,13 @@ class TestLoadFileStream:
         path = write_temp_file("Short")
         stream = load_file_stream(path, max_bytes=1000)
         assert stream.read() == b"Short"
+
+
+class TestLoadFileStreamHostPolicy:
+    def test_public_policy_blocks_non_public_host(self):
+        set_host_policy("public")
+        try:
+            with pytest.raises(Exception, match="non-public address 169.254.169.254"):
+                load_file_stream("http://169.254.169.254/latest/meta-data/")
+        finally:
+            set_host_policy(None)

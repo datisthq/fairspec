@@ -57,12 +57,13 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - `normalize_dataset` follows TypeScript and never re-parses its output into a `Dataset`: Python's re-validation rejects a schema path outside the cwd
 - Local paths come out with `/` separators; Python's `urlsplit`/`urlunsplit` rules are reimplemented by hand
 - HTTP goes through `fetch_remote_text` / `resolve_remote_url` in `actions/descriptor/load.rs` with the `fairspec-rust` user agent; under `cfg(test)` they refuse every host but 127.0.0.1, so tests never touch the network
+- **Every ureq agent comes from `create_http_agent`** (`actions/remote/agent.rs`), and its errors go through `create_http_error`: under the `Public` host policy (`set_host_policy`, `FAIRSPEC_HOST_POLICY`; `serve_stdio` sets it) the agent's resolver refuses non-public addresses on every hop and the proxy is off. The resolver is ureq's semver-exempt `unversioned` API, so `ureq` is pinned exactly (`=3.5.0`) in metadata and dataset; bump it on purpose and re-run the agent tests. The policy is process-wide, so a test that sets it lives in its own `tests/*.rs` binary, never among the parallel unit tests
 - Slugify tables are generated from Python's and must stay byte-exact with both twins
 
 ## Dataset
 
 - Sync API: streams are `FileStream = Box<dyn Read + Send>`; Python's thread pool is `helpers/concurrency.rs` (scoped threads per chunk, nested calls run inline)
-- All dataset HTTP goes through `dataset/src/helpers/http.rs` (`send_http_request`, `load_remote_stream`) — the one place a host policy applies; under `cfg(test)` it refuses every host but 127.0.0.1, so remote tests use `helpers/test_server.rs` or a replayed cassette
+- All dataset HTTP goes through `dataset/src/helpers/http.rs` (`send_http_request`, `load_remote_stream`), which builds its agents with metadata's `create_http_agent`; under `cfg(test)` it refuses every host but 127.0.0.1, so remote tests use `helpers/test_server.rs` or a replayed cassette
 - Temp files and folders are deleted at exit through `libc::atexit` (`helpers/cleanup.rs`), Python's `atexit`, unless `persist`. Every `tempfile::Builder` takes `.prefix("tmp")` like Python's `mkstemp`: the default `.tmp` makes a dot-leading file name that fails the dataset profile's path pattern
 - `infer_textual` is "no control bytes and valid UTF-8": Python's charset-normalizer fallback can never answer `utf-8`/`ascii` for non-UTF-8 bytes (it names codecs `utf_8`), so no detector is needed
 - Plugins implement `MetadataPlugin` (every hook defaults to `Ok(None)`) and `DatasetPlugin`

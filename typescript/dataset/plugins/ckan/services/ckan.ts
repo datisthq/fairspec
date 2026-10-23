@@ -1,4 +1,5 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { fetchRemote } from "@fairspec/metadata"
 import { z } from "zod"
 
 export async function makeCkanApiRequest<S extends z.ZodType>(options: {
@@ -31,7 +32,7 @@ export async function makeCkanApiRequest<S extends z.ZodType>(options: {
     headers["Content-Type"] = "application/json"
   }
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchRemote(url.toString(), {
     method: "POST",
     headers,
     body,

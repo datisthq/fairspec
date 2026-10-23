@@ -1,7 +1,7 @@
 import { createReadStream } from "node:fs"
 import type { ResourceDataPath } from "@fairspec/metadata"
 import { Readable, Transform } from "node:stream"
-import { getIsRemotePath } from "@fairspec/metadata"
+import { fetchRemote, getIsRemotePath } from "@fairspec/metadata"
 
 export async function loadFileStream(
   dataPath: ResourceDataPath,
@@ -33,7 +33,7 @@ async function loadLocalFileStream(path: string, options?: { maxBytes?: number }
 }
 
 async function loadRemoteFileStream(path: string, options?: { maxBytes?: number }) {
-  const response = await fetch(path)
+  const response = await fetchRemote(path)
   if (!response.body) {
     throw new Error(`Cannot stream remote resource: ${path}`)
   }

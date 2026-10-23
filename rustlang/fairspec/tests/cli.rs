@@ -116,6 +116,7 @@ fn test_should_report_a_missing_argument() {
 fn call_mcp(requests: &[Value]) -> Vec<Value> {
     let mut child = Command::new(BINARY)
         .arg("mcp")
+        .env_remove("FAIRSPEC_HOST_POLICY")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
@@ -222,4 +223,21 @@ fn test_should_report_real_message_of_failed_tool_over_stdio() {
     let result = &responses[0]["result"];
     assert_eq!(result["isError"], true);
     assert!(result["content"].to_string().contains("missing"));
+}
+
+#[test]
+fn test_should_block_non_public_hosts_over_stdio() {
+    let responses = call_mcp(&[
+        json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+            "name": "previewFileTool", "arguments": {"path": "http://169.254.169.254/latest/meta-data/"},
+        }}),
+    ]);
+
+    let result = &responses[0]["result"];
+    assert_eq!(result["isError"], true);
+    assert!(
+        result["content"]
+            .to_string()
+            .contains("Host 169.254.169.254 resolves to non-public address 169.254.169.254")
+    );
 }

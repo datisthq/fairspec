@@ -67,3 +67,6 @@ Both libraries return a lazy frame: call `.collect()` before reading rows, and n
   Check `fairspec table infer-dialect <path> --json` and override it with dialect flags
 - Paths inside a descriptor are relative to it. Python rejects absolute ones, so run from the data's
   directory
+- The MCP server fetches only public URLs: one on `localhost` or a private network fails with
+  `Host … resolves to non-public address …`. Set `FAIRSPEC_HOST_POLICY=any` in the server's `env`
+  to reach it; the CLI and the libraries fetch any URL unless it is set to `public`

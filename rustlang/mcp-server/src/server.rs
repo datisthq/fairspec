@@ -1,4 +1,4 @@
-use fairspec_library::fairspec_metadata::{Error, Result};
+use fairspec_library::fairspec_metadata::{Error, HostPolicy, Result, set_host_policy};
 use rmcp::model::{
     CallToolRequestParams, CallToolResponse, CallToolResult, ContentBlock, Implementation,
     ListToolsResult, PaginatedRequestParams, ServerCapabilities, ServerConfig,
@@ -29,7 +29,9 @@ pub struct FairspecServer;
 /// Serves the tools over stdin and stdout until the client disconnects. Blocks on its own
 /// runtime; nothing but the transport writes to stdout.
 pub fn serve_stdio() -> Result<()> {
-    // fix-ssrf: set the library's HTTP host policy here, before any tool can run
+    if std::env::var_os("FAIRSPEC_HOST_POLICY").is_none_or(|value| value.is_empty()) {
+        set_host_policy(Some(HostPolicy::Public));
+    }
     let to_error = |error: std::io::Error| Error::Load(error.to_string());
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()

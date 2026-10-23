@@ -2,6 +2,7 @@ use std::fs;
 
 use super::parse::parse_descriptor;
 use crate::actions::path::general::{get_file_protocol, get_is_remote_path};
+use crate::actions::remote::agent::{create_http_agent, create_http_error};
 use crate::models::descriptor::Descriptor;
 use crate::models::exception::{Error, Result};
 use crate::models::path::PathOr;
@@ -28,13 +29,14 @@ pub(crate) fn load_descriptor_source(source: impl Into<PathOr<Descriptor>>) -> R
     }
 }
 
-/// Fetches a remote text with the crate's user agent; unit tests reach only the loopback host.
+/// Fetches a remote text under the host policy; unit tests reach only the loopback host.
 pub(crate) fn fetch_remote_text(url: &str) -> Result<String> {
     check_network_access(url)?;
-    let mut response = ureq::get(url)
+    let mut response = create_http_agent(ureq::Agent::config_builder())?
+        .get(url)
         .header("User-Agent", crate::settings::USER_AGENT)
         .call()
-        .map_err(|error| Error::Http(format!("{url}: {error}")))?;
+        .map_err(|error| create_http_error(url, error))?;
     response
         .body_mut()
         .read_to_string()
@@ -46,10 +48,11 @@ pub(crate) fn resolve_remote_url(url: &str) -> Result<String> {
     use ureq::ResponseExt;
 
     check_network_access(url)?;
-    let response = ureq::head(url)
+    let response = create_http_agent(ureq::Agent::config_builder())?
+        .head(url)
         .header("User-Agent", crate::settings::USER_AGENT)
         .call()
-        .map_err(|error| Error::Http(format!("{url}: {error}")))?;
+        .map_err(|error| create_http_error(url, error))?;
     Ok(response.get_uri().to_string())
 }
 

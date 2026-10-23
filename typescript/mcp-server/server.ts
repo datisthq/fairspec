@@ -1,3 +1,4 @@
+import { setHostPolicy } from "@fairspec/library"
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import packageJson from "./package.json" with { type: "json" }
@@ -51,8 +52,10 @@ export function createServer() {
 }
 
 /**
- * Serve the Fairspec MCP server over stdio.
+ * Serve the Fairspec MCP server over stdio. Remote fetches reach only public hosts unless
+ * FAIRSPEC_HOST_POLICY is set.
  */
 export async function startServer() {
+  if (!process.env.FAIRSPEC_HOST_POLICY) setHostPolicy("public")
   await createServer().connect(new StdioServerTransport())
 }

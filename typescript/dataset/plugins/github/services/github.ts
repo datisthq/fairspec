@@ -1,4 +1,5 @@
 import type { Descriptor } from "@fairspec/metadata"
+import { fetchRemote } from "@fairspec/metadata"
 import { z } from "zod"
 
 /**
@@ -47,7 +48,7 @@ export async function makeGithubApiRequest<S extends z.ZodType>(options: {
     headers["Content-Type"] = "application/json"
   }
 
-  const response = await fetch(url, {
+  const response = await fetchRemote(url, {
     method,
     headers,
     body,

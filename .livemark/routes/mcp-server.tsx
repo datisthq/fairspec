@@ -330,8 +330,14 @@ const connectPoints: Point[] = [
   {
     icon: Laptop,
     title: "Runs on your machine",
-    description:
-      "The server is a local process your assistant starts, reading the files and URLs you point it at.",
+    description: (
+      <>
+        The server is a local process your assistant starts. It reads the files you point
+        it at and fetches only public URLs; set{" "}
+        <code className="font-mono text-foreground">FAIRSPEC_HOST_POLICY=any</code> to
+        reach localhost or intranet hosts.
+      </>
+    ),
   },
   {
     icon: Wrench,

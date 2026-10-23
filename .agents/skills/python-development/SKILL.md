@@ -115,6 +115,13 @@ relative import reaches beyond the top-level package.
   (`load_table(res, **options)`); declared-but-dropped flags parse fine and do nothing. The
   same holds for a hand-built options TypedDict: its keys are snake_case where the twin is not
   (`InferFileDialectOptions` takes `sample_bytes`), so let `ty` check the key
+- **Every remote fetch goes through `fetch_remote`** (`metadata/fairspec_metadata/actions/remote/fetch.py`),
+  never `urllib.request.urlopen`: it applies the host policy (`set_host_policy`, `FAIRSPEC_HOST_POLICY`,
+  default `any`; `start_server` in the MCP server sets `public`). Under `public` it opens through
+  an opener with only http(s) handlers and no proxy, whose connections check each resolved
+  address and connect to it, so DNS rebinding and redirects cannot reach a non-public host. Under
+  `any` it is plain `urlopen`, which is what tests patch (`urllib.request.urlopen`) and VCR replays.
+  The address ranges and the refusal message are identical in all three twins
 - **A remote API response is parsed at the service boundary** — a dataset plugin's
   `make_*_api_request` takes a required `model` and returns `model.model_validate(...)`; never
   `Model(**dict)` or raw `dict["key"]` reads. Response models keep the same required fields as
