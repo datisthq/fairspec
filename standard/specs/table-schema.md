@@ -314,7 +314,7 @@ For example, to allow only the listed columns:
 ### `missingValues`
 
 > [!NOTE]
-> Table Schema level missing values works in addition to [File Dialect](../file-dialect#nullsequence) null sequences. For example, CSV Format treats no values between commas (`,,`) as `null` so there is no need to provide `''` as a Table Schema missing value in this case.
+> Table Schema level missing values works in addition to [File Dialect](../file-dialect#nullsequence) null sequences. For example, CSV Format treats no values between commas (`,,`) as `null` so there is no need to provide `''` as a Table Schema missing value in this case; a quoted `""` stays an empty string.
 
 An optional list of values that represent missing or null data across all columns in the table. Each item can be either a simple value or an object with `value` and `label` properties for documentation purposes. The values type `MUST` be `"string"` or `"integer"`.
 

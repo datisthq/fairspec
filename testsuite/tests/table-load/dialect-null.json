@@ -2,7 +2,10 @@
   {
     "description": "nullSequence in csv",
     "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
-    "fileDialect": { "format": "csv", "nullSequence": "NA" },
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA"
+    },
     "tests": [
       {
         "description": "the sequence is read as null",
@@ -32,7 +35,10 @@
     "description": "nullSequence in tsv",
     "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
     "format": "tsv",
-    "fileDialect": { "format": "tsv", "nullSequence": "\\N" },
+    "fileDialect": {
+      "format": "tsv",
+      "nullSequence": "\\N"
+    },
     "tests": [
       {
         "description": "the sequence is read as null",
@@ -50,7 +56,10 @@
   {
     "description": "empty cells in csv",
     "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
-    "fileDialect": { "format": "csv", "headerRows": [1] },
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
     "tests": [
       {
         "description": "an empty cell is null",
@@ -69,7 +78,10 @@
     "description": "empty cells in tsv",
     "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
     "format": "tsv",
-    "fileDialect": { "format": "tsv", "headerRows": [1] },
+    "fileDialect": {
+      "format": "tsv",
+      "headerRows": [1]
+    },
     "tests": [
       {
         "description": "an empty cell is null",
@@ -79,6 +91,74 @@
           "rows": [
             [1, null],
             [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoted and unquoted empty cells in csv",
+    "comment": "An explicit schema keeps schema inference, whose default missingValues include \"\", out of the result",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#nullsequence"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1]
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an unquoted empty cell is null and a quoted one is an empty string",
+        "data": "id,name\n1,\n2,\"\"\n3,NA\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, ""],
+            [3, "NA"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoted and unquoted empty cells with a nullSequence",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the sequence is null in addition to the unquoted empty cell",
+        "data": "id,name\n1,\n2,\"\"\n3,NA\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, ""],
+            [3, null]
           ]
         }
       }

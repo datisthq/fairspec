@@ -94,7 +94,7 @@ For example:
 
 #### CSV
 
-A format for comma-separated values files. It `MUST` have [`format`](#format) set to `"csv"`. It `MUST` be `utf-8` encoded. Empty cells (`,,`) are `null` values.
+A format for comma-separated values files. It `MUST` have [`format`](#format) set to `"csv"`. It `MUST` be `utf-8` encoded. An unquoted empty cell (`,,`) is `null`, and a quoted empty cell (`,"",`) is an empty string.
 
 Metadata example:
 
@@ -129,7 +129,7 @@ Format properties:
 
 #### TSV
 
-A format for tab-separated values files. It `MUST` have [`format`](#format) set to `"tsv"`. It `MUST` be `utf-8` encoded. Empty cells (two adjacent tabs) are `null` values.
+A format for tab-separated values files. It `MUST` have [`format`](#format) set to `"tsv"`. It `MUST` be `utf-8` encoded. An empty cell (two adjacent tabs) is `null`.
 
 Metadata example:
 
@@ -137,7 +137,7 @@ Metadata example:
 {
   "fileDialect": {
     "format": "tsv",
-    "nullSequence": "\N"
+    "nullSequence": "\\N"
   }
 }
 ```
@@ -453,7 +453,7 @@ id,name
 > [!NOTE]
 > Supported formats: **csv**, **tsv**
 
-It `MUST` be a string. This property specifies the null sequence representing missing values in the data.
+It `MUST` be a string. This property specifies the null sequence representing missing values in the data. A cell equal to the sequence is read as `null`, in addition to the empty cells the format reads as `null`.
 
 For example:
 
