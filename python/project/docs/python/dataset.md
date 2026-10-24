@@ -116,7 +116,7 @@ Example output:
     {
       "name": "users",
       "data": "users.csv",
-      "fileDialect": { "name": "csv", "delimiter": "," },
+      "fileDialect": { "format": "csv", "delimiter": "," },
       "tableSchema": {
         "properties": {
           "id": { "type": "integer" },

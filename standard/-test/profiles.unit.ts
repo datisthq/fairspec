@@ -108,6 +108,9 @@ describe("file dialects", () => {
     { valid: true, dialect: { format: "xlsx", sheetName: "data" } },
     { valid: false, dialect: { format: "xlsx", sheetName: "data", sheetNumber: 1 } },
     { valid: false, dialect: { format: "ods", sheetName: "data", sheetNumber: 2 } },
+    { valid: true, dialect: { format: "custom", title: "My custom format" } },
+    { valid: false, dialect: { delimiter: ";" } },
+    { valid: false, dialect: {} },
   ])("validates $dialect as $valid", ({ dialect, valid }) => {
     expect(getValidator("file-dialect.json")(dialect)).toBe(valid)
   })

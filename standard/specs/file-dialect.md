@@ -30,7 +30,7 @@ A Fairspec File Dialect is a [JSON](https://json.org/) resource that `MUST` be a
 
 ## File Dialect
 
-A top-level descriptor object describing a file dialect. It `MAY` have the following properties (all optional unless otherwise stated):
+A top-level descriptor object describing a file dialect. It `MUST` have a [`format`](#format) and `MAY` have the following properties (all optional unless otherwise stated):
 
 ### `$schema` [#profile]
 
@@ -43,13 +43,14 @@ For example for version X.Y.Z of the profile:
 
 ```json
 {
-  "$schema": "https://fairspec.org/profiles/X.Y.Z/file-dialect.json"
+  "$schema": "https://fairspec.org/profiles/X.Y.Z/file-dialect.json",
+  "format": "csv"
 }
 ```
 
-### `format`
+### `format` [required] [#format]
 
-The file format of the dialect. It `MUST` be a `string`.
+The file format of the dialect. It is required and `MUST` be a `string`.
 
 For example for a CSV file:
 
@@ -70,6 +71,7 @@ For example:
 ```json
 {
   "fileDialect": {
+    "format": "custom",
     "title": "My custom format"
   }
 }
@@ -84,6 +86,7 @@ For example:
 ```json
 {
   "fileDialect": {
+    "format": "custom",
     "title": "My custom format",
     "description": "You can open this file with OpenOffice"
   }

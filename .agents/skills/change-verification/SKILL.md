@@ -72,7 +72,9 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    compiles, every JSON example in the Data Schema and Table Schema specs validates, and the
    fixtures in `standard/-test/profiles.unit.ts` hold. A profile fix adds a valid and an invalid
    case there, failing before the fix. A profile `if` matches when its property is absent, so every
-   `if` names it under `required`; a set of allowed values is `enum`, never `const`. A pattern the models repeat (the internal path in
+   `if` names it under `required`. Whether a property is required must agree across the spec
+   heading, the profile and the three twins' models: the model step rejects what the profile
+   allows, so a gap passes the profile tests and fails every library; a set of allowed values is `enum`, never `const`. A pattern the models repeat (the internal path in
    `typescript/metadata/models/path.ts` and `python/metadata/fairspec_metadata/models/path.py`)
    stays identical to the profile's and lookahead-free, since pydantic runs Rust's `regex` engine. A change to a Python model, or a pattern it carries, also runs
    `pnpm -C rust sync:schemas`: the Rust MCP schemas copy Python's, and a stale copy fails nothing. A profile change then runs `pnpm sync:profiles` and

@@ -234,6 +234,8 @@ For a multipart resource, the hash `MUST` be computed over the concatenation of 
 
 It `MUST` be a [Path](#path) to a File Dialect or an object with the File Dialect. The File Dialect `MUST` be compatible with the [Fairspec File Dialect](../file-dialect) specification. If present, [Data](#data) `MUST` be compatible with the provided dialect.
 
+Without a dialect, an implementation `MAY` infer the format on a best-effort basis, for example from the file extension or the content; how it does so is implementation-specific. A resource that every implementation must read the same way `SHOULD` declare its dialect's `format`.
+
 For example, for a file with CSV format:
 
 ```json
