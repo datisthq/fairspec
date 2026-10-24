@@ -138,7 +138,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 - The hero is livemark's: a `HeroCarousel` bleeding to `xl:w-[60rem]`, 16:10 slides, `lg:pt-8 lg:pb-14` so title and
   window sit high on the first screen, and a source chip hanging off the frame's
   bottom-left corner (`lg:-bottom-10 lg:-left-10`, as irondocs). Slides are terminal screenshots rendered from
-  real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself. The
+  real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself, and the
+  home Standard slide is markup (`content`), the annotated `dataset.json`. The
   home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
 - Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
   `shots` list and the showcase samples), imported relatively: a new file under `.livemark/components/` must not take a

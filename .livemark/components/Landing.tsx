@@ -17,12 +17,11 @@ export interface Shot {
   alt: string
 }
 
-export interface Slide {
+export type Slide = {
   id: string
   title: string
-  shot: Shot
   source: { eyebrow: string; file: string; code: ReactNode }
-}
+} & ({ shot: Shot } | { content: ReactNode })
 
 export interface Point {
   icon: ComponentType<SVGProps<SVGSVGElement>>
@@ -169,7 +168,13 @@ function HeroCarousel(props: { slides: Slide[] }) {
                 index === active ? "opacity-100" : "pointer-events-none opacity-0",
               )}
             >
-              <ShotPicture shot={slide.shot} className="aspect-[16/10] w-full" />
+              {"shot" in slide ? (
+                <ShotPicture shot={slide.shot} className="aspect-[16/10] w-full" />
+              ) : (
+                <div className="w-full overflow-hidden sm:aspect-[16/10]">
+                  {slide.content}
+                </div>
+              )}
             </div>
           ))}
         </div>

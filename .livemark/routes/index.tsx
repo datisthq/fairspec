@@ -14,6 +14,7 @@ import {
   Sparkles,
   SquareTerminal,
 } from "lucide-react"
+import type { ReactNode } from "react"
 import { BackToTop } from "livemark/components/BackToTop"
 import { Banner } from "livemark/components/Banner"
 import { Header } from "livemark/components/Header"
@@ -57,7 +58,7 @@ function Landing() {
           eyebrow="Technical preview"
           title={
             <>
-              Make your data <Highlight>FAIR</Highlight>
+              Standard and software to make data <Highlight>FAIR</Highlight>
             </>
           }
           lede={
@@ -201,7 +202,7 @@ const slides: Slide[] = [
   {
     id: "standard",
     title: "Standard",
-    shot: shots.standard,
+    content: <SpecPreview />,
     source: {
       eyebrow: "Checked by a profile",
       file: "$schema",
@@ -357,6 +358,29 @@ const tools: Point[] = [
 ]
 
 /* ─────────────────────────── Samples ─────────────────────────── */
+
+function SpecPreview() {
+  return (
+    <div className="space-y-3 px-3 py-4 font-mono text-[10.5px] leading-relaxed sm:p-5 sm:text-sm xl:p-8 xl:text-base">
+      <SpecLabel>DataCite compatible metadata</SpecLabel>
+      <pre className="overflow-x-auto">
+        <DataciteLines />
+      </pre>
+      <SpecLabel>JSONSchema compatible for the data</SpecLabel>
+      <pre className="overflow-x-auto">
+        <TableSchemaLines />
+      </pre>
+    </div>
+  )
+}
+
+function SpecLabel(props: { children: ReactNode }) {
+  return (
+    <div className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
+      {props.children}
+    </div>
+  )
+}
 
 function DataciteLines() {
   return (

@@ -12,7 +12,6 @@ an assistant, so the slides are **terminal sessions** rendered as images, listed
 
 | shot           | shows                                                          | used on   |
 | -------------- | -------------------------------------------------------------- | --------- |
-| `standard`     | `cat dataset.json`, then `fairspec dataset validate`           | home      |
 | `validate`     | `fairspec table validate broken.csv`, then its `--json` errors | home, CLI |
 | `infer`        | `fairspec table infer-schema`, then validating against it      | CLI       |
 | `preview`      | `fairspec table preview members.csv`                           | CLI       |
@@ -22,7 +21,9 @@ an assistant, so the slides are **terminal sessions** rendered as images, listed
 | `mcp-query`    | an assistant calling `queryTableTool`                          | MCP       |
 | `skills`       | an agent loading `fairspec-validation` and running its check   | home      |
 
-Desktop's slide is the app's own screenshot, `.livemark/public/application.webp`.
+Desktop's slide is the app's own screenshot, `.livemark/public/application.webp`. The home
+Standard slide is no image: a `Slide` takes `content` (markup) in place of `shot`, and it shows
+the annotated `dataset.json` (`SpecPreview` in `.livemark/routes/index.tsx`) the old site had.
 
 ## Rules
 
@@ -30,8 +31,7 @@ Desktop's slide is the app's own screenshot, `.livemark/public/application.webp`
   `samples/`, and gets every MCP result from a real `tools/call` to `fairspec mcp`. Only the
   `›` prompts and `●` narration are written by hand; they restate the result, never add to it.
   Change a sample, a command or a chip, and re-render, so the image and the chip agree
-- **Keep content in the top half.** The source chip covers the frame's lower-left from 55%
-  down, and from `xl` the window bleeds off the right edge, so a slide's text stays in the
+- **Keep content in the top half.** The source chip hangs off the frame's bottom-left corner, and from `xl` the window bleeds off the right edge, so a slide's text stays in the
   top-left ~48% × 70%. Wrap JSON (`jq -c` plus the renderer's wrap) rather than let it run
 - **Match the site.** Light background `#ffffff`, dark `#0a0a0a`, Catppuccin Latte/Mocha token
   colours, JetBrains Mono 13px with ligatures off; table output keeps line height 1.2 so box

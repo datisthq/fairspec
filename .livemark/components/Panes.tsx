@@ -3,10 +3,6 @@ import { type Shot, tk } from "./Landing.tsx"
 
 // Rendered from real CLI and MCP runs by .agents/skills/landing-screenshots/render.ts
 export const shots = {
-  standard: shot(
-    "standard",
-    "A dataset descriptor printed with cat, then validated by fairspec",
-  ),
   validate: shot(
     "validate",
     "fairspec table validate reporting two cell type errors in broken.csv",

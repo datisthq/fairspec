@@ -39,10 +39,6 @@ const palette = {
 }
 
 const slides: Record<string, Line[]> = {
-  standard: [
-    ...command("cat dataset.json", "json"),
-    ...command("fairspec dataset validate dataset.json", "report"),
-  ],
   validate: [
     ...command("fairspec table validate broken.csv --schema schema.json", "report"),
     ...command(
