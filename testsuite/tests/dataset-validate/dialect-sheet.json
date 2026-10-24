@@ -1,0 +1,17 @@
+[
+  {
+    "description": "sheetName and sheetNumber together",
+    "specification": ["https://fairspec.org/specs/file-dialect/#sheetname"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "fileDialect": { "format": "xlsx", "sheetName": "data", "sheetNumber": 1 }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  }
+]

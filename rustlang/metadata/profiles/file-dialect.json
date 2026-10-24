@@ -274,6 +274,9 @@
         "columnNames": {
           "$ref": "#/$defs/ColumnNames"
         }
+      },
+      "not": {
+        "required": ["sheetName", "sheetNumber"]
       }
     },
     "OdsDialect": {
@@ -302,6 +305,9 @@
         "columnNames": {
           "$ref": "#/$defs/ColumnNames"
         }
+      },
+      "not": {
+        "required": ["sheetName", "sheetNumber"]
       }
     },
     "ParquetDialect": {

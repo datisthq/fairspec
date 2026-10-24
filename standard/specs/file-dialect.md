@@ -749,7 +749,7 @@ This reads the second sheet from the spreadsheet.
 > [!NOTE]
 > Supported formats: **xlsx**, **ods**
 
-It `MUST` be a string. This property specifies a sheet name of a table in the spreadsheet file.
+It `MUST` be a string. This property specifies a sheet name of a table in the spreadsheet file. A dialect `MUST NOT` set both `sheetName` and [`sheetNumber`](#sheetnumber).
 
 For example:
 
