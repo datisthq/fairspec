@@ -77,7 +77,7 @@ Fairspec Catalog does not support extension.
 
 ## Streaming
 
-Fairspec Catalog is designed to be used in a streaming manner. Because datasets are sorted by their last updated time in descending order, clients `SHOULD` read the catalog line-by-line and terminate reading once they encounter a dataset with an timestamp that has already been seen. This allows efficient synchronization without processing the entire catalog file.
+Fairspec Catalog is designed to be used in a streaming manner. Because datasets are sorted by their last updated time in descending order, a client `SHOULD` synchronize with a high-water mark: the newest `upd` it has processed. To synchronize, it reads the catalog line-by-line while `upd` is greater than or equal to the mark, and stops at the first line older than the mark; the new mark is the `upd` of the first line. Datasets tied at the mark are read again rather than skipped, since several datasets can share a timestamp and their order is not defined, so processing a dataset a client has already seen `MUST` be harmless. This allows efficient synchronization without processing the entire catalog file.
 
 ## Comparison
 
