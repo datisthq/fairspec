@@ -14,6 +14,15 @@ pub struct RowKeyCheck {
 }
 
 pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>> {
+    let is_present = |key: &&Vec<String>| {
+        key.iter().all(|name| {
+            mapping
+                .source
+                .columns
+                .iter()
+                .any(|column| &column.name == name)
+        })
+    };
     let mut checks = Vec::new();
 
     if let Some(primary_key) = mapping
@@ -21,11 +30,18 @@ pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>
         .primary_key
         .as_ref()
         .filter(|k| !k.is_empty())
+        .filter(is_present)
     {
         checks.push(create_row_key_check(primary_key, KeyType::Primary)?);
     }
 
-    for key in mapping.target.unique_keys.iter().flatten() {
+    for key in mapping
+        .target
+        .unique_keys
+        .iter()
+        .flatten()
+        .filter(is_present)
+    {
         checks.push(create_row_key_check(key, KeyType::Unique)?);
     }
 
@@ -88,7 +104,7 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     KeyHashProbe { flag_expr, hashes }
 }
 
-/// A key whose values are all null is never a duplicate.
+/// A key with any null value is never a duplicate.
 pub fn create_key_presence_expr(key_columns: &[String]) -> Expr {
     let exprs: Vec<Expr> = key_columns
         .iter()
@@ -96,7 +112,7 @@ pub fn create_key_presence_expr(key_columns: &[String]) -> Expr {
         .collect();
     exprs
         .into_iter()
-        .reduce(|left, right| left.or(right))
+        .reduce(|left, right| left.and(right))
         .unwrap_or_else(|| lit(false))
 }
 

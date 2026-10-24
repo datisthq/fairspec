@@ -293,7 +293,6 @@ from fairspec import (
     IntegerColumnProperty,
     StringColumnProperty,
     TableSchema,
-    UniqueKey,
 )
 
 schema = TableSchema(
@@ -306,7 +305,7 @@ schema = TableSchema(
     },
     required=["id", "name", "email"],
     primaryKey=["id"],
-    uniqueKeys=[UniqueKey(columnNames=["email"])],
+    uniqueKeys=[["email"]],
 )
 ```
 

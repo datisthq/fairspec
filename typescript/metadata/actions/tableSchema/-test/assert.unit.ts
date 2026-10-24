@@ -46,6 +46,9 @@ describe("assertTableSchema", () => {
           type: "string",
           format: "email",
         },
+        department_id: {
+          type: "integer",
+        },
       },
       primaryKey: ["id"],
       uniqueKeys: [["email"]],

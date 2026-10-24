@@ -4,6 +4,7 @@ import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { validateFileDialect } from "../../actions/fileDialect/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
+import { inspectTableSchema } from "../../actions/tableSchema/inspect.ts"
 import { validateTableSchema } from "../../actions/tableSchema/validate.ts"
 import { Dataset } from "../../models/dataset.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
@@ -73,6 +74,12 @@ export async function validateDatasetDescriptor(
         })
 
         report.errors.push(...tableSchemaReport.errors)
+      } else if (resource.tableSchema) {
+        report.errors.push(
+          ...inspectTableSchema(resource.tableSchema, {
+            rootJsonPointer: `${rootJsonPointer}/tableSchema`,
+          }),
+        )
       }
     }
 

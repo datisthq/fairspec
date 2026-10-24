@@ -92,7 +92,8 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
 - `stringify_number` renders an integral float as Python's `str(int(x))` at any magnitude
 - Row key checks find a duplicate with `cum_count().over(key columns) > 1`
   (`is_first_distinct` needs a feature the crate does not enable); nulls group as in
-  `is_first_distinct`, so the same rows are flagged. The key probe hashes inside polars
+  `is_first_distinct`, so the same rows are flagged; a key with any null cell is never flagged
+  (`create_key_presence_expr`). The key probe hashes inside polars
   (`row_hash`) before its callback, as Python does, so it keeps 8 bytes per key, not the keys
 
 ## Library

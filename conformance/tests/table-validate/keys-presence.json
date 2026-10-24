@@ -1,0 +1,82 @@
+[
+  {
+    "description": "a null primary key cell",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": ["integer", "null"]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a cell/missing error, though the column type allows null",
+        "data": "id,name\n1,a\n,b\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "id",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a primary key column missing from the data",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a column/missing error, not a failure",
+        "data": "name\na\nb\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "id"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a unique key with a null cell",
+    "specification": ["https://fairspec.org/specs/table-schema/#uniquekeys"],
+    "tableSchema": {
+      "uniqueKeys": [["a", "b"]],
+      "properties": {
+        "a": {
+          "type": "integer"
+        },
+        "b": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "rows with any null key cell are not compared",
+        "data": "a,b\n1,\n1,\n",
+        "valid": true
+      }
+    ]
+  }
+]

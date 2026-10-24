@@ -151,7 +151,9 @@ For example, to require all columns:
 
 ### `primaryKey`
 
-An optional array of column names that form the table's primary key. The combination of values in these columns `MUST` uniquely identify each row. At least one column name `MUST` be specified if this property is present.
+An optional array of column names that form the table's primary key. The combination of values in these columns `MUST` uniquely identify each row. At least one column name `MUST` be specified if this property is present, and every name `MUST` be a column in [`properties`](#properties).
+
+A primary key column `MUST` be present in the data, as if it were [`required`](#required), and its cells `MUST NOT` be null, even where the column's `type` allows `null`.
 
 For example, with a single-column primary key:
 
@@ -191,7 +193,9 @@ For example, with a composite primary key:
 
 ### `uniqueKeys`
 
-An optional array of unique key constraints. Each unique key is an array of column names whose combined values `MUST` be unique across all rows in the table. Each unique key array `MUST` contain at least one column name.
+An optional array of unique key constraints. Each unique key is an array of column names whose combined values `MUST` be unique across all rows in the table. Each unique key array `MUST` contain at least one column name, and every name `MUST` be a column in [`properties`](#properties).
+
+A row in which any of the key's columns is null is not compared, as in SQL: such rows never conflict with each other or with any other row.
 
 For example, with multiple unique constraints:
 
@@ -218,7 +222,7 @@ For example, with multiple unique constraints:
 
 ### `foreignKeys`
 
-An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context). Both `columns` lists `MUST` name at least one column.
+An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context). Both `columns` lists `MUST` name at least one column, and they `MUST` have the same length: the n-th local column refers to the n-th referenced column. Every local column `MUST` be a column in [`properties`](#properties).
 
 A row in which any of the local `columns` is null is not checked against the reference. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource.
 
@@ -287,7 +291,15 @@ For example, with a composite foreign key:
         "columns": ["supplier_id", "code"]
       }
     }
-  ]
+  ],
+  "properties": {
+    "supplier_id": {
+      "type": "integer"
+    },
+    "product_code": {
+      "type": "string"
+    }
+  }
 }
 ```
 

@@ -180,7 +180,7 @@ describe("inspectTable (row/unique)", () => {
     ])
   })
 
-  it("should compare composite keys with some null parts", async () => {
+  it("should skip unique keys with any null part", async () => {
     const table = pl
       .DataFrame({ a: [1, null, null, 1, null], b: ["x", "y", "y", null, null] })
       .lazy()
@@ -192,13 +192,10 @@ describe("inspectTable (row/unique)", () => {
       uniqueKeys: [["a", "b"]],
     }
 
-    const errors = await inspectTable(table, { tableSchema })
-    expect(errors).toEqual([
-      { type: "row/uniqueKey", rowNumber: 3, columnNames: ["a", "b"] },
-    ])
+    expect(await inspectTable(table, { tableSchema })).toEqual([])
   })
 
-  it("should skip composite keys with only null parts", async () => {
+  it("should report null primary key parts as missing cells", async () => {
     const table = pl.DataFrame({ a: [null, null, 1], b: [null, null, "z"] }).lazy()
     const tableSchema: TableSchema = {
       properties: {
@@ -208,7 +205,13 @@ describe("inspectTable (row/unique)", () => {
       primaryKey: ["a", "b"],
     }
 
-    expect(await inspectTable(table, { tableSchema })).toEqual([])
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      { type: "cell/missing", columnName: "a", rowNumber: 1, cell: "" },
+      { type: "cell/missing", columnName: "a", rowNumber: 2, cell: "" },
+      { type: "cell/missing", columnName: "b", rowNumber: 1, cell: "" },
+      { type: "cell/missing", columnName: "b", rowNumber: 2, cell: "" },
+    ])
   })
 
   it("should check a key column named like the probe count", async () => {

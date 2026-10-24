@@ -2,6 +2,7 @@ use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
 use crate::actions::file_dialect::validate::validate_file_dialect;
+use crate::actions::table_schema::inspect::inspect_table_schema;
 use crate::actions::table_schema::validate::validate_table_schema;
 use crate::models::dataset::{Dataset, DatasetValidationResult};
 use crate::models::descriptor::Descriptor;
@@ -50,9 +51,18 @@ pub fn validate_dataset_descriptor(
             report.errors.extend(result.errors);
         }
 
-        if let Some(PathOr::Path(path)) = &resource.table_schema {
-            let result = validate_table_schema(path.as_str(), root_json_pointer)?;
-            report.errors.extend(result.errors);
+        match &resource.table_schema {
+            Some(PathOr::Path(path)) => {
+                let result = validate_table_schema(path.as_str(), root_json_pointer)?;
+                report.errors.extend(result.errors);
+            }
+            Some(PathOr::Value(table_schema)) => {
+                let pointer = format!("/resources/{index}/tableSchema");
+                report
+                    .errors
+                    .extend(inspect_table_schema(table_schema, Some(&pointer)));
+            }
+            None => {}
         }
     }
 

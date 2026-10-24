@@ -1,0 +1,128 @@
+[
+  {
+    "description": "key columns and foreign key lengths",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#primarykey",
+      "https://fairspec.org/specs/table-schema/#uniquekeys",
+      "https://fairspec.org/specs/table-schema/#foreignkeys"
+    ],
+    "tests": [
+      {
+        "description": "primaryKey names a column not in properties",
+        "data": {
+          "primaryKey": ["nope"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/primaryKey/0"
+          }
+        ]
+      },
+      {
+        "description": "uniqueKeys names a column not in properties",
+        "data": {
+          "uniqueKeys": [["id", "nope"]],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/uniqueKeys/0/1"
+          }
+        ]
+      },
+      {
+        "description": "foreign key columns name a column not in properties",
+        "data": {
+          "foreignKeys": [
+            {
+              "columns": ["nope"],
+              "reference": {
+                "resource": "r",
+                "columns": ["x"]
+              }
+            }
+          ],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/foreignKeys/0/columns/0"
+          }
+        ]
+      },
+      {
+        "description": "foreign key columns of different lengths",
+        "data": {
+          "foreignKeys": [
+            {
+              "columns": ["a", "b"],
+              "reference": {
+                "resource": "r",
+                "columns": ["x"]
+              }
+            }
+          ],
+          "properties": {
+            "a": {
+              "type": "integer"
+            },
+            "b": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/foreignKeys/0/reference/columns"
+          }
+        ]
+      },
+      {
+        "description": "keys naming existing columns are valid",
+        "data": {
+          "primaryKey": ["a"],
+          "uniqueKeys": [["a", "b"]],
+          "foreignKeys": [
+            {
+              "columns": ["b"],
+              "reference": {
+                "resource": "r",
+                "columns": ["x"]
+              }
+            }
+          ],
+          "properties": {
+            "a": {
+              "type": "integer"
+            },
+            "b": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  }
+]

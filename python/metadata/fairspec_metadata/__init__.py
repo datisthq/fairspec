@@ -76,6 +76,7 @@ from .actions.resource.infer import infer_resource_name
 from .actions.resource.normalize import normalize_resource
 from .actions.table_schema.assert_ import assert_table_schema
 from .actions.table_schema.column import get_columns
+from .actions.table_schema.inspect import inspect_table_schema
 from .actions.table_schema.load import load_table_schema
 from .actions.table_schema.resolve import resolve_table_schema
 from .actions.table_schema.save import save_table_schema
@@ -306,6 +307,7 @@ __all__ = [
     "infer_resource_name",
     "inspect_json",
     "inspect_json_schema",
+    "inspect_table_schema",
     "load_data_schema",
     "load_dataset_descriptor",
     "load_descriptor",

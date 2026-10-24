@@ -100,8 +100,12 @@ def _inspect_columns(
         )
 
         if not polars_column:
-            is_required = mapping.target.allRequired or (
-                mapping.target.required and column.name in mapping.target.required
+            is_required = (
+                mapping.target.allRequired
+                or (mapping.target.required and column.name in mapping.target.required)
+                or (
+                    mapping.target.primaryKey and column.name in mapping.target.primaryKey
+                )
             )
             missing_errors[column.name] = (
                 [ColumnMissingError(type="column/missing", columnName=column.name)]
@@ -111,6 +115,8 @@ def _inspect_columns(
             continue
 
         merged_column = merge_missing_values(column, mapping.target)
+        if mapping.target.primaryKey and column.name in mapping.target.primaryKey:
+            merged_column = merged_column.model_copy(update={"nullable": False})
         column_mappings.append(ColumnMapping(source=polars_column, target=merged_column))
 
     cell_errors = inspect_columns(

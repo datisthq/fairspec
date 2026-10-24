@@ -180,7 +180,7 @@ fn test_should_handle_null_values_in_unique_keys_correctly() {
 }
 
 #[test]
-fn test_should_compare_composite_keys_with_some_null_parts() {
+fn test_should_skip_unique_keys_with_any_null_part() {
     let table = df!(
         "a" => [Some(1i64), None, None, Some(1), None],
         "b" => [Some("x"), Some("y"), Some("y"), None, None],
@@ -192,14 +192,11 @@ fn test_should_compare_composite_keys_with_some_null_parts() {
         "uniqueKeys": [["a", "b"]],
     }));
 
-    assert_eq!(
-        inspect(table, &schema, None),
-        vec![json!({"type": "row/uniqueKey", "columnNames": ["a", "b"], "rowNumber": 3})]
-    );
+    assert!(inspect(table, &schema, None).is_empty());
 }
 
 #[test]
-fn test_should_skip_composite_keys_with_only_null_parts() {
+fn test_should_report_null_primary_key_parts_as_missing_cells() {
     let table = df!(
         "a" => [None, None, Some(1i64)],
         "b" => [None, None, Some("z")],
@@ -211,7 +208,24 @@ fn test_should_skip_composite_keys_with_only_null_parts() {
         "primaryKey": ["a", "b"],
     }));
 
-    assert!(inspect(table, &schema, None).is_empty());
+    let errors: Vec<_> = inspect(table, &schema, None)
+        .iter()
+        .map(|error| {
+            (
+                error["type"].clone(),
+                error["columnName"].clone(),
+                error["rowNumber"].clone(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        errors,
+        [("a", 1), ("a", 2), ("b", 1), ("b", 2)].map(|(name, row)| (
+            json!("cell/missing"),
+            json!(name),
+            json!(row)
+        ))
+    );
 }
 
 #[test]

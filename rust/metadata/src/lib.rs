@@ -213,6 +213,7 @@ pub use actions::resource::infer::infer_resource_name;
 pub use actions::resource::normalize::normalize_resource;
 pub use actions::table_schema::assert::assert_table_schema;
 pub use actions::table_schema::column::get_columns;
+pub use actions::table_schema::inspect::inspect_table_schema;
 pub use actions::table_schema::load::load_table_schema;
 pub use actions::table_schema::resolve::resolve_table_schema;
 pub use actions::table_schema::save::save_table_schema;

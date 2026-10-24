@@ -5,11 +5,15 @@ import type { SchemaMapping } from "../../../models/schema.ts"
 type KeyCheckType = "primary" | "unique"
 
 export function createRowKeyChecks(mapping: SchemaMapping) {
-  const uniqueKeys = mapping.target.uniqueKeys ?? []
+  const names = new Set(mapping.source.columns.map(column => column.name))
+  const isPresent = (key: string[]) => key.every(name => names.has(name))
+  const uniqueKeys = (mapping.target.uniqueKeys ?? []).filter(isPresent)
   const primaryKey = mapping.target.primaryKey
 
   const checks = [
-    ...(primaryKey ? [createRowKeyCheck(primaryKey, { keyType: "primary" })] : []),
+    ...(primaryKey && isPresent(primaryKey)
+      ? [createRowKeyCheck(primaryKey, { keyType: "primary" })]
+      : []),
     ...uniqueKeys.map(key => createRowKeyCheck(key, { keyType: "unique" })),
   ]
 
@@ -33,7 +37,7 @@ function createRowKeyCheck(keyColumns: string[], options: { keyType: KeyCheckTyp
   return { keyColumns, isErrorExpr, errorTemplate }
 }
 
-/** A key whose values are all null is never a duplicate. */
+/** A key with any null value is never a duplicate. */
 export function createKeyPresenceExpr(keyColumns: string[]) {
-  return pl.anyHorizontal(keyColumns.map(name => pl.col(name).isNotNull()))
+  return pl.allHorizontal(keyColumns.map(name => pl.col(name).isNotNull()))
 }

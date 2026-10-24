@@ -18,12 +18,15 @@ class RowKeyCheck:
 
 
 def create_row_key_checks(mapping: SchemaMapping) -> list[RowKeyCheck]:
-    unique_keys = mapping.target.uniqueKeys or []
+    names = {column.name for column in mapping.source.columns}
+    unique_keys = [
+        key for key in mapping.target.uniqueKeys or [] if all(n in names for n in key)
+    ]
     primary_key = mapping.target.primaryKey
 
     checks: list[RowKeyCheck] = []
 
-    if primary_key:
+    if primary_key and all(name in names for name in primary_key):
         checks.append(_create_row_key_check(primary_key, key_type="primary"))
 
     for key in unique_keys:
@@ -73,8 +76,8 @@ def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
 
 
 def create_key_presence_expr(key_columns: list[str]) -> pl.Expr:
-    """A key whose values are all null is never a duplicate."""
-    return pl.any_horizontal([pl.col(name).is_not_null() for name in key_columns])
+    """A key with any null value is never a duplicate."""
+    return pl.all_horizontal([pl.col(name).is_not_null() for name in key_columns])
 
 
 def _create_row_key_check(

@@ -142,8 +142,9 @@ relative import reaches beyond the top-level package.
   the row-indexed `pl.struct(key).is_first_distinct()` query run. That read stops at
   `head(max_errors)`, so the hashes are complete only while the report has room, and
   `inspect_table` skips the row checks once it is full. Never locate rows with a join: joins
-  drop null keys, while key checks compare partial nulls and skip only all-null keys
-  (`create_key_presence_expr`)
+  drop null keys, while key checks skip any key with a null cell (`create_key_presence_expr`;
+  a null primary key cell is `cell/missing` instead), and a key whose columns are not all in
+  the data is skipped
 - **Never share one read between two queries** with a diagonal `pl.concat` or `pl.collect_all`:
   polars holds the shared scan in memory, so a 10GB validation runs out of memory under a 10G
   cap. Ride along in the one query instead, as the key hashes do

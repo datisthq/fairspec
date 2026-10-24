@@ -91,7 +91,8 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **A row key check probes before it locates.** `inspectRows` first runs a `groupBy(key).len()`
   probe on the key columns alone, and only on a duplicate runs the row-indexed
   `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
-  while key checks compare partial nulls and skip only all-null keys (`createKeyPresenceExpr`).
+  while key checks skip any key with a null cell (`createKeyPresenceExpr`; a null primary key
+  cell is `cell/missing` instead), and a key whose columns are not all in the data is skipped.
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.

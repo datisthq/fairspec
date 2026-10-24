@@ -4,7 +4,9 @@ use crate::models::descriptor::Descriptor;
 use crate::models::exception::Result;
 use crate::models::path::PathOr;
 use crate::models::profile::ProfileType;
-use crate::models::table_schema::TableSchemaValidationResult;
+use crate::models::table_schema::{TableSchema, TableSchemaValidationResult};
+
+use super::inspect::inspect_table_schema;
 
 pub fn validate_table_schema(
     source: impl Into<PathOr<Descriptor>>,
@@ -15,10 +17,16 @@ pub fn validate_table_schema(
 
     let table_schema = match report.valid {
         true => {
-            let (table_schema, errors) = inspect_model(&descriptor, root_json_pointer);
-            report.valid = errors.is_empty();
+            let (table_schema, errors) =
+                inspect_model::<TableSchema>(&descriptor, root_json_pointer);
             report.errors.extend(errors);
-            table_schema
+            if let Some(table_schema) = &table_schema {
+                report
+                    .errors
+                    .extend(inspect_table_schema(table_schema, root_json_pointer));
+            }
+            report.valid = report.errors.is_empty();
+            table_schema.filter(|_| report.valid)
         }
         false => None,
     };

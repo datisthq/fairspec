@@ -96,6 +96,12 @@ fn inspect_columns_of_table(
     let mut errors = Vec::new();
     let target = &mapping.target;
     let columns = get_columns(&get_schema_descriptor(target))?;
+    let is_primary_key = |name: &str| {
+        target
+            .primary_key
+            .as_ref()
+            .is_some_and(|primary_key| primary_key.iter().any(|key| key == name))
+    };
 
     let mut missing_errors: HashMap<String, Vec<TableError>> = HashMap::new();
     let mut column_mappings = Vec::new();
@@ -111,7 +117,8 @@ fn inspect_columns_of_table(
                 || target
                     .required
                     .as_ref()
-                    .is_some_and(|required| required.iter().any(|name| name == column.name()));
+                    .is_some_and(|required| required.iter().any(|name| name == column.name()))
+                || is_primary_key(column.name());
             let column_errors = if is_required {
                 vec![TableError::Column(ColumnError::Missing(
                     ColumnMissingError {
@@ -126,9 +133,13 @@ fn inspect_columns_of_table(
             continue;
         };
 
+        let mut merged_column = merge_missing_values(column, target);
+        if is_primary_key(column.name()) {
+            merged_column.set_nullable(Some(false));
+        }
         column_mappings.push(ColumnMapping {
             source: polars_column.clone(),
-            target: merge_missing_values(column, target),
+            target: merged_column,
         });
     }
 

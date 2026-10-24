@@ -71,7 +71,9 @@ async function inspectSchemaColumns(
 
     if (!polarsColumn) {
       const isRequired =
-        mapping.target.allRequired || mapping.target.required?.includes(column.name)
+        mapping.target.allRequired ||
+        mapping.target.required?.includes(column.name) ||
+        mapping.target.primaryKey?.includes(column.name)
 
       missingErrors.set(
         column.name,
@@ -81,7 +83,9 @@ async function inspectSchemaColumns(
     }
 
     const mergedColumn = mergeMissingValues(column, mapping.target)
-    columnMappings.push({ source: polarsColumn, target: mergedColumn })
+    const isPrimaryKey = mapping.target.primaryKey?.includes(column.name)
+    const target = isPrimaryKey ? { ...mergedColumn, nullable: false } : mergedColumn
+    columnMappings.push({ source: polarsColumn, target })
   }
 
   const cellErrors = await inspectColumns(columnMappings, table, { maxErrors })

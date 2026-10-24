@@ -364,7 +364,7 @@ const schema: TableSchema = {
   },
   required: ["id", "name", "email"],
   primaryKey: ["id"],
-  uniqueKeys: [{ columnNames: ["email"] }],
+  uniqueKeys: [["email"]],
   missingValues: ["", "N/A", "null"],
 }
 ```
