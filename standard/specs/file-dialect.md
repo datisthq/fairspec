@@ -378,6 +378,8 @@ Data example:
 
 ### Format Properties
 
+A **row** is one parsed record of the file: in CSV and TSV, a quoted cell spanning several lines belongs to one row. Rows are numbered from `1`, counting every row of the file before any is removed, so [`headerRows`](#headerrows) and [`commentRows`](#commentrows) refer to the same numbering.
+
 #### `delimiter`
 
 > [!NOTE]

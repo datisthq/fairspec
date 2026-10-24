@@ -3,7 +3,10 @@
     "description": "commentRows",
     "comment": "Row numbers count every row of the file, the header included, as in the spec's example",
     "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
-    "fileDialect": { "format": "csv", "commentRows": [2] },
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [2]
+    },
     "tests": [
       {
         "description": "the listed row is omitted",
@@ -21,7 +24,10 @@
   {
     "description": "commentRows with several rows",
     "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
-    "fileDialect": { "format": "csv", "commentRows": [3, 5] },
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [3, 5]
+    },
     "tests": [
       {
         "description": "every listed row is omitted",
@@ -40,7 +46,10 @@
   {
     "description": "commentPrefix",
     "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
-    "fileDialect": { "format": "csv", "commentPrefix": "#" },
+    "fileDialect": {
+      "format": "csv",
+      "commentPrefix": "#"
+    },
     "tests": [
       {
         "description": "rows starting with the prefix are omitted",
@@ -59,12 +68,52 @@
     "description": "commentPrefix in tsv",
     "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
     "format": "tsv",
-    "fileDialect": { "format": "tsv", "commentPrefix": "//" },
+    "fileDialect": {
+      "format": "tsv",
+      "commentPrefix": "//"
+    },
     "tests": [
       {
         "description": "rows starting with the prefix are omitted",
         "data": "id\tname\n// skipped\n1\tapple\n",
-        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows count rows, not lines",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [3]
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted cell spanning two lines is one row",
+        "data": "id,name\n1,\"two\nlines\"\nskip,me\n2,orange\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "two\nlines"],
+            [2, "orange"]
+          ]
+        }
       }
     ]
   }
