@@ -174,7 +174,7 @@ function HeroCarousel(props: { slides: Slide[] }) {
           ))}
         </div>
       </figure>
-      <div className="mt-4 grid grid-cols-1 lg:absolute lg:top-[70%] lg:-left-10 lg:mt-0 lg:w-[22rem]">
+      <div className="mt-4 grid grid-cols-1 lg:absolute lg:-bottom-10 lg:-left-10 lg:mt-0 lg:w-[24rem]">
         {props.slides.map((slide, index) => (
           <div
             key={slide.id}

@@ -136,8 +136,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   livemark's config-driven one on purpose (as irondocs does): a one-line technical-preview
   strip, shortened below `sm`, the whole strip one link to Discussions
 - The hero is livemark's: a `HeroCarousel` bleeding to `xl:w-[60rem]`, 16:10 slides, `lg:pt-8 lg:pb-14` so title and
-  window sit high on the first screen, and a source chip over the frame's left edge at 70%,
-  clear of the slide's output. Slides are terminal screenshots rendered from
+  window sit high on the first screen, and a source chip hanging off the frame's
+  bottom-left corner (`lg:-bottom-10 lg:-left-10`, as irondocs). Slides are terminal screenshots rendered from
   real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself. The
   home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
 - Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
