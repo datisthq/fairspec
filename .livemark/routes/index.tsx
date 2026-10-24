@@ -58,7 +58,7 @@ function Landing() {
           eyebrow="For Python, TypeScript and Rust"
           title={
             <>
-              Standard and software to make <Highlight>your data FAIR</Highlight>
+              Standard and software to make <Highlight>data FAIR</Highlight>
             </>
           }
           lede={
