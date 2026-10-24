@@ -1,98 +1,90 @@
-use clap::Args;
-use fairspec_library::fairspec_metadata::Descriptor;
 use indexmap::IndexMap;
-use serde::Deserialize;
 use serde_json::Value;
 
-use super::file_dialect::{StringList, parse_list};
+use super::common::parse_list;
+use crate::models::output::Descriptor;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[command(next_help_heading = "Table Schema")]
+#[fireargs::input]
+#[derive(Debug, Clone, Default)]
 pub struct TableSchemaParams {
     /// a list of comma-separated column name:type pairs to use for the schema
-    #[arg(long, value_name = "value", allow_hyphen_values = true, value_parser = parse_column_types)]
-    #[serde(default)]
-    pub column_types: Option<ColumnTypes>,
+    #[fireargs(help_group = "Table Schema", parse = parse_column_types)]
+    pub column_types: Option<IndexMap<String, String>>,
     /// a JSON object of column name to column property to use for the schema
-    #[arg(long, value_name = "value", allow_hyphen_values = true, value_parser = parse_column_properties)]
-    #[serde(default)]
-    pub column_properties: Option<ColumnProperties>,
+    #[fireargs(help_group = "Table Schema", parse = parse_column_properties)]
+    pub column_properties: Option<IndexMap<String, Descriptor>>,
     /// comma-separated values to treat as missing
-    #[arg(long, value_name = "value", allow_hyphen_values = true, value_parser = parse_list)]
-    #[serde(default)]
-    pub missing_values: Option<StringList>,
+    #[fireargs(help_group = "Table Schema", parse = parse_list)]
+    pub missing_values: Option<Vec<String>>,
     /// character to use as decimal separator
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub decimal_char: Option<String>,
     /// character to use for digit grouping
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub group_char: Option<String>,
     /// values to treat as true
-    #[arg(long, value_name = "value", allow_hyphen_values = true, value_parser = parse_list)]
-    #[serde(default)]
-    pub true_values: Option<StringList>,
+    #[fireargs(help_group = "Table Schema", parse = parse_list)]
+    pub true_values: Option<Vec<String>>,
     /// values to treat as false
-    #[arg(long, value_name = "value", allow_hyphen_values = true, value_parser = parse_list)]
-    #[serde(default)]
-    pub false_values: Option<StringList>,
+    #[fireargs(help_group = "Table Schema", parse = parse_list)]
+    pub false_values: Option<Vec<String>>,
     /// datetime format pattern
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub datetime_format: Option<String>,
     /// date format pattern
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub date_format: Option<String>,
     /// time format pattern
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub time_format: Option<String>,
     /// array type (array or list)
-    #[arg(long, value_parser = ["array", "list"])]
-    #[serde(default)]
-    pub array_type: Option<String>,
+    #[fireargs(help_group = "Table Schema")]
+    pub array_type: Option<ArrayType>,
     /// delimiter for list values
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub list_delimiter: Option<String>,
     /// type of items in lists
-    #[arg(long, value_parser = ["string", "number", "boolean", "date", "date-time", "local-date-time", "integer", "time", "local-time"])]
-    #[serde(default)]
-    pub list_item_type: Option<String>,
+    #[fireargs(help_group = "Table Schema")]
+    pub list_item_type: Option<ListItemType>,
     /// number of rows to sample for schema inference
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub sample_rows: Option<usize>,
     /// confidence threshold for schema inference
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema")]
     pub confidence: Option<f64>,
     /// use comma as decimal separator in schema inference
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema", default)]
     pub comma_decimal: bool,
     /// interpret dates as month-first in schema inference
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema", default)]
     pub month_first: bool,
     /// keep fields as strings instead of inferring types
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(help_group = "Table Schema", default)]
     pub keep_strings: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
-#[serde(transparent)]
-pub struct ColumnTypes(pub IndexMap<String, String>);
+#[fireargs::option]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ArrayType {
+    Array,
+    List,
+}
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
-#[serde(transparent)]
-pub struct ColumnProperties(pub IndexMap<String, Descriptor>);
+#[fireargs::option]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ListItemType {
+    String,
+    Number,
+    Boolean,
+    Date,
+    DateTime,
+    LocalDateTime,
+    Integer,
+    Time,
+    LocalTime,
+}
 
-pub fn parse_column_types(value: &str) -> Result<ColumnTypes, String> {
+pub fn parse_column_types(value: &str) -> Result<IndexMap<String, String>, String> {
     let mut result = IndexMap::new();
     for pair in value.split(',') {
         if let Some((name, column_type)) = pair.split_once(':')
@@ -102,10 +94,10 @@ pub fn parse_column_types(value: &str) -> Result<ColumnTypes, String> {
             result.insert(name.to_string(), column_type.to_string());
         }
     }
-    Ok(ColumnTypes(result))
+    Ok(result)
 }
 
-pub fn parse_column_properties(value: &str) -> Result<ColumnProperties, String> {
+pub fn parse_column_properties(value: &str) -> Result<IndexMap<String, Descriptor>, String> {
     match serde_json::from_str::<Value>(value).map_err(|error| error.to_string())? {
         Value::Object(object) => {
             let mut result = IndexMap::new();
@@ -115,7 +107,7 @@ pub fn parse_column_properties(value: &str) -> Result<ColumnProperties, String> 
                 };
                 result.insert(name, property);
             }
-            Ok(ColumnProperties(result))
+            Ok(result)
         }
         _ => Err("--column-properties must be a JSON object".to_string()),
     }

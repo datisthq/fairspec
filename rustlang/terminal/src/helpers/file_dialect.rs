@@ -1,9 +1,10 @@
 use fairspec_library::fairspec_metadata::{
-    FileDialect, HeaderRows, PathOr, Resource, infer_file_dialect_format,
+    FileDialect, PathOr, Resource, infer_file_dialect_format,
 };
 use serde_json::{Map, Value, json};
 
-use crate::params::file_dialect::DialectParams;
+use crate::params::common::get_choice_text;
+use crate::params::file_dialect::{DialectParams, HeaderRows};
 
 /// The `--dialect` path, or a dialect built from the dialect options for the path's format.
 pub fn get_file_dialect(path: &str, params: &DialectParams) -> Option<PathOr<FileDialect>> {
@@ -40,9 +41,9 @@ pub fn create_file_dialect_from_path_and_options(
             if let Some(names) = params
                 .column_names
                 .as_ref()
-                .filter(|names| !names.0.is_empty())
+                .filter(|names| !names.is_empty())
             {
-                dialect.insert("columnNames".to_string(), json!(names.0));
+                dialect.insert("columnNames".to_string(), json!(names));
             }
             if resolved_format == "csv" {
                 insert_text(&mut dialect, "delimiter", &params.delimiter);
@@ -58,7 +59,8 @@ pub fn create_file_dialect_from_path_and_options(
         }
         "json" | "jsonl" => {
             insert_header_options(&mut dialect, params);
-            insert_text(&mut dialect, "rowType", &params.row_type);
+            let row_type = params.row_type.as_ref().map(get_choice_text);
+            insert_text(&mut dialect, "rowType", &row_type);
             if resolved_format == "json" {
                 insert_text(&mut dialect, "jsonPointer", &params.json_pointer);
             }
@@ -73,8 +75,8 @@ pub fn create_file_dialect_from_path_and_options(
 // headerRows, headerJoin, commentRows and commentPrefix, in Python's key order
 fn insert_header_options(dialect: &mut Map<String, Value>, params: &DialectParams) {
     match &params.header_rows {
-        Some(HeaderRows::Disabled) => {
-            dialect.insert("headerRows".to_string(), json!(false));
+        Some(HeaderRows::Flag(flag)) => {
+            dialect.insert("headerRows".to_string(), json!(flag));
         }
         Some(HeaderRows::Rows(rows)) => {
             dialect.insert("headerRows".to_string(), json!(rows));
@@ -82,12 +84,8 @@ fn insert_header_options(dialect: &mut Map<String, Value>, params: &DialectParam
         None => {}
     }
     insert_text(dialect, "headerJoin", &params.header_join);
-    if let Some(rows) = params
-        .comment_rows
-        .as_ref()
-        .filter(|rows| !rows.0.is_empty())
-    {
-        dialect.insert("commentRows".to_string(), json!(rows.0));
+    if let Some(rows) = params.comment_rows.as_ref().filter(|rows| !rows.is_empty()) {
+        dialect.insert("commentRows".to_string(), json!(rows));
     }
     insert_text(dialect, "commentPrefix", &params.comment_prefix);
 }

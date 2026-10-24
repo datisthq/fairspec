@@ -1,18 +1,47 @@
-use serde_json::Value;
+use std::fmt;
 
-/// A command's result: what `--json` prints, and the exit code (1 for an invalid report).
-#[derive(Debug, Clone, PartialEq)]
-pub struct CommandOutput {
-    pub data: Value,
-    pub code: i32,
+use serde::Serialize;
+use serde_json::{Map, Value};
+
+#[fireargs::output]
+pub struct ReportResult {
+    /// Whether the validation passed without errors
+    pub valid: bool,
+    /// Array of validation errors encountered
+    pub errors: Vec<Value>,
 }
 
-impl CommandOutput {
-    pub fn new(data: Value) -> Self {
-        CommandOutput { data, code: 0 }
+#[fireargs::output]
+pub struct TextResult {
+    pub result: String,
+}
+
+#[fireargs::output]
+pub struct Empty {}
+
+pub type Records = Vec<Value>;
+
+pub type Descriptor = Map<String, Value>;
+
+/// A command that failed after writing its human output; under `--json`, `data` is
+/// the result to print before exiting with code 1.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Exit {
+    pub data: Option<Value>,
+}
+
+impl fmt::Display for Exit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "command failed")
     }
 }
 
-/// A command that ended early with this exit code; its output is already written.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Exit(pub i32);
+impl std::error::Error for Exit {}
+
+/// A typed library result as the object `--json` prints.
+pub fn create_descriptor(value: &impl Serialize) -> Descriptor {
+    match serde_json::to_value(value) {
+        Ok(Value::Object(object)) => object,
+        _ => Descriptor::new(),
+    }
+}

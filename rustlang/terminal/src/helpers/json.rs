@@ -1,7 +1,7 @@
 use serde_json::Value;
 
-/// Python's `json.dumps(value, indent=2, ensure_ascii=False)`, which `--json` output and
-/// `--llms` manifests are written with; floats keep Python's `repr` (`1e-05`, `1e+16`).
+/// Python's `json.dumps(value, indent=2, ensure_ascii=False)`, which human output is
+/// written with; floats keep Python's `repr` (`1e-05`, `1e+16`).
 pub fn dump_json(value: &Value) -> String {
     let mut text = String::new();
     write_value(&mut text, value, 0);

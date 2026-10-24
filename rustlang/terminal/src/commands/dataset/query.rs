@@ -1,42 +1,42 @@
-use clap::Args;
 use fairspec_library::fairspec_table::LoadTableOptions;
 use fairspec_library::query_dataset;
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
-use crate::helpers::input::require_value;
 use crate::helpers::resource::create_value_error;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::OutputParams;
+use crate::models::output::{Exit, Records};
 use crate::session::Session;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct QueryDatasetInput {
     /// local or remote path to the descriptor
-    #[arg(value_name = "path")]
-    #[serde(default)]
-    pub path: Option<String>,
+    #[fireargs(argument)]
+    pub path: String,
     /// a SQL query to execute against a dataset (refer to each table by its resource name)
-    #[arg(value_name = "query")]
-    #[serde(default)]
-    pub query: Option<String>,
+    #[fireargs(argument)]
+    pub query: String,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
 }
 
-pub fn query_dataset_command(
+pub fn query_dataset_command(console: &Console) -> fireargs::Command<QueryDatasetInput, Records> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Query a dataset from a local or remote path with SQL")
+        .handler(
+            async move |input: QueryDatasetInput, context: fireargs::Context| {
+                Ok(run_query_dataset(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_query_dataset(
     input: &QueryDatasetInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
-    let path = require_value(&input.path);
-    let query = require_value(&input.query);
+) -> Result<Records, Exit> {
+    let path = input.path.as_str();
+    let query = input.query.as_str();
     let session = Session::new(console, false, input.debug, json);
 
     let table = session.task("Executing query", || {

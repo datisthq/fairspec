@@ -1,47 +1,48 @@
-use clap::Args;
 use fairspec_library::fairspec_dataset::InferFileDialectOptions;
 use fairspec_library::fairspec_metadata::Resource;
 use fairspec_library::infer_file_dialect;
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
 use crate::helpers::file::select_file;
 use crate::helpers::resource::create_value_error;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::{OutputParams, SelectParams};
+use crate::models::output::{Descriptor, Exit, create_descriptor};
+use crate::params::common::SelectParams;
 use crate::session::Session;
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct InferFileDialectInput {
     /// local or remote path to the file
-    #[arg(value_name = "path")]
-    #[serde(default)]
+    #[fireargs(argument)]
     pub path: Option<String>,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub select: SelectParams,
     /// sample size in bytes
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
     pub sample_bytes: Option<usize>,
     /// suppress all output except errors
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub silent: bool,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
 }
 
 pub fn infer_file_dialect_command(
+    console: &Console,
+) -> fireargs::Command<InferFileDialectInput, Descriptor> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Infer the dialect of a file")
+        .handler(
+            async move |input: InferFileDialectInput, context: fireargs::Context| {
+                Ok(run_infer_file_dialect(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_infer_file_dialect(
     input: &InferFileDialectInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
+) -> Result<Descriptor, Exit> {
     let session = Session::new(console, input.silent, input.debug, json);
     let path = match input.path.clone().filter(|path| !path.is_empty()) {
         Some(path) => path,
@@ -64,5 +65,5 @@ pub fn infer_file_dialect_command(
             .ok_or_else(|| create_value_error("Could not infer dialect"))
     })?;
 
-    Ok(session.render_data_result(serde_json::to_value(file_dialect).unwrap_or_default()))
+    Ok(session.render_data_result(create_descriptor(&file_dialect)))
 }

@@ -1,50 +1,56 @@
-use clap::Args;
 use fairspec_library::fairspec_metadata::{PathOr, RenderTableSchemaOptions, resolve_table_schema};
 use fairspec_library::render_table_schema_as;
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::OutputParams;
+use crate::models::output::{Exit, TextResult};
+use crate::params::common::get_choice_text;
 use crate::session::Session;
 
-use crate::helpers::input::require_value;
+#[fireargs::option]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SchemaFormat {
+    Markdown,
+    Html,
+}
+
 use crate::helpers::resource::create_value_error;
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct RenderTableSchemaInput {
     /// local or remote path to the file
-    #[arg(value_name = "path")]
-    #[serde(default)]
-    pub path: Option<String>,
+    #[fireargs(argument)]
+    pub path: String,
     /// target schema format
-    #[arg(long, value_parser = ["markdown", "html"])]
-    #[serde(default)]
-    pub to_format: Option<String>,
+    pub to_format: SchemaFormat,
     /// a local output path
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
     pub to_path: Option<String>,
     /// suppress all output except errors
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub silent: bool,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
 }
 
 pub fn render_table_schema_command(
+    console: &Console,
+) -> fireargs::Command<RenderTableSchemaInput, TextResult> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Render a Table Schema as HTML or Markdown")
+        .handler(
+            async move |input: RenderTableSchemaInput, context: fireargs::Context| {
+                Ok(run_render_table_schema(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_render_table_schema(
     input: &RenderTableSchemaInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
-    let path = require_value(&input.path);
-    let to_format = require_value(&input.to_format);
+) -> Result<TextResult, Exit> {
+    let path = input.path.as_str();
+    let to_format = get_choice_text(&input.to_format);
     let session = Session::new(console, input.silent, input.debug, json);
 
     let table_schema = session.task("Loading table schema", || {
@@ -55,14 +61,14 @@ pub fn render_table_schema_command(
     let rendered = session.task("Rendering table schema", || {
         let options = RenderTableSchemaOptions {
             extra: Default::default(),
-            format: to_format.to_string(),
+            format: to_format,
         };
         Ok(render_table_schema_as(&table_schema, &options)?.unwrap_or_default())
     })?;
 
     let Some(to_path) = input.to_path.as_deref().filter(|path| !path.is_empty()) else {
         session.render_raw_result(&rendered);
-        return Ok(CommandOutput::new(serde_json::json!({"result": rendered})));
+        return Ok(TextResult { result: rendered });
     };
 
     session.task("Saving rendered schema", || {

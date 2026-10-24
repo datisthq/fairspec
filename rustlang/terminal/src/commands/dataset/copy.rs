@@ -1,47 +1,45 @@
-use clap::Args;
 use fairspec_library::fairspec_dataset::SaveDatasetOptions;
 use fairspec_library::fairspec_metadata::Dataset;
 use fairspec_library::{load_dataset, save_dataset};
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
-use crate::helpers::input::require_value;
 use crate::helpers::resource::create_value_error;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::OutputParams;
+use crate::models::output::{Exit, TextResult};
 use crate::session::Session;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct CopyDatasetInput {
     /// local or remote path to the descriptor
-    #[arg(value_name = "path")]
-    #[serde(default)]
-    pub path: Option<String>,
+    #[fireargs(argument)]
+    pub path: String,
     /// a local output path
-    #[arg(long, value_name = "value", allow_hyphen_values = true)]
-    #[serde(default)]
-    pub to_path: Option<String>,
+    pub to_path: String,
     /// suppress all output except errors
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub silent: bool,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
 }
 
-pub fn copy_dataset_command(
+pub fn copy_dataset_command(console: &Console) -> fireargs::Command<CopyDatasetInput, TextResult> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Copy a local or remote dataset to a local folder")
+        .handler(
+            async move |input: CopyDatasetInput, context: fireargs::Context| {
+                Ok(run_copy_dataset(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_copy_dataset(
     input: &CopyDatasetInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
-    let path = require_value(&input.path);
-    let to_path = require_value(&input.to_path);
+) -> Result<TextResult, Exit> {
+    let path = input.path.as_str();
+    let to_path = input.to_path.as_str();
     let session = Session::new(console, input.silent, input.debug, json);
 
     session.task("Copy dataset", || {

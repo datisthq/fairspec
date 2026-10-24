@@ -1,47 +1,49 @@
-use clap::Args;
 use fairspec_library::infer_table_schema;
-use serde::Deserialize;
 
 use super::resource::create_table_resource;
 use crate::helpers::console::Console;
 use crate::helpers::resource::create_value_error;
 use crate::helpers::table_schema::create_infer_table_schema_options;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::{OutputParams, SelectParams};
+use crate::models::output::{Descriptor, Exit, create_descriptor};
+use crate::params::common::SelectParams;
 use crate::params::file_dialect::DialectParams;
 use crate::params::table_schema::TableSchemaParams;
 use crate::session::Session;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct InferTableSchemaInput {
     /// local or remote path to the table
-    #[arg(value_name = "path")]
-    #[serde(default)]
+    #[fireargs(argument)]
     pub path: Option<String>,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub select: SelectParams,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub dialect: DialectParams,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub table_schema_params: TableSchemaParams,
 }
 
 pub fn infer_table_schema_command(
+    console: &Console,
+) -> fireargs::Command<InferTableSchemaInput, Descriptor> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Infer a table schema from a table")
+        .handler(
+            async move |input: InferTableSchemaInput, context: fireargs::Context| {
+                Ok(run_infer_table_schema(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_infer_table_schema(
     input: &InferTableSchemaInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
+) -> Result<Descriptor, Exit> {
     let session = Session::new(console, false, input.debug, json);
     let options = create_infer_table_schema_options(&input.table_schema_params);
     let resource = create_table_resource(
@@ -57,5 +59,5 @@ pub fn infer_table_schema_command(
             .ok_or_else(|| create_value_error("Could not infer table schema"))
     })?;
 
-    Ok(session.render_data_result(serde_json::to_value(table_schema).unwrap_or_default()))
+    Ok(session.render_data_result(create_descriptor(&table_schema)))
 }

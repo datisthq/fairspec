@@ -10,4 +10,4 @@ mod session;
 mod _test;
 
 pub use helpers::console::Console;
-pub use program::{main, run_program};
+pub use program::{create_program, main, run_program};

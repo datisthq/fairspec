@@ -2,9 +2,8 @@ use indexmap::IndexMap;
 use serde_json::json;
 
 use crate::helpers::table_schema::create_infer_table_schema_options;
-use crate::params::file_dialect::StringList;
 use crate::params::table_schema::{
-    ColumnTypes, TableSchemaParams, parse_column_properties, parse_column_types,
+    ArrayType, ListItemType, TableSchemaParams, parse_column_properties, parse_column_types,
 };
 
 #[test]
@@ -18,13 +17,13 @@ fn test_should_pass_option_values() {
     let params = TableSchemaParams {
         sample_rows: Some(10),
         keep_strings: true,
-        column_types: Some(ColumnTypes(IndexMap::from([
+        column_types: Some(IndexMap::from([
             ("id".to_string(), "integer".to_string()),
             ("name".to_string(), "string".to_string()),
-        ]))),
-        missing_values: Some(StringList(vec!["NA".to_string(), "-".to_string()])),
-        array_type: Some("list".to_string()),
-        list_item_type: Some("integer".to_string()),
+        ])),
+        missing_values: Some(vec!["NA".to_string(), "-".to_string()]),
+        array_type: Some(ArrayType::List),
+        list_item_type: Some(ListItemType::Integer),
         ..TableSchemaParams::default()
     };
     let options = create_infer_table_schema_options(&params);
@@ -46,7 +45,7 @@ fn test_should_pass_option_values() {
 fn test_should_parse_name_type_pairs() {
     let types = parse_column_types("id:integer,name:string").unwrap();
     assert_eq!(
-        serde_json::to_value(types.0).unwrap(),
+        serde_json::to_value(types).unwrap(),
         json!({"id": "integer", "name": "string"})
     );
 }
@@ -57,7 +56,7 @@ fn test_should_parse_json_object() {
         parse_column_properties(r#"{"id": {"type": "string"}, "name": {"title": "Name"}}"#)
             .unwrap();
     assert_eq!(
-        serde_json::to_value(properties.0).unwrap(),
+        serde_json::to_value(properties).unwrap(),
         json!({"id": {"type": "string"}, "name": {"title": "Name"}})
     );
 }

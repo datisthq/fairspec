@@ -1,58 +1,52 @@
-use clap::Args;
 use fairspec_library::fairspec_table::LoadTableOptions;
 use fairspec_library::load_table;
-use serde::Deserialize;
 
 use super::resource::create_table_resource;
 use crate::helpers::console::Console;
 use crate::helpers::frame::describe_frame;
 use crate::helpers::resource::create_value_error;
 use crate::helpers::table_schema::create_infer_table_schema_options;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::{OutputParams, SelectParams};
+use crate::models::output::{Exit, Records};
+use crate::params::common::SelectParams;
 use crate::params::file_dialect::DialectParams;
 use crate::params::table_schema::TableSchemaParams;
 use crate::session::Session;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct DescribeTableInput {
     /// local or remote path to the table
-    #[arg(value_name = "path")]
-    #[serde(default)]
+    #[fireargs(argument)]
     pub path: Option<String>,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub select: SelectParams,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub dialect: DialectParams,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub table_schema_params: TableSchemaParams,
     /// path to a Table Schema descriptor
-    #[arg(
-        long = "schema",
-        value_name = "value",
-        allow_hyphen_values = true,
-        help_heading = "Table Schema"
-    )]
-    #[serde(default, rename = "schema")]
-    pub table_schema: Option<String>,
+    #[fireargs(help_group = "Table Schema")]
+    pub schema: Option<String>,
 }
 
-pub fn describe_table_command(
+pub fn describe_table_command(console: &Console) -> fireargs::Command<DescribeTableInput, Records> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Show stats for a table from a local or remote path")
+        .handler(
+            async move |input: DescribeTableInput, context: fireargs::Context| {
+                Ok(run_describe_table(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_describe_table(
     input: &DescribeTableInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
+) -> Result<Records, Exit> {
     let session = Session::new(console, false, input.debug, json);
     let options = create_infer_table_schema_options(&input.table_schema_params);
     let resource = create_table_resource(
@@ -60,7 +54,7 @@ pub fn describe_table_command(
         input.path.as_deref(),
         &input.select,
         &input.dialect,
-        input.table_schema.as_deref(),
+        input.schema.as_deref(),
     )?;
 
     let load_options = LoadTableOptions {

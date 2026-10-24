@@ -1,39 +1,42 @@
-use clap::Args;
 use fairspec_library::fairspec_metadata::{Dataset, Resource};
 use fairspec_library::infer_dataset;
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
 use crate::helpers::table_schema::create_infer_table_schema_options;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::OutputParams;
+use crate::models::output::{Descriptor, Exit, create_descriptor};
 use crate::params::table_schema::TableSchemaParams;
 use crate::session::Session;
 
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct InferDatasetInput {
     /// local paths to files
-    #[arg(value_name = "path", num_args = 0..)]
-    #[serde(default)]
+    #[fireargs(argument, name = "path")]
     pub paths: Vec<String>,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
-    #[command(flatten)]
-    #[serde(flatten)]
+    #[fireargs(flatten)]
     pub table_schema_params: TableSchemaParams,
 }
 
 pub fn infer_dataset_command(
+    console: &Console,
+) -> fireargs::Command<InferDatasetInput, Descriptor> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Infer a dataset from local or remote file paths")
+        .handler(
+            async move |input: InferDatasetInput, context: fireargs::Context| {
+                Ok(run_infer_dataset(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_infer_dataset(
     input: &InferDatasetInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
+) -> Result<Descriptor, Exit> {
     let session = Session::new(console, false, input.debug, json);
     let options = create_infer_table_schema_options(&input.table_schema_params);
 
@@ -54,5 +57,5 @@ pub fn infer_dataset_command(
         infer_dataset(&dataset, &options)
     })?;
 
-    Ok(session.render_data_result(serde_json::to_value(dataset).unwrap_or_default()))
+    Ok(session.render_data_result(create_descriptor(&dataset)))
 }

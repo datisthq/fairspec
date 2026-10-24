@@ -1,39 +1,41 @@
-use clap::Args;
 use fairspec_library::fairspec_metadata::validate_data_schema;
-use serde::Deserialize;
 
 use crate::helpers::console::Console;
-use crate::models::output::{CommandOutput, Exit};
-use crate::params::common::OutputParams;
+use crate::models::output::{Exit, ReportResult};
 use crate::session::Session;
 
-use crate::helpers::input::require_value;
-#[derive(Debug, Clone, Default, Args, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[fireargs::input]
 pub struct ValidateDataSchemaInput {
     /// local or remote path to the file
-    #[arg(value_name = "path")]
-    #[serde(default)]
-    pub path: Option<String>,
+    #[fireargs(argument)]
+    pub path: String,
     /// suppress all output except errors
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub silent: bool,
     /// Enable debug mode to print exception details to stderr
-    #[arg(long)]
-    #[serde(default)]
+    #[fireargs(default)]
     pub debug: bool,
-    #[command(flatten)]
-    #[serde(skip)]
-    pub output: OutputParams,
 }
 
 pub fn validate_data_schema_command(
+    console: &Console,
+) -> fireargs::Command<ValidateDataSchemaInput, ReportResult> {
+    let console = console.clone();
+    fireargs::command()
+        .description("Validate a Data Schema")
+        .handler(
+            async move |input: ValidateDataSchemaInput, context: fireargs::Context| {
+                Ok(run_validate_data_schema(&input, context.json, &console)?)
+            },
+        )
+}
+
+fn run_validate_data_schema(
     input: &ValidateDataSchemaInput,
     json: bool,
     console: &Console,
-) -> Result<CommandOutput, Exit> {
-    let path = require_value(&input.path);
+) -> Result<ReportResult, Exit> {
+    let path = input.path.as_str();
     let session = Session::new(console, input.silent, input.debug, json);
     let result = session.task("Validating data schema", || {
         validate_data_schema(path.to_string(), None)
@@ -42,5 +44,5 @@ pub fn validate_data_schema_command(
         valid: result.valid,
         errors: result.errors,
     };
-    Ok(session.render_report_result(&report))
+    session.render_report_result(&report)
 }

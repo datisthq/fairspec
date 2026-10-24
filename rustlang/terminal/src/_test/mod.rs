@@ -1,8 +1,7 @@
 mod program;
 
-use std::cell::RefCell;
 use std::io::{self, Write};
-use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use crate::helpers::console::Console;
 use crate::program::run_program;
@@ -43,17 +42,17 @@ pub fn write_file(folder: &std::path::Path, name: &str, content: &str) -> String
 }
 
 #[derive(Clone, Default)]
-struct SharedBuffer(Rc<RefCell<Vec<u8>>>);
+struct SharedBuffer(Arc<Mutex<Vec<u8>>>);
 
 impl SharedBuffer {
     fn get_text(&self) -> String {
-        String::from_utf8_lossy(&self.0.borrow()).into_owned()
+        String::from_utf8_lossy(&self.0.lock().unwrap()).into_owned()
     }
 }
 
 impl Write for SharedBuffer {
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-        self.0.borrow_mut().extend_from_slice(data);
+        self.0.lock().unwrap().extend_from_slice(data);
         Ok(data.len())
     }
 
