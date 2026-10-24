@@ -242,4 +242,5 @@ This section is the `python` release-please component: tags `python-vX.Y.Z`, its
 PR, published to PyPI by `release.yaml`. All seven packages are lock-stepped to one version via
 `extra-files`. Only changes to the published packages use `feat` or `fix`; tests, the docs in
 `python/project/`, READMEs and tooling are `chore` or `docs`. PyPI never lets a version be
-re-uploaded.
+re-uploaded. release-please's `python` release type would release on `docs` alone, so the
+component's `changelog-sections` in `.release/config.json` hide `docs`, as `node` does.
