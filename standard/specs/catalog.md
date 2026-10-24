@@ -30,7 +30,7 @@ A Fairspec Catalog is a [JSON Lines](https://jsonlines.org/) resource with each 
 
 ## Catalog
 
-A top-level descriptor `MUST` be an array of [Dataset](#dataset) objects.
+Each line of the catalog `MUST` be a [Dataset](#dataset) object. Read in order, the lines form the array that the [profile](https://fairspec.org/profiles/latest/catalog.json) validates.
 
 For example:
 
