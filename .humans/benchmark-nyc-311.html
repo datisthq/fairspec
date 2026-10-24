@@ -280,7 +280,7 @@
         <p class="lede">
           Fairspec's Python and TypeScript libraries against 8 other validators, all
           checking the same generated CSV against the same Table Schema. Measured
-          2026-10-21 on AMD Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB
+          2026-10-24 on AMD Ryzen 5 PRO 7545U w/ Radeon 740M Graphics (12 threads), 32GB
           RAM, capped at 10G per tool, linux 7.0.0-34-generic.
         </p>
       </header>
@@ -296,12 +296,16 @@
             ><span class="note">4.6 GB</span>
           </div>
           <div class="tile">
+            <span class="label">Fairspec Rust</span><span class="value">13.1 s</span
+            ><span class="note">862 MB</span>
+          </div>
+          <div class="tile">
             <span class="label">Fastest correct rival</span
             ><span class="value">1 min 5 s</span
             ><span class="note">pandera (DuckDB)</span>
           </div>
           <div class="tile">
-            <span class="label">Did not finish</span><span class="value">5 of 13</span
+            <span class="label">Did not finish</span><span class="value">5 of 14</span
             ><span class="note">timed out, ran out of memory or crashed</span>
           </div>
         </div>
@@ -309,7 +313,7 @@
       <section>
         <h2>nyc-311 · 100MB</h2>
         <p class="caption">
-          194K rows · 41 columns · 7.95M cells · median of 5 run(s) · shorter is better
+          194K rows · 41 columns · 7.95M cells · median of 3 run(s) · shorter is better
         </p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
@@ -319,6 +323,13 @@
         <div class="charts">
           <figure>
             <figcaption>Time</figcaption>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+44b4fe5: 0.19 s">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 2.4%"></span
+                ><span class="value">0.19 s</span></span
+              >
+            </div>
             <div class="row" data-tip="Fairspec Python 0.2.0+9c15b4e: 0.23 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
@@ -422,6 +433,13 @@
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+44b4fe5: 277 MB">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 37%"></span
+                ><span class="value">277 MB</span></span
+              >
+            </div>
             <div class="row" data-tip="Fairspec Python 0.2.0+9c15b4e: 369 MB">
               <span class="name">Fairspec Python</span
               ><span class="track"
@@ -537,6 +555,13 @@
             </thead>
             <tbody>
               <tr>
+                <td>Fairspec Rust</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">0.19 s</td>
+                <td class="num">277 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
                 <td>Fairspec Python</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">0.23 s</td>
@@ -634,7 +659,7 @@
       <section>
         <h2>nyc-311 · 1.0GB</h2>
         <p class="caption">
-          1.94M rows · 41 columns · 79.5M cells · median of 5 run(s) · shorter is better
+          1.94M rows · 41 columns · 79.5M cells · median of 3 run(s) · shorter is better
         </p>
         <div class="legend">
           <span><i class="swatch fairspec"></i>Fairspec</span
@@ -644,6 +669,13 @@
         <div class="charts">
           <figure>
             <figcaption>Time</figcaption>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+44b4fe5: 1.32 s">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 1.7%"></span
+                ><span class="value">1.32 s</span></span
+              >
+            </div>
             <div class="row" data-tip="Fairspec Python 0.2.0+9c15b4e: 1.36 s">
               <span class="name">Fairspec Python</span
               ><span class="track"
@@ -747,6 +779,13 @@
           </figure>
           <figure>
             <figcaption>Peak memory</figcaption>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+44b4fe5: 599 MB">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 13.7%"></span
+                ><span class="value">599 MB</span></span
+              >
+            </div>
             <div class="row" data-tip="Fairspec Python 0.2.0+9c15b4e: 819 MB">
               <span class="name">Fairspec Python</span
               ><span class="track"
@@ -862,6 +901,13 @@
             </thead>
             <tbody>
               <tr>
+                <td>Fairspec Rust</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">1.32 s</td>
+                <td class="num">599 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
                 <td>Fairspec Python</td>
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">1.36 s</td>
@@ -976,6 +1022,13 @@
                 ><span class="value">12.0 s</span></span
               >
             </div>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+07cf018: 13.1 s">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 1.7%"></span
+                ><span class="value">13.1 s</span></span
+              >
+            </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 23.0 s">
               <span class="name">Fairspec TypeScript</span
               ><span class="track"
@@ -1081,6 +1134,13 @@
               ><span class="track"
                 ><span class="bar fairspec" style="width: 16%"></span
                 ><span class="value">1014 MB</span></span
+              >
+            </div>
+            <div class="row" data-tip="Fairspec Rust 0.0.0+07cf018: 862 MB">
+              <span class="name">Fairspec Rust</span
+              ><span class="track"
+                ><span class="bar fairspec" style="width: 13.6%"></span
+                ><span class="value">862 MB</span></span
               >
             </div>
             <div class="row" data-tip="Fairspec TypeScript 0.12.4+8d187d7: 4.6 GB">
@@ -1199,6 +1259,13 @@
                 <td><span class="chip good">✓ correct</span></td>
                 <td class="num">12.0 s</td>
                 <td class="num">1014 MB</td>
+                <td class="num">100 of 100</td>
+              </tr>
+              <tr>
+                <td>Fairspec Rust</td>
+                <td><span class="chip good">✓ correct</span></td>
+                <td class="num">13.1 s</td>
+                <td class="num">862 MB</td>
                 <td class="num">100 of 100</td>
               </tr>
               <tr>
@@ -1396,6 +1463,12 @@
                   boolean<br />errors are counted once per cell; a bad number fails both
                   its type regex and its range
                 </td>
+              </tr>
+              <tr>
+                <td>Fairspec Rust</td>
+                <td>0.0.0+07cf018</td>
+                <td>–</td>
+                <td>–</td>
               </tr>
               <tr>
                 <td>patito (polars) (not a full validator)</td>
