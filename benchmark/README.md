@@ -8,7 +8,7 @@ against the same Table Schema:
 | ------------------- | --------------------------------------------------------------------------------- |
 | Fairspec Python     | `validate_table` from `fairspec/validate.py`, in the `python/` venv               |
 | Fairspec TypeScript | `validateTable` from `fairspec/validate.ts`, on the workspace build               |
-| Fairspec Rust       | `validate_table` from `fairspec/rustlang/`, a release build of `rustlang/library` |
+| Fairspec Rust       | `validate_table` from `fairspec/rustlang/`, the `build:dist` build of `rustlang/library` |
 | frictionless-py     | `frictionless.validate` with the schema translated                                |
 | qsv                 | `qsv validate` with the schema translated to JSON Schema                          |
 | pandera (polars)    | a `pandera.polars` schema with coercion, over a read frame                        |

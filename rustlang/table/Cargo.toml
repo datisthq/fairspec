@@ -42,6 +42,7 @@ polars = { version = "0.55", default-features = false, features = [
   "string_pad",
   "replace",
   "extract_jsonpath",
+  "performant",
   "row_hash",
   "streaming",
 ] }
@@ -52,6 +53,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 thiserror = "2.0"
 zip = { version = "9.0", default-features = false, features = ["deflate"] }
+
+[features]
+# polars' SIMD kernels, as py-polars builds them; they need a nightly toolchain
+nightly = ["polars/nightly"]
 
 [dev-dependencies]
 tempfile = "3.27"

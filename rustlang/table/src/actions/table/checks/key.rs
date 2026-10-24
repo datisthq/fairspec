@@ -79,7 +79,7 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     };
     // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
     let flag_expr = when(create_key_presence_expr(keys))
-        .then(key_expr.hash(0, 0, 0, 0))
+        .then(key_expr.hash(0))
         .otherwise(lit(NULL))
         .map(record_hashes, |_, field| {
             Ok(Field::new(field.name().clone(), DataType::Boolean))

@@ -23,6 +23,7 @@ Run from the repo root; `pnpm -C rustlang <script>` calls `cargo` inside `rustla
 - `pnpm -C rustlang check:lint` — `cargo fmt --check` and clippy with `-D warnings`
 - `pnpm -C rustlang format` — `cargo fmt`
 - `pnpm -C rustlang build` — `cargo build --release`
+- `pnpm -C rustlang build:dist` — the build to ship and measure: py-polars' wheel profile (`dist-release`: fat LTO, one codegen unit) on its pinned nightly with polars' SIMD kernels (`nightly` feature); needs `rustup toolchain install nightly-2026-09-01`
 - `pnpm -C rustlang sync:schemas` — rewrite `mcp-server/schemas/` from Python's MCP server (**MCP server**)
 
 `rustlang/rust-toolchain.toml` pins **stable** (CI builds on stable on Linux, macOS and
@@ -70,6 +71,13 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 
 ## Table
 
+- polars is patched (`[patch.crates-io]` in `rustlang/Cargo.toml`) to the commit py-polars 2.0.0
+  was built from (`pl.show_versions()` prints it as `Build:`), with polars' own `hashbrown`
+  fork, which a dependency's `[patch]` never passes on. crates.io 0.55.2 was two months and 661
+  commits older; with `build:dist` on top, Rust went from 1.5x Python's time to parity. Bump both revs with the py-polars the Python
+  section pins, so both twins run the same engine
+- `rustlang/.cargo/config.toml` gives x86-64 py-polars' wheel CPU features (AVX2, FMA, BMI2:
+  Haswell and later), about 20% at 10GB; py-polars' `performant` feature is on too
 - `Table` is a polars `LazyFrame`. Wherever Python passes `engine=QUERY_ENGINE`, Rust calls
   `collect_table()` / `sink_table()` (`helpers::table::LazyFrameExt`, the crate's `streaming`
   feature): the default `collect()` is the in-memory engine, which held 2.8GB per GB of CSV

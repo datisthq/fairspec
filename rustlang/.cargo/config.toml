@@ -1,0 +1,6 @@
+# py-polars' x86-64 wheel features (Haswell, 2013, and later)
+[target.'cfg(target_arch = "x86_64")']
+rustflags = [
+  "-C",
+  "target-feature=+sse3,+ssse3,+sse4.1,+sse4.2,+popcnt,+cmpxchg16b,+avx,+avx2,+fma,+bmi1,+bmi2,+lzcnt,+pclmulqdq,+movbe",
+]

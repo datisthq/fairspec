@@ -7,6 +7,7 @@ members = [
   "mcp-server",
   "terminal",
   "fairspec",
+  "../benchmark/fairspec/rustlang",
 ]
 resolver = "3"
 
@@ -26,3 +27,15 @@ debug = false
 [profile.release]
 lto = "thin"
 strip = true
+
+# py-polars' wheel profile
+[profile.dist-release]
+inherits = "release"
+codegen-units = 1
+lto = "fat"
+
+# The polars py-polars 2.0.0 ships (its `Build:` commit), not crates.io 0.55.2
+[patch.crates-io]
+polars = { git = "https://github.com/pola-rs/polars", rev = "22a147de3d2bb2e44b97338a2510816c7105c9f2" }
+# polars calls the prefetch methods of its own fork (rust-lang/hashbrown#727)
+hashbrown = { git = "https://github.com/pola-rs/hashbrown", rev = "d76a6f81abd8f388676aff15068236a8d21c7e1a" }

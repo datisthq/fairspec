@@ -80,6 +80,7 @@ fn validate_foreign_key(
         .select(on.clone())
         .drop_nulls(None)
         .join(ref_selected, on.clone(), on, JoinArgs::new(JoinType::Anti))
+        .map_err(|error| fairspec_metadata::Error::Load(error.to_string()))?
         .unique_stable(None, UniqueKeepStrategy::Any)
         .collect_with_engine(QUERY_ENGINE)
         .map(|result| result.unwrap_single())
