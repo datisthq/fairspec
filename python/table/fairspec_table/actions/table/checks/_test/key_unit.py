@@ -227,7 +227,8 @@ class TestInspectTableRowUnique:
 
         errors = inspect_table(table, table_schema=table_schema)
 
-        assert [(e.type, e.columnName, e.rowNumber) for e in errors] == [
+        dumps = [error.model_dump() for error in errors]
+        assert [(d["type"], d["columnName"], d["rowNumber"]) for d in dumps] == [
             ("cell/missing", "a", 1),
             ("cell/missing", "a", 2),
             ("cell/missing", "b", 1),

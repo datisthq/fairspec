@@ -330,6 +330,8 @@ For example, to allow only the listed columns:
 
 An optional list of values that represent missing or null data across all columns in the table. Each item can be either a simple value or an object with `value` and `label` properties for documentation purposes. The values type `MUST` be `"string"` or `"integer"`.
 
+A cell is missing when it equals an item literally, before any type conversion and without coercion: a string matches a cell the format delivers as text, character for character, and an integer matches a cell the format delivers as a number. A text format such as CSV delivers every cell as text, so its missing values are written as strings (`"-999"`, not `-999`). A column's own [`missingValues`](#column-missingvalues) apply in addition to these.
+
 For example, with simple values:
 
 ```json

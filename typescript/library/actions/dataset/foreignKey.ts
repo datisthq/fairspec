@@ -1,9 +1,8 @@
 import type { Dataset, FairspecError } from "@fairspec/metadata"
-import { createReport, resolveTableSchema } from "@fairspec/metadata"
+import { createReport, inferResourceName, resolveTableSchema } from "@fairspec/metadata"
 import type { Table } from "@fairspec/table"
 import { loadTable } from "../../actions/table/load.ts"
 
-// TODO: foreign key columns definition should be validated as well (metadata/here?)
 // TODO: review temporary files creation from validateDataset call
 
 export async function validateDatasetForeignKeys(
@@ -15,21 +14,27 @@ export async function validateDatasetForeignKeys(
   const errors: FairspecError[] = []
   const tables: Record<string, Table> = {}
 
-  for (const [index, resource] of (dataset.resources ?? []).entries()) {
-    const resourceName = resource.name ?? `resource${index + 1}`
+  const resources = (dataset.resources ?? []).map((resource, index) => ({
+    resource,
+    name: resource.name ?? inferResourceName(resource, { resourceNumber: index + 1 }),
+  }))
 
+  for (const { resource, name: resourceName } of resources) {
     const tableSchema = await resolveTableSchema(resource.tableSchema)
     if (!tableSchema) continue
 
     const foreignKeys = tableSchema.foreignKeys
     if (!foreignKeys) continue
 
-    const names = [resource.name, ...foreignKeys.map(it => it.reference.resource)].filter(
-      Boolean,
-    ) as string[]
+    const names = [
+      resourceName,
+      ...foreignKeys.flatMap(it =>
+        it.reference.resource ? [it.reference.resource] : [],
+      ),
+    ]
 
     for (const name of names) {
-      const resource = dataset.resources?.find(res => res.name === name)
+      const resource = resources.find(it => it.name === name)?.resource
 
       if (!resource) {
         errors.push({
@@ -60,11 +65,11 @@ export async function validateDatasetForeignKeys(
     }
 
     for (const foreignKey of foreignKeys) {
-      const left = tables[resourceName] as Table
+      const left = tables[resourceName]
       const right = tables[foreignKey.reference.resource ?? resourceName]
 
       // Missing resource error added in the previous step
-      if (!right) {
+      if (!left || !right) {
         continue
       }
 

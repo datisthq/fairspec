@@ -13,6 +13,7 @@ from fairspec_metadata.actions.table_schema.inspect import inspect_table_schema
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
 from fairspec_metadata.models.descriptor import Descriptor
+from fairspec_metadata.models.error.metadata import MetadataError
 from fairspec_metadata.models.profile import ProfileType
 from fairspec_metadata.models.report import Report
 
@@ -49,8 +50,20 @@ def validate_dataset_descriptor(
             normalized = normalize_dataset(dataset, basepath=basepath)
 
     if normalized:
+        names: set[str] = set()
         for index, resource in enumerate(normalized.resources or []):
             root_json_pointer = f"/resources/{index}"
+
+            if resource.name is not None:
+                if resource.name in names:
+                    report.errors.append(
+                        MetadataError(
+                            type="metadata",
+                            message=f'resource name "{resource.name}" is not unique',
+                            jsonPointer=f"{root_json_pointer}/name",
+                        )
+                    )
+                names.add(resource.name)
 
             if isinstance(resource.fileDialect, str):
                 file_dialect_result = validate_file_dialect(

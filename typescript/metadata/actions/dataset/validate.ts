@@ -49,8 +49,20 @@ export async function validateDatasetDescriptor(
   }
 
   if (dataset) {
+    const names = new Set<string>()
     for (const [index, resource] of (dataset?.resources ?? []).entries()) {
       const rootJsonPointer = `/resources/${index}`
+
+      if (resource.name !== undefined) {
+        if (names.has(resource.name)) {
+          report.errors.push({
+            type: "metadata",
+            message: `resource name "${resource.name}" is not unique`,
+            jsonPointer: `${rootJsonPointer}/name`,
+          })
+        }
+        names.add(resource.name)
+      }
 
       if (typeof resource.fileDialect === "string") {
         const fileDialectReport = await validateFileDialect(resource.fileDialect, {

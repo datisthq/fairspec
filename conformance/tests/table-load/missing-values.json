@@ -1,0 +1,65 @@
+[
+  {
+    "description": "missing values in csv",
+    "comment": "Matching is literal: CSV delivers every cell as text, so only a string missing value matches it",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "missingValues": ["NA", -999],
+      "properties": {
+        "score": { "type": ["integer", "null"] },
+        "ratio": { "type": ["number", "null"] },
+        "code": { "type": ["string", "null"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "a string missing value is null",
+        "data": "score,ratio,code\nNA,NA,NA\n5,0.5,x\n",
+        "expected": {
+          "columns": ["score", "ratio", "code"],
+          "rows": [
+            [null, null, null],
+            [5, 0.5, "x"]
+          ]
+        }
+      },
+      {
+        "description": "an integer missing value does not match the text of a cell",
+        "data": "score,ratio,code\n-999,-999,-999\n",
+        "expected": {
+          "columns": ["score", "ratio", "code"],
+          "rows": [[-999, -999.0, "-999"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "missing values in json",
+    "comment": "JSON delivers numbers, so an integer missing value matches a number and not a string",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "format": "json",
+    "tableSchema": {
+      "missingValues": ["NA", -999],
+      "properties": {
+        "score": { "type": ["integer", "null"] },
+        "code": { "type": ["string", "null"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "an integer missing value matches the number",
+        "data": [
+          { "score": -999, "code": "NA" },
+          { "score": 5, "code": "-999" }
+        ],
+        "expected": {
+          "columns": ["score", "code"],
+          "rows": [
+            [null, null],
+            [5, "-999"]
+          ]
+        }
+      }
+    ]
+  }
+]

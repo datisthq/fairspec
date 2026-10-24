@@ -24,6 +24,8 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 
 - The layout follows JSON-Schema-Test-Suite: `tests/<operation>/<feature>.json`, each an array
   of groups `{description, …subject, tests}`, each test `{description, data, outcome}`
+- The subject (`dataset`, `tableSchema`, `fileDialect`, …) lives on the group, never on a test:
+  a test varies only `data`. Two descriptors to compare are two groups
 - A test file is a top-level array, so it cannot carry `$schema`. Both runners validate every
   file against `conformance/test-schema.json` instead; a malformed file fails as a test
 - An operation directory is named after the CLI command both libraries share, so

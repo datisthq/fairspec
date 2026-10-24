@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
@@ -6,6 +8,8 @@ use crate::actions::table_schema::inspect::inspect_table_schema;
 use crate::actions::table_schema::validate::validate_table_schema;
 use crate::models::dataset::{Dataset, DatasetValidationResult};
 use crate::models::descriptor::Descriptor;
+use crate::models::error::error::FairspecError;
+use crate::models::error::metadata::MetadataError;
 use crate::models::exception::Result;
 use crate::models::path::PathOr;
 use crate::models::profile::ProfileType;
@@ -37,8 +41,18 @@ pub fn validate_dataset_descriptor(
     };
     let dataset = normalize_dataset(&dataset, basepath)?;
 
+    let mut names = HashSet::new();
     for (index, resource) in dataset.resources.iter().flatten().enumerate() {
         let root_json_pointer = format!("/resources/{index}");
+        if let Some(name) = &resource.name
+            && !names.insert(name.as_str())
+        {
+            report.errors.push(FairspecError::Metadata(MetadataError {
+                message: format!("resource name \"{name}\" is not unique"),
+                json_pointer: format!("{root_json_pointer}/name"),
+                ..Default::default()
+            }));
+        }
         let root_json_pointer = Some(root_json_pointer.as_str());
 
         if let Some(PathOr::Path(path)) = &resource.file_dialect {

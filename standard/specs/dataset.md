@@ -175,7 +175,7 @@ For a JSON array of objects:
 
 ### `name`
 
-An optional name for the resource. It `MUST` be a string consisting of alphanumeric characters and underscores. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table-schema#foreignkeys) specified in [Fairspec Table Schema](../table-schema).
+An optional name for the resource. It `MUST` be a string consisting of alphanumeric characters and underscores, and it `MUST` be unique among the resources of the dataset; names that differ only in case are distinct. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table-schema#foreignkeys) specified in [Fairspec Table Schema](../table-schema).
 
 For example:
 

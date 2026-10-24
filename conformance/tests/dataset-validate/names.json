@@ -1,0 +1,48 @@
+[
+  {
+    "description": "distinct resource names",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [{ "name": "a" }, { "name": "b" }, {}]
+    },
+    "tests": [
+      {
+        "description": "are valid, and an unnamed resource takes part in no comparison",
+        "data": {},
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a repeated resource name",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [{ "name": "a" }, { "name": "b" }, { "name": "a" }, { "name": "a" }]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error on each later use",
+        "data": {},
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/2/name" },
+          { "type": "metadata", "jsonPointer": "/resources/3/name" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "resource names that differ in case",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [{ "name": "a" }, { "name": "A" }]
+    },
+    "tests": [
+      {
+        "description": "are distinct",
+        "data": {},
+        "valid": true
+      }
+    ]
+  }
+]

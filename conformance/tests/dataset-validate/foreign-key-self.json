@@ -10,11 +10,20 @@
           "data": "tree.csv",
           "tableSchema": {
             "properties": {
-              "id": { "type": "integer" },
-              "parent_id": { "type": ["integer", "null"] }
+              "id": {
+                "type": "integer"
+              },
+              "parent_id": {
+                "type": ["integer", "null"]
+              }
             },
             "foreignKeys": [
-              { "columns": ["parent_id"], "reference": { "columns": ["id"] } }
+              {
+                "columns": ["parent_id"],
+                "reference": {
+                  "columns": ["id"]
+                }
+              }
             ]
           }
         }
@@ -23,12 +32,16 @@
     "tests": [
       {
         "description": "references to rows of the same table are valid",
-        "data": { "tree.csv": "id,parent_id\n1,1\n2,1\n3,2\n" },
+        "data": {
+          "tree.csv": "id,parent_id\n1,1\n2,1\n3,2\n"
+        },
         "valid": true
       },
       {
         "description": "a reference to an absent row is a foreignKey error",
-        "data": { "tree.csv": "id,parent_id\n1,1\n2,9\n" },
+        "data": {
+          "tree.csv": "id,parent_id\n1,1\n2,9\n"
+        },
         "valid": false,
         "errors": [
           {
@@ -36,7 +49,9 @@
             "resourceName": "tree",
             "foreignKey": {
               "columns": ["parent_id"],
-              "reference": { "columns": ["id"] }
+              "reference": {
+                "columns": ["id"]
+              }
             },
             "cells": ["9"]
           }
@@ -45,8 +60,69 @@
       {
         "description": "a null reference is not checked",
         "comment": "The spec is silent on null foreign key values; proposed: like SQL and Data Package, a null references nothing",
-        "data": { "tree.csv": "id,parent_id\n1,\n2,1\n" },
+        "data": {
+          "tree.csv": "id,parent_id\n1,\n2,1\n"
+        },
         "valid": true
+      }
+    ]
+  },
+  {
+    "description": "self-referencing foreign key on an unnamed resource",
+    "comment": "The resource has no name to load it by, so the self-reference must not depend on one",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "tree.csv",
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "parent_id": {
+                "type": ["integer", "null"]
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["parent_id"],
+                "reference": {
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "references to rows of the same table are valid",
+        "data": {
+          "tree.csv": "id,parent_id\n1,1\n2,1\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a reference to an absent row is a foreignKey error",
+        "data": {
+          "tree.csv": "id,parent_id\n1,1\n2,9\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "tree",
+            "foreignKey": {
+              "columns": ["parent_id"],
+              "reference": {
+                "columns": ["id"]
+              }
+            },
+            "cells": ["9"]
+          }
+        ]
       }
     ]
   }
