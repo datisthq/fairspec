@@ -6,14 +6,15 @@ import polars as pl
 
 from fairspec_metadata import IntegerColumn
 
+from .._shared.text import strip_number_text
+
 
 def parse_integer_column(column: IntegerColumn, column_expr: pl.Expr) -> pl.Expr:
     group_char = column.property.groupChar
     with_text = column.property.withText
 
     if with_text:
-        column_expr = column_expr.str.replace_all(r"^[^\d\-]+", "")
-        column_expr = column_expr.str.replace_all(r"[^\d\-]+$", "")
+        column_expr = strip_number_text(column_expr)
 
     if group_char:
         escaped_group_char = re.escape(group_char)

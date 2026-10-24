@@ -1,15 +1,13 @@
 import type { IntegerColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
+import { stripNumberText } from "./-shared/text.ts"
 
 export function parseIntegerColumn(column: IntegerColumn, columnExpr: pl.Expr) {
   const groupChar = column.property.groupChar
   const withText = column.property.withText
 
-  // Handle non-bare numbers (with currency symbols, percent signs, etc.)
   if (withText) {
-    // Preserve the minus sign when removing leading characters
-    columnExpr = columnExpr.str.replaceAll("^[^\\d\\-]+", "")
-    columnExpr = columnExpr.str.replaceAll("[^\\d\\-]+$", "")
+    columnExpr = stripNumberText(columnExpr)
   }
 
   // Handle group character (thousands separator)

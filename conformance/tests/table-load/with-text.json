@@ -1,0 +1,52 @@
+[
+  {
+    "description": "withText on integer and number columns",
+    "comment": "Only a prefix and a suffix are stripped; a minus in the prefix makes the number negative",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "count": { "type": "integer", "withText": true },
+        "price": { "type": "number", "withText": true }
+      }
+    },
+    "tests": [
+      {
+        "description": "a prefix and a suffix are stripped",
+        "data": "count,price\n$19,$19.99\n12 kg,25.50 EUR\napprox. 5,approx. 5\nFee: 5,Fee: 5\n5%,5%\n",
+        "expected": {
+          "columns": ["count", "price"],
+          "rows": [
+            [19, 19.99],
+            [12, 25.5],
+            [5, 5.0],
+            [5, 5.0],
+            [5, 5.0]
+          ]
+        }
+      },
+      {
+        "description": "a minus in the prefix is kept",
+        "data": "count,price\n-$5,-$5.5\n$-5,$-5.5\n-5,-5.5\n",
+        "expected": {
+          "columns": ["count", "price"],
+          "rows": [
+            [-5, -5.5],
+            [-5, -5.5],
+            [-5, -5.5]
+          ]
+        }
+      },
+      {
+        "description": "a leading decimal point and an exponent stay in the number",
+        "data": "count,price\n7 pcs,$.50\n7 pcs,1.5e3 kg\n",
+        "expected": {
+          "columns": ["count", "price"],
+          "rows": [
+            [7, 0.5],
+            [7, 1500.0]
+          ]
+        }
+      }
+    ]
+  }
+]

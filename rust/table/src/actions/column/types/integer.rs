@@ -1,14 +1,12 @@
 use fairspec_metadata::IntegerColumn;
 use polars::prelude::*;
 
+use crate::actions::column::_shared::text::strip_number_text;
+
 pub fn parse_integer_column(column: &IntegerColumn, column_expr: Expr) -> Expr {
     let mut column_expr = column_expr;
     if column.property.base.with_text == Some(true) {
-        column_expr = column_expr
-            .str()
-            .replace_all(lit(r"^[^\d\-]+"), lit(""), false)
-            .str()
-            .replace_all(lit(r"[^\d\-]+$"), lit(""), false);
+        column_expr = strip_number_text(column_expr, None);
     }
     if let Some(group_char) = column
         .property

@@ -1,6 +1,8 @@
 use fairspec_metadata::DecimalColumn;
 use polars::prelude::*;
 
+use crate::actions::column::_shared::text::strip_number_text;
+
 // polars 2's default precision for a scale-only Decimal
 const DECIMAL_PRECISION: usize = 38;
 const DECIMAL_SCALE: usize = 18;
@@ -30,6 +32,9 @@ pub(crate) fn normalize_number_text(
     let decimal_char = decimal_char.filter(|c| !c.is_empty()).unwrap_or(".");
     let group_char = group_char.unwrap_or("");
     let mut column_expr = column_expr;
+    if with_text {
+        column_expr = strip_number_text(column_expr, Some(decimal_char));
+    }
 
     if group_char == "." && decimal_char == "," {
         column_expr = column_expr
@@ -52,12 +57,6 @@ pub(crate) fn normalize_number_text(
                     .str()
                     .replace_all(lit(regex::escape(decimal_char)), lit("."), false);
         }
-    }
-
-    if with_text {
-        column_expr = column_expr
-            .str()
-            .replace_all(lit(r"[^\d\-.e]"), lit(""), false);
     }
     column_expr
 }

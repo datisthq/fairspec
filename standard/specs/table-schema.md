@@ -1762,7 +1762,7 @@ population
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional boolean indicating whether numeric values may include non-numeric text that should be stripped during parsing.
+An optional boolean indicating whether numeric values may include text around the number, such as a currency or a unit. When `true`, the text before the first digit and after the last digit `MUST` be stripped before parsing; a [`decimalChar`](#decimalchar) directly before the first digit belongs to the number. If the stripped prefix contains a minus sign (`-`), the number `MUST` be read as negative. Text between the first and the last digit is not stripped, so a cell such as `12 USD 5` is not a number. No scaling is applied: `5%` is `5`.
 
 Metadata example:
 
@@ -1784,6 +1784,7 @@ price
 $19.99
 €25.50
 £12.34
+-$5.00
 ```
 
 #### `minLength`

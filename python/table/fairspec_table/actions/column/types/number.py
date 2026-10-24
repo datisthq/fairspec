@@ -6,11 +6,16 @@ import polars as pl
 
 from fairspec_metadata import NumberColumn
 
+from .._shared.text import strip_number_text
+
 
 def parse_number_column(column: NumberColumn, column_expr: pl.Expr) -> pl.Expr:
     decimal_char = column.property.decimalChar or "."
     group_char = column.property.groupChar or ""
     with_text = column.property.withText
+
+    if with_text:
+        column_expr = strip_number_text(column_expr, decimal_char=decimal_char)
 
     if group_char == "." and decimal_char == ",":
         column_expr = column_expr.str.replace_all(",", "###DECIMAL###")
@@ -23,9 +28,6 @@ def parse_number_column(column: NumberColumn, column_expr: pl.Expr) -> pl.Expr:
 
         if decimal_char and decimal_char != ".":
             column_expr = column_expr.str.replace_all(re.escape(decimal_char), ".")
-
-    if with_text:
-        column_expr = column_expr.str.replace_all(r"[^\d\-.e]", "")
 
     column_expr = column_expr.cast(pl.Float64, strict=False)
     return column_expr

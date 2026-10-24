@@ -176,5 +176,92 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "withText keeps text inside the number",
+    "comment": "Text between the first and the last digit is not stripped, so the cell is not a number",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "count": {
+          "type": "integer",
+          "withText": true
+        },
+        "price": {
+          "type": "number",
+          "withText": true
+        },
+        "amount": {
+          "type": "string",
+          "format": "decimal",
+          "withText": true
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a cell/type error",
+        "data": "count,price,amount\n12 USD 5,12 USD 5,12 USD 5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "count",
+            "rowNumber": 1,
+            "cell": "12 USD 5",
+            "columnType": "integer"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "price",
+            "rowNumber": 1,
+            "cell": "12 USD 5",
+            "columnType": "number"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "amount",
+            "rowNumber": 1,
+            "cell": "12 USD 5",
+            "columnType": "decimal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText on a decimal column",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "decimal",
+          "withText": true,
+          "minimum": 0
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a prefix and a suffix are stripped",
+        "data": "amount\n$19.99\napprox. 5\n25.50 EUR\n",
+        "valid": true
+      },
+      {
+        "description": "a minus in the prefix makes the value negative",
+        "data": "amount\n-$5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "amount",
+            "rowNumber": 1,
+            "cell": "-$5",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
   }
 ]

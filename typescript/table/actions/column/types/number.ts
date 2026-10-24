@@ -1,11 +1,16 @@
 import type { NumberColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
+import { stripNumberText } from "./-shared/text.ts"
 
 export function parseNumberColumn(column: NumberColumn, columnExpr: pl.Expr) {
   // Extract the decimal and group characters
   const decimalChar = column.property.decimalChar ?? "."
   const groupChar = column.property.groupChar ?? ""
   const withText = column.property.withText
+
+  if (withText) {
+    columnExpr = stripNumberText(columnExpr, { decimalChar })
+  }
 
   // Special case handling for European number format where "." is group and "," is decimal
   if (groupChar === "." && decimalChar === ",") {
@@ -27,12 +32,6 @@ export function parseNumberColumn(column: NumberColumn, columnExpr: pl.Expr) {
     if (decimalChar && decimalChar !== ".") {
       columnExpr = columnExpr.str.replaceAll(decimalChar, ".")
     }
-  }
-
-  // Handle numbers with text (with currency symbols, percent signs, etc.)
-  if (withText) {
-    // Allowing "e" for scientific notation
-    columnExpr = columnExpr.str.replaceAll("[^\\d\\-.e]", "")
   }
 
   // Cast to float64

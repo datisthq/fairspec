@@ -1,5 +1,6 @@
 import type { DecimalColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
+import { stripNumberText } from "./-shared/text.ts"
 
 // TODO: there is a duplication in integer/number/decimal
 
@@ -8,6 +9,10 @@ export function parseDecimalColumn(column: DecimalColumn, columnExpr: pl.Expr) {
   const decimalChar = column.property.decimalChar ?? "."
   const groupChar = column.property.groupChar ?? ""
   const withText = column.property.withText
+
+  if (withText) {
+    columnExpr = stripNumberText(columnExpr, { decimalChar })
+  }
 
   // Special case handling for European number format where "." is group and "," is decimal
   if (groupChar === "." && decimalChar === ",") {
@@ -29,12 +34,6 @@ export function parseDecimalColumn(column: DecimalColumn, columnExpr: pl.Expr) {
     if (decimalChar && decimalChar !== ".") {
       columnExpr = columnExpr.str.replaceAll(decimalChar, ".")
     }
-  }
-
-  // Handle numbers with text (with currency symbols, percent signs, etc.)
-  if (withText) {
-    // Allowing "e" for scientific notation
-    columnExpr = columnExpr.str.replaceAll("[^\\d\\-.e]", "")
   }
 
   // A Decimal without precision and scale panics polars and aborts the process

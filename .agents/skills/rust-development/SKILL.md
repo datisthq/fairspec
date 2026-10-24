@@ -86,7 +86,9 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - A CSV sink sets `check_extension: false`, or a `.tsv` path fails a check py-polars' `sink_csv` skips
 - Column normalization builds the same expressions as Python (`str().strptime` with `strict:
 false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl.Decimal` is
-  `Decimal(38, 18)`
+  `Decimal(38, 18)`. `withText` runs first, through `strip_number_text` (`_shared/text.rs`,
+  twin of Python's `_shared/text.py` and TypeScript's `-shared/text.ts`), before group and
+  decimal characters are handled; its patterns avoid lookaround, which no twin's polars regex has
 - shapely and isodate have no crates: WKT/WKB readers follow GEOS 3.13 and the duration parser
   ports `isodate.parse_duration`; both are checked against the venv on sample lists
 - `stringify_number` renders an integral float as Python's `str(int(x))` at any magnitude
