@@ -177,6 +177,33 @@ describe("integrity", () => {
   )
 })
 
+describe("catalog entries", () => {
+  it.each([
+    {
+      valid: true,
+      entry: { loc: "https://example.com/a.json", upd: "2024-01-01T00:00:00Z" },
+    },
+    {
+      valid: true,
+      entry: {
+        loc: "https://example.com/a.json",
+        upd: "2024-01-01T00:00:00Z",
+        del: true,
+      },
+    },
+    {
+      valid: false,
+      entry: {
+        loc: "https://example.com/a.json",
+        upd: "2024-01-01T00:00:00Z",
+        del: "yes",
+      },
+    },
+  ])("validates $entry as $valid", ({ entry, valid }) => {
+    expect(getValidator("catalog.json")([entry])).toBe(valid)
+  })
+})
+
 describe("examples", () => {
   it.each(["dataset", "table-schema"])("validates %s.json", async name => {
     const text = await readFile(join(STANDARD, "examples", `${name}.json`), "utf8")

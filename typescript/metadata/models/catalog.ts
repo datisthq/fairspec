@@ -5,6 +5,10 @@ export const CatalogDataset = z.looseObject({
   upd: z.iso
     .datetime({ offset: true })
     .describe("The last updated date-time of the dataset"),
+  del: z
+    .boolean()
+    .optional()
+    .describe("Whether the entry is a tombstone for a removed dataset"),
 })
 
 export const Catalog = z

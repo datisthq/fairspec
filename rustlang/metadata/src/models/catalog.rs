@@ -9,4 +9,6 @@ pub struct CatalogDataset {
     pub extra: Map<String, Value>,
     pub loc: String,
     pub upd: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub del: Option<bool>,
 }

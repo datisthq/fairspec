@@ -42,7 +42,7 @@ For example:
 
 ## Dataset
 
-A catalog entry pointing to a [Fairspec Dataset](../dataset). It `MUST` have the following properties (all required):
+A catalog entry pointing to a [Fairspec Dataset](../dataset). It `MUST` have the following properties (all required unless otherwise stated):
 
 ### `loc` [required] [#loc]
 
@@ -65,6 +65,20 @@ For example:
 ```json
 {
   "upd": "2023-10-01T00:00:00Z"
+}
+```
+
+### `del`
+
+An optional boolean marking the dataset as removed from the catalog: a tombstone. It is sorted by `upd`, the time of the removal, like any other entry. A client that reads a tombstone `MUST` drop the dataset at `loc`. A publisher `SHOULD` keep a tombstone for as long as a client may still hold the dataset.
+
+For example:
+
+```json
+{
+  "loc": "https://example.com/dataset.json",
+  "upd": "2023-11-01T00:00:00Z",
+  "del": true
 }
 ```
 
