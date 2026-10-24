@@ -121,6 +121,8 @@ Data or content of the resource. It `MUST` be in one of the following:
 - Inline JSON object
 - Inline JSON array of objects
 
+A resource without `data` describes no content. It `MAY` carry metadata, but a [Table Schema](#tableschema), [Data Schema](#dataschema) or [File Dialect](#filedialect) on it has nothing to apply to, so validating such a resource reports a `resource/type` error.
+
 When multiple paths are provided, the resource is multipart: the files are the ordered parts of one resource. Every part `MUST` be a complete file of the same format, and the [File Dialect](#filedialect) and [Table Schema](#tableschema), if present, apply to every part. The order of the paths is significant.
 
 For tabular formats, the records of the resource are the records of each part, taken in order. If the dialect declares header rows, every part `MUST` carry its own; such rows describe their part and are not records of the resource.

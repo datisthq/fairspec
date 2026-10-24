@@ -3,7 +3,10 @@
     "description": "jsonPointer to a nested array",
     "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
     "format": "json",
-    "fileDialect": { "format": "json", "jsonPointer": "/data/items" },
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/data/items"
+    },
     "tests": [
       {
         "description": "rows are read from the pointed array",
@@ -22,12 +25,18 @@
     "description": "jsonPointer to a top-level property",
     "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
     "format": "json",
-    "fileDialect": { "format": "json", "jsonPointer": "/items" },
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/items"
+    },
     "tests": [
       {
         "description": "rows are read from the pointed array",
         "data": "{\"items\":[{\"id\":1,\"name\":\"apple\"}]}",
-        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
       }
     ]
   },
@@ -35,7 +44,10 @@
     "description": "rowType array with a header row",
     "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
     "format": "json",
-    "fileDialect": { "format": "json", "rowType": "array" },
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array"
+    },
     "tests": [
       {
         "description": "the first array names the columns",
@@ -89,13 +101,22 @@
     "description": "rowType object",
     "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
     "format": "json",
-    "fileDialect": { "format": "json", "rowType": "object" },
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object"
+    },
     "tests": [
       {
         "description": "every object is a row",
         "data": [
-          { "id": 1, "name": "apple" },
-          { "id": 2, "name": "orange" }
+          {
+            "id": 1,
+            "name": "apple"
+          },
+          {
+            "id": 2,
+            "name": "orange"
+          }
         ],
         "expected": {
           "columns": ["id", "name"],
@@ -114,7 +135,10 @@
       "https://fairspec.org/specs/file-dialect/#rowtype"
     ],
     "format": "jsonl",
-    "fileDialect": { "format": "jsonl", "rowType": "array" },
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array"
+    },
     "tests": [
       {
         "description": "the first line names the columns",
@@ -136,7 +160,10 @@
       "https://fairspec.org/specs/file-dialect/#rowtype"
     ],
     "format": "jsonl",
-    "fileDialect": { "format": "jsonl", "rowType": "object" },
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "object"
+    },
     "tests": [
       {
         "description": "every line is a row",
@@ -156,13 +183,45 @@
     "comment": "columnNames select and order the columns of object rows",
     "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
     "format": "jsonl",
-    "fileDialect": { "format": "jsonl", "columnNames": ["name", "id"] },
+    "fileDialect": {
+      "format": "jsonl",
+      "columnNames": ["name", "id"]
+    },
     "tests": [
       {
         "description": "the names pick the keys",
         "data": "{\"id\":1,\"name\":\"apple\"}\n",
-        "expected": { "columns": ["name", "id"], "rows": [["apple", 1]] }
+        "expected": {
+          "columns": ["name", "id"],
+          "rows": [["apple", 1]]
+        }
       }
     ]
+  },
+  {
+    "description": "commentRows on json objects",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object",
+      "commentRows": [1]
+    },
+    "tests": [
+      {
+        "description": "commentRows does not apply",
+        "data": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          }
+        ],
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1], [2]]
+        }
+      }
+    ],
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"]
   }
 ]

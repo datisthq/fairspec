@@ -1,0 +1,57 @@
+[
+  {
+    "description": "a resource without data but with a table schema",
+    "dataset": {
+      "resources": [
+        {
+          "name": "empty",
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/type",
+            "resourceName": "empty",
+            "expectedResourceType": "table"
+          }
+        ]
+      }
+    ],
+    "specification": ["https://fairspec.org/specs/dataset/#data"]
+  },
+  {
+    "description": "a resource without data or schemas",
+    "dataset": {
+      "resources": [
+        {
+          "name": "note",
+          "titles": [
+            {
+              "title": "A note"
+            }
+          ]
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": {},
+        "valid": true
+      }
+    ],
+    "specification": ["https://fairspec.org/specs/dataset/#data"]
+  }
+]

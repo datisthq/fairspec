@@ -564,7 +564,7 @@ This would produce headers: "fruit_id", "fruit_name", "fruit_price"
 > [!NOTE]
 > Supported formats: **csv**, **tsv**, **json**, **jsonl**, **xlsx**, **ods**
 
-It `MUST` be an array of positive integers starting from `1`. This property specifies what rows have to be omitted from the data.
+It `MUST` be an array of positive integers starting from `1`. This property specifies what rows have to be omitted from the data. In JSON and JSONL with [`rowType`](#rowtype) `object`, rows have no fixed order of cells to comment, so `commentRows` does not apply.
 
 For example:
 
