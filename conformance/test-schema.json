@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fairspec.org/testsuite/test-schema.json",
-  "title": "Fairspec testsuite test file",
+  "$id": "https://fairspec.org/conformance/test-schema.json",
+  "title": "Fairspec conformance test file",
   "description": "An array of groups. A group fixes the subject of an operation; each of its tests varies only the data and states the outcome. The layout follows JSON-Schema-Test-Suite.",
   "type": "array",
   "minItems": 1,

@@ -7,7 +7,7 @@ members = [
   "mcp-server",
   "terminal",
   "fairspec",
-  "../benchmark/fairspec/rustlang",
+  "../benchmark/fairspec/rust",
 ]
 resolver = "3"
 

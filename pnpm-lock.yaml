@@ -362,7 +362,7 @@ importers:
 
   python: {}
 
-  rustlang: {}
+  rust: {}
 
   standard:
     devDependencies:

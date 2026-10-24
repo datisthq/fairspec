@@ -18,8 +18,8 @@ export const LIBRARIES = [
     settings: join(ROOT, "python", "metadata", "fairspec_metadata", "settings.py"),
   },
   {
-    profiles: join(ROOT, "rustlang", "metadata", "profiles"),
-    settings: join(ROOT, "rustlang", "metadata", "src", "settings.rs"),
+    profiles: join(ROOT, "rust", "metadata", "profiles"),
+    settings: join(ROOT, "rust", "metadata", "src", "settings.rs"),
   },
 ]
 

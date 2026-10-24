@@ -1,5 +1,5 @@
 {
-  "name": "@fairspec/rustlang",
+  "name": "@fairspec/rust",
   "private": true,
   "type": "module",
   "scripts": {

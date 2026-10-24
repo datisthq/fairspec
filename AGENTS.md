@@ -6,16 +6,17 @@ Fairspec is one monorepo: the standard, its Python and TypeScript implementation
 application and the website. This file carries the invariants for all of it; each section's
 conventions live in its skill (see **Skills**) — load it before working there.
 
-| section       | what                                                              | released as                  |
-| ------------- | ----------------------------------------------------------------- | ---------------------------- |
-| `standard/`   | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
-| `python/`     | uv workspace: `fairspec` and `fairspec-*`, incl. the MCP server   | PyPI                         |
-| `typescript/` | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
-| `rustlang/`   | Cargo workspace: `fairspec` and `fairspec-*`, incl. CLI and MCP   | —                            |
-| `desktop/`    | Electron application                                              | installers on GitHub release |
-| `catalog/`    | reserved for the catalog application                              | —                            |
-| `benchmark/`  | speed and memory of both CLIs against other validators            | —                            |
-| `testsuite/`  | language-neutral test suite both libraries run                    | —                            |
+| section        | what                                                              | released as                  |
+| -------------- | ----------------------------------------------------------------- | ---------------------------- |
+| `standard/`    | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
+| `python/`      | uv workspace: `fairspec` and `fairspec-*`, incl. the MCP server   | PyPI                         |
+| `typescript/`  | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
+| `rust/`        | Cargo workspace: `fairspec` and `fairspec-*`, incl. CLI and MCP   | —                            |
+| `desktop/`     | Electron application                                              | installers on GitHub release |
+| `portal/`      | reserved for the portal application                               | —                            |
+| `flow/`        | reserved for the flow application                                 | —                            |
+| `benchmark/`   | speed and memory of both CLIs against other validators            | —                            |
+| `conformance/` | language-neutral test suite both libraries run                    | —                            |
 
 The website lives at the root (`livemark.config.ts`, `.livemark/`, `worker.ts`,
 `wrangler.jsonc`) and renders the docs of every section on fairspec.org.
@@ -85,8 +86,8 @@ Fairspec (changes to them are `docs`).
   from it, so renaming it orphans every user's settings
 - **A behaviour change lands on every surface that has it, in the same branch.** A library
   change lands in its twin with the same names (case-converted), inputs, defaults, limits and
-  output, and a behaviour both share gets a `testsuite/` case, not only a unit test per library
-  (**`testsuite-development`**). Then its CLI command, MCP tool, desktop screen, `.skills/` row
+  output, and a behaviour both share gets a `conformance/` case, not only a unit test per library
+  (**`conformance-development`**). Then its CLI command, MCP tool, desktop screen, `.skills/` row
   and both libraries' docs. A twin left out on purpose is named in the commit body with why.
   When it is unclear which surfaces count, ask first
 
@@ -170,21 +171,21 @@ for one before working in its area. **A repo skill beats a plugin skill on the s
 `change-review` over a generic code review, `change-verification` over
 verification-before-completion. Each is named `<subject>-<facet>`, subject first:
 
-| skill                    | when                                                                   |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `typescript-development` | the npm packages, CLI or MCP server in `typescript/`                   |
-| `python-development`     | the PyPI packages, CLI or MCP server in `python/`                      |
-| `rustlang-development`   | the Cargo workspace in `rustlang/`, the Rust twin and its CLI          |
-| `desktop-development`    | the Electron app in `desktop/`, its i18n catalogues                    |
-| `testsuite-development`  | the shared test suite in `testsuite/` and its runners                  |
-| `benchmark-development`  | the benchmark in `benchmark/`: generated data, rival validators        |
-| `monorepo-layout`        | adding a section, a root script, a workflow job or a release component |
-| `human-documentation`    | a report for people under `.humans/`, and the docs pass before a merge |
-| `landing-screenshots`    | the landing heroes' terminal screenshots: what they show, re-rendering |
-| `issue-resolution`       | taking one issue or bug report to a tested change                      |
-| `change-verification`    | checking a change works — the smallest slice that covers the diff      |
-| `change-review`          | reviewing a pull request or the local diff — also what CI runs         |
-| `worktree-workflow`      | a worktree branch: bootstrap, landing with `pnpm squash`, cleanup      |
+| skill                     | when                                                                   |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `typescript-development`  | the npm packages, CLI or MCP server in `typescript/`                   |
+| `python-development`      | the PyPI packages, CLI or MCP server in `python/`                      |
+| `rust-development`        | the Cargo workspace in `rust/`, the Rust twin and its CLI              |
+| `desktop-development`     | the Electron app in `desktop/`, its i18n catalogues                    |
+| `conformance-development` | the shared test suite in `conformance/` and its runners                |
+| `benchmark-development`   | the benchmark in `benchmark/`: generated data, rival validators        |
+| `monorepo-layout`         | adding a section, a root script, a workflow job or a release component |
+| `human-documentation`     | a report for people under `.humans/`, and the docs pass before a merge |
+| `landing-screenshots`     | the landing heroes' terminal screenshots: what they show, re-rendering |
+| `issue-resolution`        | taking one issue or bug report to a tested change                      |
+| `change-verification`     | checking a change works — the smallest slice that covers the diff      |
+| `change-review`           | reviewing a pull request or the local diff — also what CI runs         |
+| `worktree-workflow`       | a worktree branch: bootstrap, landing with `pnpm squash`, cleanup      |
 
 **There is exactly one `AGENTS.md`, at the root.** `.scripts/-test/docs.unit.ts` enforces that,
 along with this table and every path and `pnpm` command the docs and skills name.

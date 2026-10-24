@@ -5,16 +5,17 @@ implements it. Read the documentation at [fairspec.org](https://fairspec.org).
 
 This repository holds every part of the project:
 
-| section                      | what                                                     |
-| ---------------------------- | -------------------------------------------------------- |
-| [`standard/`](standard/)     | the specification, its JSON Schema profiles and examples |
-| [`python/`](python/)         | the Python framework, CLI and MCP server, on PyPI        |
-| [`typescript/`](typescript/) | the TypeScript framework, CLI and MCP server, on npm     |
-| [`rustlang/`](rustlang/)     | the Rust framework, CLI and MCP server, not yet released |
-| [`desktop/`](desktop/)       | the desktop application for macOS, Windows and Linux     |
-| [`catalog/`](catalog/)       | reserved for the catalog application                     |
-| [`testsuite/`](testsuite/)   | the test suite every implementation runs                 |
-| [`benchmark/`](benchmark/)   | speed and memory against other validators                |
+| section                        | what                                                     |
+| ------------------------------ | -------------------------------------------------------- |
+| [`standard/`](standard/)       | the specification, its JSON Schema profiles and examples |
+| [`python/`](python/)           | the Python framework, CLI and MCP server, on PyPI        |
+| [`typescript/`](typescript/)   | the TypeScript framework, CLI and MCP server, on npm     |
+| [`rust/`](rust/)               | the Rust framework, CLI and MCP server, not yet released |
+| [`desktop/`](desktop/)         | the desktop application for macOS, Windows and Linux     |
+| [`portal/`](portal/)           | reserved for the portal application                      |
+| [`flow/`](flow/)               | reserved for the flow application                        |
+| [`conformance/`](conformance/) | the test suite every implementation runs                 |
+| [`benchmark/`](benchmark/)     | speed and memory against other validators                |
 
 ## Development
 

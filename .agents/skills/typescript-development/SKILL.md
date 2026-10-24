@@ -97,7 +97,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.
   The Python twin hashes keys inside the cell checks' read instead of probing; nodejs-polars has
   no lazy batch function to do the same, so this probe's second read stays
-- **nodejs-polars is patched** (`patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
+- **nodejs-polars is patched** (`.patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every
   validation. It also lets `Expr.str.strptime` take `{ strict, exact, cache }`, which the
@@ -116,7 +116,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `typescript/terminal/entrypoints/-test/run.unit.ts` runs the built bin, so it needs a build first
 - **Spreadsheets** (`typescript/table/plugins/xlxs/`) read with `calamine-node` and write with
   `wasm-xlsxwriter` and our own ODS writer. Python reads the same cells with `python-calamine`,
-  and `helpers/table.ts` owns the typing rule both share (`testsuite/tests/table-load/format-xlsx-cells.json`):
+  and `helpers/table.ts` owns the typing rule both share (`conformance/tests/table-load/format-xlsx-cells.json`):
   data starts after the last header row, a column keeps its cells' one type, and a mixed column
   becomes text (numbers as `String(n)`, dates as ISO). calamine-node caps input at 64 MiB unless
   `maxInputBytes` is raised, needs ODS opted into, and rejects whitespace between ODS cells,
@@ -218,8 +218,8 @@ name, not by path:
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
   entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
-- A behaviour both share gets a `testsuite/` case, which compares both outputs exactly
-  (**`testsuite-development`**)
+- A behaviour both share gets a `conformance/` case, which compares both outputs exactly
+  (**`conformance-development`**)
 
 ## Specs
 
@@ -227,8 +227,8 @@ name, not by path:
 - Import test symbols from `vite-plus/test`, not `vitest`
 - Don't add useless comments like "Arrange", "Act", "Assert"
 - **The suite must pass on Windows — CI runs `pnpm -C typescript test:unit` there.** Never assert on a raw path string: `readlink`, `join` and `import.meta.dirname` all speak the platform separator, so `expect(target).toBe("../AGENTS.md")` passes locally and fails on Windows with a backslashed target. Compare paths only after `resolve()`-ing both sides, and match file content against `\r?\n`, never a bare newline literal.
-- `library/-test/testsuite.unit.ts` runs the shared `testsuite/` suite; a behaviour both
-  libraries share gets a `testsuite/` test there, not only a unit test here (**`testsuite-development`**)
+- `library/-test/conformance.unit.ts` runs the shared `conformance/` suite; a behaviour both
+  libraries share gets a `conformance/` test there, not only a unit test here (**`conformance-development`**)
 - Network tests use `useRecording()` from `@fairspec/metadata/testing` (a relative import inside `metadata`), a Polly fetch recorder kept in `typescript/metadata/-test/recording.ts` — a subpath export, so Polly stays out of the barrel and its packages stay `devDependencies`. The HAR lands in `-test/fixtures/generated/<test-name>_<hash>/`. Renaming a `describe`/`it` renames that directory, so the old recording is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases

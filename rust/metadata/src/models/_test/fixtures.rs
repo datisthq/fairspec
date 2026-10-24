@@ -23,9 +23,9 @@ fn test_standard_examples_round_trip() {
 }
 
 #[test]
-fn test_testsuite_descriptors_round_trip() {
+fn test_conformance_descriptors_round_trip() {
     let mut counts = [0; 4];
-    for file in testsuite_files() {
+    for file in conformance_files() {
         let name = file.display().to_string();
         let content = read_json(&file);
         let mut found = Vec::new();
@@ -118,9 +118,9 @@ fn json_matches(output: &Value, input: &Value, subset: bool) -> bool {
     }
 }
 
-fn testsuite_files() -> Vec<PathBuf> {
+fn conformance_files() -> Vec<PathBuf> {
     let mut files = Vec::new();
-    for dir in fs::read_dir(repo_root().join("testsuite/tests")).unwrap() {
+    for dir in fs::read_dir(repo_root().join("conformance/tests")).unwrap() {
         for file in fs::read_dir(dir.unwrap().path()).unwrap() {
             let path = file.unwrap().path();
             if path.extension().is_some_and(|ext| ext == "json") {

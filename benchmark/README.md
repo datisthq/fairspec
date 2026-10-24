@@ -4,22 +4,22 @@ How fast, and in how much memory, Fairspec validates a large CSV table — its P
 TypeScript and Rust libraries side by side with other validators, all checking the same generated data
 against the same Table Schema:
 
-| tool                | how it runs                                                                       |
-| ------------------- | --------------------------------------------------------------------------------- |
-| Fairspec Python     | `validate_table` from `fairspec/validate.py`, in the `python/` venv               |
-| Fairspec TypeScript | `validateTable` from `fairspec/validate.ts`, on the workspace build               |
-| Fairspec Rust       | `validate_table` from `fairspec/rustlang/`, the `build:dist` build of `rustlang/library` |
-| frictionless-py     | `frictionless.validate` with the schema translated                                |
-| qsv                 | `qsv validate` with the schema translated to JSON Schema                          |
-| pandera (polars)    | a `pandera.polars` schema with coercion, over a read frame                        |
-| dataframely         | a generated `dataframely` schema, `filter(cast=True)`                             |
-| pointblank (polars) | a `pointblank.Validate` plan of column checks, over a read frame                  |
-| Great Expectations  | an ephemeral GX context over a pandas DataFrame                                   |
-| pandera (DuckDB)    | a `pandera.ibis` schema over the CSV loaded into DuckDB                           |
-| patito (polars)     | a generated `patito.Model`, over a read frame                                     |
-| Soda Core (DuckDB)  | a Soda v4 contract over a DuckDB view of the CSV                                  |
-| datacontract-cli    | an ODCS data contract tested against a DuckDB view of the CSV                     |
-| CSV Validator       | the UK National Archives validator with a CSV Schema 1.1 file                     |
+| tool                | how it runs                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Fairspec Python     | `validate_table` from `fairspec/validate.py`, in the `python/` venv              |
+| Fairspec TypeScript | `validateTable` from `fairspec/validate.ts`, on the workspace build              |
+| Fairspec Rust       | `validate_table` from `fairspec/rust/`, the `build:dist` build of `rust/library` |
+| frictionless-py     | `frictionless.validate` with the schema translated                               |
+| qsv                 | `qsv validate` with the schema translated to JSON Schema                         |
+| pandera (polars)    | a `pandera.polars` schema with coercion, over a read frame                       |
+| dataframely         | a generated `dataframely` schema, `filter(cast=True)`                            |
+| pointblank (polars) | a `pointblank.Validate` plan of column checks, over a read frame                 |
+| Great Expectations  | an ephemeral GX context over a pandas DataFrame                                  |
+| pandera (DuckDB)    | a `pandera.ibis` schema over the CSV loaded into DuckDB                          |
+| patito (polars)     | a generated `patito.Model`, over a read frame                                    |
+| Soda Core (DuckDB)  | a Soda v4 contract over a DuckDB view of the CSV                                 |
+| datacontract-cli    | an ODCS data contract tested against a DuckDB view of the CSV                    |
+| CSV Validator       | the UK National Archives validator with a CSV Schema 1.1 file                    |
 
 Every rival takes a declarative schema, as Fairspec does; libraries of hand-written checks
 (Deequ, cuallee, plain SQL) are out of scope. The Python ones live in `rivals/`, a uv project of

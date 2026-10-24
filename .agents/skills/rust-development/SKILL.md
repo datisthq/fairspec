@@ -1,32 +1,32 @@
 ---
-name: rustlang-development
-description: Use when working in rustlang/ — the Cargo workspace porting Fairspec to Rust, a third twin with its CLI and MCP server. Covers commands, the crate layout mirroring Python, serde unions, offline tests, the testsuite runner and divergences.
+name: rust-development
+description: Use when working in rust/ — the Cargo workspace porting Fairspec to Rust, a third twin with its CLI and MCP server. Covers commands, the crate layout mirroring Python, serde unions, offline tests, the conformance runner and divergences.
 ---
 
 # Rust
 
-The `rustlang/` section is a Cargo workspace, a **third twin** of the libraries. The goal is a
+The `rust/` section is a Cargo workspace, a **third twin** of the libraries. The goal is a
 Fairspec implementation for users outside Python and TypeScript — a standalone binary they can
-wrap as a CLI. `rustlang/metadata/` (`fairspec-metadata`), `rustlang/dataset/` (`fairspec-dataset`),
-`rustlang/table/` (`fairspec-table`, on Polars) and `rustlang/library/` (`fairspec-library`) are
-ported from their Python packages; the crates follow Python's package DAG. `rustlang/terminal/`
-(`fairspec-terminal`) is the CLI and `rustlang/fairspec/` the umbrella crate whose `fairspec` binary
+wrap as a CLI. `rust/metadata/` (`fairspec-metadata`), `rust/dataset/` (`fairspec-dataset`),
+`rust/table/` (`fairspec-table`, on Polars) and `rust/library/` (`fairspec-library`) are
+ported from their Python packages; the crates follow Python's package DAG. `rust/terminal/`
+(`fairspec-terminal`) is the CLI and `rust/fairspec/` the umbrella crate whose `fairspec` binary
 runs it (`cargo build --release -p fairspec`). Nothing is published and the section has no release component.
 
 ## Commands
 
-Run from the repo root; `pnpm -C rustlang <script>` calls `cargo` inside `rustlang/`.
+Run from the repo root; `pnpm -C rust <script>` calls `cargo` inside `rust/`.
 
-- `pnpm -C rustlang test` — type + unit
-- `pnpm -C rustlang check:types` — `cargo check --all-targets`
-- `pnpm -C rustlang test:unit` — `cargo test` (unit tests and the testsuite runner)
-- `pnpm -C rustlang check:lint` — `cargo fmt --check` and clippy with `-D warnings`
-- `pnpm -C rustlang format` — `cargo fmt`
-- `pnpm -C rustlang build` — `cargo build --release`
-- `pnpm -C rustlang build:dist` — the build to ship and measure: py-polars' wheel profile (`dist-release`: fat LTO, one codegen unit) on its pinned nightly with polars' SIMD kernels (`nightly` feature); needs `rustup toolchain install nightly-2026-09-01`
-- `pnpm -C rustlang sync:schemas` — rewrite `mcp-server/schemas/` from Python's MCP server (**MCP server**)
+- `pnpm -C rust test` — type + unit
+- `pnpm -C rust check:types` — `cargo check --all-targets`
+- `pnpm -C rust test:unit` — `cargo test` (unit tests and the conformance runner)
+- `pnpm -C rust check:lint` — `cargo fmt --check` and clippy with `-D warnings`
+- `pnpm -C rust format` — `cargo fmt`
+- `pnpm -C rust build` — `cargo build --release`
+- `pnpm -C rust build:dist` — the build to ship and measure: py-polars' wheel profile (`dist-release`: fat LTO, one codegen unit) on its pinned nightly with polars' SIMD kernels (`nightly` feature); needs `rustup toolchain install nightly-2026-09-01`
+- `pnpm -C rust sync:schemas` — rewrite `mcp-server/schemas/` from Python's MCP server (**MCP server**)
 
-`rustlang/rust-toolchain.toml` pins **stable** (CI builds on stable on Linux, macOS and
+`rust/rust-toolchain.toml` pins **stable** (CI builds on stable on Linux, macOS and
 Windows); a local nightly can accept code CI rejects. rustfmt keeps its 4-space default, a
 deliberate deviation from the 2-space rule, like Python.
 
@@ -54,7 +54,7 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 
 ## Behaviour
 
-- JSON Schema: jsonschema-rs, Draft 2020-12, format assertion off, a registry of the bundled profiles under both `latest` and `FAIRSPEC_VERSION` URLs; its fancy-regex engine handles the ECMA lookahead in the `InternalPath` pattern. Error messages are jsonschema-rs wording; the testsuite ignores `message`
+- JSON Schema: jsonschema-rs, Draft 2020-12, format assertion off, a registry of the bundled profiles under both `latest` and `FAIRSPEC_VERSION` URLs; its fancy-regex engine handles the ECMA lookahead in the `InternalPath` pattern. Error messages are jsonschema-rs wording; the conformance suite ignores `message`
 - `normalize_dataset` follows TypeScript and never re-parses its output into a `Dataset`: Python's re-validation rejects a schema path outside the cwd
 - Local paths come out with `/` separators; Python's `urlsplit`/`urlunsplit` rules are reimplemented by hand
 - HTTP goes through `fetch_remote_text` / `resolve_remote_url` in `actions/descriptor/load.rs` with the `fairspec-rust` user agent; under `cfg(test)` they refuse every host but 127.0.0.1, so tests never touch the network
@@ -71,12 +71,12 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 
 ## Table
 
-- polars is patched (`[patch.crates-io]` in `rustlang/Cargo.toml`) to the commit py-polars 2.0.0
+- polars is patched (`[patch.crates-io]` in `rust/Cargo.toml`) to the commit py-polars 2.0.0
   was built from (`pl.show_versions()` prints it as `Build:`), with polars' own `hashbrown`
   fork, which a dependency's `[patch]` never passes on. crates.io 0.55.2 was two months and 661
   commits older; with `build:dist` on top, Rust went from 1.5x Python's time to parity. Bump both revs with the py-polars the Python
   section pins, so both twins run the same engine
-- `rustlang/.cargo/config.toml` gives x86-64 py-polars' wheel CPU features (AVX2, FMA, BMI2:
+- `rust/.cargo/config.toml` gives x86-64 py-polars' wheel CPU features (AVX2, FMA, BMI2:
   Haswell and later), about 20% at 10GB; py-polars' `performant` feature is on too
 - `Table` is a polars `LazyFrame`. Wherever Python passes `engine=QUERY_ENGINE`, Rust calls
   `collect_table()` / `sink_table()` (`helpers::table::LazyFrameExt`, the crate's `streaming`
@@ -118,7 +118,7 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
   `println!`, and fails on any byte written to fd 1 during a tool call
 - The tool list is Python's, byte for byte: `mcp-server/schemas/defs.json` holds the shared
   `$defs` and `tools.json` each schema with `$defs` as a list of names, which
-  `helpers/schema.rs` puts back in place. **Run `pnpm -C rustlang sync:schemas` after any
+  `helpers/schema.rs` puts back in place. **Run `pnpm -C rust sync:schemas` after any
   change to a Python MCP tool or to a model its schemas reach** — part of the twin rule; a
   second run leaves no diff
 - Tool inputs are serde structs with the wire names (`maxErrors`); bounds the schema states
@@ -151,9 +151,9 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
 - Spawned-process tests in `fairspec/tests/` read the child's stdout on a thread with a timeout and
   close stdin, so a stuck `fairspec mcp` fails the test instead of hanging it
 
-## Testsuite
+## Conformance
 
-`library/tests/testsuite.rs` is the third runner; it lives in the highest crate and calls the
+`library/tests/conformance.rs` is the third runner; it lives in the highest crate and calls the
 library API (`validate_table`, `query_dataset`, …) as the Python runner does. It checks every
-file against `testsuite/test-schema.json` and runs every operation; an unknown operation directory
-fails, so a new operation in `testsuite/` lands here too (**`testsuite-development`**).
+file against `conformance/test-schema.json` and runs every operation; an unknown operation directory
+fails, so a new operation in `conformance/` lands here too (**`conformance-development`**).

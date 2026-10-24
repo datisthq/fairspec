@@ -24,7 +24,7 @@ const UNSPECIFIED_MESSAGE_ERRORS: [&str; 3] = ["data", "metadata", "cell/json"];
 type Operation = fn(&Value, &Value) -> Result<Value, String>;
 
 #[test]
-fn test_testsuite() {
+fn test_conformance() {
     let mut failures = Vec::new();
     let mut passed = 0;
 
@@ -57,7 +57,7 @@ fn test_testsuite() {
         }
     }
 
-    println!("testsuite: {passed} cases passed");
+    println!("conformance: {passed} cases passed");
     assert!(
         failures.is_empty(),
         "{} failures:\n{}",
@@ -467,5 +467,5 @@ fn list_files() -> Vec<(String, PathBuf)> {
 }
 
 fn get_suite_path(name: &str) -> String {
-    format!("{}/../../testsuite/{name}", env!("CARGO_MANIFEST_DIR"))
+    format!("{}/../../conformance/{name}", env!("CARGO_MANIFEST_DIR"))
 }

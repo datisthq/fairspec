@@ -5,7 +5,7 @@ description: Where things live in the Fairspec monorepo and how root scripts, se
 
 # Monorepo layout
 
-One repo, seven sections, one site. The root owns everything shared; a section owns only what
+One repo, nine sections, one site. The root owns everything shared; a section owns only what
 is specific to it.
 
 ## Root vs section
@@ -13,7 +13,7 @@ is specific to it.
 | lives at the root                                                           | lives in a section                                |
 | --------------------------------------------------------------------------- | ------------------------------------------------- |
 | `package.json` scripts, `pnpm-workspace.yaml` + its `catalog:`              | the section's `package.json` and its deps         |
-| `patches/`, the dependency patches `patchedDependencies` lists              |                                                   |
+| `.patches/`, the dependency patches `patchedDependencies` lists             |                                                   |
 | one `pnpm-lock.yaml`                                                        | `python/uv.lock` (uv owns Python resolution)      |
 | `vite.config.ts` fmt + lint for every file                                  | `vite.config.ts` with a `test` or `pack` block    |
 | `tsconfig.json` (root files only), `lefthook.yaml`, `.gitleaks.toml`        | `tsconfig.json`, nested `.gitignore`              |
@@ -91,7 +91,7 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   later Release PR keeps proposing the same version
 - The libraries and the Rust port bundle `standard/profiles/` (refs resolved to `latest`) in
   `typescript/metadata/profiles/`, `python/metadata/fairspec_metadata/profiles/` and
-  `rustlang/metadata/profiles/`, and pin `FAIRSPEC_VERSION` in their `settings` to
+  `rust/metadata/profiles/`, and pin `FAIRSPEC_VERSION` in their `settings` to
   `standard/package.json`'s version. `pnpm sync:profiles` (`.scripts/@sync.ts`) writes all
   three; the guard fails while any drifts. A change to what a column may contain also reaches
   each twin's column models, which parse descriptors independently of the profile

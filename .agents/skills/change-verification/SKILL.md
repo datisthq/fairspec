@@ -75,7 +75,7 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    `if` names it under `required`; a set of allowed values is `enum`, never `const`. A pattern the models repeat (the internal path in
    `typescript/metadata/models/path.ts` and `python/metadata/fairspec_metadata/models/path.py`)
    stays identical to the profile's and lookahead-free, since pydantic runs Rust's `regex` engine. A change to a Python model, or a pattern it carries, also runs
-   `pnpm -C rustlang sync:schemas`: the Rust MCP schemas copy Python's, and a stale copy fails nothing. A profile change then runs `pnpm sync:profiles` and
+   `pnpm -C rust sync:schemas`: the Rust MCP schemas copy Python's, and a stale copy fails nothing. A profile change then runs `pnpm sync:profiles` and
    both libraries' tests (rung 4: their bundled copies are what the packages validate with),
    and `vp test`, whose guard fails while a copy differs from `standard/profiles/`.
    `pnpm generate:profiles` is the Release PR's job; by hand it only skips a published version.
@@ -84,8 +84,8 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    `pnpm test`; no cherry-picking here.
 
 **A change mirrored across the libraries is sliced per section.** A TypeScript + Python fix runs
-both sections' slices, and a behaviour both share runs both `testsuite/` runners
-(**`testsuite-development`**).
+both sections' slices, and a behaviour both share runs both `conformance/` runners
+(**`conformance-development`**).
 
 ## Guards a narrow slice cannot see
 

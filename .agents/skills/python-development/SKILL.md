@@ -223,17 +223,17 @@ name, not by path:
 - **A new CLI command or MCP tool is listed by hand outside the code**: its verb in the
   entity's `verbs` on `.livemark/routes/cli-tool.tsx`, a card (and the spelled-out count) on
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
-- A behaviour both share gets a `testsuite/` case, which compares both outputs exactly
-  (**`testsuite-development`**)
+- A behaviour both share gets a `conformance/` case, which compares both outputs exactly
+  (**`conformance-development`**)
 
 ## Specs
 
 - Unit tests are pytest, named `*_unit.py`, in collocated `_test` folders
 - Use `class TestXxx:` with `def test_...` methods
 - Don't add useless comments like "Arrange", "Act", "Assert"
-- `library/fairspec_library/_test/testsuite_unit.py` runs the shared `testsuite/` suite; a
-  behaviour both libraries share gets a `testsuite/` test there, not only a unit test here
-  (**`testsuite-development`**)
+- `library/fairspec_library/_test/conformance_unit.py` runs the shared `conformance/` suite; a
+  behaviour both libraries share gets a `conformance/` test there, not only a unit test here
+  (**`conformance-development`**)
 - Network tests use `@pytest.mark.vcr` from pytest-recording; the cassette lands in `_test/fixtures/generated/<TestClass>.<test_name>.yaml`. Renaming a class or test renames that file, so the old cassette is orphaned and the next run silently re-records from the live network — check `git status` after renaming a recorded test.
 
 ## Releases

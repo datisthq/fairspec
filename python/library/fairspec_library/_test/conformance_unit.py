@@ -34,7 +34,7 @@ from ..actions.table.validate import validate_table
 from ..actions.table_schema.infer import infer_table_schema
 
 SUITE = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "testsuite")
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "conformance")
 )
 TEST_SCHEMA = os.path.join(SUITE, "test-schema.json")
 
@@ -220,7 +220,7 @@ def list_tests() -> list[object]:
     ]
 
 
-class TestTestsuite:
+class TestConformance:
     @pytest.mark.parametrize(
         "operation, file", list_files(), ids=[f"{o}/{f}" for o, f in list_files()]
     )
@@ -274,7 +274,7 @@ def write_dataset(group: Group, test: Case) -> str:
     files = test["data"]
     assert isinstance(files, dict), "dataset data must map file names to contents"
 
-    folder = tempfile.mkdtemp(prefix="fairspec-testsuite-")
+    folder = tempfile.mkdtemp(prefix="fairspec-conformance-")
     for name, content in files.items():
         with open(os.path.join(folder, name), "wb") as f:
             encoded = encode_data(content)

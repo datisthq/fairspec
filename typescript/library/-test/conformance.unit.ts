@@ -38,7 +38,7 @@ import {
   writeTempFile,
 } from "../index.ts"
 
-const SUITE = resolve(import.meta.dirname, "..", "..", "..", "testsuite")
+const SUITE = resolve(import.meta.dirname, "..", "..", "..", "conformance")
 const TEST_SCHEMA = join(SUITE, "test-schema.json")
 
 const UNSPECIFIED_MESSAGE_ERRORS = ["data", "metadata", "cell/json"]
@@ -234,7 +234,7 @@ async function writeData(group: Group, data: Data) {
 }
 
 async function writeDataset(group: Group, test: Test) {
-  const dir = await mkdtemp(join(tmpdir(), "fairspec-testsuite-"))
+  const dir = await mkdtemp(join(tmpdir(), "fairspec-conformance-"))
   tempDirs.push(dir)
 
   if (typeof test.data !== "object" || Array.isArray(test.data)) {

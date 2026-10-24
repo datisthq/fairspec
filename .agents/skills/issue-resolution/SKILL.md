@@ -51,8 +51,8 @@ Load the skill for the section you touch before editing it: `typescript-developm
 - Change only what the root cause needs. No drive-by refactors, renames or reformatting of code
   you did not otherwise change.
 - Fix the twin in the same change, and every surface that shows the behaviour, or name the one
-  left out and why. A shared behaviour gets its failing case in `testsuite/`, which both
-  libraries run (**`testsuite-development`**).
+  left out and why. A shared behaviour gets its failing case in `conformance/`, which both
+  libraries run (**`conformance-development`**).
 - A change to what the standard requires is its own `feat`/`fix(standard)`, separate from the
   implementations' fixes — and a decision for a person (step 6).
 

@@ -1,23 +1,23 @@
 ---
-name: testsuite-development
-description: Use when working in testsuite/ — the language-neutral conformance test suite both libraries run. Covers the JSON-Schema-Test-Suite file format, the operations, the runners, and fixing a failing test in the library rather than the runner.
+name: conformance-development
+description: Use when working in conformance/ — the language-neutral conformance test suite both libraries run. Covers the JSON-Schema-Test-Suite file format, the operations, the runners, and fixing a failing test in the library rather than the runner.
 ---
 
-# Testsuite
+# Conformance
 
-The `testsuite/` section is pure data: JSON test files that the TypeScript and Python
+The `conformance/` section is pure data: JSON test files that the TypeScript and Python
 libraries both run. It has no `package.json`, ships nothing, and is not a release component.
 It is how a pair of twins proves it agrees: a behaviour both libraries share gets its case here.
-`testsuite/README.md` is the format reference; this skill is how to work with it.
+`conformance/README.md` is the format reference; this skill is how to work with it.
 
 ## Commands
 
-- `pnpm -C typescript test:unit library/-test/testsuite.unit.ts` — the TypeScript runner (build first:
+- `pnpm -C typescript test:unit library/-test/conformance.unit.ts` — the TypeScript runner (build first:
   `pnpm -C typescript build`, since the runner imports sibling packages from their `build/`)
-- `pnpm -C python test:unit library/fairspec_library/_test/testsuite_unit.py` — the Python runner
+- `pnpm -C python test:unit library/fairspec_library/_test/conformance_unit.py` — the Python runner
 - A section-wide `pnpm -C typescript test:unit` or `pnpm -C python test:unit` runs it too. CI runs both runners
-  on Linux, macOS and Windows whenever `testsuite/**` changes
-- `pnpm -C rustlang test:unit` — the Rust runner, `rustlang/library/tests/testsuite.rs`, which runs
+  on Linux, macOS and Windows whenever `conformance/**` changes
+- `pnpm -C rust test:unit` — the Rust runner, `rust/library/tests/conformance.rs`, which runs
   every operation
 
 ## Format
@@ -25,7 +25,7 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 - The layout follows JSON-Schema-Test-Suite: `tests/<operation>/<feature>.json`, each an array
   of groups `{description, …subject, tests}`, each test `{description, data, outcome}`
 - A test file is a top-level array, so it cannot carry `$schema`. Both runners validate every
-  file against `testsuite/test-schema.json` instead; a malformed file fails as a test
+  file against `conformance/test-schema.json` instead; a malformed file fails as a test
 - An operation directory is named after the CLI command both libraries share, so
   `table infer-schema` becomes `table-infer-schema`; never a function name from either language
 - `data` as a string is the exact file content. Put `\r\n` in the JSON string for CRLF; the
@@ -54,11 +54,11 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 ## Adding an operation
 
 Add the directory and a function to the `OPERATIONS` map in **both**
-`typescript/library/-test/testsuite.unit.ts` and
-`python/library/fairspec_library/_test/testsuite_unit.py`, under the same name. Each runner also
+`typescript/library/-test/conformance.unit.ts` and
+`python/library/fairspec_library/_test/conformance_unit.py`, under the same name. Each runner also
 checks that every operation directory is one it knows, so an operation added to only one runner
 fails the other. The Rust runner checks the same, so a new operation also goes into its
-`OPERATIONS` or its `SKIPPED` list. Document the operation in the table in `testsuite/README.md`.
+`OPERATIONS` or its `SKIPPED` list. Document the operation in the table in `conformance/README.md`.
 
 ## When a test fails
 

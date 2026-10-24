@@ -8,12 +8,13 @@ const SKILLS = join(ROOT, ".agents", "skills")
 const USER_SKILLS = join(ROOT, ".skills")
 const SECTIONS = [
   "benchmark",
-  "catalog",
+  "conformance",
   "desktop",
+  "flow",
+  "portal",
   "python",
-  "rustlang",
+  "rust",
   "standard",
-  "testsuite",
   "typescript",
 ]
 

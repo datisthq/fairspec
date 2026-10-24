@@ -25,23 +25,23 @@ export const fairspecTypescriptTool = createFairspecTool({
   script: join(SCRIPTS, "validate.ts"),
 })
 
-const RUSTLANG = join(ROOT, "rustlang")
+const RUST = join(ROOT, "rust")
 
 export const fairspecRustlangTool: Tool = {
   ...createFairspecTool({
-    name: "fairspec-rustlang",
+    name: "fairspec-rust",
     title: "Fairspec Rust",
-    section: "rustlang",
-    file: join(RUSTLANG, "target", "dist-release", "validate"),
+    section: "rust",
+    file: join(RUST, "target", "dist-release", "validate"),
   }),
   // cargo is a no-op when the build is fresh, and runs before the clock starts
   createCommand: async (dataset: Dataset) => {
     await promisify(execFile)("pnpm", ["build:dist", "-p", "fairspec-benchmark"], {
-      cwd: RUSTLANG,
+      cwd: RUST,
       maxBuffer: 64 * 1024 * 1024,
     })
     return {
-      file: join(RUSTLANG, "target", "dist-release", "validate"),
+      file: join(RUST, "target", "dist-release", "validate"),
       args: [basename(dataset.csvPath), basename(dataset.schemaPath)],
     }
   },
@@ -50,7 +50,7 @@ export const fairspecRustlangTool: Tool = {
 function createFairspecTool(options: {
   name: string
   title: string
-  section: "python" | "typescript" | "rustlang"
+  section: "python" | "typescript" | "rust"
   file: string
   script?: string
 }): Tool {
