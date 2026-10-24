@@ -65,7 +65,7 @@ function McpServerPage() {
       <Header />
       <main className="flex flex-col">
         <Hero
-          eyebrow="Technical preview"
+          eyebrow="For Python, TypeScript and Rust"
           title="Fairspec MCP Server"
           lede={
             <>

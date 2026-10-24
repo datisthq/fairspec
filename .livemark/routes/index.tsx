@@ -55,7 +55,7 @@ function Landing() {
       <Header />
       <main className="flex flex-col">
         <Hero
-          eyebrow="Technical preview"
+          eyebrow="For Python, TypeScript and Rust"
           title={
             <>
               Standard and software to make data <Highlight>FAIR</Highlight>
