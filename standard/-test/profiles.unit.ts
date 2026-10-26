@@ -1,7 +1,6 @@
 import { readFile, readdir } from "node:fs/promises"
 import { join } from "node:path"
 import { Ajv2020 } from "ajv/dist/2020.js"
-import ajvFormats from "ajv-formats"
 import { describe, expect, it } from "vite-plus/test"
 
 const STANDARD = join(import.meta.dirname, "..")
@@ -111,6 +110,10 @@ describe("file dialects", () => {
     { valid: true, dialect: { format: "custom", title: "My custom format" } },
     { valid: false, dialect: { delimiter: ";" } },
     { valid: false, dialect: {} },
+    { valid: true, dialect: { format: "json", jsonPointer: "/data/a~1b/0" } },
+    { valid: true, dialect: { format: "json", jsonPointer: "" } },
+    { valid: false, dialect: { format: "json", jsonPointer: "data" } },
+    { valid: false, dialect: { format: "json", jsonPointer: "/a~2" } },
   ])("validates $dialect as $valid", ({ dialect, valid }) => {
     expect(getValidator("file-dialect.json")(dialect)).toBe(valid)
   })
@@ -202,6 +205,16 @@ describe("catalog entries", () => {
         del: "yes",
       },
     },
+    {
+      valid: true,
+      entry: { loc: "s3://bucket/a.json", upd: "2024-01-01T00:00:00.5+02:00" },
+    },
+    { valid: false, entry: { loc: "example.com/a.json", upd: "2024-01-01T00:00:00Z" } },
+    {
+      valid: false,
+      entry: { loc: "https://example.com/a.json", upd: "2024-01-01T00:00:00" },
+    },
+    { valid: false, entry: { loc: "https://example.com/a.json", upd: "2024-01-01" } },
   ])("validates $entry as $valid", ({ entry, valid }) => {
     expect(getValidator("catalog.json")([entry])).toBe(valid)
   })
@@ -267,9 +280,49 @@ async function listProfiles() {
   return entries.filter(entry => entry.endsWith(".json")).sort()
 }
 
+describe("datacite dates", () => {
+  it.each([
+    { valid: true, date: "2020" },
+    { valid: true, date: "2020-05" },
+    { valid: true, date: "2020-05-17" },
+    { valid: true, date: "2020-05-17T10:00:00" },
+    { valid: true, date: "2020-05-17T10:00:00.5Z" },
+    { valid: true, date: "2020-05-17T10:00:00+02:00" },
+    { valid: true, date: "2020/2021-06" },
+    { valid: true, date: "2020-05/" },
+    { valid: true, date: "/2021" },
+    { valid: false, date: "" },
+    { valid: false, date: "/" },
+    { valid: false, date: "May 2020" },
+    { valid: false, date: "2020-5" },
+    { valid: false, date: "2020-05-17 10:00" },
+    { valid: false, date: "2020/2021/2022" },
+  ])("validates $date as $valid", ({ date, valid }) => {
+    const dataset = { dates: [{ date, dateType: "Created" }] }
+    expect(getValidator("dataset.json")(dataset)).toBe(valid)
+  })
+})
+
+describe("uris", () => {
+  it.each([
+    { valid: true, rdfType: "http://schema.org/Country" },
+    { valid: true, rdfType: "urn:isbn:0451450523" },
+    { valid: false, rdfType: "schema.org/Country" },
+    { valid: false, rdfType: "Country" },
+  ])("validates rdfType $rdfType as $valid", ({ rdfType, valid }) => {
+    const tableSchema = { properties: { x: { type: "string", rdfType } } }
+    expect(getValidator("table-schema.json")(tableSchema)).toBe(valid)
+  })
+})
+
 async function createAjv() {
-  const instance = new Ajv2020({ strict: false, allErrors: true, logger: false })
-  ajvFormats.default(instance)
+  // Formats stay annotations, as in every library: only patterns may enforce a shape
+  const instance = new Ajv2020({
+    strict: false,
+    allErrors: true,
+    logger: false,
+    validateFormats: false,
+  })
   for (const name of profileNames) {
     const text = await readFile(join(STANDARD, "profiles", name), "utf8")
     const resolved = text.replace(/\{([a-z-]+)-ref\}/g, `${BASE_URL}$1.json`)

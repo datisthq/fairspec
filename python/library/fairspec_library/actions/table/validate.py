@@ -8,7 +8,7 @@ from fairspec_metadata import (
     create_report,
     resolve_table_schema,
 )
-from fairspec_table import inspect_table
+from fairspec_table import inspect_table, inspect_table_schema_patterns
 
 from fairspec_library.actions.file_dialect.infer import infer_file_dialect
 from fairspec_library.actions.table.load import load_table
@@ -35,6 +35,10 @@ def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) 
 
     if not table_schema and not checks:
         return create_report()
+
+    pattern_errors = inspect_table_schema_patterns(table_schema) if table_schema else []
+    if pattern_errors:
+        return create_report([*pattern_errors], max_errors=max_errors)
 
     table = load_table(resource, denormalized=True, **options)
     if table is None:

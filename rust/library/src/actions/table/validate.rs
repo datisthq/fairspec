@@ -2,7 +2,7 @@ use fairspec_metadata::{
     ExpectedResourceType, FairspecError, PathOr, Report, Resource, ResourceError,
     ResourceTypeError, Result, create_report, resolve_table_schema,
 };
-use fairspec_table::{LoadTableOptions, inspect_table};
+use fairspec_table::{LoadTableOptions, inspect_table, inspect_table_schema_patterns};
 
 use super::load::load_table;
 use crate::actions::file_dialect::infer::infer_file_dialect;
@@ -30,6 +30,14 @@ pub fn validate_table(resource: &Resource, options: &ValidateTableOptions) -> Re
 
     if table_schema.is_none() && checks.is_empty() {
         return Ok(create_report(Vec::new(), None));
+    }
+
+    let pattern_errors = table_schema
+        .as_ref()
+        .map(inspect_table_schema_patterns)
+        .unwrap_or_default();
+    if !pattern_errors.is_empty() {
+        return Ok(create_report(pattern_errors, Some(max_errors)));
     }
 
     let load_options = LoadTableOptions {

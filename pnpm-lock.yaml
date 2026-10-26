@@ -372,9 +372,6 @@ importers:
       ajv:
         specifier: 8.20.0
         version: 8.20.0
-      ajv-formats:
-        specifier: 3.0.1
-        version: 3.0.1(ajv@8.20.0)
       vite-plus:
         specifier: 'catalog:'
         version: 1.0.0(@types/node@24.2.0)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.14.6(@types/node@24.2.0)(typescript@5.9.3))(sass@1.100.0)(tsx@4.23.13)(typescript@5.9.3)(yaml@2.9.1)

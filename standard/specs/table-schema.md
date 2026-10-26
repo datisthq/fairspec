@@ -1850,7 +1850,7 @@ charlie
 > [!NOTE]
 > Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
-An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regex string. As in JSON Schema, the pattern is not anchored: a value matches when the pattern matches any part of it, so a pattern meant for the whole value uses `^` and `$`.
+An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regular expression in the ECMA-262 dialect, as in JSON Schema. An implementation that cannot compile a pattern, such as one using look-around its regex engine lacks, `MUST` report it as an error at the pattern rather than fail. As in JSON Schema, the pattern is not anchored: a value matches when the pattern matches any part of it, so a pattern meant for the whole value uses `^` and `$`.
 
 Metadata example:
 

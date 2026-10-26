@@ -32,6 +32,7 @@ pub use actions::table::query::{query_table, query_tables};
 pub use actions::table_schema::infer::{
     infer_table_schema_from_sample, infer_table_schema_from_table,
 };
+pub use actions::table_schema::pattern::inspect_table_schema_patterns;
 
 // plugins
 pub use plugins::arrow::actions::table::load::load_arrow_table;

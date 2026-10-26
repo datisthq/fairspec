@@ -1017,7 +1017,8 @@
     },
     "RdfType": {
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
     },
     "Pattern": {
       "type": "string",

@@ -417,7 +417,8 @@
     },
     "JsonPointer": {
       "type": "string",
-      "format": "json-pointer"
+      "format": "json-pointer",
+      "pattern": "^(/([^~/]|~[01])*)*$"
     },
     "RowType": {
       "enum": ["array", "object"]

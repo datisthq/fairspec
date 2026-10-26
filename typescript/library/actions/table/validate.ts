@@ -1,6 +1,6 @@
 import type { FairspecError, Resource } from "@fairspec/metadata"
 import { createReport, resolveTableSchema } from "@fairspec/metadata"
-import { inspectTable } from "@fairspec/table"
+import { inspectTable, inspectTableSchemaPatterns } from "@fairspec/table"
 import { inferTableSchema } from "../../actions/tableSchema/infer.ts"
 import type { ValidateTableOptions } from "../../models/table.ts"
 import { loadTable } from "./load.ts"
@@ -12,6 +12,11 @@ export async function validateTable(resource: Resource, options?: ValidateTableO
   let tableSchema = await resolveTableSchema(resource.tableSchema)
   if (!tableSchema && !options?.noInfer) {
     tableSchema = await inferTableSchema(resource, options)
+  }
+
+  const patternErrors = tableSchema ? inspectTableSchemaPatterns(tableSchema) : []
+  if (patternErrors.length) {
+    return createReport(patternErrors, { maxErrors })
   }
 
   if (tableSchema || checks?.length) {

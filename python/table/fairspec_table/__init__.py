@@ -7,6 +7,7 @@ from .actions.table_schema.infer import (
     infer_table_schema_from_sample,
     infer_table_schema_from_table,
 )
+from .actions.table_schema.pattern import inspect_table_schema_patterns
 from .models.check import SqlTableCheck, TableCheck
 from .models.column import ColumnMapping, DenormalizeColumnOptions, PolarsColumn
 from .models.data import DataRecord, DataRow
@@ -68,6 +69,7 @@ __all__ = [
     "infer_csv_file_dialect",
     "infer_table_schema_from_sample",
     "infer_table_schema_from_table",
+    "inspect_table_schema_patterns",
     "infer_json_file_dialect",
     "inspect_table",
     "inspect_table_checks",

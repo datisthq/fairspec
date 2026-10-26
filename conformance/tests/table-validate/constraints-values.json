@@ -164,5 +164,31 @@
         ]
       }
     ]
+  },
+  {
+    "description": "a pattern that is not a regular expression",
+    "comment": "The data is never read: an implementation reports the pattern instead of failing",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tableSchema": {
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "[a-"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the pattern",
+        "data": "code\nabc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/code/pattern"
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -11,7 +11,6 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "ajv": "8.20.0",
-    "ajv-formats": "3.0.1",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
   }
