@@ -1557,7 +1557,7 @@ N
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional minimum value constraint (inclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional minimum value constraint (inclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1586,7 +1586,7 @@ temperature
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional maximum value constraint (inclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional maximum value constraint (inclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1615,7 +1615,7 @@ temperature
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional minimum value constraint (exclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional minimum value constraint (exclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1644,7 +1644,7 @@ probability
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional maximum value constraint (exclusive). The type `MUST` match the column type. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional maximum value constraint (exclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1673,7 +1673,7 @@ probability
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional constraint that values `MUST` be a multiple of this number. For integers, it `MUST` be a positive integer. For numbers, it `MUST` be a positive number.
+An optional constraint that values `MUST` be a multiple of this number. For integers, it `MUST` be a positive integer. For numbers and decimals, it `MUST` be a positive number.
 
 The check `MUST` use exact decimal arithmetic on the value as written, not binary floating point: a value is a multiple when dividing it by `multipleOf` gives an integer, so `99.99` is a multiple of `0.01`.
 
