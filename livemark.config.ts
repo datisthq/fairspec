@@ -41,13 +41,13 @@ export default defineConfig({
     },
     {
       type: "custom",
-      title: "CLI Tool",
+      title: "CLI",
       url: "/cli-tool/",
       icon: "square-terminal",
     },
     {
       type: "custom",
-      title: "MCP Server",
+      title: "MCP",
       url: "/mcp-server/",
       icon: "sparkles",
     },

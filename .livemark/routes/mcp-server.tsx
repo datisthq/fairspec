@@ -49,7 +49,7 @@ export const Route = createFileRoute("/mcp-server/")({
   component: McpServerPage,
   head: () => ({
     meta: [
-      { title: "Fairspec MCP Server" },
+      { title: "Fairspec MCP" },
       {
         name: "description",
         content: "AI assistant integration for the Fairspec data management framework.",
@@ -66,7 +66,7 @@ function McpServerPage() {
       <main className="flex flex-col">
         <Hero
           eyebrow="For Python, TypeScript and Rust"
-          title="Fairspec MCP Server"
+          title="Fairspec MCP"
           lede={
             <>
               Connect AI assistants to the{" "}

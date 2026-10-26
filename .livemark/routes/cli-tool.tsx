@@ -50,7 +50,7 @@ export const Route = createFileRoute("/cli-tool/")({
   component: CliToolPage,
   head: () => ({
     meta: [
-      { title: "Fairspec CLI Tool" },
+      { title: "Fairspec CLI" },
       {
         name: "description",
         content: "Command-line interface for the Fairspec data management framework.",
@@ -75,7 +75,7 @@ function CliToolPage() {
       <main className="flex flex-col">
         <Hero
           eyebrow="Python and TypeScript"
-          title="Fairspec CLI Tool"
+          title="Fairspec CLI"
           lede={
             <>
               Bring the <strong className="text-foreground">Fairspec</strong> data
