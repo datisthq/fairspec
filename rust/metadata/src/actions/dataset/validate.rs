@@ -4,6 +4,7 @@ use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
 use crate::actions::file_dialect::validate::validate_file_dialect;
+use crate::actions::resource::data::get_data_paths;
 use crate::actions::table_schema::inspect::inspect_table_schema;
 use crate::actions::table_schema::validate::validate_table_schema;
 use crate::models::dataset::{Dataset, DatasetValidationResult};
@@ -50,6 +51,13 @@ pub fn validate_dataset_descriptor(
             report.errors.push(FairspecError::Metadata(MetadataError {
                 message: format!("resource name \"{name}\" is not unique"),
                 json_pointer: format!("{root_json_pointer}/name"),
+                ..Default::default()
+            }));
+        }
+        if resource.data_schema.is_some() && get_data_paths(resource).len() > 1 {
+            report.errors.push(FairspecError::Metadata(MetadataError {
+                message: "a data schema needs single-part data".to_string(),
+                json_pointer: format!("{root_json_pointer}/dataSchema"),
                 ..Default::default()
             }));
         }

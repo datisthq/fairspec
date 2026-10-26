@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING
 from fairspec_metadata import (
     DataError,
     FairspecError,
+    MetadataError,
     Report,
     ResourceTypeError,
     create_report,
+    get_data_paths,
     inspect_json,
     resolve_data_schema,
 )
@@ -24,6 +26,17 @@ def validate_data(resource: Resource) -> Report:
     data_schema = resolve_data_schema(resource.dataSchema)
     if not data_schema:
         return create_report()
+
+    if len(get_data_paths(resource)) > 1:
+        return create_report(
+            [
+                MetadataError(
+                    type="metadata",
+                    message="a data schema needs single-part data",
+                    jsonPointer="/dataSchema",
+                )
+            ]
+        )
 
     data = load_data(resource)
     if data is None:

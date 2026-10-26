@@ -1,6 +1,6 @@
 use fairspec_metadata::{
-    DataError, ExpectedResourceType, FairspecError, Report, Resource, ResourceError,
-    ResourceTypeError, Result, create_report, inspect_json, resolve_data_schema,
+    DataError, ExpectedResourceType, FairspecError, MetadataError, Report, Resource, ResourceError,
+    ResourceTypeError, Result, create_report, get_data_paths, inspect_json, resolve_data_schema,
 };
 
 use super::load::load_data;
@@ -9,6 +9,15 @@ pub fn validate_data(resource: &Resource) -> Result<Report> {
     let Some(data_schema) = resolve_data_schema(resource.data_schema.as_ref())? else {
         return Ok(create_report(Vec::new(), None));
     };
+
+    if get_data_paths(resource).len() > 1 {
+        let error = MetadataError {
+            message: "a data schema needs single-part data".to_string(),
+            json_pointer: "/dataSchema".to_string(),
+            ..Default::default()
+        };
+        return Ok(create_report(vec![FairspecError::Metadata(error)], None));
+    }
 
     let Some(data) = load_data(resource)? else {
         let error = ResourceTypeError {

@@ -249,7 +249,7 @@ For example, for a file with CSV format:
 
 ### `dataSchema`
 
-It `MUST` be a [Path](#path) to or an object with [Fairspec Data Schema](../data-schema). If present, [Data](#data) `MUST` be a JSON document that is compatible with the provided schema.
+It `MUST` be a [Path](#path) to or an object with [Fairspec Data Schema](../data-schema). If present, [Data](#data) `MUST` be a JSON document that is compatible with the provided schema. A resource with a Data Schema `MUST NOT` have multipart data: a JSON document cannot be split into parts.
 
 A JSON file whose top-level value is an object, read without a [`jsonPointer`](../file-dialect#jsonpointer), is not a table: it is described by a Data Schema, and a [Table Schema](#tableschema) does not apply to it.
 

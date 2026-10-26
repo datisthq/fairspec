@@ -1,0 +1,25 @@
+[
+  {
+    "description": "a data schema on multipart data",
+    "comment": "A JSON document cannot be split into parts, so only single-part data takes a Data Schema",
+    "specification": ["https://fairspec.org/specs/dataset/#dataschema"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "doc",
+          "data": ["a.json", "b.json"],
+          "fileDialect": { "format": "json" },
+          "dataSchema": { "type": "object" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the data schema",
+        "data": { "a.json": "{}", "b.json": "[]" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/dataSchema" }]
+      }
+    ]
+  }
+]

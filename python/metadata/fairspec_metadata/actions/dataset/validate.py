@@ -9,6 +9,7 @@ from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.file_dialect.validate import validate_file_dialect
 from fairspec_metadata.actions.profile.load import load_profile
 from fairspec_metadata.actions.report.create import create_report
+from fairspec_metadata.actions.resource.data import get_data_paths
 from fairspec_metadata.actions.table_schema.inspect import inspect_table_schema
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
@@ -64,6 +65,15 @@ def validate_dataset_descriptor(
                         )
                     )
                 names.add(resource.name)
+
+            if resource.dataSchema and len(get_data_paths(resource)) > 1:
+                report.errors.append(
+                    MetadataError(
+                        type="metadata",
+                        message="a data schema needs single-part data",
+                        jsonPointer=f"{root_json_pointer}/dataSchema",
+                    )
+                )
 
             if isinstance(resource.fileDialect, str):
                 file_dialect_result = validate_file_dialect(
