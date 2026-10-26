@@ -26,7 +26,9 @@ import {
   FeatureGrid,
   FinalCta,
   Hero,
+  type Language,
   LandingSection,
+  LanguageTabs,
   type Point,
   ShowcaseSection,
   type Slide,
@@ -59,6 +61,7 @@ export const Route = createFileRoute("/mcp-server/")({
 })
 
 function McpServerPage() {
+  const [language, setLanguage] = useState<Language>("python")
   return (
     <>
       <Banner />
@@ -97,11 +100,12 @@ function McpServerPage() {
         <SplitSection
           id="installation"
           title="Connect in one step"
-          lede="Wire up the Fairspec MCP server in your favorite AI assistant. It ships with both the TypeScript and the Python package — pick the runtime you have."
+          lede="Wire up the Fairspec MCP server in your favorite AI assistant. It ships with the Python, TypeScript and Rust packages — pick the one you have."
+          switcher={<LanguageTabs language={language} onChange={setLanguage} />}
           points={connectPoints}
           visual={
             <WindowCard label="Install">
-              <Installation />
+              <Installation language={language} />
             </WindowCard>
           }
         />
@@ -205,38 +209,45 @@ const slides: Slide[] = [
 
 /* ─────────────────────────── Installation ─────────────────────────── */
 
-type Runtime = "node" | "python"
+const launchers: Record<Language, { command: string; args: string[] }> = {
+  python: { command: "uvx", args: ["fairspec@latest", "mcp"] },
+  typescript: { command: "npx", args: ["fairspec@latest", "mcp"] },
+  rust: { command: "fairspec", args: ["mcp"] },
+}
 
-const runtimes: { id: Runtime; label: string }[] = [
-  { id: "node", label: "Node.js" },
-  { id: "python", label: "Python" },
-]
-
-const runners: Record<Runtime, string> = { node: "npx", python: "uvx" }
+const rustInstall = "cargo install --git https://github.com/datisthq/fairspec fairspec"
 
 function BashAgentAdd({
   agent,
-  runtime,
+  language,
 }: {
   agent: "claude" | "codex"
-  runtime: Runtime
+  language: Language
 }) {
+  const launcher = launchers[language]
   return (
     <code className={tk.body}>
       <span className={tk.cmd}>{agent}</span> mcp add{" "}
       <span className={tk.str}>fairspec</span> <span className={tk.punct}>--</span>{" "}
-      {runners[runtime]} <span className={tk.str}>fairspec@latest</span> mcp
+      {launcher.command}
+      {launcher.args.map(arg => (
+        <span key={arg}>
+          {" "}
+          {arg.includes("@") ? <span className={tk.str}>{arg}</span> : arg}
+        </span>
+      ))}
     </code>
   )
 }
 
 function McpServersJson({
   rootKey,
-  runtime,
+  language,
 }: {
   rootKey: "mcpServers" | "servers"
-  runtime: Runtime
+  language: Language
 }) {
+  const launcher = launchers[language]
   return (
     <code className={tk.body}>
       <span className={tk.punct}>{"{"}</span>
@@ -249,13 +260,17 @@ function McpServersJson({
       {"\n      "}
       <span className={tk.key}>"command"</span>
       <span className={tk.punct}>:</span>{" "}
-      <span className={tk.str}>"{runners[runtime]}"</span>
+      <span className={tk.str}>"{launcher.command}"</span>
       <span className={tk.punct}>,</span>
       {"\n      "}
       <span className={tk.key}>"args"</span>
       <span className={tk.punct}>:</span> <span className={tk.punct}>[</span>
-      <span className={tk.str}>"fairspec@latest"</span>
-      <span className={tk.punct}>,</span> <span className={tk.str}>"mcp"</span>
+      {launcher.args.map((arg, i) => (
+        <span key={arg}>
+          {i > 0 ? <span className={tk.punct}>, </span> : null}
+          <span className={tk.str}>"{arg}"</span>
+        </span>
+      ))}
       <span className={tk.punct}>]</span>
       {"\n    "}
       <span className={tk.punct}>{"}"}</span>
@@ -270,7 +285,7 @@ function McpServersJson({
 interface Assistant {
   name: string
   description: ReactNode
-  snippet: (runtime: Runtime) => ReactNode
+  snippet: (language: Language) => ReactNode
 }
 
 const assistants: Assistant[] = [
@@ -281,12 +296,12 @@ const assistants: Assistant[] = [
         Add to your <code>claude_desktop_config.json</code>:
       </>
     ),
-    snippet: runtime => <McpServersJson rootKey="mcpServers" runtime={runtime} />,
+    snippet: language => <McpServersJson rootKey="mcpServers" language={language} />,
   },
   {
     name: "Claude Code",
     description: <>Add the server with one command in any project directory.</>,
-    snippet: runtime => <BashAgentAdd agent="claude" runtime={runtime} />,
+    snippet: language => <BashAgentAdd agent="claude" language={language} />,
   },
   {
     name: "Codex",
@@ -296,7 +311,7 @@ const assistants: Assistant[] = [
         extension — they share the same MCP configuration.
       </>
     ),
-    snippet: runtime => <BashAgentAdd agent="codex" runtime={runtime} />,
+    snippet: language => <BashAgentAdd agent="codex" language={language} />,
   },
   {
     name: "Gemini CLI",
@@ -305,19 +320,20 @@ const assistants: Assistant[] = [
         Add to <code>~/.gemini/settings.json</code>:
       </>
     ),
-    snippet: runtime => <McpServersJson rootKey="mcpServers" runtime={runtime} />,
+    snippet: language => <McpServersJson rootKey="mcpServers" language={language} />,
   },
 ]
 
 const connectPoints: Point[] = [
   {
     icon: Cpu,
-    title: "Node.js or Python",
+    title: "Python, TypeScript or Rust",
     description: (
       <>
-        Run it with <code className="font-mono text-foreground">npx</code> from the
-        TypeScript package or <code className="font-mono text-foreground">uvx</code> from
-        the Python one. Same tools, same names.
+        Run it with <code className="font-mono text-foreground">uvx</code> from the Python
+        package, <code className="font-mono text-foreground">npx</code> from the
+        TypeScript one, or the <code className="font-mono text-foreground">fairspec</code>{" "}
+        binary built with cargo. Same tools, same names.
       </>
     ),
   },
@@ -347,62 +363,41 @@ const connectPoints: Point[] = [
   },
 ]
 
-function Installation() {
+function Installation(props: { language: Language }) {
   const [active, setActive] = useState(0)
-  const [runtime, setRuntime] = useState<Runtime>("node")
   const assistant = assistants[active] ?? assistants[0]
   if (!assistant) return null
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-x-4 border-b border-border">
-        <div role="tablist" className="flex flex-wrap">
-          {assistants.map((a, i) => (
-            <button
-              key={a.name}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              onClick={() => setActive(i)}
-              className={cn(
-                "px-4 py-3 text-sm font-medium transition-colors border-b-2",
-                i === active
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {a.name}
-            </button>
-          ))}
-        </div>
-        <div
-          role="radiogroup"
-          aria-label="Runtime"
-          className="mx-4 my-2 inline-flex rounded-lg border border-border bg-background p-0.5"
-        >
-          {runtimes.map(r => (
-            <button
-              key={r.id}
-              type="button"
-              role="radio"
-              aria-checked={r.id === runtime}
-              onClick={() => setRuntime(r.id)}
-              className={cn(
-                "rounded-md px-3 py-1 text-xs font-medium transition-colors",
-                r.id === runtime
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+      <div role="tablist" className="flex flex-wrap border-b border-border">
+        {assistants.map((a, i) => (
+          <button
+            key={a.name}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            onClick={() => setActive(i)}
+            className={cn(
+              "px-4 py-3 text-sm font-medium transition-colors border-b-2",
+              i === active
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {a.name}
+          </button>
+        ))}
       </div>
       <div className="min-w-0 p-5">
         <p className="text-sm text-muted-foreground mb-4">{assistant.description}</p>
         <pre className="rounded-md border border-border bg-background p-4 text-sm leading-relaxed font-mono overflow-x-auto">
-          {assistant.snippet(runtime)}
+          {assistant.snippet(props.language)}
         </pre>
+        {props.language === "rust" ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Install the <code>fairspec</code> binary first: <code>{rustInstall}</code>
+          </p>
+        ) : null}
       </div>
     </>
   )

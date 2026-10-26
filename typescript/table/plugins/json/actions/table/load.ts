@@ -30,8 +30,8 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
     throw new Error("Resource data is not defined")
   }
 
-  // TODO: Consider inferring all the missing dialect properties
-  if (!fileDialect || Object.keys(fileDialect).length <= 1) {
+  // A declared dialect is binding: its absent properties take their defaults
+  if (!resource.fileDialect) {
     fileDialect = await inferJsonFileDialect({ ...resource, data: paths[0] })
   }
   if (!fileDialect) {

@@ -32,8 +32,10 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
   `table infer-schema` becomes `table-infer-schema`; never a function name from either language
 - `data` as a string is the exact file content. Put `\r\n` in the JSON string for CRLF; the
   repo's `eol=lf` never touches it, so hashes and byte counts hold on Windows
-- A file with only a header row is ambiguous to the dialect sniffer. When a test needs an empty
-  table, give the resource `"fileDialect": { "format": "csv", "headerRows": [1] }`
+- A file with only a header row is ambiguous to the dialect sniffer, which runs only for a
+  resource without a dialect. When a test needs an empty table, give it any `fileDialect`
+  (`{ "format": "csv" }`): a declared dialect is never sniffed, its absent properties take the
+  spec's defaults
 - The only runner-side rules: `data`/`metadata`/`cell/json` errors drop `message` (validator
   text, not normative), and temporal columns render as ISO text through the library's table
   query, and `data-validate-schema` compares the report without its parsed `dataSchema`.

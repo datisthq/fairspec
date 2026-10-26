@@ -29,7 +29,7 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         return Err(Error::Load("Resource path is not defined".to_string()));
     };
 
-    if get_dialect_has_only_format(&file_dialect) {
+    if resource.file_dialect.is_none() {
         let resource = Resource {
             data: Some(Value::String(first_path.clone())),
             file_dialect: Some(PathOr::Value(file_dialect.clone())),
@@ -223,13 +223,4 @@ fn get_column_names(file_dialect: &FileDialect) -> Option<&Vec<String>> {
 
 fn get_first_byte(text: Option<&str>) -> Option<u8> {
     text.and_then(|text| text.bytes().next())
-}
-
-fn get_dialect_has_only_format(file_dialect: &FileDialect) -> bool {
-    let Ok(Value::Object(descriptor)) = serde_json::to_value(file_dialect) else {
-        return true;
-    };
-    descriptor
-        .keys()
-        .all(|key| matches!(key.as_str(), "format" | "title" | "description"))
 }

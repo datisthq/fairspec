@@ -1497,7 +1497,7 @@ charlie@domain.net
 > [!NOTE]
 > Supported types: **Boolean**
 
-An optional array of string values that `SHOULD` be interpreted as `true` when parsing data. It `MUST` be an array of strings.
+An optional array of string values that `SHOULD` be interpreted as `true` when parsing data. It `MUST` be an array of strings. It defaults to `["true", "True", "TRUE", "1"]`.
 
 Metadata example:
 
@@ -1527,7 +1527,7 @@ Y
 > [!NOTE]
 > Supported types: **Boolean**
 
-An optional array of string values that `SHOULD` be interpreted as `false` when parsing data. It `MUST` be an array of strings.
+An optional array of string values that `SHOULD` be interpreted as `false` when parsing data. It `MUST` be an array of strings. It defaults to `["false", "False", "FALSE", "0"]`.
 
 Metadata example:
 
@@ -1704,7 +1704,7 @@ price
 > [!NOTE]
 > Supported types: **Number**, **Decimal**
 
-An optional single character used as the decimal separator in the data.
+An optional single character used as the decimal separator in the data. It defaults to a dot (`.`).
 
 Metadata example:
 
@@ -1733,7 +1733,7 @@ price
 > [!NOTE]
 > Supported types: **Integer**, **Number**, **Decimal**
 
-An optional single character used as the thousands separator in the data. It `MUST` be a string of length 1.
+An optional single character used as the thousands separator in the data. It `MUST` be a string of length 1. Without it, a value has no group separator.
 
 Metadata example:
 

@@ -27,13 +27,16 @@ import {
   FeatureGrid,
   FinalCta,
   Hero,
+  type Language,
   LandingSection,
+  LanguageTabs,
   type Point,
   ShowcaseSection,
   type Slide,
   SplitSection,
   WindowCard,
   actionClass,
+  languages,
   textLinkClass,
   tk,
 } from "../components/Landing.tsx"
@@ -59,22 +62,16 @@ export const Route = createFileRoute("/cli-tool/")({
   }),
 })
 
-type Language = "python" | "typescript"
-
-const languages: { key: Language; name: string }[] = [
-  { key: "python", name: "Python" },
-  { key: "typescript", name: "TypeScript" },
-]
-
 function CliToolPage() {
   const [language, setLanguage] = useState<Language>("python")
+  const docs = readDocsSection(language)
   return (
     <>
       <Banner />
       <Header />
       <main className="flex flex-col">
         <Hero
-          eyebrow="Python and TypeScript"
+          eyebrow="For Python, TypeScript and Rust"
           title="Fairspec CLI"
           lede={
             <>
@@ -104,21 +101,22 @@ function CliToolPage() {
         />
         <SplitSection
           id="installation"
-          title="One command, two runtimes"
+          title="One command, three runtimes"
           lede={
             <>
-              Both implementations ship the same <code>fairspec</code> command. Pick the
+              Every implementation ships the same <code>fairspec</code> command. Pick the
               ecosystem you already use.
             </>
           }
+          switcher={<LanguageTabs language={language} onChange={setLanguage} />}
           points={installPoints}
-          visual={<InstallWindow language={language} onLanguageChange={setLanguage} />}
+          visual={<InstallWindow key={language} language={language} />}
         />
         <LandingSection
           title="Commands"
           lede="Commands are grouped by what they operate on: datasets, tables, JSON data, and files."
         >
-          <FeatureGrid columns={2} features={createCommandPoints(language)} />
+          <FeatureGrid columns={2} features={createCommandPoints(docs)} />
         </LandingSection>
         <ShowcaseSection
           title="Same command, both runtimes"
@@ -135,7 +133,7 @@ function CliToolPage() {
           links={
             <Link
               to="/$"
-              params={{ _splat: `${language}/terminal` }}
+              params={{ _splat: `${docs}/terminal` }}
               className={textLinkClass}
             >
               Read the CLI docs →
@@ -153,7 +151,7 @@ function CliToolPage() {
             <>
               <Link
                 to="/$"
-                params={{ _splat: `${language}/terminal` }}
+                params={{ _splat: `${docs}/terminal` }}
                 className={actionClass("default")}
               >
                 <BookOpen className="size-4" />
@@ -165,7 +163,7 @@ function CliToolPage() {
               </Link>
               <Link
                 to="/$"
-                params={{ _splat: `${language}/agent-skills` }}
+                params={{ _splat: `${docs}/agent-skills` }}
                 className={actionClass("ghost")}
               >
                 <Bot className="size-4" />
@@ -279,9 +277,21 @@ const installs: Record<Language, InstallMethod[]> = {
       command: "npx fairspec@latest --help",
     },
   ],
+  rust: [
+    {
+      name: "cargo",
+      description: (
+        <>
+          Build and install the <code>fairspec</code> command from the repository with
+          cargo. The crates are not on crates.io yet.
+        </>
+      ),
+      command: "cargo install --git https://github.com/datisthq/fairspec fairspec",
+    },
+  ],
 }
 
-const terminalPackages: Record<Language, string> = {
+const terminalPackages: Partial<Record<Language, string>> = {
   python: "fairspec-terminal",
   typescript: "@fairspec/terminal",
 }
@@ -291,7 +301,7 @@ const installPoints: Point[] = [
     icon: SquareTerminal,
     title: "The same fairspec command",
     description:
-      "Python and TypeScript packages install one command with the same subcommands and options.",
+      "Python, TypeScript and Rust install one command with the same subcommands and options.",
   },
   {
     icon: Package,
@@ -328,43 +338,14 @@ const installPoints: Point[] = [
   },
 ]
 
-function InstallWindow(props: {
-  language: Language
-  onLanguageChange: (language: Language) => void
-}) {
+function InstallWindow(props: { language: Language }) {
   const [active, setActive] = useState(0)
   const methods = installs[props.language]
   const method = methods[active] ?? methods[0]
+  const terminalPackage = terminalPackages[props.language]
   if (!method) return null
   return (
     <WindowCard label="Install">
-      <div className="flex justify-center border-b border-border px-4 py-3">
-        <div
-          role="tablist"
-          className="inline-flex rounded-lg border border-border bg-muted/40 p-1"
-        >
-          {languages.map(l => (
-            <button
-              key={l.key}
-              type="button"
-              role="tab"
-              aria-selected={l.key === props.language}
-              onClick={() => {
-                props.onLanguageChange(l.key)
-                setActive(0)
-              }}
-              className={cn(
-                "px-4 py-1.5 text-sm font-medium rounded-md transition-colors",
-                l.key === props.language
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {l.name}
-            </button>
-          ))}
-        </div>
-      </div>
       <div role="tablist" className="flex flex-wrap border-b border-border bg-muted/40">
         {methods.map((m, i) => (
           <button
@@ -391,10 +372,12 @@ function InstallWindow(props: {
             <Shell command={method.command} />
           </code>
         </pre>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Need only the command line, without the library? Install{" "}
-          <code>{terminalPackages[props.language]}</code> instead.
-        </p>
+        {terminalPackage ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Need only the command line, without the library? Install{" "}
+            <code>{terminalPackage}</code> instead.
+          </p>
+        ) : null}
       </div>
     </WindowCard>
   )
@@ -492,7 +475,7 @@ function ExamplesWindow(props: { language: Language }) {
             </pre>
             {e.only && (
               <span className="shrink-0 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
-                {e.only === "python" ? "Python" : "TypeScript"} only
+                {languages.find(l => l.key === e.only)?.name} only
               </span>
             )}
           </li>
@@ -568,7 +551,7 @@ const commandGroups: CommandGroup[] = [
   },
 ]
 
-function createCommandPoints(language: Language) {
+function createCommandPoints(docs: DocsSection) {
   return commandGroups.map(g => ({
     icon: g.icon,
     title: g.title,
@@ -587,7 +570,7 @@ function createCommandPoints(language: Language) {
         </div>
       </>
     ),
-    link: { to: "/$", splat: `${language}/terminal/${g.entity}` },
+    link: { to: "/$", splat: `${docs}/terminal/${g.entity}` },
   }))
 }
 
@@ -597,4 +580,11 @@ function shellTokenClass(part: string, index: number) {
   if (part.startsWith("-")) return tk.key
   if (part === ">") return tk.punct
   return undefined
+}
+
+type DocsSection = Exclude<Language, "rust">
+
+// Rust has no docs section; its CLI takes the same commands, so it links to Python's.
+function readDocsSection(language: Language): DocsSection {
+  return language === "rust" ? "python" : language
 }

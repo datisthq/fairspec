@@ -29,8 +29,8 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
     throw new Error("Resource data is not compatible")
   }
 
-  // TODO: Consider inferring all the missing dialect properties
-  if (!fileDialect || Object.keys(fileDialect).length <= 1) {
+  // A declared dialect is binding: its absent properties take their defaults
+  if (!resource.fileDialect) {
     fileDialect = await inferCsvFileDialect({ ...resource, data: paths[0] }, options)
   }
 

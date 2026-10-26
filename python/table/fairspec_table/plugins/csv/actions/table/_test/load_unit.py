@@ -91,16 +91,15 @@ class TestLoadCsvTable:
             {"id": 2, "name": "bob"},
         ]
 
-    def test_should_infer_header_rows_when_partial_dialect(self):
+    def test_should_take_default_header_rows_when_dialect_declares_only_format(self):
         path = write_temp_file("1,100\n2,200\n3,300")
 
         table = load_csv_table(Resource(data=path, fileDialect=CsvFileDialect()))
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [
-            {"column1": 1, "column2": 100},
-            {"column1": 2, "column2": 200},
-            {"column1": 3, "column2": 300},
+            {"1": 2, "100": 200},
+            {"1": 3, "100": 300},
         ]
 
     def test_should_handle_custom_line_terminator(self):

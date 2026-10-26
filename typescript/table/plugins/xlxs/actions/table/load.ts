@@ -22,8 +22,8 @@ export async function loadXlsxTable(resource: Resource, options?: LoadTableOptio
     throw new Error("Resource data is not compatible")
   }
 
-  // TODO: Consider inferring all the missing dialect properties
-  if (Object.keys(fileDialect).length <= 1) {
+  // A declared dialect is binding: its absent properties take their defaults
+  if (!resource.fileDialect) {
     fileDialect =
       (await inferXlsxFileDialect({ ...resource, data: paths[0] })) ?? fileDialect
   }

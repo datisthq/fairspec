@@ -22,8 +22,6 @@ from fairspec_table.plugins.xlsx.helpers.sheet import read_sheet_rows
 from fairspec_table.plugins.xlsx.helpers.table import create_table_from_sheet_rows
 
 if TYPE_CHECKING:
-    from fairspec_metadata.models.file_dialect.file_dialect import FileDialect
-
     from fairspec_table.models.table import LoadTableOptions, Table
 
 
@@ -36,7 +34,7 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
     if not paths:
         raise Exception("Resource path is not defined")
 
-    if _dialect_has_only_format(file_dialect):
+    if not resource.fileDialect:
         inferred = infer_xlsx_file_dialect(resource.model_copy(update={"data": paths[0]}))
         if inferred:
             file_dialect = inferred
@@ -59,11 +57,3 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
         result = normalize_table(result, table_schema)
 
     return result
-
-
-def _dialect_has_only_format(dialect: FileDialect) -> bool:
-    keys = {
-        k for k in type(dialect).model_fields if getattr(dialect, k, None) is not None
-    }
-    meaningful = keys - {"format", "type", "title", "description"}
-    return len(meaningful) == 0

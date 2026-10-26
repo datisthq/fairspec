@@ -27,7 +27,7 @@ pub fn load_xlsx_table(resource: &Resource, options: &LoadTableOptions) -> Resul
         return Err(Error::Load("Resource path is not defined".to_string()));
     };
 
-    if get_dialect_has_only_format(&file_dialect) {
+    if resource.file_dialect.is_none() {
         let resource = Resource {
             data: Some(Value::String(first_path.clone())),
             file_dialect: Some(PathOr::Value(file_dialect.clone())),
@@ -64,13 +64,4 @@ pub fn load_xlsx_table(resource: &Resource, options: &LoadTableOptions) -> Resul
     }
 
     Ok(result)
-}
-
-fn get_dialect_has_only_format(file_dialect: &FileDialect) -> bool {
-    let Ok(Value::Object(descriptor)) = serde_json::to_value(file_dialect) else {
-        return true;
-    };
-    descriptor
-        .keys()
-        .all(|key| matches!(key.as_str(), "format" | "title" | "description" | "$schema"))
 }

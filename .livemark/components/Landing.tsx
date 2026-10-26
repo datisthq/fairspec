@@ -42,6 +42,45 @@ export const tk = {
   dim: "text-[#9ca0b0] dark:text-[#6c7086]",
 }
 
+export type Language = "python" | "typescript" | "rust"
+
+export const languages: { key: Language; name: string }[] = [
+  { key: "python", name: "Python" },
+  { key: "typescript", name: "TypeScript" },
+  { key: "rust", name: "Rust" },
+]
+
+export function LanguageTabs(props: {
+  language: Language
+  onChange: (language: Language) => void
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Language"
+      className="inline-flex gap-1 rounded-control border border-border bg-card p-1"
+    >
+      {languages.map(l => (
+        <button
+          key={l.key}
+          type="button"
+          role="tab"
+          aria-selected={l.key === props.language}
+          onClick={() => props.onChange(l.key)}
+          className={cn(
+            "rounded-md px-3 py-1 text-sm font-medium transition-colors",
+            l.key === props.language
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {l.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export const textLinkClass =
   "text-sm font-medium text-primary underline-offset-4 hover:underline"
 
@@ -260,6 +299,7 @@ export function LandingSection(props: {
   id?: string
   title: ReactNode
   lede: ReactNode
+  switcher?: ReactNode
   tinted?: boolean
   children: ReactNode
 }) {
@@ -274,6 +314,7 @@ export function LandingSection(props: {
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+            {props.switcher ? <div className="mb-6">{props.switcher}</div> : null}
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               {props.title}
             </h2>
@@ -307,6 +348,7 @@ export function SplitSection(props: {
   id?: string
   title: ReactNode
   lede: ReactNode
+  switcher?: ReactNode
   points: Point[]
   visual: ReactNode
   reverse?: boolean
@@ -318,6 +360,7 @@ export function SplitSection(props: {
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+            {props.switcher ? <div className="mb-6">{props.switcher}</div> : null}
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               {props.title}
             </h2>

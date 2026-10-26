@@ -47,7 +47,7 @@ def load_json_table(
     if not paths:
         raise Exception("Resource data is not defined")
 
-    if _dialect_has_only_format(file_dialect):
+    if not resource.fileDialect:
         inferred = infer_json_file_dialect(
             Resource(data=paths[0], fileDialect=cast("FileDialect", file_dialect))
         )
@@ -82,14 +82,6 @@ def load_json_table(
         result = normalize_table(result, table_schema)
 
     return result
-
-
-def _dialect_has_only_format(dialect: FileDialect) -> bool:
-    keys = {
-        k for k in type(dialect).model_fields if getattr(dialect, k, None) is not None
-    }
-    meaningful = keys - {"format", "type", "title", "description"}
-    return len(meaningful) == 0
 
 
 def _is_default_dialect(dialect: FileDialect) -> bool:

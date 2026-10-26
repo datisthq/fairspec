@@ -1,0 +1,26 @@
+[
+  {
+    "description": "a dialect that declares only the format",
+    "comment": "An absent property takes its default and is never inferred: the delimiter is a comma, the header the first row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "fileDialect": { "format": "csv" },
+    "tests": [
+      {
+        "description": "a semicolon is not taken as the delimiter",
+        "data": "a;b\nx;y\n",
+        "expected": {
+          "columns": ["a;b"],
+          "rows": [["x;y"]]
+        }
+      },
+      {
+        "description": "a CRLF line terminator is read with the default",
+        "data": "a,b\r\nx,y\r\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [["x", "y"]]
+        }
+      }
+    ]
+  }
+]

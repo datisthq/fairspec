@@ -39,7 +39,7 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
         return Err(Error::Load("Resource data is not defined".to_string()));
     };
 
-    if get_is_default_dialect(&file_dialect) {
+    if resource.file_dialect.is_none() {
         let resource = Resource {
             data: Some(Value::String(first_path.clone())),
             file_dialect: Some(PathOr::Value(file_dialect.clone())),

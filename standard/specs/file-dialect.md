@@ -383,12 +383,14 @@ Data example:
 
 A **row** is one parsed record of the file: in CSV and TSV, a quoted cell spanning several lines belongs to one row. Rows are numbered from `1`, counting every row of the file before any is removed, so [`headerRows`](#headerrows) and [`commentRows`](#commentrows) refer to the same numbering.
 
+A property the dialect leaves out takes its default, as stated for each property below; an implementation `MUST NOT` infer it from the data. Inference is only for a resource without a dialect (see [Dataset](../dataset#filedialect)), so a declared dialect reads the same in every implementation.
+
 #### `delimiter`
 
 > [!NOTE]
 > Supported formats: **csv**
 
-It `MUST` be a string of one character length. This property specifies the character sequence which separates fields in the data file.
+It `MUST` be a string of one character length. This property specifies the character sequence which separates fields in the data file. It defaults to a comma (`,`); TSV always separates fields with a tab.
 
 For example:
 
@@ -414,7 +416,7 @@ id;name;price
 > [!NOTE]
 > Supported formats: **csv**, **tsv**
 
-It `MUST` be a string. This property specifies the character sequence which terminates rows in the file. Common values are `\n` (Unix), `\r\n` (Windows), `\r` (old Mac).
+It `MUST` be a string. This property specifies the character sequence which terminates rows in the file. Common values are `\n` (Unix), `\r\n` (Windows), `\r` (old Mac). It defaults to `\n`, and a `\r` directly before the terminator is not part of the row, so `\r\n` files read the same under the default.
 
 For example:
 
@@ -432,7 +434,7 @@ For example:
 > [!NOTE]
 > Supported formats: **csv**
 
-It `MUST` be a string of one character length. This property specifies a character to use for quoting in case the delimiter needs to be used inside a data cell.
+It `MUST` be a string of one character length. This property specifies a character to use for quoting in case the delimiter needs to be used inside a data cell. It defaults to a double quote (`"`).
 
 For example:
 
@@ -485,7 +487,7 @@ id,name,notes
 > [!NOTE]
 > Supported formats: **csv**, **tsv**, **json**, **jsonl**, **xlsx**, **ods**
 
-It `MUST` be `false` or an array of positive integers starting from `1`. This property specifies the row numbers for the header.
+It `MUST` be `false` or an array of positive integers starting from `1`. This property specifies the row numbers for the header. It defaults to `[1]`, the first row; `false` means the file has no header.
 
 For example with a single header row:
 
@@ -684,7 +686,7 @@ For a JSON file like:
 > [!NOTE]
 > Supported formats: **json**, **jsonl**
 
-It `MUST` be one of the following values: `array`, `object`. This property specifies whether the data items are arrays or objects.
+It `MUST` be one of the following values: `array`, `object`. This property specifies whether the data items are arrays or objects. Without it, the first item decides: an array means `array`, anything else `object`.
 
 For example with array of objects:
 

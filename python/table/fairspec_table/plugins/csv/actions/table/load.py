@@ -35,7 +35,7 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     if not paths:
         raise Exception("Resource path is not defined")
 
-    if _dialect_has_only_format(file_dialect):
+    if not resource.fileDialect:
         inferred = infer_csv_file_dialect(
             Resource(data=paths[0], fileDialect=cast("FileDialect", file_dialect))
         )
@@ -134,11 +134,3 @@ def _get_headerless_schema(path: str, options: dict[str, object]) -> dict[str, o
     scan_options = {**options, "infer_schema_length": 100}
     names = pl.scan_csv(path, **scan_options).collect_schema().names()  # type: ignore[arg-type]
     return {name: pl.String for name in names}
-
-
-def _dialect_has_only_format(dialect: FileDialect) -> bool:
-    keys = {
-        k for k in type(dialect).model_fields if getattr(dialect, k, None) is not None
-    }
-    meaningful = keys - {"format", "type", "title", "description"}
-    return len(meaningful) == 0
