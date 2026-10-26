@@ -1,0 +1,19 @@
+[
+  {
+    "description": "properties the specification does not define",
+    "comment": "Allowed and ignored, so a descriptor written for a later version stays readable",
+    "specification": ["https://fairspec.org/specs/table-schema/#extension"],
+    "tests": [
+      {
+        "description": "at the root and on a column are valid",
+        "data": {
+          "futureOption": true,
+          "properties": {
+            "id": { "type": "integer", "futureOption": true }
+          }
+        },
+        "valid": true
+      }
+    ]
+  }
+]

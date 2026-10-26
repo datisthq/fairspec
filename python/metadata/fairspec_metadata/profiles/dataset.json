@@ -150,7 +150,6 @@
     },
     "Integrity": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "type": {
           "enum": ["md5", "sha1", "sha256", "sha512"]

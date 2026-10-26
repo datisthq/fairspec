@@ -76,7 +76,9 @@ Pick the **highest** rung the diff reaches, and run everything that rung lists.
    heading, the profile and the three twins' models: the model step rejects what the profile
    allows, so a gap passes the profile tests and fails every library. A shape a profile must
    enforce is a `pattern`: `format` is an annotation in every library's validator and in
-   `standard/-test/profiles.unit.ts`, so a `format` alone checks nothing; a set of allowed values is `enum`, never `const`. A pattern the models repeat (the internal path in
+   `standard/-test/profiles.unit.ts`, so a `format` alone checks nothing. Unknown properties are allowed
+   and ignored in every spec, for forward compatibility: never close a Fairspec-defined object
+   with `additionalProperties: false` (the DataCite objects stay closed as DataCite defines them); a set of allowed values is `enum`, never `const`. A pattern the models repeat (the internal path in
    `typescript/metadata/models/path.ts` and `python/metadata/fairspec_metadata/models/path.py`)
    stays identical to the profile's and lookahead-free, since pydantic runs Rust's `regex` engine. A change to a Python model, or a pattern it carries, also runs
    `pnpm -C rust sync:schemas`: the Rust MCP schemas copy Python's, and a stale copy fails nothing. A profile change then runs `pnpm sync:profiles` and

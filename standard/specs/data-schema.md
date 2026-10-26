@@ -84,10 +84,10 @@ For example:
 
 ## Extension
 
-> [!WARNING]
-> Additional properties are NOT allowed.
+> [!TIP]
+> Additional properties are allowed.
 
-Fairspec Data Schema does not support extension.
+Properties not defined by this specification are allowed, as in JSON Schema, so that a descriptor written for a later version stays readable: an implementation `MUST` ignore them and `MAY` warn about them. Fairspec Data Schema has no extension mechanism: such properties carry no meaning.
 
 ## Comparison
 

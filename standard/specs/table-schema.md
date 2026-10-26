@@ -2213,10 +2213,10 @@ For example:
 
 ## Extension
 
-> [!WARNING]
-> Properties beyond this specification and [JSON Schema](#json-schema) are NOT allowed.
+> [!TIP]
+> Additional properties are allowed.
 
-Fairspec Table Schema does not support extension.
+Properties not defined by this specification or by [JSON Schema](#json-schema) are allowed, as in JSON Schema, so that a descriptor written for a later version stays readable: an implementation `MUST` ignore them and `MAY` warn about them. Fairspec Table Schema has no extension mechanism: such properties carry no meaning.
 
 ## Comparison
 

@@ -1,0 +1,28 @@
+[
+  {
+    "description": "properties the specification does not define in a dialect",
+    "comment": "Allowed and ignored, so a descriptor written for a later version stays readable",
+    "specification": ["https://fairspec.org/specs/file-dialect/#extension"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": { "format": "csv", "futureOption": true },
+          "integrity": {
+            "type": "md5",
+            "hash": "3858f62230ac3c915f300c664312c63f",
+            "futureOption": true
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "are valid and leave the data read as before",
+        "data": { "table.csv": "foobar" },
+        "valid": true
+      }
+    ]
+  }
+]

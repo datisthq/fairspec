@@ -84,10 +84,10 @@ For example:
 
 ## Extension
 
-> [!WARNING]
-> Additional properties are NOT allowed.
+> [!TIP]
+> Additional properties are allowed.
 
-Fairspec Catalog does not support extension.
+Properties not defined by this specification are allowed, so that a descriptor written for a later version stays readable: an implementation `MUST` ignore them and `MAY` warn about them. Fairspec Catalog has no extension mechanism: such properties carry no meaning.
 
 ## Streaming
 

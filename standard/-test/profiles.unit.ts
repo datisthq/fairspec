@@ -280,6 +280,34 @@ async function listProfiles() {
   return entries.filter(entry => entry.endsWith(".json")).sort()
 }
 
+describe("unknown properties", () => {
+  it.each([
+    { profile: "file-dialect.json", descriptor: { format: "csv", futureOption: true } },
+    { profile: "table-schema.json", descriptor: { properties: {}, futureOption: true } },
+    {
+      profile: "table-schema.json",
+      descriptor: { properties: { x: { type: "string", futureOption: true } } },
+    },
+    { profile: "data-schema.json", descriptor: { type: "object", futureOption: true } },
+    {
+      profile: "catalog.json",
+      descriptor: [
+        { loc: "https://example.com/a.json", upd: "2024-01-01T00:00:00Z", x: 1 },
+      ],
+    },
+    {
+      profile: "dataset.json",
+      descriptor: {
+        resources: [
+          { data: "a.csv", integrity: { type: "md5", hash: "0".repeat(32), x: 1 } },
+        ],
+      },
+    },
+  ])("are allowed in $profile", ({ profile, descriptor }) => {
+    expect(getValidator(profile)(descriptor)).toBe(true)
+  })
+})
+
 describe("datacite dates", () => {
   it.each([
     { valid: true, date: "2020" },
