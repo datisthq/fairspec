@@ -123,14 +123,18 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   live at `/<lang>/getting-started/`, and `worker.ts` 301s the bare `/<lang>/` there
 - Landing pages are routes in `.livemark/routes/` (`index.tsx`, `cli-tool.tsx`,
   `mcp-server.tsx`, `desktop.tsx`), each a `type: "custom"` section in
-  `livemark.config.ts` in that nav order. A landing that covers both languages (`cli-tool.tsx`)
-  puts a Python/TypeScript switch over the install-method tabs and shows only commands that run
-  unchanged on both CLIs — check each against both `--help` outputs, since the language
-  docs can lag the code (both CLIs take `-d/--dataset`, `-r/--resource`)
+  `livemark.config.ts` in that nav order; the nav and h1 say "CLI" and "MCP", not "CLI Tool" or
+  "MCP Server". A landing that covers the languages (`cli-tool.tsx`, `mcp-server.tsx`) holds
+  one page-level `Language` (Python, TypeScript, Rust) driven by `Landing.tsx`'s
+  `LanguageTabs`, the pill passed as `switcher` above the install section's title (fireargs'
+  pattern) — never a per-window toggle. Rust has no docs section, so its docs links fall back
+  to Python's. Show only commands that run unchanged on every CLI — check each against each
+  `--help` output, since the language docs can lag the code (all take `-d/--dataset`,
+  `-r/--resource`)
 - Every landing copies livemark.dev's own landing exactly (livemark's `livemark-landing`
   skill): Hero → `SplitSection` (points beside a window) → `FeatureGrid` → tinted
   `ShowcaseSection` (two windows) → `SplitSection reverse` with links → `FinalCta` → `Datist`.
-  Interactive widgets (install tabs, runtime radio, platform tabs) live in the split windows. A
+  Interactive widgets (install tabs, platform tabs) live in the split windows. A
   custom route renders bare, so each draws its chrome: `<Banner />`, `<Header />`, `<main>`,
   `<BackToTop />`. `<Banner />` is `.livemark/components/Banner.tsx`, which replaces
   livemark's config-driven one on purpose (as irondocs does): a one-line technical-preview
