@@ -124,6 +124,50 @@
           "jsonpath": "$.version"
         }
       ]
+    },
+    "rust": {
+      "release-type": "simple",
+      "component": "rust",
+      "release-as": "0.1.0",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features"
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes"
+        },
+        {
+          "type": "perf",
+          "section": "Performance Improvements"
+        },
+        {
+          "type": "deps",
+          "section": "Dependencies"
+        },
+        {
+          "type": "revert",
+          "section": "Reverts"
+        },
+        {
+          "type": "docs",
+          "section": "Documentation",
+          "hidden": true
+        }
+      ],
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "Cargo.toml",
+          "jsonpath": "$.workspace.package.version"
+        },
+        {
+          "type": "toml",
+          "path": "Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value === 'fairspec' || @.name.value === 'fairspec-dataset' || @.name.value === 'fairspec-library' || @.name.value === 'fairspec-mcp-server' || @.name.value === 'fairspec-metadata' || @.name.value === 'fairspec-table' || @.name.value === 'fairspec-terminal')].version"
+        }
+      ]
     }
   }
 }

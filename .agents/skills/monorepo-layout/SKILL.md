@@ -87,8 +87,13 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   library-only fix is a Release PR listing only that library
 - `extra-files` paths are relative to the section directory
 - `release-as` pins one component's next version (typescript is pinned to `0.13.1` because
-  npm already holds a partial `0.13.0`); delete the key once that release is merged, or every
-  later Release PR keeps proposing the same version
+  npm already holds a partial `0.13.0`; rust is pinned to `0.1.0`, its first release); delete
+  the key once that release is merged, or every later Release PR keeps proposing the same
+  version
+- Binaries attach to their section's own release (`desktop-v…`, `rust-v…`), named
+  `fairspec-<desktop|cli>-<os>-<arch>-<version>`. In a monorepo `releases/latest/download/`
+  points at whichever section released last, so pages link the filtered list
+  (`releases?q=rust-v`), never a direct asset
 - The libraries and the Rust port bundle `standard/profiles/` (refs resolved to `latest`) in
   `typescript/metadata/profiles/`, `python/metadata/fairspec_metadata/profiles/` and
   `rust/metadata/profiles/`, and pin `FAIRSPEC_VERSION` in their `settings` to

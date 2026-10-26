@@ -215,8 +215,6 @@ const launchers: Record<Language, { command: string; args: string[] }> = {
   rust: { command: "fairspec", args: ["mcp"] },
 }
 
-const rustInstall = "cargo install --git https://github.com/datisthq/fairspec fairspec"
-
 function BashAgentAdd({
   agent,
   language,
@@ -333,7 +331,7 @@ const connectPoints: Point[] = [
         Run it with <code className="font-mono text-foreground">uvx</code> from the Python
         package, <code className="font-mono text-foreground">npx</code> from the
         TypeScript one, or the <code className="font-mono text-foreground">fairspec</code>{" "}
-        binary built with cargo. Same tools, same names.
+        binary from the GitHub releases. Same tools, same names.
       </>
     ),
   },
@@ -395,7 +393,15 @@ function Installation(props: { language: Language }) {
         </pre>
         {props.language === "rust" ? (
           <p className="mt-4 text-sm text-muted-foreground">
-            Install the <code>fairspec</code> binary first: <code>{rustInstall}</code>
+            Download <code>fairspec-cli</code> from the{" "}
+            <a
+              href="https://github.com/datisthq/fairspec/releases?q=rust-v"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub releases
+            </a>{" "}
+            first and put the <code>fairspec</code> binary on your PATH.
           </p>
         ) : null}
       </div>

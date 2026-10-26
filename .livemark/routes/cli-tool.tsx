@@ -216,6 +216,8 @@ interface InstallMethod {
   command: string
 }
 
+const RUST_RELEASES = "https://github.com/datisthq/fairspec/releases?q=rust-v"
+
 const installs: Record<Language, InstallMethod[]> = {
   python: [
     {
@@ -279,14 +281,28 @@ const installs: Record<Language, InstallMethod[]> = {
   ],
   rust: [
     {
+      name: "binary",
+      description: (
+        <>
+          Download <code>fairspec-cli</code> for your platform from the{" "}
+          <a href={RUST_RELEASES} target="_blank" rel="noopener noreferrer">
+            GitHub releases
+          </a>{" "}
+          and put the <code>fairspec</code> binary on your PATH.
+        </>
+      ),
+      command: "tar -xzf fairspec-cli-*.tar.gz && mv fairspec /usr/local/bin/",
+    },
+    {
       name: "cargo",
       description: (
         <>
-          Build and install the <code>fairspec</code> command from the repository with
-          cargo. The crates are not on crates.io yet.
+          Build the <code>fairspec</code> command from source with cargo. The crates are
+          not on crates.io yet.
         </>
       ),
-      command: "cargo install --git https://github.com/datisthq/fairspec fairspec",
+      command:
+        "cargo install --locked --git https://github.com/datisthq/fairspec fairspec",
     },
   ],
 }

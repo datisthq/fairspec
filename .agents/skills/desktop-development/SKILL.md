@@ -65,7 +65,9 @@ Run from the repo root; `pnpm -C desktop <script>` runs a script of this section
 ## Releases
 
 This section is the `desktop` release-please component: tags `desktop-vX.Y.Z`, its own
-Release PR; `release.yaml` builds installers for macOS, Windows and Linux and attaches them to
-the GitHub release. Only changes to the shipped application use `feat` or `fix`; the landing
+Release PR; `release.yaml` builds installers for macOS (x64, arm64), Windows x64 and Linux
+(x64, arm64) and attaches them, with a `.sha256` each, to the GitHub release as
+`fairspec-desktop-<os>-<arch>-<version>`. `${arch}` follows each format: `amd64` for `.deb`,
+`x86_64` for AppImage. Windows on Arm is out: `nodejs-polars` has no win32-arm64 build. Only changes to the shipped application use `feat` or `fix`; the landing
 page, tests, READMEs and tooling are `chore` or `docs`. When in doubt, ask whether the change
 alters what someone installing the app gets.

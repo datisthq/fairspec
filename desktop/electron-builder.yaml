@@ -1,6 +1,6 @@
 appId: org.fairspec.application
 copyright: Copyright © 2025 ${author}
-artifactName: fairspec-desktop-${os}-${version}.${ext}
+artifactName: fairspec-desktop-${os}-${arch}-${version}.${ext}
 
 # General
 
@@ -41,14 +41,14 @@ mac:
     - dmg
 
 dmg:
-  artifactName: fairspec-desktop-macos-${version}.${ext}
+  artifactName: fairspec-desktop-macos-${arch}-${version}.${ext}
 
 # Windows
 # Variable ${name} doesn't work on windows
 
 win:
   executableName: fairspec
-  artifactName: fairspec-desktop-windows-${version}.${ext}
+  artifactName: fairspec-desktop-windows-${arch}-${version}.${ext}
 
 nsis:
   shortcutName: ${productName}

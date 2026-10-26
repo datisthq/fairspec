@@ -248,7 +248,7 @@ const privacyPoints: Point[] = [
   },
 ]
 
-const RELEASES = "https://github.com/datisthq/fairspec/releases?q=desktop"
+const RELEASES = "https://github.com/datisthq/fairspec/releases?q=desktop-v"
 
 interface Platform {
   name: string
@@ -261,9 +261,11 @@ const platforms: Platform[] = [
     name: "macOS",
     description: (
       <>
-        Download the <code className="font-mono text-foreground">.dmg</code> installer
-        from the latest release and drag the application into your Applications folder.
-        Your files never leave your machine.
+        Download the <code className="font-mono text-foreground">.dmg</code> installer for
+        Apple silicon (<code className="font-mono text-foreground">arm64</code>) or Intel
+        (<code className="font-mono text-foreground">x64</code>) from the latest release
+        and drag the application into your Applications folder. Your files never leave
+        your machine.
       </>
     ),
     action: { label: "Download for macOS", href: RELEASES },
@@ -273,7 +275,8 @@ const platforms: Platform[] = [
     description: (
       <>
         Download the <code className="font-mono text-foreground">.exe</code> installer
-        from the latest release and run it. Your files never leave your machine.
+        from the latest release and run it. On Windows on Arm, the x64 installer runs
+        under emulation. Your files never leave your machine.
       </>
     ),
     action: { label: "Download for Windows", href: RELEASES },
@@ -283,8 +286,8 @@ const platforms: Platform[] = [
     description: (
       <>
         Download the <code className="font-mono text-foreground">.AppImage</code> or{" "}
-        <code className="font-mono text-foreground">.deb</code> package from the latest
-        release and run it. Your files never leave your machine.
+        <code className="font-mono text-foreground">.deb</code> package for x86-64 or
+        arm64 from the latest release and run it. Your files never leave your machine.
       </>
     ),
     action: { label: "Download for Linux", href: RELEASES },

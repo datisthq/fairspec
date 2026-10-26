@@ -11,7 +11,8 @@ wrap as a CLI. `rust/metadata/` (`fairspec-metadata`), `rust/dataset/` (`fairspe
 `rust/table/` (`fairspec-table`, on Polars) and `rust/library/` (`fairspec-library`) are
 ported from their Python packages; the crates follow Python's package DAG. `rust/terminal/`
 (`fairspec-terminal`) is the CLI and `rust/fairspec/` the umbrella crate whose `fairspec` binary
-runs it (`cargo build --release -p fairspec`). Nothing is published and the section has no release component.
+runs it (`cargo build --release -p fairspec`). No crate goes to crates.io; the binary ships as
+`fairspec-cli` archives on the GitHub release (**Releases** below).
 
 ## Commands
 
@@ -160,3 +161,22 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
 library API (`validate_table`, `query_dataset`, …) as the Python runner does. It checks every
 file against `conformance/test-schema.json` and runs every operation; an unknown operation directory
 fails, so a new operation in `conformance/` lands here too (**`conformance-development`**).
+
+## Releases
+
+This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own changelog.
+`release.yaml`'s `rust` job builds `fairspec` with the `build:dist` profile and attaches
+`fairspec-cli-<os>-<arch>-<version>.{tar.gz,zip}` plus a `.sha256` each for linux, macOS
+(x64, arm64) and windows x64. No Windows on Arm: the desktop app cannot ship there
+(`nodejs-polars` has no win32-arm64 build) and the CLI keeps parity with it.
+
+- Release type is `simple`, not `rust`: release-please's Cargo updater fails on
+  `version.workspace = true`. Two `extra-files` carry the version instead:
+  `$.workspace.package.version` in `Cargo.toml`, and every member's entry in `Cargo.lock`
+- **A new workspace crate that inherits the version goes into the `Cargo.lock` jsonpath** in
+  `.release/config.json`, or the release builds `--locked` against a stale lock and fails.
+  The filter compares `@.name.value` because release-please parses TOML into tagged values.
+  `fairspec-benchmark` pins its own `0.0.0` and stays out
+- The job calls cargo directly with `-p fairspec`, so `build:dist`'s nightly pin
+  (`nightly-2026-09-01`) is repeated there: bump both together
+- Only a change to what the binary does is `feat`/`fix`
