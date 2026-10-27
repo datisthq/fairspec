@@ -1,3 +1,5 @@
+import os
+
 from ..validate import validate_dataset_descriptor
 
 
@@ -36,3 +38,19 @@ class TestValidateDatasetDescriptor:
         result = validate_dataset_descriptor(dataset)
         assert result.valid is True
         assert result.errors == []
+
+    def test_schema_path_outside_working_directory(self, tmp_path, monkeypatch):
+        folder = tmp_path / "dataset"
+        folder.mkdir()
+        (folder / "schema.json").write_text('{"properties": {"id": {"type": "integer"}}}')
+        elsewhere = tmp_path / "elsewhere"
+        elsewhere.mkdir()
+        monkeypatch.chdir(elsewhere)
+
+        dataset = {"resources": [{"data": "data.csv", "tableSchema": "schema.json"}]}
+        result = validate_dataset_descriptor(dataset, basepath=str(folder))
+        assert result.valid is True
+        assert result.dataset is not None
+        resource = (result.dataset.resources or [])[0]
+        assert isinstance(resource.tableSchema, str)
+        assert os.path.samefile(resource.tableSchema, folder / "schema.json")

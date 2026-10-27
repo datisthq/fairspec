@@ -1,0 +1,143 @@
+[
+  {
+    "description": "a table schema given as an internal path",
+    "comment": "The path is resolved next to dataset.json and the file it names is the Table Schema",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#tableschema",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": "people.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": "schema.json"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "matching data is valid",
+        "data": {
+          "people.csv": "id\n1\n",
+          "schema.json": "{\"properties\": {\"id\": {\"type\": \"integer\"}}}"
+        },
+        "valid": true
+      },
+      {
+        "description": "data breaking the schema in the file is a cell/type error",
+        "data": {
+          "people.csv": "id\nx\n",
+          "schema.json": "{\"properties\": {\"id\": {\"type\": \"integer\"}}}"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      },
+      {
+        "description": "a file that is not a valid table schema is invalid",
+        "data": {
+          "people.csv": "id\n1\n",
+          "schema.json": "{\"properties\": 1}"
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "a file dialect given as an internal path",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#filedialect",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": "people.csv",
+          "fileDialect": "dialect.json",
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the dialect in the file splits the columns",
+        "data": {
+          "people.csv": "id;name\n1;alice\n",
+          "dialect.json": "{\"format\": \"csv\", \"delimiter\": \";\"}"
+        },
+        "valid": true
+      },
+      {
+        "description": "a file that is not a valid dialect is invalid",
+        "data": {
+          "people.csv": "id;name\n1;alice\n",
+          "dialect.json": "{\"format\": \"csv\", \"delimiter\": 1}"
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "a data schema given as an internal path",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#dataschema",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "profile",
+          "data": "profile.json",
+          "dataSchema": "schema.json"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a matching document is valid",
+        "data": {
+          "profile.json": "{\"name\": \"alice\"}",
+          "schema.json": "{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}"
+        },
+        "valid": true
+      },
+      {
+        "description": "a document breaking the schema in the file is a data error",
+        "data": {
+          "profile.json": "{\"name\": 1}",
+          "schema.json": "{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "data",
+            "resourceName": "profile",
+            "jsonPointer": "/name"
+          }
+        ]
+      }
+    ]
+  }
+]
