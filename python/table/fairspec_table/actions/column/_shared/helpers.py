@@ -21,7 +21,6 @@ from fairspec_metadata import (
 from fairspec_metadata import ColumnType
 from fairspec_metadata import CellError
 
-from fairspec_table.helpers import get_is_object
 from fairspec_table.models import ColumnMapping, PolarsColumn, Table
 from fairspec_table.settings import QUERY_ENGINE, NUMBER_COLUMN_NAME
 
@@ -75,10 +74,20 @@ def inspect_json_column(
 
     column_type = ColumnType(column.type)
     constraint_json_schema = column.property.model_dump(exclude_none=True, by_alias=True)
-    check_compat: Callable[[object], bool] = (
-        (lambda v: isinstance(v, list)) if column.type == "array" else get_is_object
+    needs_validator = bool(type_json_schema) or bool(
+        constraint_json_schema.keys() - ANNOTATION_KEYWORDS
     )
-    frame = _collect_cell_frame(table, mapping or _create_text_mapping(column))
+
+    mapping = mapping or _create_text_mapping(column)
+    cell_frame = _select_cell_frame(table, mapping).with_columns(
+        _create_json_kind_expr(mapping, pl.col("source")).alias("valid")
+    )
+    if not needs_validator:
+        cell_frame = cell_frame.filter(
+            pl.col("source").is_null() & (not column.nullable)
+            | pl.col("source").is_not_null() & ~pl.col("valid")
+        )
+    frame = cast(pl.DataFrame, cell_frame.collect(engine=QUERY_ENGINE))
 
     for row in frame.to_dicts():
         if row["source"] is None:
@@ -86,13 +95,7 @@ def inspect_json_column(
                 errors.append(_create_missing_error(column.name, row))
             continue
 
-        target = None
-        try:
-            target = json.loads(row["source"])
-        except Exception:
-            pass
-
-        if target is None or not check_compat(target):
+        if not row["valid"]:
             errors.append(
                 CellTypeError(
                     type="cell/type",
@@ -104,6 +107,7 @@ def inspect_json_column(
             )
             continue
 
+        target = json.loads(row["source"])
         if type_json_schema:
             format_errors = inspect_json(target, json_schema=type_json_schema)
 
@@ -137,6 +141,24 @@ def inspect_json_column(
     return errors
 
 
+# Keywords that never fail a value: a column with only these needs no validator
+ANNOTATION_KEYWORDS = frozenset(
+    {
+        "type",
+        "title",
+        "description",
+        "examples",
+        "default",
+        "$comment",
+        "deprecated",
+        "readOnly",
+        "writeOnly",
+        "rdfType",
+        "missingValues",
+    }
+)
+
+
 def _create_text_mapping(
     column: Union[
         ArrayColumn,
@@ -155,16 +177,28 @@ def _create_text_mapping(
 
 def _collect_cell_frame(table: Table, mapping: ColumnMapping) -> pl.DataFrame:
     return cast(
-        pl.DataFrame,
-        table.with_row_index(NUMBER_COLUMN_NAME, 1)
-        .select(
-            pl.col(NUMBER_COLUMN_NAME),
-            _encode_nested_column(
-                mapping, substitute_column(mapping, pl.col(mapping.source.name))
-            ).alias("source"),
-            _encode_nested_column(mapping, pl.col(mapping.source.name)).alias("cell"),
-        )
-        .collect(engine=QUERY_ENGINE),
+        pl.DataFrame, _select_cell_frame(table, mapping).collect(engine=QUERY_ENGINE)
+    )
+
+
+def _select_cell_frame(table: Table, mapping: ColumnMapping) -> pl.LazyFrame:
+    return table.with_row_index(NUMBER_COLUMN_NAME, 1).select(
+        pl.col(NUMBER_COLUMN_NAME),
+        _encode_nested_column(
+            mapping, substitute_column(mapping, pl.col(mapping.source.name))
+        ).alias("source"),
+        _encode_nested_column(mapping, pl.col(mapping.source.name)).alias("cell"),
+    )
+
+
+# Polars' parser is the one judge of a JSON cell, so every library rejects the same text
+def _create_json_kind_expr(mapping: ColumnMapping, source_expr: pl.Expr) -> pl.Expr:
+    if issubclass(mapping.source.type, (pl.Struct, pl.List)):
+        return pl.lit(True)
+    opener = r"^[ \t\n\r]*\[" if mapping.target.type == "array" else r"^[ \t\n\r]*\{"
+    return (
+        source_expr.str.contains(opener)
+        & source_expr.str.json_path_match("$").is_not_null()
     )
 
 

@@ -1,9 +1,3 @@
-use serde_json::Value;
-
-pub fn get_is_object(value: &Value) -> bool {
-    value.is_object()
-}
-
 /// A bound validates as a float, so 10 would otherwise render as 10.0.
 pub fn stringify_number(value: f64) -> String {
     if value.is_finite() && value.fract() == 0.0 {

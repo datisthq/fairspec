@@ -10,7 +10,6 @@ import type {
 } from "@fairspec/metadata"
 import { inspectJson } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { getIsObject } from "../../../helpers/general.ts"
 import type { ColumnMapping } from "../../../models/column.ts"
 import type { Table } from "../../../models/table.ts"
 import { NUMBER_COLUMN_NAME } from "../../../settings.ts"
@@ -66,7 +65,25 @@ export async function inspectJsonColumn(
 
   const typeJsonSchema = options.typeJsonSchema
   const constraintJsonSchema = column.property
-  const frame = await collectCellFrame(table, options.mapping)
+  const needsValidator =
+    !!typeJsonSchema ||
+    Object.entries(constraintJsonSchema).some(
+      ([key, value]) => value !== undefined && !ANNOTATION_KEYWORDS.includes(key),
+    )
+
+  let cellFrame = selectCellFrame(table, options.mapping).withColumns(
+    createJsonKindExpr(options.mapping, pl.col("source")).alias("valid"),
+  )
+  if (!needsValidator) {
+    cellFrame = cellFrame.filter(
+      pl
+        .col("source")
+        .isNull()
+        .and(pl.lit(!column.nullable))
+        .or(pl.col("source").isNotNull().and(pl.col("valid").not())),
+    )
+  }
+  const frame = await cellFrame.collect()
 
   for (const row of frame.toRecords() as any[]) {
     if (row.source === null) {
@@ -74,14 +91,7 @@ export async function inspectJsonColumn(
       continue
     }
 
-    let target: Record<string, any> | undefined
-    const checkCompat = column.type === "array" ? Array.isArray : getIsObject
-
-    try {
-      target = JSON.parse(row.source)
-    } catch {}
-
-    if (!target || !checkCompat(target)) {
+    if (!row.valid) {
       errors.push({
         type: "cell/type",
         cell: String(row.source),
@@ -93,6 +103,7 @@ export async function inspectJsonColumn(
       continue
     }
 
+    const target = JSON.parse(row.source)
     if (typeJsonSchema) {
       const formatErrors = await inspectJson(target, {
         jsonSchema: typeJsonSchema,
@@ -132,8 +143,27 @@ export async function inspectJsonColumn(
   return errors
 }
 
+// Keywords that never fail a value: a column with only these needs no validator
+const ANNOTATION_KEYWORDS = [
+  "type",
+  "title",
+  "description",
+  "examples",
+  "default",
+  "$comment",
+  "deprecated",
+  "readOnly",
+  "writeOnly",
+  "rdfType",
+  "missingValues",
+]
+
 async function collectCellFrame(table: Table, mapping: ColumnMapping) {
-  return await table
+  return await selectCellFrame(table, mapping).collect()
+}
+
+function selectCellFrame(table: Table, mapping: ColumnMapping) {
+  return table
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
     .select(
       pl.col(NUMBER_COLUMN_NAME),
@@ -142,7 +172,18 @@ async function collectCellFrame(table: Table, mapping: ColumnMapping) {
       ),
       encodeNestedColumn(mapping, pl.col(mapping.source.name)).alias("cell"),
     )
-    .collect()
+}
+
+// Polars' parser is the one judge of a JSON cell, so every library rejects the same text
+function createJsonKindExpr(mapping: ColumnMapping, sourceExpr: pl.Expr) {
+  if (["Struct", "List"].includes(mapping.source.type.variant)) return pl.lit(true)
+  const opener =
+    mapping.target.type === "array"
+      ? String.raw`^[ \t\n\r]*\[`
+      : String.raw`^[ \t\n\r]*\{`
+  return sourceExpr.str
+    .contains(opener)
+    .and(sourceExpr.str.jsonPathMatch("$").isNotNull())
 }
 
 // Wrapping in a one-field struct lets List encode too, which has no jsonEncode

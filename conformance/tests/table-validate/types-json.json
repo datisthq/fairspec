@@ -890,5 +890,91 @@
         ]
       }
     ]
+  },
+  {
+    "description": "object column: values JSON does not allow",
+    "comment": "RFC 8259 has no NaN or Infinity, though some parsers accept them",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#object",
+      "https://www.rfc-editor.org/rfc/rfc8259"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "object" } }
+    },
+    "tests": [
+      {
+        "description": "NaN is a cell/type error",
+        "data": "id,x\n1,{}\n2,\"{\"\"a\"\": NaN}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "{\"a\": NaN}"
+          }
+        ]
+      },
+      {
+        "description": "Infinity is a cell/type error",
+        "data": "id,x\n1,{}\n2,\"{\"\"a\"\": Infinity}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "{\"a\": Infinity}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "array column with only annotations",
+    "comment": "Annotation keywords never fail a value, so only the JSON type and missing cells are checked",
+    "specification": ["https://fairspec.org/specs/table-schema/#array"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "array",
+          "title": "Tags",
+          "description": "Free tags",
+          "examples": [["a"]]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "JSON arrays are valid",
+        "data": "id,x\n1,\"[1, 2]\"\n2,[]\n",
+        "valid": true
+      },
+      {
+        "description": "each bad cell is reported in row order",
+        "data": "id,x\n1,{}\n2,[]\n3,\n4,nope\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 1,
+            "cell": "{}"
+          },
+          { "type": "cell/missing", "columnName": "x", "rowNumber": 3, "cell": "" },
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 4,
+            "cell": "nope"
+          }
+        ]
+      }
+    ]
   }
 ]

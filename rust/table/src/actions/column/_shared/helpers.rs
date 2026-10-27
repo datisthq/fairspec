@@ -8,7 +8,6 @@ use serde_json::Value;
 use super::python::stringify_cell;
 use crate::actions::column::substitute::substitute_column;
 use crate::helpers::error::PolarsResultExt;
-use crate::helpers::general::get_is_object;
 use crate::helpers::table::LazyFrameExt;
 use crate::models::column::{ColumnMapping, PolarsColumn};
 use crate::models::table::Table;
@@ -22,7 +21,7 @@ pub fn inspect_text_column(
     mapping: Option<&ColumnMapping>,
 ) -> Result<Vec<CellError>> {
     let mut errors = Vec::new();
-    let rows = collect_cell_rows(table, mapping, column)?;
+    let rows = collect_cell_rows(table, mapping, column, None)?;
 
     for row in rows {
         let Some(source) = row.source.clone() else {
@@ -57,8 +56,18 @@ pub fn inspect_json_column(
         Ok(Value::Object(json_schema)) => json_schema,
         _ => Default::default(),
     };
-    let is_array = column.column_type() == ColumnType::Array;
-    let rows = collect_cell_rows(table, mapping, column)?;
+    let needs_validator = type_json_schema.is_some()
+        || constraint_json_schema
+            .keys()
+            .any(|key| !ANNOTATION_KEYWORDS.contains(&key.as_str()));
+    let rows = collect_cell_rows(
+        table,
+        mapping,
+        column,
+        Some(JsonCells {
+            errors_only: !needs_validator,
+        }),
+    )?;
 
     for row in rows {
         let Some(source) = row.source.clone() else {
@@ -68,16 +77,12 @@ pub fn inspect_json_column(
             continue;
         };
 
-        let target = serde_json::from_str::<Value>(&source).unwrap_or(Value::Null);
-        let is_compat = if is_array {
-            target.is_array()
-        } else {
-            get_is_object(&target)
-        };
-        if !is_compat {
+        if !row.valid {
             errors.push(create_type_error(column, &row, source));
             continue;
         }
+
+        let target = serde_json::from_str::<Value>(&source).unwrap_or(Value::Null);
 
         if let Some(type_json_schema) = type_json_schema {
             if !inspect_json(&target, type_json_schema.clone(), None)?.is_empty() {
@@ -103,16 +108,38 @@ pub fn inspect_json_column(
     Ok(errors)
 }
 
+/// Keywords that never fail a value: a column with only these needs no validator.
+const ANNOTATION_KEYWORDS: &[&str] = &[
+    "type",
+    "title",
+    "description",
+    "examples",
+    "default",
+    "$comment",
+    "deprecated",
+    "readOnly",
+    "writeOnly",
+    "rdfType",
+    "missingValues",
+];
+
 struct CellRow {
     number: usize,
     source: Option<String>,
     cell: String,
+    valid: bool,
+}
+
+/// Rows of a JSON column carry Polars' verdict on each cell; `errors_only` keeps just the failing ones.
+struct JsonCells {
+    errors_only: bool,
 }
 
 fn collect_cell_rows(
     table: Table,
     mapping: Option<&ColumnMapping>,
     column: &Column,
+    json_cells: Option<JsonCells>,
 ) -> Result<Vec<CellRow>> {
     let text_mapping;
     let mapping = match mapping {
@@ -124,20 +151,42 @@ fn collect_cell_rows(
     };
     let source_name = mapping.source.name.as_str();
 
-    let frame = table
-        .with_row_index(NUMBER_COLUMN_NAME, Some(1))
-        .select([
-            col(NUMBER_COLUMN_NAME).cast(DataType::UInt64),
-            encode_nested_column(mapping, substitute_column(mapping, col(source_name)))
-                .alias("source"),
-            encode_nested_column(mapping, col(source_name)).alias("cell"),
-        ])
-        .collect_table()?;
+    let mut cell_frame = table.with_row_index(NUMBER_COLUMN_NAME, Some(1)).select([
+        col(NUMBER_COLUMN_NAME).cast(DataType::UInt64),
+        encode_nested_column(mapping, substitute_column(mapping, col(source_name))).alias("source"),
+        encode_nested_column(mapping, col(source_name)).alias("cell"),
+    ]);
+    if let Some(json_cells) = &json_cells {
+        cell_frame =
+            cell_frame.with_column(create_json_kind_expr(mapping, col("source")).alias("valid"));
+        if json_cells.errors_only {
+            let is_required = !column.nullable().unwrap_or(false);
+            cell_frame = cell_frame.filter(
+                col("source")
+                    .is_null()
+                    .and(lit(is_required))
+                    .or(col("source").is_not_null().and(col("valid").not())),
+            );
+        }
+    }
+    let frame = cell_frame.collect_table()?;
 
     let numbers = frame.column(NUMBER_COLUMN_NAME).into_result()?;
     let numbers = numbers.u64().into_result()?;
     let sources = frame.column("source").into_result()?;
     let cells = frame.column("cell").into_result()?;
+
+    let valids = match json_cells {
+        Some(_) => Some(
+            frame
+                .column("valid")
+                .into_result()?
+                .bool()
+                .into_result()?
+                .clone(),
+        ),
+        None => None,
+    };
 
     let mut rows = Vec::with_capacity(frame.height());
     for index in 0..frame.height() {
@@ -146,21 +195,50 @@ fn collect_cell_rows(
             number: numbers.get(index).unwrap_or_default() as usize,
             source: (!source.is_null()).then(|| stringify_cell(&source)),
             cell: stringify_cell(&cells.get(index).into_result()?),
+            valid: valids
+                .as_ref()
+                .is_none_or(|valids| valids.get(index).unwrap_or(false)),
         });
     }
     Ok(rows)
 }
 
+/// Polars' parser is the one judge of a JSON cell, so every library rejects the same text.
+fn create_json_kind_expr(mapping: &ColumnMapping, source_expr: Expr) -> Expr {
+    if matches!(
+        mapping.source.r#type,
+        DataType::Struct(_) | DataType::List(_)
+    ) {
+        return lit(true);
+    }
+    let opener = match mapping.target.column_type() {
+        ColumnType::Array => r"^[ \t\n\r]*\[",
+        _ => r"^[ \t\n\r]*\{",
+    };
+    source_expr
+        .clone()
+        .str()
+        .contains(lit(opener), false)
+        .and(source_expr.str().json_path_match(lit("$")).is_not_null())
+}
+
 /// Wrapping in a one-field struct lets List encode too, which has no `json_encode`.
 fn encode_nested_column(mapping: &ColumnMapping, column_expr: Expr) -> Expr {
-    if !matches!(mapping.source.r#type, DataType::Struct(_) | DataType::List(_)) {
+    if !matches!(
+        mapping.source.r#type,
+        DataType::Struct(_) | DataType::List(_)
+    ) {
         return column_expr;
     }
     let encoded = as_struct(vec![column_expr.clone().alias("v")])
         .struct_()
         .json_encode();
     when(column_expr.is_not_null())
-        .then(encoded.str().replace(lit(r#"(?s)^\{"v":(.*)\}$"#), lit("${1}"), false))
+        .then(
+            encoded
+                .str()
+                .replace(lit(r#"(?s)^\{"v":(.*)\}$"#), lit("${1}"), false),
+        )
         .otherwise(lit(NULL))
 }
 

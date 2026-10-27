@@ -190,6 +190,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   The row-wise JSON checks see it through `encodeNestedColumn`, which JSON-encodes natively
   (a one-field struct wrap, since `List` has no `jsonEncode`); that compact text is the error
   `cell`. A Struct cannot tell a missing key from a null one, so both reach the check as null
+- **Polars judges every JSON cell**: `createJsonKindExpr` (opener regex plus
+  `str.jsonPathMatch("$")`) decides `cell/type` for object/array/geojson/topojson columns in all
+  three libraries, so `NaN` and `Infinity` fail everywhere though `JSON.parse` or `json.loads`
+  would differ. A column with only annotation keywords (`ANNOTATION_KEYWORDS`) filters to the
+  failing rows before collecting; any other keyword brings every row back for the validator
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column
