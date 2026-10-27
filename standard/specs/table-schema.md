@@ -230,6 +230,8 @@ An optional array of foreign key constraints that define relationships between t
 
 A row in which any of the local `columns` is null is not checked against the reference, as SQL's `MATCH SIMPLE`: a composite key with one null part is skipped whatever its other parts hold. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource, compared as typed values, as for [`primaryKey`](#primarykey). The referenced values need not be unique: a value present in several referenced rows satisfies the key.
 
+Each local column and the column it refers to `MUST` have the same [column type](#column-types), a `null` in either column's `type` array aside (`["integer", "null"]` matches `"integer"`), with one exception: [Integer](#integer), [Number](#number) and [Decimal](#decimal) columns `MAY` refer to one another, and their values compare by numeric value, so `1`, `1.0` and `1.00` are the same key. Any other pair of differing types `MUST` be reported as a metadata error at `/foreignKeys/<i>`, the foreign key's position in the array, and that foreign key is not checked against the data. Columns of the same type compare their typed values, as above.
+
 The referenced resource `MAY` be any table resource of the dataset, whether its data is a file, inline or multipart. A `reference.resource` naming a resource that is not a table, such as one described by a [Data Schema](../data-schema), `MUST` be reported as a metadata error.
 
 For example, referencing another resource:

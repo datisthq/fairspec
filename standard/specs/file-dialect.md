@@ -213,7 +213,7 @@ Format properties:
 
 A format for JSON Lines files (newline-delimited JSON). It `MUST` have [`format`](#format) set to `"jsonl"`.
 
-As in [CSV](#csv), a line with no characters at all is blank: it is not a row and takes no row number, and the terminator of the last line starts no other row.
+As in [CSV](#csv), a line with no characters at all is blank: it is not a row and takes no row number, and the terminator of the last line starts no other row. A line holding only JSON whitespace (spaces, tabs and carriage returns) is blank too: JSON allows whitespace around a value, and such a line holds none.
 
 Metadata example:
 
@@ -503,7 +503,7 @@ id,name,notes
 
 It `MUST` be `false` or an array of positive integers starting from `1`. This property specifies the row numbers for the header. It defaults to `[1]`, the first row; `false` means the file has no header, and so does an empty array `[]`.
 
-The listed rows form the header. Every row up to the last header row is consumed by the header and is never data: a row between two header rows that the list leaves out is dropped. With `[1, 3]`, rows `1` and `3` form the header, row `2` is dropped and the data starts at row `4`. A header row past the end of the file is an error.
+The listed rows form the header, joined top to bottom, so the array `MUST` list them in ascending order: a dialect with `headerRows` such as `[3, 1]` is invalid. Every row up to the last header row is consumed by the header and is never data: a row between two header rows that the list leaves out is dropped. With `[1, 3]`, rows `1` and `3` form the header, row `2` is dropped and the data starts at row `4`. A header row past the end of the file is an error.
 
 For example with a single header row:
 
@@ -705,6 +705,8 @@ For a JSON file like:
 > Supported formats: **json**, **jsonl**
 
 It `MUST` be one of the following values: `array`, `object`. This property specifies whether the data items are arrays or objects. Without it, the first item decides: an array means `array`, anything else `object`.
+
+With `array` rows, a row with more items than the table has columns cannot be read, as a long row of [CSV](#csv): loading the file `MUST` fail, and validating it `MUST` report that the file cannot be loaded. It is never truncated to the header.
 
 With `object` rows, the columns are the union of the rows' keys, in the order each key is first seen, and a row without a key is `null` in its column. [`columnNames`](#columnnames), when present, selects and orders the columns instead.
 
