@@ -333,6 +333,12 @@
         "data": "{\"a\": [1, 1.0]}",
         "valid": false,
         "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      },
+      {
+        "description": "objects with keys in another order are the same item",
+        "data": "{\"a\": [{\"x\": 1, \"y\": 2}, {\"y\": 2, \"x\": 1}]}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
       }
     ]
   },
@@ -349,10 +355,40 @@
     },
     "tests": [
       {
+        "description": "the same members in another order are valid",
+        "data": "{\"c\": {\"y\": [1, 2], \"x\": 1}}",
+        "valid": true
+      },
+      {
         "description": "an array in another order is a data error",
         "data": "{\"c\": {\"x\": 1, \"y\": [2, 1]}}",
         "valid": false,
         "errors": [{ "type": "data", "jsonPointer": "/c" }]
+      }
+    ]
+  },
+  {
+    "description": "enum with an object",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "e": { "enum": [{ "x": 1, "y": { "a": 1, "b": 2 } }, "other"] } }
+    },
+    "tests": [
+      {
+        "description": "the same members in another order, nested too, are valid",
+        "data": "{\"e\": {\"y\": {\"b\": 2, \"a\": 1}, \"x\": 1}}",
+        "valid": true
+      },
+      {
+        "description": "an extra member is a data error",
+        "data": "{\"e\": {\"x\": 1, \"y\": {\"a\": 1, \"b\": 2}, \"z\": 3}}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/e" }]
       }
     ]
   },

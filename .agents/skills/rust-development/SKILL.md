@@ -59,6 +59,9 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 ## Behaviour
 
 - JSON Schema: jsonschema-rs, Draft 2020-12, format assertion off, a registry of the bundled profiles under both `latest` and `FAIRSPEC_VERSION` URLs; its fancy-regex engine handles the ECMA lookahead in the `InternalPath` pattern. Error messages are jsonschema-rs wording; the conformance suite ignores `message`
+- `serde_json` runs with `preserve_order` in every crate, so object equality in `const`, `enum`
+  and `uniqueItems` ignores key order only from jsonschema-rs 0.60.1 on: older versions zip the
+  two maps' members in insertion order. Never downgrade `jsonschema` below it
 - `normalize_dataset` follows TypeScript and never re-parses its output into a `Dataset`: Python's re-validation rejects a schema path outside the cwd
 - Local paths come out with `/` separators; Python's `urlsplit`/`urlunsplit` rules are reimplemented by hand
 - HTTP goes through `fetch_remote_text` / `resolve_remote_url` in `actions/descriptor/load.rs` with the `fairspec-rust` user agent; under `cfg(test)` they refuse every host but 127.0.0.1, so tests never touch the network

@@ -108,3 +108,27 @@ fn test_format_is_not_asserted() {
         vec![]
     );
 }
+
+#[test]
+fn test_const_object_ignores_key_order() {
+    let schema = to_map(json!({"const": {"x": 1, "y": [1, 2]}}));
+    let issues = inspect_json(&json!({"y": [1, 2], "x": 1}), schema, None).unwrap();
+    assert_eq!(issues, vec![]);
+}
+
+#[test]
+fn test_unique_items_compares_objects_by_members() {
+    let schema = to_map(json!({"uniqueItems": true}));
+    let issues = inspect_json(&json!([{"x": 1, "y": 2}, {"y": 2, "x": 1}]), schema, None).unwrap();
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].json_pointer, "");
+}
+
+#[test]
+fn test_unique_items_compares_objects_by_members_in_long_arrays() {
+    let schema = to_map(json!({"uniqueItems": true}));
+    let mut items: Vec<Value> = (0..20).map(|n| json!({"x": n, "y": n})).collect();
+    items.push(json!({"y": 5, "x": 5}));
+    let issues = inspect_json(&Value::Array(items), schema, None).unwrap();
+    assert_eq!(issues.len(), 1);
+}
