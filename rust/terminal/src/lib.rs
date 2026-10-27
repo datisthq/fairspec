@@ -7,6 +7,7 @@ mod program;
 mod session;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;
 
 pub use helpers::console::Console;

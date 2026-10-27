@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;
 pub mod check;
 pub mod r#const;

@@ -9,4 +9,5 @@ pub mod validate;
 pub mod validate_schema;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;

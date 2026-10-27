@@ -8,4 +8,5 @@ pub mod resource;
 pub mod table_schema;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;

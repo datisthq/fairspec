@@ -5,4 +5,5 @@ pub mod infer;
 pub mod normalize;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;

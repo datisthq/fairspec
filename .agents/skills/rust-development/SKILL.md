@@ -37,7 +37,7 @@ Mirror Python's concern-then-entity tree so twins are found by name:
 
 - `metadata/src/models/<entity>.rs`, `models/column/<kind>.rs`, `models/error/`, `models/file_dialect/`, `models/datacite/`
 - `metadata/src/actions/<entity>/<verb>.rs` — Python's `assert_.py` is `assert.rs`
-- `actions/<entity>/_test/<verb>.rs`, declared `#[cfg(test)] mod _test;` in the entity's `mod.rs`; fixtures in `_test/fixtures/`
+- `actions/<entity>/-test/<verb>_unit.rs`, declared `#[cfg(test)] #[path = "-test/mod.rs"] mod _test;` in the entity's `mod.rs`; fixtures in `-test/fixtures/`, a shared test double named after its export (`-test/test_data.rs`)
 - `metadata/src/lib.rs` is the barrel: modules stay private, every public name gets its own explicit `pub use` line, never a glob
 - `metadata/profiles/` is written by `pnpm sync:profiles` and embedded with `include_str!`; `metadata/src/settings.rs` holds `FAIRSPEC_VERSION`, which the sync rewrites
 

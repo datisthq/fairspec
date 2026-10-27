@@ -35,4 +35,5 @@ pub mod table_schema;
 pub mod unique_key;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;

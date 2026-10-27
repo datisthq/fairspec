@@ -9,4 +9,5 @@ pub mod table;
 pub mod uniformity;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;

@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;
 pub mod array;
 pub mod base64;

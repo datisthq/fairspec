@@ -1,5 +1,6 @@
 pub mod _shared;
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;
 pub mod checks;
 pub mod denarrow;

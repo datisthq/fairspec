@@ -7,4 +7,5 @@ pub mod normalize;
 pub mod query;
 
 #[cfg(test)]
+#[path = "-test/mod.rs"]
 mod _test;
