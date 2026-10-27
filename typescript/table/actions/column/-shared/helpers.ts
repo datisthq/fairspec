@@ -137,10 +137,22 @@ async function collectCellFrame(table: Table, mapping: ColumnMapping) {
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
     .select(
       pl.col(NUMBER_COLUMN_NAME),
-      normalizeColumn(mapping, { keepType: true }).alias("source"),
-      pl.col(mapping.source.name).alias("cell"),
+      encodeNestedColumn(mapping, normalizeColumn(mapping, { keepType: true })).alias(
+        "source",
+      ),
+      encodeNestedColumn(mapping, pl.col(mapping.source.name)).alias("cell"),
     )
     .collect()
+}
+
+// Wrapping in a one-field struct lets List encode too, which has no jsonEncode
+function encodeNestedColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
+  if (!["Struct", "List"].includes(mapping.source.type.variant)) return columnExpr
+  const encoded = pl.struct([columnExpr.alias("v")]).struct.jsonEncode()
+  return pl
+    .when(columnExpr.isNotNull())
+    .then(encoded.str.replace(String.raw`(?s)^\{"v":(.*)\}$`, "${1}"))
+    .otherwise(pl.lit(null))
 }
 
 function createMissingError(columnName: string, row: Record<string, unknown>) {

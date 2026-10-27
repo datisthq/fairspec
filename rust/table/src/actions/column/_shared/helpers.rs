@@ -128,8 +128,9 @@ fn collect_cell_rows(
         .with_row_index(NUMBER_COLUMN_NAME, Some(1))
         .select([
             col(NUMBER_COLUMN_NAME).cast(DataType::UInt64),
-            substitute_column(mapping, col(source_name)).alias("source"),
-            col(source_name).alias("cell"),
+            encode_nested_column(mapping, substitute_column(mapping, col(source_name)))
+                .alias("source"),
+            encode_nested_column(mapping, col(source_name)).alias("cell"),
         ])
         .collect_table()?;
 
@@ -148,6 +149,19 @@ fn collect_cell_rows(
         });
     }
     Ok(rows)
+}
+
+/// Wrapping in a one-field struct lets List encode too, which has no `json_encode`.
+fn encode_nested_column(mapping: &ColumnMapping, column_expr: Expr) -> Expr {
+    if !matches!(mapping.source.r#type, DataType::Struct(_) | DataType::List(_)) {
+        return column_expr;
+    }
+    let encoded = as_struct(vec![column_expr.clone().alias("v")])
+        .struct_()
+        .json_encode();
+    when(column_expr.is_not_null())
+        .then(encoded.str().replace(lit(r#"(?s)^\{"v":(.*)\}$"#), lit("${1}"), false))
+        .otherwise(lit(NULL))
 }
 
 fn create_text_mapping(column: &Column) -> ColumnMapping {

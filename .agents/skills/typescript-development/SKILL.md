@@ -185,6 +185,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   then takes `pl.scanJson`; JSON takes `pl.readJSON` only when the bytes open with `[{` (a
   default dialect still admits a top-level object or array rows) and falls back to decoding in
   JS when the reader throws. Python and Rust share the same rule; keep the three equal
+- **Native nested columns are JSON columns**: a `Struct` column (JSON, Parquet, Arrow) is an
+  `object`/`geojson`/`topojson` column and a `List` column is an `array` as well as a `list`.
+  The row-wise JSON checks see it through `encodeNestedColumn`, which JSON-encodes natively
+  (a one-field struct wrap, since `List` has no `jsonEncode`); that compact text is the error
+  `cell`. A Struct cannot tell a missing key from a null one, so both reach the check as null
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column

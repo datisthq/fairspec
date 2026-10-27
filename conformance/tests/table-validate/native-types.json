@@ -265,5 +265,125 @@
         ]
       }
     ]
+  },
+  {
+    "description": "json nested values declared object and array",
+    "comment": "A JSON file's nested values load as Polars Struct and List columns, which are object and array columns",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "format": "json",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "meta": { "type": "object" },
+        "tags": { "type": "array" }
+      }
+    },
+    "tests": [
+      {
+        "description": "nested values are valid",
+        "data": "[{\"id\":1,\"meta\":{\"a\":1},\"tags\":[1,2]},{\"id\":2,\"meta\":{\"a\":2},\"tags\":[3]}]",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "json nested values with JSON Schema constraints",
+    "comment": "A native nested value is checked as its compact JSON encoding, which is also the error cell",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#json-schema"
+    ],
+    "format": "json",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "meta": {
+          "type": "object",
+          "properties": { "a": { "type": "integer", "minimum": 2 } }
+        },
+        "tags": { "type": "array", "minItems": 2 }
+      }
+    },
+    "tests": [
+      {
+        "description": "each violation is a cell/json error",
+        "data": "[{\"id\":1,\"meta\":{\"a\":1},\"tags\":[1,2]},{\"id\":2,\"meta\":{\"a\":3},\"tags\":[3]}]",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "meta",
+            "rowNumber": 1,
+            "cell": "{\"a\":1}",
+            "jsonPointer": "/a"
+          },
+          {
+            "type": "cell/json",
+            "columnName": "tags",
+            "rowNumber": 2,
+            "cell": "[3]",
+            "jsonPointer": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "json null nested values",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#type",
+      "https://fairspec.org/specs/table-schema/#nullable"
+    ],
+    "format": "json",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "meta": { "type": "object" },
+        "tags": { "type": ["array", "null"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "a null in a non-nullable column is cell/missing",
+        "data": "[{\"id\":1,\"meta\":null,\"tags\":null},{\"id\":2,\"meta\":{\"a\":2},\"tags\":[3]}]",
+        "valid": false,
+        "errors": [
+          { "type": "cell/missing", "columnName": "meta", "rowNumber": 1, "cell": "" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "json nested values declared integer",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "format": "json",
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "meta": { "type": "integer" },
+        "tags": { "type": "string" }
+      }
+    },
+    "tests": [
+      {
+        "description": "are column/type errors",
+        "data": "[{\"id\":1,\"meta\":{\"a\":1},\"tags\":[1,2]}]",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/type",
+            "columnName": "meta",
+            "expectedColumnType": "integer",
+            "actualColumnType": "object"
+          },
+          {
+            "type": "column/type",
+            "columnName": "tags",
+            "expectedColumnType": "string",
+            "actualColumnType": "list"
+          }
+        ]
+      }
+    ]
   }
 ]

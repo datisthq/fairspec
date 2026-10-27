@@ -159,10 +159,22 @@ def _collect_cell_frame(table: Table, mapping: ColumnMapping) -> pl.DataFrame:
         table.with_row_index(NUMBER_COLUMN_NAME, 1)
         .select(
             pl.col(NUMBER_COLUMN_NAME),
-            substitute_column(mapping, pl.col(mapping.source.name)).alias("source"),
-            pl.col(mapping.source.name).alias("cell"),
+            _encode_nested_column(
+                mapping, substitute_column(mapping, pl.col(mapping.source.name))
+            ).alias("source"),
+            _encode_nested_column(mapping, pl.col(mapping.source.name)).alias("cell"),
         )
         .collect(engine=QUERY_ENGINE),
+    )
+
+
+# Wrapping in a one-field struct lets List encode too, which has no json_encode
+def _encode_nested_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
+    if not issubclass(mapping.source.type, (pl.Struct, pl.List)):
+        return column_expr
+    encoded = pl.struct(column_expr.alias("v")).struct.json_encode()
+    return pl.when(column_expr.is_not_null()).then(
+        encoded.str.replace(r'(?s)^\{"v":(.*)\}$', "${1}")
     )
 
 

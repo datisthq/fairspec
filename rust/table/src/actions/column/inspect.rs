@@ -122,8 +122,9 @@ fn get_compat_types(mapping: &ColumnMapping) -> Vec<ColumnType> {
         | DataType::UInt16
         | DataType::UInt32
         | DataType::UInt64 => vec![T::Integer, T::Number],
-        DataType::List(_) => vec![T::List],
+        DataType::List(_) => vec![T::List, T::Array],
         DataType::String => vec![T::Unknown],
+        DataType::Struct(_) => vec![T::Object, T::Geojson, T::Topojson],
         DataType::Time => vec![T::Time, T::LocalTime],
         _ => Vec::new(),
     }
