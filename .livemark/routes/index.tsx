@@ -55,7 +55,7 @@ function Landing() {
       <Header />
       <main className="flex flex-col">
         <Hero
-          eyebrow="For Python, TypeScript and Rust"
+          eyebrow="Open source · MIT License"
           title={
             <>
               Standard and software to make <Highlight>data FAIR</Highlight>

@@ -71,7 +71,7 @@ function CliToolPage() {
       <Header />
       <main className="flex flex-col">
         <Hero
-          eyebrow="For Python, TypeScript and Rust"
+          eyebrow="Open source · MIT License"
           title="Fairspec CLI"
           lede={
             <>
