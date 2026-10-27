@@ -123,6 +123,25 @@ describe("joinHeaderRows", () => {
     expect(collected.columns).toEqual(["person first", "person last", "location city"])
     expect(collected.rows()).toEqual([["Alice", "Smith", "NYC"]])
   })
+
+  it("should drop the other header rows with column names", async () => {
+    const table = pl
+      .DataFrame({
+        key: ["id", "1"],
+        label: ["name", "apple"],
+      })
+      .lazy()
+
+    const result = await joinHeaderRows(table, {
+      format: "csv",
+      headerRows: [1, 2],
+      columnNames: ["key", "label"],
+    })
+
+    const collected = await result.collect()
+    expect(collected.columns).toEqual(["key", "label"])
+    expect(collected.rows()).toEqual([["1", "apple"]])
+  })
 })
 
 describe("skipCommentRows", () => {

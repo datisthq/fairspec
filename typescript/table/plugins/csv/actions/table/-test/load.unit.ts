@@ -249,6 +249,21 @@ describe("loadCsvTable", () => {
     ])
   })
 
+  it("should number commentRows before commentPrefix removes rows", async () => {
+    const path = await writeTempFile("id,name\n#x,y\na,b\nskip,me\nc,d\n")
+
+    const table = await loadCsvTable({
+      data: path,
+      fileDialect: { format: "csv", commentRows: [4], commentPrefix: "#" },
+    })
+
+    const records = (await table.collect()).toRecords()
+    expect(records).toEqual([
+      { id: "a", name: "b" },
+      { id: "c", name: "d" },
+    ])
+  })
+
   it("should support headerJoin and commentRows", async () => {
     const path = await writeTempFile(
       "#comment\nid,name\nint,str\n1,alice\n#comment\n2,bob",

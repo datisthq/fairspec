@@ -98,6 +98,29 @@
     ]
   },
   {
+    "description": "json empty array with columnNames",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#json",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object",
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "there are no rows",
+        "data": [],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": []
+        }
+      }
+    ]
+  },
+  {
     "description": "rowType object",
     "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
     "format": "json",
@@ -347,6 +370,30 @@
     ]
   },
   {
+    "description": "jsonPointer to an empty array",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonpointer",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/items",
+      "rowType": "object",
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "there are no rows",
+        "data": "{\"items\":[]}",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": []
+        }
+      }
+    ]
+  },
+  {
     "description": "jsonPointer to a key with a space",
     "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
     "format": "json",
@@ -406,6 +453,28 @@
             "name": "apple"
           }
         ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl without rowType, first item an array",
+    "comment": "Without rowType the first item decides; headerRows defaults to [1]",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "the rows are arrays and the first is the header",
+        "data": "[\"id\",\"name\"]\n[1,\"apple\"]\n",
         "expected": {
           "columns": ["id", "name"],
           "rows": [[1, "apple"]]

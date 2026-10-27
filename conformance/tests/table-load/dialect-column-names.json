@@ -68,6 +68,28 @@
     ]
   },
   {
+    "description": "columnNames instead of joined header rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#columnnames",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2],
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "the names replace both header rows",
+        "data": "a,b\nc,d\n1,apple\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
     "description": "columnNames on json objects",
     "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
     "format": "json",

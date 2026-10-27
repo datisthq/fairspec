@@ -11,11 +11,8 @@ import { skipCommentRows } from "../../../../actions/table/fileDialect.ts"
 import type { Table } from "../../../../models/table.ts"
 import * as pl from "nodejs-polars"
 import { inferCsvFileDialect } from "../../actions/fileDialect/infer.ts"
+import { NUMBER_COLUMN_NAME } from "../../../../settings.ts"
 import { getSupportedFileDialect } from "@fairspec/metadata"
-
-// TODO: Condier using sample to extract header first
-// for better commentPrefix + headerRows/commentRows support
-// (consult with the Data Package Working Group)
 
 export async function loadCsvTable(resource: Resource, options?: LoadTableOptions) {
   const maxBytes = options?.previewBytes
@@ -32,6 +29,9 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   // A declared dialect is binding: its absent properties take their defaults
   if (!resource.fileDialect) {
     fileDialect = await inferCsvFileDialect({ ...resource, data: paths[0] }, options)
+  }
+  if (fileDialect) {
+    fileDialect = await renumberPrefixedRows(paths[0], fileDialect)
   }
 
   const scanOptions = getScanOptions(fileDialect)
@@ -109,4 +109,39 @@ function getHeaderlessSchema(
     ? pl.scanCSV(path, { ...options, inferSchemaLength: 100 }).columns
     : []
   return Object.fromEntries(columns.map(name => [name, pl.String]))
+}
+
+// Polars drops prefixed rows before it skips or numbers any, while headerRows and
+// commentRows count every row of the file: renumber them past the prefixed rows
+async function renumberPrefixedRows(
+  path: string | undefined,
+  fileDialect: TsvFileDialect | CsvFileDialect,
+) {
+  const { headerRows, commentRows, commentPrefix } = fileDialect
+  const lastRow = Math.max(0, ...(headerRows || []), ...(commentRows ?? []))
+  if (!path || !commentPrefix || lastRow < 2) return fileDialect
+
+  const table = pl.scanCSV(path, {
+    ...getScanOptions(fileDialect),
+    skipRows: 0,
+    hasHeader: false,
+    nullValues: undefined,
+    commentPrefix: undefined,
+    schema: undefined,
+  })
+  const frame = await table
+    .head(lastRow)
+    .withRowIndex(NUMBER_COLUMN_NAME, 1)
+    .filter(pl.col(table.columns[0] ?? "").str.startsWith(commentPrefix))
+    .select(NUMBER_COLUMN_NAME)
+    .collect()
+  const prefixedRows = frame.getColumn(NUMBER_COLUMN_NAME).toArray().map(Number)
+  const renumberRow = (row: number) =>
+    row - prefixedRows.filter(prefixed => prefixed < row).length
+
+  return {
+    ...fileDialect,
+    headerRows: headerRows && [...new Set(headerRows.map(renumberRow))],
+    commentRows: commentRows?.filter(row => !prefixedRows.includes(row)).map(renumberRow),
+  }
 }

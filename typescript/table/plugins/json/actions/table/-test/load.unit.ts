@@ -113,6 +113,24 @@ describe("loadJsonTable", () => {
       expect((await table?.collect())?.toRecords()).toEqual([{ id: 1, name: "english" }])
     })
 
+    it("should take columnNames for an empty array", async () => {
+      const path = await writeTempFile('{"items":[]}')
+
+      const table = await loadJsonTable({
+        data: path,
+        fileDialect: {
+          format: "json",
+          jsonPointer: "/items",
+          rowType: "object",
+          columnNames: ["id", "name"],
+        },
+      })
+
+      const frame = await table?.collect()
+      expect(frame?.columns).toEqual(["id", "name"])
+      expect(frame?.height).toEqual(0)
+    })
+
     it("should not load a top-level object as a table", async () => {
       const path = await writeTempFile('{"id":1,"name":"english"}')
 
@@ -301,6 +319,15 @@ describe("loadJsonTable (format=jsonl)", () => {
         { id: 1, name: "english" },
         { id: 2, name: "中文" },
       ])
+    })
+
+    it("should read array rows when rowType is absent", async () => {
+      const body = '["id","name"]\n[1,"english"]'
+      const path = await writeTempFile(body)
+
+      const table = await loadJsonTable({ data: path, fileDialect: { format: "jsonl" } })
+
+      expect((await table?.collect())?.toRecords()).toEqual([{ id: 1, name: "english" }])
     })
 
     it("should load item type (object)", async () => {

@@ -15,6 +15,7 @@ from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.helpers.file_dialect import get_header_rows
 from fairspec_table.plugins.csv.actions.file_dialect.infer import infer_csv_file_dialect
+from fairspec_table.settings import NUMBER_COLUMN_NAME, QUERY_ENGINE
 
 if TYPE_CHECKING:
     from fairspec_metadata import CsvFileDialect, TsvFileDialect
@@ -41,6 +42,7 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
         )
         if inferred:
             file_dialect = inferred
+    file_dialect = _renumber_prefixed_rows(paths[0], file_dialect)
 
     scan_options = _get_scan_options(file_dialect)
     column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
@@ -134,3 +136,46 @@ def _get_headerless_schema(path: str, options: dict[str, object]) -> dict[str, o
     scan_options = {**options, "infer_schema_length": 100}
     names = pl.scan_csv(path, **scan_options).collect_schema().names()  # type: ignore[arg-type]
     return {name: pl.String for name in names}
+
+
+# Polars drops prefixed rows before it skips or numbers any, while headerRows and
+# commentRows count every row of the file: renumber them past the prefixed rows
+def _renumber_prefixed_rows(
+    path: str,
+    file_dialect: CsvFileDialect | TsvFileDialect | FileDialect | None,
+) -> CsvFileDialect | TsvFileDialect | FileDialect | None:
+    header_rows = getattr(file_dialect, "headerRows", None)
+    comment_rows: list[int] | None = getattr(file_dialect, "commentRows", None)
+    comment_prefix: str | None = getattr(file_dialect, "commentPrefix", None)
+    header_numbers = header_rows if isinstance(header_rows, list) else []
+    last_row = max([0, *header_numbers, *(comment_rows or [])])
+    if file_dialect is None or not comment_prefix or last_row < 2:
+        return file_dialect
+
+    scan_options = {
+        key: value
+        for key, value in _get_scan_options(file_dialect).items()
+        if key not in ("null_values", "comment_prefix", "schema", "new_columns")
+    }
+    table = pl.scan_csv(path, **{**scan_options, "skip_rows": 0, "has_header": False})  # type: ignore[arg-type]
+    first = pl.col(table.collect_schema().names()[0])
+    frame: pl.DataFrame = (
+        table.head(last_row)
+        .with_row_index(NUMBER_COLUMN_NAME, 1)
+        .filter(first.str.starts_with(comment_prefix))
+        .select(NUMBER_COLUMN_NAME)
+        .collect(engine=QUERY_ENGINE)
+    )  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+    prefixed_rows: list[int] = frame.to_series().to_list()
+
+    def renumber_row(row: int) -> int:
+        return row - sum(1 for prefixed in prefixed_rows if prefixed < row)
+
+    update: dict[str, object] = {}
+    if header_numbers:
+        update["headerRows"] = list(dict.fromkeys(map(renumber_row, header_numbers)))
+    if comment_rows:
+        update["commentRows"] = [
+            renumber_row(row) for row in comment_rows if row not in prefixed_rows
+        ]
+    return file_dialect.model_copy(update=update)

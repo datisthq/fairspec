@@ -231,6 +231,17 @@ mod csv {
     }
 
     #[test]
+    fn test_should_number_comment_rows_before_comment_prefix_removes_rows() {
+        assert_eq!(
+            load(
+                json!(write("id,name\n#x,y\na,b\nskip,me\nc,d\n")),
+                csv(json!({"commentRows": [4], "commentPrefix": "#"}))
+            ),
+            json!([{"id": "a", "name": "b"}, {"id": "c", "name": "d"}])
+        );
+    }
+
+    #[test]
     fn test_should_support_header_join_and_comment_rows() {
         assert_eq!(
             load(

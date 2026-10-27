@@ -4,7 +4,8 @@ import type { FileDialectWithHeaderAndCommentRows } from "../../models/fileDiale
 import type { Table } from "../../models/table.ts"
 import { NUMBER_COLUMN_NAME } from "../../settings.ts"
 
-// The table is read without a header, so its header rows are still data rows
+// The table is read without a header, so its header rows are still data rows;
+// with columnNames the first header row was read as the header and is gone
 export async function joinHeaderRows(
   table: Table,
   dialect: FileDialectWithHeaderAndCommentRows,
@@ -15,6 +16,10 @@ export async function joinHeaderRows(
   }
 
   const skippedRows = (headerRows[0] ?? 1) - 1
+  if (dialect?.columnNames) {
+    return dropRows(table, headerRows, skippedRows + 1)
+  }
+
   const lastHeaderRow = headerRows.at(-1) ?? 1
   const headerFrame = await table.head(lastHeaderRow - skippedRows).collect()
 
@@ -25,11 +30,7 @@ export async function joinHeaderRows(
     table.columns.map((name, index) => [name, labels[index] || name]),
   )
 
-  return table
-    .withRowIndex(NUMBER_COLUMN_NAME, 1)
-    .filter(pl.col(NUMBER_COLUMN_NAME).add(skippedRows).isIn(headerRows).not())
-    .drop(NUMBER_COLUMN_NAME)
-    .rename(mapping)
+  return dropRows(table, headerRows, skippedRows).rename(mapping)
 }
 
 export function skipCommentRows(
@@ -42,8 +43,12 @@ export function skipCommentRows(
     return table
   }
 
+  return dropRows(table, dialect.commentRows, commentOffset)
+}
+
+function dropRows(table: Table, numbers: number[], offset: number) {
   return table
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
-    .filter(pl.col(NUMBER_COLUMN_NAME).add(commentOffset).isIn(dialect.commentRows).not())
+    .filter(pl.col(NUMBER_COLUMN_NAME).add(offset).isIn(numbers).not())
     .drop(NUMBER_COLUMN_NAME)
 }

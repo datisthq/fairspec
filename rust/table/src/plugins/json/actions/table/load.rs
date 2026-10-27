@@ -1,6 +1,6 @@
-use std::io::Cursor;
+use std::io::{Cursor, Read};
 
-use fairspec_dataset::{load_file, prefetch_files};
+use fairspec_dataset::{load_file, load_file_stream, prefetch_files};
 use fairspec_metadata::{
     Error, FileDialect, PathOr, Resource, Result, RowType, get_supported_file_dialect,
     resolve_table_schema,
@@ -55,7 +55,7 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
 
     let mut tables = Vec::new();
     for path in &paths {
-        if is_lines && is_default {
+        if is_lines && is_default && !get_is_first_item_array(path)? {
             tables.push(
                 LazyJsonLineReader::new(PlRefPath::new(path))
                     .finish()
@@ -75,7 +75,7 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
         let Some(records) = get_records_from_json(document, &file_dialect)? else {
             return Ok(None);
         };
-        tables.push(create_table_from_records(records)?);
+        tables.push(create_table_from_records(records, &file_dialect)?);
     }
 
     let mut result = match tables.len() {
@@ -123,7 +123,44 @@ fn read_object_array(buffer: &[u8]) -> Option<DataFrame> {
         .ok()
 }
 
-fn create_table_from_records(records: Vec<DataRecord>) -> Result<Table> {
+/// Polars reads only object lines, while a default dialect takes array rows when
+/// the first item is an array.
+fn get_is_first_item_array(path: &str) -> Result<bool> {
+    let mut stream = load_file_stream(path, None, None)?;
+    let mut chunk = vec![0; 65536];
+    loop {
+        let size = stream
+            .read(&mut chunk)
+            .map_err(|error| Error::Load(error.to_string()))?;
+        if size == 0 {
+            return Ok(false);
+        }
+        if let Some(byte) = chunk[..size]
+            .iter()
+            .find(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
+        {
+            return Ok(*byte == b'[');
+        }
+    }
+}
+
+fn create_table_from_records(
+    records: Vec<DataRecord>,
+    file_dialect: &FileDialect,
+) -> Result<Table> {
+    let column_names = match file_dialect {
+        FileDialect::Json(dialect) => dialect.column_names.as_ref(),
+        FileDialect::Jsonl(dialect) => dialect.column_names.as_ref(),
+        _ => None,
+    };
+    // An empty array has no records to take the columns from
+    if let Some(names) = column_names.filter(|names| records.is_empty() && !names.is_empty()) {
+        let schema: Schema = names
+            .iter()
+            .map(|name| Field::new(name.as_str().into(), DataType::String))
+            .collect();
+        return Ok(DataFrame::empty_with_schema(&schema).lazy());
+    }
     let text = serde_json::to_vec(&records).map_err(|error| Error::Parse(error.to_string()))?;
     Ok(JsonReader::new(Cursor::new(text))
         .infer_schema_len(None)

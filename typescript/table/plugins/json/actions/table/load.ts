@@ -1,7 +1,7 @@
 import type { Resource } from "@fairspec/metadata"
 import type { JsonFileDialect, JsonlFileDialect } from "@fairspec/metadata"
 import { resolveTableSchema } from "@fairspec/metadata"
-import { loadFile, prefetchFiles } from "@fairspec/dataset"
+import { loadFile, loadFileStream, prefetchFiles } from "@fairspec/dataset"
 import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
@@ -48,7 +48,7 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
 
   const tables: Table[] = []
   for (const path of paths) {
-    if (isLines && isDefault) {
+    if (isLines && isDefault && !(await getIsFirstItemArray(path))) {
       const table = pl.scanJson(path)
       tables.push(table)
       continue
@@ -64,7 +64,7 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
     const records = getRecordsFromJson(decodeJsonBuffer(buffer, { isLines }), fileDialect)
     if (!records) return undefined
 
-    const table = pl.DataFrame(records).lazy()
+    const table = createRecordsFrame(records, fileDialect.columnNames).lazy()
     tables.push(table)
   }
 
@@ -101,6 +101,27 @@ function getRecordsFromJson(
   return records.map(row =>
     Object.fromEntries(columnNames.map(name => [name, row[name]])),
   )
+}
+
+// An empty array has no records to take the columns from
+function createRecordsFrame(records: Record<string, unknown>[], columnNames?: string[]) {
+  if (records.length || !columnNames) return pl.DataFrame(records)
+  return pl.DataFrame(columnNames.map(name => pl.Series(name, [], pl.String)))
+}
+
+// Polars reads only object lines, while a default dialect takes array rows when
+// the first item is an array
+async function getIsFirstItemArray(path: string) {
+  const stream = await loadFileStream(path)
+  try {
+    for await (const chunk of stream) {
+      const index = skipJsonWhitespace(chunk, 0)
+      if (index < chunk.length) return chunk[index] === 0x5b
+    }
+    return false
+  } finally {
+    stream.destroy()
+  }
 }
 
 // A default dialect still admits a top-level object (not a table) or array rows,

@@ -232,6 +232,22 @@ class TestLoadCsvTable:
             {"id": 2, "name": "bob"},
         ]
 
+    def test_should_number_comment_rows_before_comment_prefix_removes_rows(self):
+        path = write_temp_file("id,name\n#x,y\na,b\nskip,me\nc,d\n")
+
+        table = load_csv_table(
+            Resource(
+                data=path,
+                fileDialect=CsvFileDialect(commentRows=[4], commentPrefix="#"),
+            )
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [
+            {"id": "a", "name": "b"},
+            {"id": "c", "name": "d"},
+        ]
+
     def test_should_support_header_join_and_comment_rows(self):
         path = write_temp_file("#comment\nid,name\nint,str\n1,alice\n#comment\n2,bob")
 

@@ -74,6 +74,33 @@ mod json {
     }
 
     #[test]
+    fn test_should_take_column_names_for_an_empty_array() {
+        let resource: Resource = serde_json::from_value(json!({
+            "data": write(r#"{"items":[]}"#),
+            "fileDialect": {
+                "format": "json",
+                "jsonPointer": "/items",
+                "rowType": "object",
+                "columnNames": ["id", "name"],
+            },
+        }))
+        .unwrap();
+        let frame = load_json_table(&resource, &Default::default())
+            .unwrap()
+            .unwrap()
+            .collect()
+            .unwrap();
+
+        let names: Vec<String> = frame
+            .get_column_names()
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+        assert_eq!(names, vec!["id", "name"]);
+        assert_eq!(frame.height(), 0);
+    }
+
+    #[test]
     fn test_should_handle_property() {
         let path = write(r#"{"key": [{"id":1,"name":"english"},{"id":2,"name":"中文"}]}"#);
         assert_eq!(
@@ -154,6 +181,15 @@ mod jsonl {
         assert_eq!(
             load(json!(path), json!({"format": "jsonl", "rowType": "array"})),
             Some(create_records())
+        );
+    }
+
+    #[test]
+    fn test_should_read_array_rows_when_row_type_is_absent() {
+        let path = write("[\"id\",\"name\"]\n[1,\"english\"]");
+        assert_eq!(
+            load(json!(path), json!({"format": "jsonl"})),
+            Some(json!([{"id": 1, "name": "english"}]))
         );
     }
 

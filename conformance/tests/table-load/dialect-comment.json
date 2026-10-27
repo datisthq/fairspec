@@ -118,6 +118,80 @@
     ]
   },
   {
+    "description": "commentRows with commentPrefix",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#commentrows",
+      "https://fairspec.org/specs/file-dialect/#commentprefix"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [4],
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "rows listed or prefixed are omitted",
+        "data": "id,name\n#x,y\na,b\nskip,me\nc,d\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "b"],
+            ["c", "d"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows and commentRows below a commentPrefix row",
+    "comment": "Rows are numbered before any is removed, so a prefixed row above the header still counts",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentprefix"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2],
+      "commentRows": [4],
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "the header is the second row and the fourth row is omitted",
+        "data": "#c\nid,name\n1,a\nx,y\n2,b\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "a"],
+            [2, "b"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows below a commentPrefix row",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentprefix"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2],
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "the header is the second row",
+        "data": "#c\nid,name\n1,a\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "a"]]
+        }
+      }
+    ]
+  },
+  {
     "description": "commentPrefix of several characters",
     "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
     "fileDialect": {

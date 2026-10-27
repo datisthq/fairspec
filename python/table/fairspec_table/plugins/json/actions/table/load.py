@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Unpack, cast
 
 import polars as pl
 
-from fairspec_dataset import load_file, prefetch_files
+from fairspec_dataset import load_file, load_file_stream, prefetch_files
 from fairspec_metadata import (
     JsonFileDialect,
     JsonlFileDialect,
@@ -60,7 +60,7 @@ def load_json_table(
 
     tables: list[Table] = []
     for path in paths:
-        if is_lines and is_default:
+        if is_lines and is_default and not _get_is_first_item_array(path):
             table = pl.scan_ndjson(path)
             tables.append(table)
             continue
@@ -76,7 +76,7 @@ def load_json_table(
         )
         if records is None:
             return None
-        table = pl.DataFrame(records).lazy()
+        table = _create_records_frame(records, file_dialect).lazy()
         tables.append(table)
 
     result = pl.concat(tables)
@@ -100,6 +100,27 @@ def _is_default_dialect(dialect: FileDialect) -> bool:
         if value is not None:
             return False
     return True
+
+
+# An empty array has no records to take the columns from
+def _create_records_frame(
+    records: list[DataRecord], dialect: FileDialect
+) -> pl.DataFrame:
+    column_names: list[str] | None = getattr(dialect, "columnNames", None)
+    if records or not column_names:
+        return pl.DataFrame(records)
+    return pl.DataFrame(schema={name: pl.String for name in column_names})
+
+
+# Polars reads only object lines, while a default dialect takes array rows when
+# the first item is an array
+def _get_is_first_item_array(path: str) -> bool:
+    with load_file_stream(path) as stream:
+        while chunk := stream.read(65536):
+            index = _skip_json_whitespace(chunk, 0)
+            if index < len(chunk):
+                return chunk[index : index + 1] == b"["
+    return False
 
 
 # A default dialect still admits a top-level object (not a table) or array rows,

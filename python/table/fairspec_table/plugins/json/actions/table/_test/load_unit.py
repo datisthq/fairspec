@@ -79,6 +79,25 @@ class TestLoadJsonTable:
 
         assert frame.to_dicts() == [{"id": 1, "name": "english"}]
 
+    def test_should_take_column_names_for_an_empty_array(self):
+        path = write_temp_file('{"items":[]}')
+
+        table = load_json_table(
+            Resource(
+                data=path,
+                fileDialect=JsonFileDialect(
+                    jsonPointer="/items",
+                    rowType=RowType.object,
+                    columnNames=["id", "name"],
+                ),
+            )
+        )
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.columns == ["id", "name"]
+        assert frame.height == 0
+
     def test_should_handle_property(self):
         body = '{"key": [{"id":1,"name":"english"},{"id":2,"name":"中文"}]}'
         path = write_temp_file(body)
@@ -211,6 +230,15 @@ class TestLoadJsonTableJsonl:
             {"id": 1, "name": "english"},
             {"id": 2, "name": "中文"},
         ]
+
+    def test_should_read_array_rows_when_row_type_is_absent(self):
+        path = write_temp_file('["id","name"]\n[1,"english"]')
+
+        table = load_json_table(Resource(data=path, fileDialect=JsonlFileDialect()))
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1, "name": "english"}]
 
     def test_should_load_item_type_object(self):
         body = '{"id":1,"name":"english"}\n{"id":2,"name":"中文"}'

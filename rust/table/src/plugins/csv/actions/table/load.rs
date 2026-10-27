@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use fairspec_dataset::prefetch_files;
 use fairspec_metadata::{
-    Error, FileDialect, PathOr, Resource, Result, get_supported_file_dialect, resolve_table_schema,
+    Error, FileDialect, HeaderRows, PathOr, Resource, Result, get_supported_file_dialect,
+    resolve_table_schema,
 };
 use polars::prelude::*;
 use serde_json::Value;
@@ -12,8 +13,10 @@ use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::file_dialect::{get_comment_rows, get_header_rows};
+use crate::helpers::table::LazyFrameExt;
 use crate::models::table::{LoadTableOptions, Table};
 use crate::plugins::csv::actions::file_dialect::infer::infer_csv_file_dialect;
+use crate::settings::NUMBER_COLUMN_NAME;
 
 pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result<Table> {
     let Some(mut file_dialect) = get_supported_file_dialect(resource, &["csv", "tsv"])? else {
@@ -39,6 +42,7 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
             file_dialect = inferred;
         }
     }
+    let file_dialect = renumber_prefixed_rows(first_path, file_dialect)?;
 
     let scan = CsvScan::new(&file_dialect);
     let header_rows = get_header_rows(Some(&file_dialect));
@@ -192,6 +196,101 @@ impl CsvScan {
         }
         reader
     }
+}
+
+// Polars drops prefixed rows before it skips or numbers any, while headerRows and
+// commentRows count every row of the file: renumber them past the prefixed rows
+fn renumber_prefixed_rows(path: &str, mut file_dialect: FileDialect) -> Result<FileDialect> {
+    let (header_rows, comment_rows, comment_prefix) = match &file_dialect {
+        FileDialect::Csv(dialect) => (
+            dialect.header_rows.clone(),
+            dialect.comment_rows.clone(),
+            dialect.comment_prefix.clone(),
+        ),
+        FileDialect::Tsv(dialect) => (
+            dialect.header_rows.clone(),
+            dialect.comment_rows.clone(),
+            dialect.comment_prefix.clone(),
+        ),
+        _ => return Ok(file_dialect),
+    };
+    let header_numbers = match &header_rows {
+        Some(HeaderRows::Rows(rows)) => rows.clone(),
+        _ => Vec::new(),
+    };
+    let last_row = header_numbers
+        .iter()
+        .chain(comment_rows.iter().flatten())
+        .copied()
+        .max()
+        .unwrap_or(0);
+    let Some(comment_prefix) = comment_prefix.filter(|_| last_row >= 2) else {
+        return Ok(file_dialect);
+    };
+
+    let table = CsvScan::new(&file_dialect)
+        .create_reader(path, None, false)
+        .with_skip_rows(0)
+        .with_has_header(false)
+        .with_null_values(None)
+        .with_comment_prefix(None)
+        .finish()
+        .into_result()?;
+    let frame = table
+        .limit(last_row as IdxSize)
+        .with_row_index(NUMBER_COLUMN_NAME, Some(1))
+        .filter(
+            // The row index went in as column 0
+            nth(1)
+                .as_expr()
+                .str()
+                .starts_with(lit(comment_prefix.as_str())),
+        )
+        .select([col(NUMBER_COLUMN_NAME).cast(DataType::UInt64)])
+        .collect_table()?;
+    let prefixed_rows: Vec<usize> = frame
+        .column(NUMBER_COLUMN_NAME)
+        .into_result()?
+        .u64()
+        .into_result()?
+        .into_no_null_iter()
+        .map(|row| row as usize)
+        .collect();
+    let renumber_row = |row: usize| {
+        row - prefixed_rows
+            .iter()
+            .filter(|prefixed| **prefixed < row)
+            .count()
+    };
+
+    let mut header_rows = header_rows;
+    if let Some(HeaderRows::Rows(rows)) = &mut header_rows {
+        let mut renumbered: Vec<usize> = Vec::new();
+        for row in rows.iter().map(|row| renumber_row(*row)) {
+            if !renumbered.contains(&row) {
+                renumbered.push(row);
+            }
+        }
+        *rows = renumbered;
+    }
+    let comment_rows = comment_rows.map(|rows| {
+        rows.into_iter()
+            .filter(|row| !prefixed_rows.contains(row))
+            .map(renumber_row)
+            .collect()
+    });
+    match &mut file_dialect {
+        FileDialect::Csv(dialect) => {
+            dialect.header_rows = header_rows;
+            dialect.comment_rows = comment_rows;
+        }
+        FileDialect::Tsv(dialect) => {
+            dialect.header_rows = header_rows;
+            dialect.comment_rows = comment_rows;
+        }
+        _ => {}
+    }
+    Ok(file_dialect)
 }
 
 // Header rows are joined from the data, so every column is read as text and the
