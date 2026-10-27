@@ -98,7 +98,7 @@ relative import reaches beyond the top-level package.
 
 - **Descriptors are typed only by the model step.** `validate_*` runs the declared profile, then `inspect_model` (`metadata/fairspec_metadata/actions/descriptor/inspect.py`); never build a model straight from a profile-valid descriptor. `FairspecModel` has `extra="allow"`, so extension properties pass through — a check reading a keyword guards by column kind, not by `hasattr`, since a stray key survives on any kind
 - **A normalized descriptor holds filesystem paths, not spec Paths.** `normalize_path` makes
-  them relative to the working directory (`../data/schema.json`), which the `Path` pattern
+  them relative to the working directory, often with a leading `..` segment, which the `Path` pattern
   rejects, so update a normalized model with `model_copy`, never rebuild it with `Model(**…)`
 - **`FileDialect` is `BuiltinFileDialect | CustomFileDialect`.** A format the spec does not define
   validates as `CustomFileDialect`, whose `format` validator refuses the built-in values, so a
