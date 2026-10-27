@@ -60,8 +60,8 @@ const GEOMETRY_KINDS = [
 // A C `strtod` consuming the whole (lowercased) token, as GEOS reads a WKT number
 const NUMBER_REGEX = new RegExp(
   "^[+-]?(?:" +
-    "(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:e[+-]?[0-9]+)?" +
-    "|0x(?:[0-9a-f]+\\.?[0-9a-f]*|\\.[0-9a-f]+)(?:p[+-]?[0-9]+)?" +
+    "(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:e[+-]?[0-9]+)?" +
+    "|0x(?:[0-9a-f]+(?:\\.[0-9a-f]*)?|\\.[0-9a-f]+)(?:p[+-]?[0-9]+)?" +
     "|inf|infinity|nan(?:\\([0-9a-z_]*\\))?" +
     ")$",
 )

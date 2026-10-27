@@ -130,4 +130,10 @@ describe("parseWktColumn", () => {
   ])("matches shapely: %j -> %s", async (cell, valid) => {
     expect(await getIsValid(cell)).toEqual(valid)
   })
+
+  it("rejects a long malformed coordinate without backtracking", async () => {
+    const started = performance.now()
+    expect(await getIsValid(`POINT (${"1".repeat(100_000)}x 0)`)).toEqual(false)
+    expect(performance.now() - started).toBeLessThan(1000)
+  })
 })

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import polars as pl
 import pytest
 
@@ -35,3 +37,14 @@ class TestInspectWktColumn:
         errors = inspect_wkt_column(column, table)
 
         assert (len(errors) == 0) == valid
+
+    def test_long_malformed_coordinate_without_backtracking(self):
+        cell = f"POINT ({'1' * 100_000}x 0)"
+        table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+        column = WktColumn(name="name", type="wkt", property=WktColumnProperty())
+
+        started = time.perf_counter()
+        errors = inspect_wkt_column(column, table)
+
+        assert len(errors) == 1
+        assert time.perf_counter() - started < 1
