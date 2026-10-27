@@ -11,23 +11,25 @@ fn test_dispatch_by_format() {
     ] {
         let dialect: FileDialect = parse(json!({"format": format}));
         assert_eq!(dialect.format(), Some(format));
-        assert!(!matches!(dialect, FileDialect::Unknown(_)));
+        assert!(!matches!(dialect, FileDialect::Custom(_)));
     }
 }
 
 #[test]
-fn test_unknown_fallback() {
-    let dialect: FileDialect = parse(json!({"format": "zzz", "title": "t"}));
-    assert!(matches!(dialect, FileDialect::Unknown(_)));
-    assert_eq!(dialect.format(), Some("zzz"));
-
-    let dialect: FileDialect = parse(json!({"$schema": "x"}));
-    assert!(matches!(dialect, FileDialect::Unknown(_)));
-    assert_eq!(dialect.format(), None);
+fn test_custom_fallback() {
+    let dialect: FileDialect = parse(json!({"format": "custom", "title": "t"}));
+    assert!(matches!(dialect, FileDialect::Custom(_)));
+    assert_eq!(dialect.format(), Some("custom"));
     assert_eq!(
         serde_json::to_value(&dialect).unwrap(),
-        json!({"$schema": "x"})
+        json!({"format": "custom", "title": "t"})
     );
+}
+
+#[test]
+fn test_missing_format() {
+    let result = serde_json::from_value::<FileDialect>(json!({"$schema": "x"}));
+    assert!(result.is_err());
 }
 
 #[test]

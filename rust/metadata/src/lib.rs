@@ -127,6 +127,7 @@ pub use models::file_dialect::common::{
     LineTerminator, NullSequence, QuoteChar, RowType, SheetName, SheetNumber, TableName,
 };
 pub use models::file_dialect::csv::{CsvFileDialect, CsvFormat};
+pub use models::file_dialect::custom::CustomFileDialect;
 pub use models::file_dialect::file_dialect::FileDialect;
 pub use models::file_dialect::json::{JsonFileDialect, JsonFormat};
 pub use models::file_dialect::jsonl::{JsonlFileDialect, JsonlFormat};
@@ -134,7 +135,6 @@ pub use models::file_dialect::ods::{OdsFileDialect, OdsFormat};
 pub use models::file_dialect::parquet::{ParquetFileDialect, ParquetFormat};
 pub use models::file_dialect::sqlite::{SqliteFileDialect, SqliteFormat};
 pub use models::file_dialect::tsv::{TsvFileDialect, TsvFormat};
-pub use models::file_dialect::unknown::UnknownFileDialect;
 pub use models::file_dialect::xlsx::{XlsxFileDialect, XlsxFormat};
 pub use models::foreign_key::{ForeignKey, ForeignKeyReference};
 pub use models::host::HostPolicy;

@@ -97,6 +97,11 @@ relative import reaches beyond the top-level package.
 ## Conventions
 
 - **Descriptors are typed only by the model step.** `validate_*` runs the declared profile, then `inspect_model` (`metadata/fairspec_metadata/actions/descriptor/inspect.py`); never build a model straight from a profile-valid descriptor. `FairspecModel` has `extra="allow"`, so extension properties pass through — a check reading a keyword guards by column kind, not by `hasattr`, since a stray key survives on any kind
+- **`FileDialect` is `BuiltinFileDialect | CustomFileDialect`.** A format the spec does not define
+  validates as `CustomFileDialect`, whose `format` validator refuses the built-in values, so a
+  broken CSV dialect fails as CSV instead of passing as custom. A plugin takes its dialect from
+  `get_supported_file_dialect`, which returns only built-in dialects and never infers a format
+  over a declared one
 
 - uv workspace, Python `>=3.12`, hatchling per member; tasks are scripts in `python/package.json`
 - Ruff is configured at `line-length = 90` with `E501` ignored

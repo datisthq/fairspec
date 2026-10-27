@@ -2374,6 +2374,57 @@
     "title": "CsvFileDialect",
     "type": "object"
   },
+  "CustomFileDialect": {
+    "additionalProperties": true,
+    "properties": {
+      "$schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Fairspec Dialect profile url.",
+        "title": "$Schema"
+      },
+      "title": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "An optional human-readable title of the format",
+        "title": "Title"
+      },
+      "description": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "An optional detailed description of the format",
+        "title": "Description"
+      },
+      "format": {
+        "title": "Format",
+        "type": "string"
+      }
+    },
+    "required": ["format"],
+    "title": "CustomFileDialect",
+    "type": "object"
+  },
   "DataError": {
     "additionalProperties": true,
     "properties": {
@@ -8750,6 +8801,9 @@
                 "$ref": "#/$defs/ArrowFileDialect"
               }
             ]
+          },
+          {
+            "$ref": "#/$defs/CustomFileDialect"
           },
           {
             "type": "null"

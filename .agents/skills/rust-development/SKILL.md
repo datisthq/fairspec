@@ -51,6 +51,9 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - Unknown fields are kept, as in both twins: every descriptor struct not flattened into another carries `#[serde(flatten)] extra: Map<String, Value>`. Validators type a descriptor only through `inspect_model` (`actions/descriptor/inspect.rs`, `serde_path_to_error`), never `from_value` after the profile
 - Pydantic constraints (patterns, lengths, bounds) are not enforced by serde — the JSON Schema profiles enforce them
 - `ColumnProperty` has a hand-written `Deserialize` that routes on base type and `format`, mirroring `actions/column/create.py`; never replace it with `#[serde(untagged)]`, which picks variants by order and loses the error
+- `FileDialect` routes on `format` the same way: a built-in format parses as its variant and any
+  other as `Custom` (`CustomFileDialect`, `format` required), so a broken CSV dialect fails as
+  CSV. The other twins name the built-in variants' union `BuiltinFileDialect`
 - A descriptor-or-path input takes `impl Into<PathOr<Descriptor>>`
 
 ## Behaviour

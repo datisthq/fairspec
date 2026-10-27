@@ -235,7 +235,9 @@ from .models.error.table import TableError
 from .models.exception import FairspecException
 from .models.file_dialect.common import RowType
 from .models.file_dialect.arrow import ArrowFileDialect
+from .models.file_dialect.builtin import BuiltinFileDialect
 from .models.file_dialect.csv import CsvFileDialect
+from .models.file_dialect.custom import CustomFileDialect
 from .models.file_dialect.file_dialect import FileDialect
 from .models.file_dialect.json import JsonFileDialect
 from .models.file_dialect.jsonl import JsonlFileDialect
@@ -243,7 +245,6 @@ from .models.file_dialect.ods import OdsFileDialect
 from .models.file_dialect.parquet import ParquetFileDialect
 from .models.file_dialect.sqlite import SqliteFileDialect
 from .models.file_dialect.tsv import TsvFileDialect
-from .models.file_dialect.unknown import UnknownFileDialect
 from .models.file_dialect.xlsx import XlsxFileDialect
 from .models.foreign_key import ForeignKey, ForeignKeyReference
 from .models.integrity import Integrity, IntegrityType
@@ -266,6 +267,7 @@ from .settings import FAIRSPEC_VERSION
 
 __all__ = [
     "ArrowFileDialect",
+    "BuiltinFileDialect",
     "assert_data_schema",
     "assert_dataset",
     "assert_file_dialect",
@@ -396,6 +398,7 @@ __all__ = [
     "CreatorNameType",
     "Creators",
     "CsvFileDialect",
+    "CustomFileDialect",
     "Data",
     "DataError",
     "DataSchema",
@@ -531,7 +534,6 @@ __all__ = [
     "UniqueKey",
     "UnknownColumn",
     "UnknownColumnProperty",
-    "UnknownFileDialect",
     "UrlColumn",
     "UrlColumnProperty",
     "Version",

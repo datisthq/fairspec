@@ -26,6 +26,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",
@@ -145,6 +146,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "Dataset",
@@ -241,6 +243,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "Dataset",
@@ -353,6 +356,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",
@@ -475,6 +479,9 @@
               ]
             },
             {
+              "$ref": "#/$defs/CustomFileDialect"
+            },
+            {
               "type": "null"
             }
           ],
@@ -486,6 +493,7 @@
       "$defs": [
         "ArrowFileDialect",
         "CsvFileDialect",
+        "CustomFileDialect",
         "JsonFileDialect",
         "JsonlFileDialect",
         "OdsFileDialect",
@@ -538,6 +546,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",
@@ -782,6 +791,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "Dataset",
@@ -919,6 +929,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",
@@ -1158,6 +1169,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "Dataset",
@@ -1327,6 +1339,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",
@@ -1600,6 +1613,7 @@
         "CreatorNameIdentifier",
         "CreatorNameType",
         "CsvFileDialect",
+        "CustomFileDialect",
         "DataciteDate",
         "DataciteDescription",
         "DateColumnProperty",

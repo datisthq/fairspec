@@ -210,6 +210,7 @@ export {
 export { TableError } from "./models/error/table.ts"
 export { FairspecException } from "./models/exception.ts"
 export { ArrowFileDialect } from "./models/fileDialect/arrow.ts"
+export { BuiltinFileDialect } from "./models/fileDialect/builtin.ts"
 export {
   ColumnNames,
   CommentPrefix,
@@ -227,6 +228,7 @@ export {
   TableName,
 } from "./models/fileDialect/common.ts"
 export { CsvFileDialect } from "./models/fileDialect/csv.ts"
+export { CustomFileDialect } from "./models/fileDialect/custom.ts"
 export { FileDialect } from "./models/fileDialect/fileDialect.ts"
 export { JsonFileDialect } from "./models/fileDialect/json.ts"
 export { JsonlFileDialect } from "./models/fileDialect/jsonl.ts"
@@ -234,7 +236,6 @@ export { OdsFileDialect } from "./models/fileDialect/ods.ts"
 export { ParquetFileDialect } from "./models/fileDialect/parquet.ts"
 export { SqliteFileDialect } from "./models/fileDialect/sqlite.ts"
 export { TsvFileDialect } from "./models/fileDialect/tsv.ts"
-export { UnknownFileDialect } from "./models/fileDialect/unknown.ts"
 export { XlsxFileDialect } from "./models/fileDialect/xlsx.ts"
 export { ForeignKey } from "./models/foreignKey.ts"
 export type { HostPolicy } from "./models/host.ts"

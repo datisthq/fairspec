@@ -1,0 +1,47 @@
+[
+  {
+    "description": "a dialect with a format the specification does not define",
+    "specification": ["https://fairspec.org/specs/file-dialect/#custom"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "file",
+          "data": "file.bin",
+          "fileDialect": {
+            "format": "custom",
+            "title": "Custom format",
+            "description": "Custom format description"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": { "file.bin": "anything" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a custom dialect on a file with a tabular extension",
+    "comment": "A declared dialect is never replaced by one inferred from the extension, so the file is not read as CSV",
+    "specification": ["https://fairspec.org/specs/dataset/#filedialect"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "file",
+          "data": "file.csv",
+          "fileDialect": { "format": "custom" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid although the content is not a CSV table",
+        "data": { "file.csv": "id\n1,2,3\n\"unclosed" },
+        "valid": true
+      }
+    ]
+  }
+]

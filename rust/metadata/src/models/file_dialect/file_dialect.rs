@@ -4,16 +4,16 @@ use serde_json::Value;
 
 use super::arrow::ArrowFileDialect;
 use super::csv::CsvFileDialect;
+use super::custom::CustomFileDialect;
 use super::json::JsonFileDialect;
 use super::jsonl::JsonlFileDialect;
 use super::ods::OdsFileDialect;
 use super::parquet::ParquetFileDialect;
 use super::sqlite::SqliteFileDialect;
 use super::tsv::TsvFileDialect;
-use super::unknown::UnknownFileDialect;
 use super::xlsx::XlsxFileDialect;
 
-/// Selected by `format`; a missing or unrecognised format is `Unknown`.
+/// Selected by `format`; a format the specification does not define is `Custom`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum FileDialect {
@@ -26,7 +26,7 @@ pub enum FileDialect {
     Sqlite(SqliteFileDialect),
     Parquet(ParquetFileDialect),
     Arrow(ArrowFileDialect),
-    Unknown(UnknownFileDialect),
+    Custom(CustomFileDialect),
 }
 
 impl FileDialect {
@@ -41,7 +41,7 @@ impl FileDialect {
             FileDialect::Sqlite(_) => Some("sqlite"),
             FileDialect::Parquet(_) => Some("parquet"),
             FileDialect::Arrow(_) => Some("arrow"),
-            FileDialect::Unknown(dialect) => dialect.format.as_deref(),
+            FileDialect::Custom(dialect) => Some(&dialect.format),
         }
     }
 }
@@ -62,7 +62,7 @@ impl<'de> Deserialize<'de> for FileDialect {
             Some("sqlite") => parse_variant(value, FileDialect::Sqlite),
             Some("parquet") => parse_variant(value, FileDialect::Parquet),
             Some("arrow") => parse_variant(value, FileDialect::Arrow),
-            _ => parse_variant(value, FileDialect::Unknown),
+            _ => parse_variant(value, FileDialect::Custom),
         }
     }
 }

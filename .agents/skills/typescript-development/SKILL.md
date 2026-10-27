@@ -71,6 +71,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 ## Conventions
 
 - **Descriptors are typed only by the model step.** `validate*` runs the declared profile, then `inspectModel` (`metadata/actions/descriptor/inspect.ts`) with the zod model; never cast a descriptor after the profile. Descriptor models are `z.looseObject`, so extension properties pass through — a check reading a keyword guards by column kind, not by `"x" in property`, since a stray key survives on any kind
+- **`FileDialect` is `BuiltinFileDialect | CustomFileDialect`.** A format the spec does not define
+  parses as `CustomFileDialect`, whose `format` refuses the built-in values, so a broken CSV
+  dialect fails as CSV instead of passing as custom. `format === "csv"` on a `FileDialect` does
+  not narrow to `CsvFileDialect`: a plugin takes its dialect from `getSupportedFileDialect`, which
+  returns only built-in dialects and never infers a format over a declared one
 
 - Package manager pnpm `^11`, Node `^24`, ES Modules throughout
 - Formatting is configured in the root `vite.config.ts`: no semicolons, 90-column print width, arrow parens avoided
