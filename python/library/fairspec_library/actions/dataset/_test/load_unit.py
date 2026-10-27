@@ -12,7 +12,7 @@ class TestLoadDataset:
     def test_should_load_dataset_from_descriptor_path(self):
         folder = get_temp_folder_path()
         descriptor = {"resources": [{"data": "data.csv", "name": "data"}]}
-        path = os.path.join(folder, "datapackage.json")
+        path = os.path.join(folder, "dataset.json")
         with open(path, "w") as f:
             json.dump(descriptor, f)
         result = load_dataset(path)

@@ -1,0 +1,530 @@
+[
+  {
+    "description": "frictionless package metadata",
+    "comment": "The Frictionless mapping is not in the spec; it follows the TypeScript library. A Frictionless field allows null unless required, the default missing value \"\" is what a Fairspec format already reads as null, and a name outside [a-zA-Z0-9_] has its other characters replaced by _",
+    "datapackage": {
+      "profile": "tabular-data-package",
+      "name": "fruit-package",
+      "id": "https://doi.org/10.5281/zenodo.1234567",
+      "title": "Fruit",
+      "description": "Fruit prices",
+      "homepage": "https://example.com/fruit",
+      "version": "1.0.0",
+      "created": "2024-01-05T10:00:00Z",
+      "keywords": ["fruit", "prices"],
+      "licenses": [
+        {
+          "name": "CC0-1.0",
+          "path": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "title": "CC0 1.0"
+        }
+      ],
+      "contributors": [
+        {
+          "title": "Ann Lee",
+          "givenName": "Ann",
+          "familyName": "Lee",
+          "role": "author",
+          "organization": "Acme"
+        },
+        {
+          "title": "Bob",
+          "roles": ["maintainer"]
+        },
+        {
+          "title": "Cy"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Market",
+          "path": "https://example.com/market"
+        },
+        {
+          "title": "Notes"
+        }
+      ],
+      "resources": [
+        {
+          "name": "fruit-list",
+          "path": "fruit.csv",
+          "title": "Fruit list",
+          "description": "One row per fruit",
+          "hash": "md5:5e4c5f1fca4f1b4a05ef68b1b1a3b0ad",
+          "bytes": 21,
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "maps to DataCite fields",
+        "data": {
+          "fruit.csv": "id\n1\n2\n"
+        },
+        "expected": {
+          "doi": "10.5281/zenodo.1234567",
+          "creators": [
+            {
+              "name": "Ann Lee",
+              "nameType": "Personal",
+              "givenName": "Ann",
+              "familyName": "Lee",
+              "affiliation": [
+                {
+                  "name": "Acme"
+                }
+              ]
+            }
+          ],
+          "titles": [
+            {
+              "title": "Fruit"
+            }
+          ],
+          "subjects": [
+            {
+              "subject": "fruit"
+            },
+            {
+              "subject": "prices"
+            }
+          ],
+          "contributors": [
+            {
+              "name": "Bob",
+              "contributorType": "ContactPerson"
+            },
+            {
+              "name": "Cy",
+              "contributorType": "Other"
+            }
+          ],
+          "dates": [
+            {
+              "date": "2024-01-05T10:00:00Z",
+              "dateType": "Created"
+            }
+          ],
+          "relatedIdentifiers": [
+            {
+              "relationType": "IsDocumentedBy",
+              "relatedIdentifier": "https://example.com/fruit",
+              "relatedIdentifierType": "URL"
+            },
+            {
+              "relationType": "IsDerivedFrom",
+              "relatedIdentifier": "https://example.com/market",
+              "relatedIdentifierType": "URL"
+            }
+          ],
+          "version": "1.0.0",
+          "rightsList": [
+            {
+              "rights": "CC0 1.0",
+              "rightsUri": "https://creativecommons.org/publicdomain/zero/1.0/",
+              "rightsIdentifier": "CC0-1.0"
+            }
+          ],
+          "descriptions": [
+            {
+              "description": "Fruit prices",
+              "descriptionType": "Abstract"
+            }
+          ],
+          "resources": [
+            {
+              "titles": [
+                {
+                  "title": "Fruit list"
+                }
+              ],
+              "sizes": ["21 bytes"],
+              "descriptions": [
+                {
+                  "description": "One row per fruit",
+                  "descriptionType": "Abstract"
+                }
+              ],
+              "data": "fruit.csv",
+              "name": "fruit_list",
+              "integrity": {
+                "type": "md5",
+                "hash": "5e4c5f1fca4f1b4a05ef68b1b1a3b0ad"
+              },
+              "fileDialect": {
+                "format": "csv"
+              },
+              "tableSchema": {
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"]
+                  }
+                }
+              },
+              "textual": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "frictionless field types",
+    "comment": "The Frictionless mapping follows the TypeScript library. year becomes an integer, yearmonth a string with a pattern, geopoint its storage type, and any an unknown column",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "types",
+          "path": "types.csv",
+          "format": "csv",
+          "dialect": {
+            "delimiter": ";",
+            "header": true,
+            "commentChar": "#"
+          },
+          "schema": {
+            "fields": [
+              {
+                "name": "s",
+                "type": "string",
+                "constraints": {
+                  "required": true,
+                  "minLength": 1,
+                  "maxLength": 5,
+                  "pattern": "[a-z]+"
+                }
+              },
+              {
+                "name": "e",
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "name": "u",
+                "type": "string",
+                "format": "uri",
+                "constraints": {
+                  "unique": true
+                }
+              },
+              {
+                "name": "b",
+                "type": "string",
+                "format": "binary"
+              },
+              {
+                "name": "c",
+                "type": "string",
+                "categories": ["a", "b"],
+                "categoriesOrdered": true
+              },
+              {
+                "name": "i",
+                "type": "integer",
+                "groupChar": " ",
+                "bareNumber": false,
+                "constraints": {
+                  "minimum": 0,
+                  "maximum": 10
+                }
+              },
+              {
+                "name": "n",
+                "type": "number",
+                "decimalChar": ",",
+                "constraints": {
+                  "enum": [1.5, 2.5]
+                }
+              },
+              {
+                "name": "t",
+                "type": "boolean",
+                "trueValues": ["y"],
+                "falseValues": ["n"]
+              },
+              {
+                "name": "d",
+                "type": "date",
+                "format": "%d/%m/%Y"
+              },
+              {
+                "name": "dd",
+                "type": "date",
+                "format": "any"
+              },
+              {
+                "name": "tm",
+                "type": "time"
+              },
+              {
+                "name": "dt",
+                "type": "datetime"
+              },
+              {
+                "name": "ldt",
+                "type": "datetime",
+                "format": "%Y-%m-%d %H:%M"
+              },
+              {
+                "name": "y",
+                "type": "year"
+              },
+              {
+                "name": "ym",
+                "type": "yearmonth"
+              },
+              {
+                "name": "du",
+                "type": "duration"
+              },
+              {
+                "name": "gp",
+                "type": "geopoint"
+              },
+              {
+                "name": "gj",
+                "type": "geojson",
+                "format": "topojson"
+              },
+              {
+                "name": "o",
+                "type": "object",
+                "constraints": {
+                  "jsonSchema": {
+                    "required": ["k"]
+                  }
+                }
+              },
+              {
+                "name": "a",
+                "type": "array"
+              },
+              {
+                "name": "l",
+                "type": "list",
+                "delimiter": "|",
+                "itemType": "datetime",
+                "constraints": {
+                  "minLength": 1
+                }
+              },
+              {
+                "name": "x",
+                "type": "any",
+                "title": "Anything",
+                "description": "Any value"
+              }
+            ],
+            "missingValues": ["", "NA"],
+            "primaryKey": "s",
+            "uniqueKeys": [["e", "u"]],
+            "foreignKeys": [
+              {
+                "fields": "e",
+                "reference": {
+                  "resource": "",
+                  "fields": "u"
+                }
+              },
+              {
+                "fields": ["i"],
+                "reference": {
+                  "resource": "other-table",
+                  "fields": ["id"]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "other-table",
+          "data": [["id"], [1], [2]]
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "map to Fairspec column properties",
+        "data": {
+          "types.csv": "s;e\n"
+        },
+        "expected": {
+          "resources": [
+            {
+              "data": "types.csv",
+              "name": "types",
+              "fileDialect": {
+                "format": "csv",
+                "delimiter": ";",
+                "commentPrefix": "#"
+              },
+              "tableSchema": {
+                "properties": {
+                  "s": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 5,
+                    "pattern": "[a-z]+"
+                  },
+                  "e": {
+                    "type": ["string", "null"],
+                    "format": "email"
+                  },
+                  "u": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                  },
+                  "b": {
+                    "type": ["string", "null"],
+                    "format": "base64"
+                  },
+                  "c": {
+                    "type": ["string", "null"],
+                    "format": "categorical",
+                    "categories": ["a", "b"],
+                    "withOrder": true
+                  },
+                  "i": {
+                    "type": ["integer", "null"],
+                    "minimum": 0,
+                    "maximum": 10,
+                    "groupChar": " ",
+                    "withText": true
+                  },
+                  "n": {
+                    "type": ["number", "null"],
+                    "enum": [1.5, 2.5],
+                    "decimalChar": ","
+                  },
+                  "t": {
+                    "type": ["boolean", "null"],
+                    "trueValues": ["y"],
+                    "falseValues": ["n"]
+                  },
+                  "d": {
+                    "type": ["string", "null"],
+                    "format": "date",
+                    "temporalFormat": "%d/%m/%Y"
+                  },
+                  "dd": {
+                    "type": ["string", "null"],
+                    "format": "date"
+                  },
+                  "tm": {
+                    "type": ["string", "null"],
+                    "format": "local-time"
+                  },
+                  "dt": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                  },
+                  "ldt": {
+                    "type": ["string", "null"],
+                    "format": "local-date-time",
+                    "temporalFormat": "%Y-%m-%d %H:%M"
+                  },
+                  "y": {
+                    "type": ["integer", "null"]
+                  },
+                  "ym": {
+                    "type": ["string", "null"],
+                    "pattern": "^\\d{4}-\\d{2}$"
+                  },
+                  "du": {
+                    "type": ["string", "null"],
+                    "format": "duration"
+                  },
+                  "gp": {
+                    "type": ["string", "null"]
+                  },
+                  "gj": {
+                    "type": ["object", "null"],
+                    "format": "topojson"
+                  },
+                  "o": {
+                    "type": ["object", "null"],
+                    "required": ["k"]
+                  },
+                  "a": {
+                    "type": ["array", "null"]
+                  },
+                  "l": {
+                    "type": ["string", "null"],
+                    "format": "list",
+                    "itemType": "date-time",
+                    "delimiter": "|",
+                    "minItems": 1
+                  },
+                  "x": {
+                    "title": "Anything",
+                    "description": "Any value"
+                  }
+                },
+                "missingValues": ["", "NA"],
+                "primaryKey": ["s"],
+                "uniqueKeys": [["e", "u"], ["u"]],
+                "foreignKeys": [
+                  {
+                    "columns": ["e"],
+                    "reference": {
+                      "columns": ["u"]
+                    }
+                  },
+                  {
+                    "columns": ["i"],
+                    "reference": {
+                      "resource": "other_table",
+                      "columns": ["id"]
+                    }
+                  }
+                ]
+              },
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "216a8a1aa4c1987e6f3bd879362465739e550a60eb0de39ae769891e062a3a84"
+              }
+            },
+            {
+              "data": [
+                {
+                  "id": 1
+                },
+                {
+                  "id": 2
+                }
+              ],
+              "name": "other_table",
+              "dataSchema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "tableSchema": {
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

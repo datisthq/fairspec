@@ -2,6 +2,7 @@ import {
   CkanPlugin,
   DescriptorPlugin,
   FolderPlugin,
+  FrictionlessPlugin,
   GithubPlugin,
   ZenodoPlugin,
   ZipPlugin,
@@ -36,6 +37,7 @@ system.register(ExtensionPlugin)
 
 system.register(CkanPlugin)
 system.register(DescriptorPlugin)
+system.register(FrictionlessPlugin)
 system.register(GithubPlugin)
 system.register(ZenodoPlugin)
 system.register(FolderPlugin)

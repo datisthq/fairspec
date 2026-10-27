@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 
 use base64::Engine;
 use fairspec_library::fairspec_dataset::{
-    InferFileDialectOptions, describe_file, preview_file, validate_file, write_temp_file,
+    InferFileDialectOptions, SaveDatasetOptions, describe_file, preview_file, validate_file,
+    write_temp_file,
 };
 use fairspec_library::fairspec_metadata::{
     Dataset, Descriptor, IntegrityType, Resource, denormalize_dataset, infer_resource_name,
@@ -15,7 +16,8 @@ use fairspec_library::fairspec_table::{
 };
 use fairspec_library::{
     ValidateTableOptions, infer_data_schema, infer_dataset, infer_file_dialect, infer_table_schema,
-    load_dataset, load_table, query_dataset, validate_data, validate_dataset, validate_table,
+    load_dataset, load_table, query_dataset, save_dataset, validate_data, validate_dataset,
+    validate_table,
 };
 use serde_json::{Map, Value};
 
@@ -71,6 +73,7 @@ fn get_operation(operation: &str) -> Option<Operation> {
         "data-infer-schema" => Some(run_data_infer_schema),
         "data-validate" => Some(run_data_validate),
         "data-validate-schema" => Some(run_data_validate_schema),
+        "dataset-copy" => Some(run_dataset_copy),
         "dataset-infer" => Some(run_dataset_infer),
         "dataset-list" => Some(run_dataset_list),
         "dataset-query" => Some(run_dataset_query),
@@ -144,6 +147,19 @@ fn run_dataset_list(group: &Value, test: &Value) -> Result<Value, String> {
         })
         .collect();
     Ok(Value::Array(names))
+}
+
+fn run_dataset_copy(group: &Value, test: &Value) -> Result<Value, String> {
+    let folder = tempfile::tempdir().map_err(|error| error.to_string())?;
+    let path = write_dataset(folder.path(), group, test)?;
+    let target = folder.path().join("datapackage.json");
+    let options = SaveDatasetOptions {
+        target: target.to_string_lossy().into_owned(),
+        with_remote: false,
+    };
+    save_dataset(&load_test_dataset(&path)?, &options).map_err(|error| error.to_string())?;
+    let text = fs::read_to_string(&target).map_err(|error| error.to_string())?;
+    serde_json::from_str(&text).map_err(|error| error.to_string())
 }
 
 fn run_dataset_infer(group: &Value, test: &Value) -> Result<Value, String> {
@@ -434,9 +450,13 @@ fn write_dataset(folder: &Path, group: &Value, test: &Value) -> Result<String, S
         fs::write(folder.join(name), encode_data(content)?).map_err(|error| error.to_string())?;
     }
 
-    let path = folder.join("dataset.json");
+    let (name, dataset) = match group.get("datapackage") {
+        Some(datapackage) => ("datapackage.json", datapackage),
+        None => ("dataset.json", &group["dataset"]),
+    };
+    let path = folder.join(name);
     let dataset: Descriptor =
-        serde_json::from_value(group["dataset"].clone()).map_err(|error| error.to_string())?;
+        serde_json::from_value(dataset.clone()).map_err(|error| error.to_string())?;
     fs::write(&path, serde_json::to_string(&dataset).unwrap())
         .map_err(|error| error.to_string())?;
     Ok(path.to_string_lossy().into_owned())

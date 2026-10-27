@@ -12,7 +12,7 @@ from fairspec_terminal.session import Session
 class TestSelectResource:
     def test_should_select_resource_by_name(self):
         folder = get_temp_folder_path()
-        path = os.path.join(folder, "datapackage.json")
+        path = os.path.join(folder, "dataset.json")
         descriptor = {
             "resources": [
                 {"name": "users", "data": "users.csv"},

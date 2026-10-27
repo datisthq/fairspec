@@ -53,7 +53,8 @@ A group has a `description` and `tests`. It may also carry:
 - `specification`: links to the spec sections it exercises
 - the subject of the operation: `format` (the file extension, `csv` by default),
   `fileDialect`, `tableSchema`, `dataSchema`, `integrity`, `textual`, `dataset`, `query` and
-  `options`. Options use the camelCase names of the TypeScript API; `file-describe` reads
+  `options`. A dataset operation takes `datapackage` instead of `dataset` to write a
+  Frictionless Data Package as `datapackage.json`. Options use the camelCase names of the TypeScript API; `file-describe` reads
   `options.hashType`, `file-preview` reads `options.maxBytes` and `options.maxLines`
 - `inline: true`: pass the test's `data` to the resource as inline data instead of writing a
   file
@@ -79,6 +80,7 @@ A test has a `description`, its `data`, and exactly one outcome:
 | `data-infer-schema`     | infer the data schema                                                 | `expected`: the JSON Schema               |
 | `data-validate`         | validate the data against the group's `dataSchema`                    | `valid`, `errors`                         |
 | `data-validate-schema`  | validate the test's `data` as a Data Schema                           | `valid`, `errors`                         |
+| `dataset-copy`          | write the dataset, save it as `datapackage.json`                      | `expected`: the written descriptor        |
 | `dataset-infer`         | write the dataset, infer it, make paths relative again                | `expected`: the dataset                   |
 | `dataset-list`          | write the dataset, list its resource names (inferred when absent)     | `expected`: the names                     |
 | `dataset-query`         | write the dataset and run the group's `query`, each resource by name  | `expected`: `{columns, rows}`             |

@@ -15,13 +15,13 @@ class TestDatasetCopyCommand:
         with open(os.path.join(source, "users.csv"), "w") as file:
             file.write("id,name\n1,Alice\n")
         descriptor = {"resources": [{"name": "users", "data": "users.csv"}]}
-        with open(os.path.join(source, "datapackage.json"), "w") as file:
+        with open(os.path.join(source, "dataset.json"), "w") as file:
             json.dump(descriptor, file)
         monkeypatch.chdir(source)
 
         runner = CliRunner()
         result = runner.invoke(
-            dataset_program, ["copy", "datapackage.json", "--to-path", "out"]
+            dataset_program, ["copy", "dataset.json", "--to-path", "out"]
         )
 
         assert result.exit_code == 0

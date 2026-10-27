@@ -29,8 +29,6 @@ class DescriptorPlugin(DatasetPlugin):
         target = options["target"]
         if not _get_is_local_json(target):
             return None
-        if not target.endswith("datapackage.json"):
-            return None
         save_dataset_descriptor(dataset, path=target)
         return SaveDatasetResult(path=target)
 

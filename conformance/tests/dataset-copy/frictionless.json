@@ -1,0 +1,628 @@
+[
+  {
+    "description": "dataset metadata to a frictionless package",
+    "comment": "The Frictionless mapping follows the TypeScript library: the package is written as Data Package v2, creators become authors and contributor types the nearest role",
+    "dataset": {
+      "doi": "10.5281/zenodo.1234567",
+      "titles": [
+        {
+          "title": "Fruit"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Fruit prices",
+          "descriptionType": "Abstract"
+        }
+      ],
+      "version": "1.0.0",
+      "subjects": [
+        {
+          "subject": "fruit"
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-01-05",
+          "dateType": "Created"
+        }
+      ],
+      "rightsList": [
+        {
+          "rights": "CC0 1.0",
+          "rightsIdentifier": "CC0-1.0",
+          "rightsUri": "https://creativecommons.org/publicdomain/zero/1.0/"
+        }
+      ],
+      "creators": [
+        {
+          "name": "Ann Lee",
+          "givenName": "Ann",
+          "familyName": "Lee",
+          "affiliation": [
+            {
+              "name": "Acme"
+            }
+          ]
+        }
+      ],
+      "contributors": [
+        {
+          "name": "Bob",
+          "contributorType": "ContactPerson"
+        },
+        {
+          "name": "Cy",
+          "contributorType": "Researcher"
+        }
+      ],
+      "relatedIdentifiers": [
+        {
+          "relatedIdentifier": "https://example.com/fruit",
+          "relatedIdentifierType": "URL",
+          "relationType": "IsDocumentedBy"
+        },
+        {
+          "relatedIdentifier": "https://example.com/market",
+          "relatedIdentifierType": "URL",
+          "relationType": "IsDerivedFrom"
+        }
+      ],
+      "resources": [
+        {
+          "name": "fruit",
+          "data": "fruit.csv",
+          "titles": [
+            {
+              "title": "Fruit list"
+            }
+          ],
+          "integrity": {
+            "type": "sha256",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "sizes": ["10 bytes"]
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "maps the DataCite fields",
+        "data": {
+          "fruit.csv": "id\n1\n"
+        },
+        "expected": {
+          "$schema": "https://datapackage.org/profiles/2.0/datapackage.json",
+          "id": "https://doi.org/10.5281/zenodo.1234567",
+          "title": "Fruit",
+          "description": "Fruit prices",
+          "homepage": "https://example.com/fruit",
+          "version": "1.0.0",
+          "created": "2024-01-05",
+          "keywords": ["fruit"],
+          "licenses": [
+            {
+              "name": "CC0-1.0",
+              "path": "https://creativecommons.org/publicdomain/zero/1.0/",
+              "title": "CC0 1.0"
+            }
+          ],
+          "contributors": [
+            {
+              "title": "Ann Lee",
+              "givenName": "Ann",
+              "familyName": "Lee",
+              "organization": "Acme",
+              "roles": ["author"]
+            },
+            {
+              "title": "Bob",
+              "roles": ["maintainer"]
+            },
+            {
+              "title": "Cy",
+              "roles": ["contributor"]
+            }
+          ],
+          "sources": [
+            {
+              "title": "https://example.com/market",
+              "path": "https://example.com/market"
+            }
+          ],
+          "resources": [
+            {
+              "name": "fruit",
+              "path": "fruit.csv",
+              "title": "Fruit list",
+              "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+              "bytes": 10
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "table schema to a frictionless schema",
+    "comment": "The Frictionless mapping follows the TypeScript library: a column without null is required, an empty cell stays missing through \"\", and types Frictionless lacks become their storage type",
+    "dataset": {
+      "resources": [
+        {
+          "name": "types",
+          "data": "types.csv",
+          "fileDialect": {
+            "format": "csv",
+            "delimiter": ";",
+            "headerRows": false,
+            "commentPrefix": "#"
+          },
+          "tableSchema": {
+            "properties": {
+              "s": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "[a-z]+",
+                "title": "S"
+              },
+              "e": {
+                "type": ["string", "null"],
+                "format": "email"
+              },
+              "u": {
+                "type": "string",
+                "format": "url"
+              },
+              "b": {
+                "type": "string",
+                "format": "base64"
+              },
+              "h": {
+                "type": "string",
+                "format": "hex"
+              },
+              "c": {
+                "type": ["integer", "null"],
+                "format": "categorical",
+                "categories": [
+                  {
+                    "value": 1,
+                    "label": "one"
+                  }
+                ],
+                "withOrder": true
+              },
+              "i": {
+                "type": "integer",
+                "minimum": 0,
+                "groupChar": " ",
+                "withText": true
+              },
+              "n": {
+                "type": ["number", "null"],
+                "decimalChar": ",",
+                "enum": [1.5, null]
+              },
+              "dc": {
+                "type": "string",
+                "format": "decimal"
+              },
+              "t": {
+                "type": "boolean",
+                "trueValues": ["y"]
+              },
+              "d": {
+                "type": "string",
+                "format": "date",
+                "temporalFormat": "%d/%m/%Y"
+              },
+              "tm": {
+                "type": "string",
+                "format": "time"
+              },
+              "ldt": {
+                "type": "string",
+                "format": "local-date-time"
+              },
+              "du": {
+                "type": "string",
+                "format": "duration"
+              },
+              "o": {
+                "type": "object"
+              },
+              "a": {
+                "type": "array"
+              },
+              "gj": {
+                "type": "object",
+                "format": "geojson"
+              },
+              "tj": {
+                "type": "object",
+                "format": "topojson"
+              },
+              "l": {
+                "type": "string",
+                "format": "list",
+                "delimiter": "|",
+                "itemType": "local-date-time",
+                "maxItems": 3
+              },
+              "x": {
+                "description": "Anything"
+              }
+            },
+            "missingValues": ["NA"],
+            "primaryKey": ["s"],
+            "uniqueKeys": [["e", "u"]],
+            "foreignKeys": [
+              {
+                "columns": ["e"],
+                "reference": {
+                  "columns": ["u"]
+                }
+              },
+              {
+                "columns": ["i"],
+                "reference": {
+                  "resource": "other",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "other",
+          "data": [
+            {
+              "id": 1
+            }
+          ],
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "maps the columns",
+        "data": {
+          "types.csv": "s\n"
+        },
+        "expected": {
+          "$schema": "https://datapackage.org/profiles/2.0/datapackage.json",
+          "resources": [
+            {
+              "name": "types",
+              "path": "types.csv",
+              "type": "table",
+              "format": "csv",
+              "dialect": {
+                "delimiter": ";",
+                "header": false,
+                "commentChar": "#"
+              },
+              "schema": {
+                "fields": [
+                  {
+                    "name": "s",
+                    "type": "string",
+                    "title": "S",
+                    "constraints": {
+                      "required": true,
+                      "minLength": 1,
+                      "pattern": "[a-z]+"
+                    }
+                  },
+                  {
+                    "name": "e",
+                    "type": "string",
+                    "format": "email"
+                  },
+                  {
+                    "name": "u",
+                    "type": "string",
+                    "format": "uri",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "b",
+                    "type": "string",
+                    "format": "binary",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "h",
+                    "type": "string",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "c",
+                    "type": "integer",
+                    "categories": [
+                      {
+                        "value": 1,
+                        "label": "one"
+                      }
+                    ],
+                    "categoriesOrdered": true
+                  },
+                  {
+                    "name": "i",
+                    "type": "integer",
+                    "groupChar": " ",
+                    "bareNumber": false,
+                    "constraints": {
+                      "required": true,
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "n",
+                    "type": "number",
+                    "decimalChar": ",",
+                    "constraints": {
+                      "enum": [1.5]
+                    }
+                  },
+                  {
+                    "name": "dc",
+                    "type": "number",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "t",
+                    "type": "boolean",
+                    "trueValues": ["y"],
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "d",
+                    "type": "date",
+                    "format": "%d/%m/%Y",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "tm",
+                    "type": "time",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "ldt",
+                    "type": "datetime",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "du",
+                    "type": "duration",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "o",
+                    "type": "object",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "a",
+                    "type": "array",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "gj",
+                    "type": "geojson",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "tj",
+                    "type": "geojson",
+                    "format": "topojson",
+                    "constraints": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "name": "l",
+                    "type": "list",
+                    "delimiter": "|",
+                    "itemType": "datetime",
+                    "constraints": {
+                      "required": true,
+                      "maxLength": 3
+                    }
+                  },
+                  {
+                    "name": "x",
+                    "type": "any",
+                    "description": "Anything"
+                  }
+                ],
+                "missingValues": ["NA", ""],
+                "primaryKey": ["s"],
+                "uniqueKeys": [["e", "u"]],
+                "foreignKeys": [
+                  {
+                    "fields": ["e"],
+                    "reference": {
+                      "resource": "",
+                      "fields": ["u"]
+                    }
+                  },
+                  {
+                    "fields": ["i"],
+                    "reference": {
+                      "resource": "other",
+                      "fields": ["id"]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "other",
+              "data": [
+                {
+                  "id": 1
+                }
+              ],
+              "type": "table",
+              "schema": {
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "integer",
+                    "constraints": {
+                      "required": true
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "file dialects to frictionless dialects",
+    "comment": "The Frictionless mapping follows the TypeScript library: the dialect format becomes the resource format, a JSON pointer one key deep its property",
+    "dataset": {
+      "resources": [
+        {
+          "name": "rows",
+          "data": "rows.json",
+          "fileDialect": {
+            "format": "json",
+            "jsonPointer": "/items",
+            "rowType": "array",
+            "columnNames": ["id"]
+          }
+        },
+        {
+          "name": "sheet",
+          "data": "book.xlsx",
+          "fileDialect": {
+            "format": "xlsx",
+            "sheetName": "Data",
+            "headerRows": [2]
+          }
+        },
+        {
+          "name": "plain",
+          "data": "plain.csv"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "maps each format",
+        "data": {
+          "rows.json": "{\"items\": [[1]]}",
+          "book.xlsx": "",
+          "plain.csv": "id\n1\n"
+        },
+        "expected": {
+          "$schema": "https://datapackage.org/profiles/2.0/datapackage.json",
+          "resources": [
+            {
+              "name": "rows",
+              "path": "rows.json",
+              "format": "json",
+              "dialect": {
+                "property": "items",
+                "itemType": "array",
+                "itemKeys": ["id"]
+              }
+            },
+            {
+              "name": "sheet",
+              "path": "book.xlsx",
+              "format": "xlsx",
+              "dialect": {
+                "sheetName": "Data",
+                "headerRows": [2]
+              }
+            },
+            {
+              "name": "plain",
+              "path": "plain.csv"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a table schema path",
+    "comment": "The Frictionless mapping follows the TypeScript library: a Fairspec schema given as a path is converted inline, since a Frictionless reader cannot read it",
+    "dataset": {
+      "resources": [
+        {
+          "data": "items.csv",
+          "tableSchema": "schema.json"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is inlined and the resource named",
+        "data": {
+          "items.csv": "id\n1\n",
+          "schema.json": "{\"properties\": {\"id\": {\"type\": \"integer\"}}, \"missingValues\": [\"\", \"-\"]}"
+        },
+        "expected": {
+          "$schema": "https://datapackage.org/profiles/2.0/datapackage.json",
+          "resources": [
+            {
+              "name": "items",
+              "path": "items.csv",
+              "type": "table",
+              "schema": {
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "integer",
+                    "constraints": {
+                      "required": true
+                    }
+                  }
+                ],
+                "missingValues": ["", "-"]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

@@ -24,7 +24,7 @@ class TestDatasetQueryCommand:
                 },
             ]
         }
-        path = os.path.join(folder, "datapackage.json")
+        path = os.path.join(folder, "dataset.json")
         with open(path, "w") as f:
             json.dump(descriptor, f)
 

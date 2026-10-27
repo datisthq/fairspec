@@ -1,0 +1,406 @@
+[
+  {
+    "description": "a frictionless field allows null unless required",
+    "comment": "The Frictionless mapping follows the TypeScript library",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "people",
+          "path": "people.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer",
+                "constraints": {
+                  "required": true
+                }
+              },
+              {
+                "name": "name",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "an empty optional cell is null",
+        "data": {
+          "people.csv": "id,name\n1,\n2,bob\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "an empty required cell is an error",
+        "data": {
+          "people.csv": "id,name\n,ann\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "id",
+            "rowNumber": 1,
+            "cell": "",
+            "resourceName": "people"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "frictionless number and boolean options",
+    "comment": "The Frictionless mapping follows the TypeScript library; bareNumber false is withText",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "prices",
+          "path": "prices.csv",
+          "dialect": {
+            "delimiter": ";"
+          },
+          "schema": {
+            "fields": [
+              {
+                "name": "price",
+                "type": "number",
+                "decimalChar": ",",
+                "groupChar": "."
+              },
+              {
+                "name": "count",
+                "type": "integer",
+                "bareNumber": false
+              },
+              {
+                "name": "sold",
+                "type": "boolean",
+                "trueValues": ["yes"],
+                "falseValues": ["no"]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "options parse the cells",
+        "data": {
+          "prices.csv": "price;count;sold\n1.000,5;5 kg;yes\n2;10;no\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "default boolean values no longer apply",
+        "data": {
+          "prices.csv": "price;count;sold\n1;1;true\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "sold",
+            "columnType": "boolean",
+            "rowNumber": 1,
+            "cell": "true",
+            "resourceName": "prices"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "frictionless missing values",
+    "comment": "The Frictionless mapping follows the TypeScript library",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "readings",
+          "path": "readings.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "value",
+                "type": "integer"
+              }
+            ],
+            "missingValues": ["", "NA"]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "NA is null",
+        "data": {
+          "readings.csv": "value\n1\nNA\n\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "another word is an error",
+        "data": {
+          "readings.csv": "value\nN/A\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "value",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "N/A",
+            "resourceName": "readings"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "frictionless keys across renamed resources",
+    "comment": "The Frictionless mapping follows the TypeScript library: a primaryKey string is a one-column key, a reference resource \"\" is the table itself, and a dashed name becomes underscored on both ends of a reference",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "fruit-kinds",
+          "path": "kinds.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "kind",
+                "type": "string"
+              }
+            ],
+            "primaryKey": "kind"
+          }
+        },
+        {
+          "name": "fruit-list",
+          "path": "fruit.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer"
+              },
+              {
+                "name": "parent",
+                "type": "integer"
+              },
+              {
+                "name": "kind",
+                "type": "string"
+              }
+            ],
+            "primaryKey": ["id"],
+            "foreignKeys": [
+              {
+                "fields": "parent",
+                "reference": {
+                  "resource": "",
+                  "fields": "id"
+                }
+              },
+              {
+                "fields": "kind",
+                "reference": {
+                  "resource": "fruit-kinds",
+                  "fields": "kind"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "references resolve",
+        "data": {
+          "kinds.csv": "kind\napple\npear\n",
+          "fruit.csv": "id,parent,kind\n1,,apple\n2,1,pear\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "broken references are errors",
+        "data": {
+          "kinds.csv": "kind\napple\napple\n",
+          "fruit.csv": "id,parent,kind\n1,3,plum\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "columnNames": ["kind"],
+            "rowNumber": 2,
+            "resourceName": "fruit_kinds"
+          },
+          {
+            "type": "foreignKey",
+            "foreignKey": {
+              "columns": ["parent"],
+              "reference": {
+                "columns": ["id"]
+              }
+            },
+            "cells": ["3"],
+            "resourceName": "fruit_list"
+          },
+          {
+            "type": "foreignKey",
+            "foreignKey": {
+              "columns": ["kind"],
+              "reference": {
+                "resource": "fruit_kinds",
+                "columns": ["kind"]
+              }
+            },
+            "cells": ["plum"],
+            "resourceName": "fruit_list"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "frictionless schema and dialect paths",
+    "comment": "The Frictionless mapping follows the TypeScript library: a schema or dialect given as a path is loaded relative to the package",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "items",
+          "path": "items.csv",
+          "schema": "schema.json",
+          "dialect": "dialect.json"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "both are loaded",
+        "data": {
+          "items.csv": "id|name\n1|a\nx|b\n",
+          "schema.json": "{\"fields\": [{\"name\": \"id\", \"type\": \"integer\"}, {\"name\": \"name\"}]}",
+          "dialect.json": "{\"delimiter\": \"|\"}"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x",
+            "resourceName": "items"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "frictionless inline data",
+    "comment": "The Frictionless mapping follows the TypeScript library: rows given as arrays take the first row as the header",
+    "datapackage": {
+      "resources": [
+        {
+          "name": "inline",
+          "data": [
+            ["id", "name"],
+            [1, "a"],
+            ["x", "b"]
+          ],
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "rows become objects",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x",
+            "resourceName": "inline"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an invalid frictionless package",
+    "comment": "The Frictionless mapping follows the TypeScript library: a package its model cannot read reports metadata errors at their JSON pointers",
+    "datapackage": {
+      "resources": [
+        {
+          "path": "data.csv",
+          "bytes": "many",
+          "licenses": [
+            {
+              "name": 1
+            }
+          ]
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "reports each mismatch",
+        "data": {
+          "data.csv": "id\n1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/bytes"
+          },
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/licenses/0/name"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a frictionless package without resources",
+    "comment": "The Frictionless mapping follows the TypeScript library",
+    "datapackage": {
+      "name": "empty"
+    },
+    "tests": [
+      {
+        "description": "reports the missing resources",
+        "data": {},
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources"
+          }
+        ]
+      }
+    ]
+  }
+]

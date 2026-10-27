@@ -40,6 +40,10 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
   text, not normative), and temporal columns render as ISO text through the library's table
   query, and `data-validate-schema` compares the report without its parsed `dataSchema`.
   Anything else that differs is a library divergence
+- A dataset group takes `datapackage` instead of `dataset` to write a Frictionless package as
+  `datapackage.json`. Its import is checked through `dataset-infer`/`dataset-validate`, its
+  export through `dataset-copy`, which saves to `datapackage.json`: never compare a written
+  `dataset.json`, whose `$schema` carries the release version
 - Binary inputs are tiny files written once by the Python library and embedded as base64; say
   how in the group's `comment`. A dataset test can only hold files at its top level, since the
   runners create no directories

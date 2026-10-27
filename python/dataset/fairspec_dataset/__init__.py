@@ -29,6 +29,11 @@ from .plugins.folder import (
     load_dataset_from_folder,
     save_dataset_to_folder,
 )
+from .plugins.frictionless import (
+    FrictionlessPlugin,
+    load_dataset_from_frictionless,
+    save_dataset_to_frictionless,
+)
 from .plugins.github import (
     GithubPlugin,
     load_dataset_from_github,
@@ -50,6 +55,7 @@ __all__ = [
     "FileDescription",
     "FilePreview",
     "FolderPlugin",
+    "FrictionlessPlugin",
     "GithubPlugin",
     "InferFileDialectOptions",
     "MetadataPlugin",
@@ -75,6 +81,7 @@ __all__ = [
     "infer_textual",
     "load_dataset_from_ckan",
     "load_dataset_from_folder",
+    "load_dataset_from_frictionless",
     "load_dataset_from_github",
     "load_dataset_from_zenodo",
     "load_dataset_from_zip",
@@ -86,6 +93,7 @@ __all__ = [
     "preview_file",
     "save_dataset_to_ckan",
     "save_dataset_to_folder",
+    "save_dataset_to_frictionless",
     "save_dataset_to_github",
     "save_dataset_to_zenodo",
     "save_dataset_to_zip",

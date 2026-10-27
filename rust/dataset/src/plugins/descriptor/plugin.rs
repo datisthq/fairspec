@@ -27,7 +27,7 @@ impl DatasetPlugin for DescriptorPlugin {
         options: &SaveDatasetOptions,
     ) -> Result<Option<SaveDatasetResult>> {
         let target = &options.target;
-        if !get_is_local_json(target) || !target.ends_with("datapackage.json") {
+        if !get_is_local_json(target) {
             return Ok(None);
         }
         save_dataset_descriptor(dataset, target, false)?;

@@ -4,6 +4,7 @@ from fairspec_dataset import (
     CkanPlugin,
     DescriptorPlugin,
     FolderPlugin,
+    FrictionlessPlugin,
     GithubPlugin,
     ZenodoPlugin,
     ZipPlugin,
@@ -34,6 +35,7 @@ system = System()
 
 system.register(CkanPlugin)
 system.register(DescriptorPlugin)
+system.register(FrictionlessPlugin)
 system.register(GithubPlugin)
 system.register(ZenodoPlugin)
 system.register(FolderPlugin)

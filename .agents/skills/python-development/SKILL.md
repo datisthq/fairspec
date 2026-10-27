@@ -47,7 +47,7 @@ becomes an underscore: `mcp-server/fairspec_mcp_server/`), except the meta-packa
 `python/fairspec/fairspec/`, and `project/`, which ships nothing.
 
 - `metadata` — pydantic models (`Resource`, `Dataset`, `TableSchema`, `Column`, `FileDialect`), descriptor load/save, path normalization, JSON Schema profiles. No `fairspec-*` dependencies; the base of the graph.
-- `dataset` — file, folder and stream I/O plus dataset-source plugins: ckan, descriptor, folder, github, zenodo, zip.
+- `dataset` — file, folder and stream I/O plus dataset-source plugins: ckan, descriptor, folder, frictionless, github, zenodo, zip. The frictionless plugin owns `datapackage.json` (load and save) and is checked before descriptor, which takes any other `.json`.
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlsx.
 - `library` — the plugin registry and the facade actions every consumer calls: `load_table`, `save_table`, `load_dataset`, `save_dataset`, `validate_*`, `infer_*`.
 - `mcp-server` — MCP tools over the library actions (the `mcp` SDK's `MCPServer`), served over stdio as `fairspec mcp`.
@@ -99,7 +99,9 @@ relative import reaches beyond the top-level package.
 - **Descriptors are typed only by the model step.** `validate_*` runs the declared profile, then `inspect_model` (`metadata/fairspec_metadata/actions/descriptor/inspect.py`); never build a model straight from a profile-valid descriptor. `FairspecModel` has `extra="allow"`, so extension properties pass through — a check reading a keyword guards by column kind, not by `hasattr`, since a stray key survives on any kind
 - **A normalized descriptor holds filesystem paths, not spec Paths.** `normalize_path` makes
   them relative to the working directory, often with a leading `..` segment, which the `Path` pattern
-  rejects, so update a normalized model with `model_copy`, never rebuild it with `Model(**…)`
+  rejects, so update a normalized model with `model_copy`, never rebuild it with `Model(**…)`.
+  A plugin's `load_dataset` returns such a dict: type it with `load_dataset_model`
+  (`library/fairspec_library/actions/dataset/load.py`), not `Dataset.model_validate`
 - **`FileDialect` is `BuiltinFileDialect | CustomFileDialect`.** A format the spec does not define
   validates as `CustomFileDialect`, whose `format` validator refuses the built-in values, so a
   broken CSV dialect fails as CSV instead of passing as custom. A plugin takes its dialect from

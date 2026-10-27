@@ -6,7 +6,7 @@ import { loadDataset } from "../load.ts"
 import { saveDataset } from "../save.ts"
 
 describe("saveDataset", () => {
-  it("should save dataset to datapackage.json file", async () => {
+  it("should save dataset to dataset.json file", async () => {
     const content = JSON.stringify({
       language: "en",
       resources: [
@@ -18,12 +18,12 @@ describe("saveDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const source = await loadDataset(path)
     const tempDir = getTempFolderPath()
-    const targetPath = join(tempDir, "datapackage.json")
+    const targetPath = join(tempDir, "dataset.json")
 
     await saveDataset(source, { target: targetPath })
 
@@ -49,12 +49,12 @@ describe("saveDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const source = await loadDataset(path)
     const tempDir = getTempFolderPath()
-    const targetPath = join(tempDir, "datapackage.json")
+    const targetPath = join(tempDir, "dataset.json")
 
     await saveDataset(source, { target: targetPath })
 
@@ -81,12 +81,12 @@ describe("saveDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const source = await loadDataset(path)
     const tempDir = getTempFolderPath()
-    const targetPath = join(tempDir, "datapackage.json")
+    const targetPath = join(tempDir, "dataset.json")
 
     await saveDataset(source, { target: targetPath })
 

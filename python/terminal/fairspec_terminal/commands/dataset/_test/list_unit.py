@@ -13,7 +13,7 @@ class TestDatasetListCommand:
     def test_should_list_resource_names_from_descriptor(self):
         folder = get_temp_folder_path()
         descriptor = {"resources": [{"name": "products", "data": "products.csv"}]}
-        path = os.path.join(folder, "datapackage.json")
+        path = os.path.join(folder, "dataset.json")
         with open(path, "w") as f:
             json.dump(descriptor, f)
 

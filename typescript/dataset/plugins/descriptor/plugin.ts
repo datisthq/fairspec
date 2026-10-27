@@ -20,10 +20,6 @@ export class DescriptorPlugin implements DatasetPlugin {
     const isLocalJson = getIsLocalJson(options.target)
     if (!isLocalJson) return undefined
 
-    if (!options.target.endsWith("datapackage.json")) {
-      return undefined
-    }
-
     await saveDatasetDescriptor(dataset, { path: options.target })
 
     return { path: options.target }

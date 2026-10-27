@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer"
 import { readdirSync, readFileSync } from "node:fs"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { basename, dirname, join, resolve } from "node:path"
 import type {
@@ -28,6 +28,7 @@ import {
   previewFile,
   queryDataset,
   queryTable,
+  saveDataset,
   ValidateTableOptions,
   validateData,
   validateDataSchema,
@@ -61,6 +62,7 @@ type Group = {
   integrity?: Integrity
   textual?: boolean
   dataset?: Dataset
+  datapackage?: Record<string, unknown>
   query?: string
   options?: Record<string, unknown>
   tests: Test[]
@@ -85,6 +87,12 @@ const OPERATIONS: Record<string, (group: Group, test: Test) => Promise<unknown>>
     }
     const { valid, errors } = await validateDataSchema(test.data)
     return { valid, errors }
+  },
+  "dataset-copy": async (group, test) => {
+    const path = await writeDataset(group, test)
+    const target = join(dirname(path), "datapackage.json")
+    await saveDataset(await loadDataset(path), { target })
+    return JSON.parse(await readFile(target, "utf-8"))
   },
   "dataset-infer": async (group, test) => {
     const path = await writeDataset(group, test)
@@ -245,8 +253,8 @@ async function writeDataset(group: Group, test: Test) {
     await writeFile(join(dir, name), encodeData(content))
   }
 
-  const path = join(dir, "dataset.json")
-  await writeFile(path, JSON.stringify(group.dataset))
+  const path = join(dir, group.datapackage ? "datapackage.json" : "dataset.json")
+  await writeFile(path, JSON.stringify(group.datapackage ?? group.dataset))
   return path
 }
 

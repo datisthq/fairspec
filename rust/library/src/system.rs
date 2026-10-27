@@ -1,8 +1,8 @@
 use std::sync::{LazyLock, PoisonError, RwLock, RwLockReadGuard};
 
 use fairspec_dataset::{
-    CkanPlugin, DatasetPlugin, DescriptorPlugin, FolderPlugin, GithubPlugin, MetadataPlugin,
-    ZenodoPlugin, ZipPlugin,
+    CkanPlugin, DatasetPlugin, DescriptorPlugin, FolderPlugin, FrictionlessPlugin, GithubPlugin,
+    MetadataPlugin, ZenodoPlugin, ZipPlugin,
 };
 use fairspec_table::{
     ArrowPlugin, CsvPlugin, InlinePlugin, JsonPlugin, ParquetPlugin, SqlitePlugin, TablePlugin,
@@ -58,6 +58,7 @@ pub static SYSTEM: LazyLock<RwLock<System>> = LazyLock::new(|| {
     let mut system = System::default();
     system.register(SystemPlugin::Dataset(Box::new(CkanPlugin)));
     system.register(SystemPlugin::Dataset(Box::new(DescriptorPlugin)));
+    system.register(SystemPlugin::Dataset(Box::new(FrictionlessPlugin)));
     system.register(SystemPlugin::Dataset(Box::new(GithubPlugin)));
     system.register(SystemPlugin::Dataset(Box::new(ZenodoPlugin)));
     system.register(SystemPlugin::Dataset(Box::new(FolderPlugin)));

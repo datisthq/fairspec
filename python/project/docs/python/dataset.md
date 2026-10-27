@@ -58,7 +58,7 @@ descriptor = load_dataset("dataset.json")
 descriptor = load_dataset("https://example.com/dataset.json")
 ```
 
-`load_dataset` dispatches to the appropriate plugin based on the source (folder, zip, GitHub, Zenodo, CKAN, …) and returns a `Descriptor` (a dict-like JSON object) or `None` if no plugin recognises the source.
+`load_dataset` dispatches to the appropriate plugin based on the source (folder, zip, GitHub, Zenodo, CKAN, a Frictionless `datapackage.json`, …) and returns a `Descriptor` (a dict-like JSON object) or `None` if no plugin recognises the source.
 
 To get a typed `Dataset` model, validate the descriptor:
 
@@ -76,6 +76,15 @@ For format-specific loaders, use:
 - `load_dataset_from_github(url)`
 - `load_dataset_from_zenodo(url)`
 - `load_dataset_from_ckan(url)`
+- `load_dataset_from_frictionless(path)`
+
+A source named `datapackage.json` is read as a [Frictionless Data Package](https://datapackage.org) (v1 or v2) and converted to a Fairspec dataset, so it validates, infers and queries like any other. Fields allow null unless `constraints.required` is set, schema and dialect paths are loaded relative to the package, and a resource name outside `[a-zA-Z0-9_]` has its other characters replaced by `_`.
+
+```python
+from fairspec import validate_dataset
+
+report = validate_dataset("datapackage.json")
+```
 
 ## Inferring a Dataset
 
@@ -156,6 +165,9 @@ For format-specific saving, use:
 - `save_dataset_to_github(dataset, target=...)`
 - `save_dataset_to_zenodo(dataset, target=...)`
 - `save_dataset_to_ckan(dataset, target=...)`
+- `save_dataset_to_frictionless(dataset, target=...)`
+
+Saving to a `datapackage.json` target writes a Frictionless Data Package v2 descriptor; a Frictionless property Fairspec cannot hold, such as `doubleQuote` or `encoding`, is dropped.
 
 ## Validating a Dataset
 

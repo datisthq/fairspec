@@ -32,7 +32,7 @@ const report = await validateDataset(dataset)
 
 ## Loading a Dataset
 
-`loadDataset(source)` dispatches to the first plugin that recognises the source. The bundled plugins resolve `folder`, `zip`, `github`, `zenodo`, and `ckan` sources automatically.
+`loadDataset(source)` dispatches to the first plugin that recognises the source. The bundled plugins resolve `folder`, `zip`, `github`, `zenodo`, and `ckan` sources automatically, and a `datapackage.json` loads as a Frictionless Data Package.
 
 ```ts
 import { loadDataset } from "fairspec"
@@ -46,6 +46,19 @@ const folder = await loadDataset("./datasets/sales")
 const zip = await loadDataset("./datasets/sales.zip")
 
 const repo = await loadDataset("https://github.com/datisthq/example-dataset")
+```
+
+### Frictionless Data Packages
+
+A source named `datapackage.json` is read as a [Frictionless Data Package](https://datapackage.org) (v1 or v2) and converted to a Fairspec dataset, so it validates, infers and queries like any other. Fields allow null unless `constraints.required` is set, schema and dialect paths are loaded relative to the package, and a resource name outside `[a-zA-Z0-9_]` has its other characters replaced by `_`. Saving to a `datapackage.json` target writes a Data Package v2 descriptor beside the data, with paths relative to it; a Frictionless property Fairspec cannot hold, such as `doubleQuote` or `encoding`, is dropped.
+
+```ts
+import { loadDataset, saveDataset, validateDataset } from "fairspec"
+
+const report = await validateDataset("./sales/datapackage.json")
+
+const dataset = await loadDataset("./sales/dataset.json")
+await saveDataset(dataset, { target: "./sales/datapackage.json" })
 ```
 
 The returned value is a `Dataset` — a JSON-compatible object containing `resources`, metadata fields, and any extension properties.

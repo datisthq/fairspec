@@ -148,8 +148,8 @@ mod save_dataset {
     }
 
     #[test]
-    fn test_returns_none_for_non_datapackage_json() {
-        assert_not_saved("dataset.json");
+    fn test_saves_to_any_local_json() {
+        assert_saved("dataset.json", false);
     }
 
     #[test]

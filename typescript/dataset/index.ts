@@ -26,6 +26,11 @@ export {
   saveDatasetToFolder,
 } from "./plugins/folder/index.ts"
 export {
+  FrictionlessPlugin,
+  loadDatasetFromFrictionless,
+  saveDatasetToFrictionless,
+} from "./plugins/frictionless/index.ts"
+export {
   GithubPlugin,
   loadDatasetFromGithub,
   saveDatasetToGithub,

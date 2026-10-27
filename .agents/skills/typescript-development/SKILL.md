@@ -34,7 +34,7 @@ metadata ─┬─► dataset ───┐
 ```
 
 - `metadata` — zod models (`Resource`, `Dataset`, `TableSchema`, `Column`, `FileDialect`), descriptor load/save, path normalization, JSON Schema profiles. No `@fairspec/*` dependencies; the base of the graph and the only browser-safe core.
-- `dataset` — file, folder and stream I/O (`loadFile`, `saveFile`, `prefetchFiles`, temp files) plus dataset-source plugins: ckan, descriptor, folder, github, zenodo, zip.
+- `dataset` — file, folder and stream I/O (`loadFile`, `saveFile`, `prefetchFiles`, temp files) plus dataset-source plugins: ckan, descriptor, folder, frictionless, github, zenodo, zip. The frictionless plugin owns `datapackage.json` (load and save) and is checked before descriptor, which takes any other `.json`.
 - `table` — the Polars-backed table engine (normalize/denormalize, column checks and types, schema inference, the dialect sniffer) plus file-format plugins: arrow, csv, inline, json, parquet, sqlite, xlxs.
 - `extension` — renderers turning a `TableSchema` into markdown or HTML.
 - `library` — the plugin registry (`system.ts`) and the facade actions every consumer calls: `loadTable`, `saveTable`, `loadDataset`, `saveDataset`, `validate*`, `infer*`.

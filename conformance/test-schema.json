@@ -46,6 +46,10 @@
           "description": "Dataset descriptor written as dataset.json; each resource's data names a key of the test's data",
           "type": "object"
         },
+        "datapackage": {
+          "description": "Frictionless Data Package written as datapackage.json instead of the dataset; each resource's path names a key of the test's data",
+          "type": "object"
+        },
         "options": {
           "description": "Options of the operation, with the camelCase keys the TypeScript API uses",
           "type": "object"

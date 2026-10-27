@@ -122,11 +122,12 @@ class TestSaveDataset:
         assert result is None
 
     @patch("fairspec_dataset.plugins.descriptor.plugin.save_dataset_descriptor")
-    def test_returns_none_for_non_datapackage_json(self, mock_save: MagicMock):
+    def test_saves_to_any_local_json(self, mock_save: MagicMock):
         result = self.plugin.save_dataset(self.dataset, target="./dataset.json")
 
-        mock_save.assert_not_called()
-        assert result is None
+        mock_save.assert_called_once_with(self.dataset, path="./dataset.json")
+        assert result is not None
+        assert result.path == "./dataset.json"
 
     @patch("fairspec_dataset.plugins.descriptor.plugin.save_dataset_descriptor")
     def test_returns_none_for_csv(self, mock_save: MagicMock):

@@ -1,10 +1,11 @@
 use fairspec_metadata::{
     Dataset, Error, FairspecError, Report, Result, assert_dataset, create_report,
-    infer_resource_name, load_dataset_descriptor,
+    infer_resource_name,
 };
 use serde_json::Value;
 
 use super::foreign_key::validate_dataset_foreign_keys;
+use super::load::load_dataset;
 use crate::actions::resource::validate::validate_resource;
 use crate::helpers::concurrency::run_concurrent_tasks;
 use crate::models::dataset::DatasetSource;
@@ -15,7 +16,7 @@ pub fn validate_dataset(
     options: &ValidateTableOptions,
 ) -> Result<Report> {
     let loaded = match source.into() {
-        DatasetSource::Path(path) => load_dataset_descriptor(&path),
+        DatasetSource::Path(path) => load_dataset_from_plugins(&path),
         DatasetSource::Descriptor(descriptor) => assert_dataset(&descriptor, None),
         DatasetSource::Dataset(dataset) => Ok(*dataset),
     };
@@ -31,6 +32,16 @@ pub fn validate_dataset(
     let fk_report = validate_dataset_foreign_keys(&dataset, options)?;
     errors.extend(fk_report.errors);
     Ok(create_report(errors, None))
+}
+
+fn load_dataset_from_plugins(path: &str) -> Result<Dataset> {
+    let Some(descriptor) = load_dataset(path)? else {
+        return Err(Error::Load(format!(
+            "No plugin can load the dataset: {path}"
+        )));
+    };
+    serde_json::from_value(Value::Object(descriptor))
+        .map_err(|error| Error::Parse(error.to_string()))
 }
 
 // The inferred names stay on the dataset, so the foreign key errors carry them too

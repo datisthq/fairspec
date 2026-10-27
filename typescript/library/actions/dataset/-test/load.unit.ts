@@ -15,7 +15,7 @@ describe("loadDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const target = await loadDataset(path)
@@ -42,7 +42,7 @@ describe("loadDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const target = await loadDataset(path)
@@ -70,7 +70,7 @@ describe("loadDataset", () => {
     })
 
     const path = await writeTempFile(content, {
-      filename: "datapackage.json",
+      filename: "dataset.json",
     })
 
     const target = await loadDataset(path)

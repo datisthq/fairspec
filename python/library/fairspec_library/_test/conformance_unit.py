@@ -25,8 +25,9 @@ from pydantic import BaseModel
 from ..actions.data.validate import validate_data
 from ..actions.data_schema.infer import infer_data_schema
 from ..actions.dataset.infer import infer_dataset
-from ..actions.dataset.load import load_dataset
+from ..actions.dataset.load import load_dataset, load_dataset_model
 from ..actions.dataset.query import query_dataset
+from ..actions.dataset.save import save_dataset
 from ..actions.dataset.validate import validate_dataset
 from ..actions.file_dialect.infer import infer_file_dialect
 from ..actions.table.load import load_table
@@ -68,6 +69,7 @@ class Group(TypedDict, total=False):
     integrity: dict[str, object]
     textual: bool
     dataset: dict[str, object]
+    datapackage: dict[str, object]
     query: str
     options: dict[str, object]
     tests: list[Case]
@@ -87,6 +89,14 @@ def run_data_validate_schema(group: Group, test: Case) -> object:
         raise TypeError("data-validate-schema data must be a schema object")
     report = validate_data_schema(data)
     return report.model_copy(update={"data_schema": None})
+
+
+def run_dataset_copy(group: Group, test: Case) -> object:
+    path = write_dataset(group, test)
+    target = os.path.join(os.path.dirname(path), "datapackage.json")
+    save_dataset(load_dataset_model(path), target=target)
+    with open(target, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def run_dataset_infer(group: Group, test: Case) -> object:
@@ -176,6 +186,7 @@ OPERATIONS: dict[str, Callable[[Group, Case], object]] = {
     "data-infer-schema": run_data_infer_schema,
     "data-validate": run_data_validate,
     "data-validate-schema": run_data_validate_schema,
+    "dataset-copy": run_dataset_copy,
     "dataset-infer": run_dataset_infer,
     "dataset-list": run_dataset_list,
     "dataset-query": run_dataset_query,
@@ -280,9 +291,10 @@ def write_dataset(group: Group, test: Case) -> str:
             encoded = encode_data(content)
             f.write(encoded.encode("utf-8") if isinstance(encoded, str) else encoded)
 
-    path = os.path.join(folder, "dataset.json")
+    datapackage = group.get("datapackage")
+    path = os.path.join(folder, "datapackage.json" if datapackage else "dataset.json")
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(group["dataset"], f)
+        json.dump(datapackage or group["dataset"], f)
     return path
 
 

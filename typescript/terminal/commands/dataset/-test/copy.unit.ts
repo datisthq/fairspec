@@ -21,8 +21,8 @@ describe("dataset copy", () => {
     for (const [name, content] of Object.entries(files)) {
       await writeFile(join(source, name), content)
     }
-    await writeFile(join(source, "datapackage.json"), JSON.stringify(descriptor))
-    return join(source, "datapackage.json")
+    await writeFile(join(source, "dataset.json"), JSON.stringify(descriptor))
+    return join(source, "dataset.json")
   }
 
   async function runCopyFrom(descriptorPath: string, targetPath: string) {

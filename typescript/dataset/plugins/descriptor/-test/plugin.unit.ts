@@ -142,13 +142,15 @@ describe("DescriptorPlugin", () => {
       expect(result).toBeUndefined()
     })
 
-    it("should return undefined for local json files not named datapackage.json", async () => {
+    it("should save dataset to any local json file", async () => {
       const result = await plugin.saveDataset(mockDataset, {
         target: "./dataset.json",
       })
 
-      expect(mockSaveDatasetDescriptor).not.toHaveBeenCalled()
-      expect(result).toBeUndefined()
+      expect(mockSaveDatasetDescriptor).toHaveBeenCalledWith(mockDataset, {
+        path: "./dataset.json",
+      })
+      expect(result).toEqual({ path: "./dataset.json" })
     })
 
     it("should return undefined for local csv files", async () => {
