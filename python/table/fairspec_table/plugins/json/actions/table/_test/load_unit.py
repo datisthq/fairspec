@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import polars as pl
 from fairspec_dataset import write_temp_file
 from fairspec_metadata import JsonFileDialect, JsonlFileDialect, Resource
@@ -133,6 +135,16 @@ class TestLoadJsonTableJsonl:
             {"id": 1, "name": "english"},
             {"id": 2, "name": "中文"},
         ]
+
+    def test_should_scan_an_inferred_object_row_dialect_natively(self):
+        path = write_temp_file('{"id":1}\n{"id":2}', format="jsonl")
+
+        with patch.object(pl, "scan_ndjson", wraps=pl.scan_ndjson) as scan_ndjson:
+            table = load_json_table(Resource(data=path), denormalized=True)
+            assert table is not None
+            table.collect()
+
+        scan_ndjson.assert_called_once_with(path)
 
     def test_should_load_local_file_multipart(self):
         body = '{"id":1,"name":"english"}\n{"id":2,"name":"中文"}'

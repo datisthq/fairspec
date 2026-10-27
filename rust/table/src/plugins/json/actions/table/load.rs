@@ -88,14 +88,16 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
     Ok(Some(result))
 }
 
-/// Whether the dialect sets nothing beyond its format, title and description.
+/// Whether the dialect sets nothing beyond its format, title, description and object rows.
 fn get_is_default_dialect(file_dialect: &FileDialect) -> bool {
     let Ok(Value::Object(descriptor)) = serde_json::to_value(file_dialect) else {
         return true;
     };
-    descriptor
-        .keys()
-        .all(|key| matches!(key.as_str(), "format" | "title" | "description" | "$schema"))
+    descriptor.iter().all(|(key, value)| match key.as_str() {
+        "format" | "title" | "description" | "$schema" => true,
+        "rowType" => value == "object",
+        _ => false,
+    })
 }
 
 fn create_table_from_records(records: Vec<DataRecord>) -> Result<Table> {

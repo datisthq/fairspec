@@ -180,6 +180,9 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   response model requires nothing the API may omit or null (real CKAN and Zenodo send `null`
   freely; mark those `.nullish()`) and leaves out what the code never reads; one endpoint, one model (`ZenodoRecord` for `/records`,
   `ZenodoDeposition` for `/deposit`). Test mocks return realistic bodies, never `{ id, url }` stubs
+- **JSONL takes the native `pl.scanJson` only for a default dialect**: one that sets nothing
+  beyond `format`, `title`, `description` and `rowType: "object"` (inference always adds that
+  rowType). Anything else decodes in JS. Python and Rust share the same rule; keep the three equal
 - `loadData` accepts any JSON document (array, scalar, `{}`, `[]`): test for `undefined`, never truthiness
 - **nodejs-polars traps the table engine works around**: a bare `pl.Decimal()` aborts the
   whole process (pass precision and scale, as `pl.Decimal(38, 18)`), and a Decimal column

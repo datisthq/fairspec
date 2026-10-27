@@ -78,3 +78,6 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   whether the other library's unit tests already encode the decision
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
+- A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every
+  load path, so the Python runner's strict compare fails it. That is an open divergence, not
+  a reason to drop the strict compare; until it is fixed, give `number` cases fractional values

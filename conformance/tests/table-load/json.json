@@ -17,14 +17,64 @@
     ]
   },
   {
+    "description": "jsonl rows without a dialect, uneven lines",
+    "comment": "An inferred object-row dialect is read like a declared default one",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "jsonl",
+    "tests": [
+      {
+        "description": "a key missing from a line is null",
+        "data": "{\"id\":1,\"name\":\"alice\"}\n{\"id\":2}\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, null]
+          ]
+        }
+      },
+      {
+        "description": "a key first seen on a later line is a column",
+        "data": "{\"id\":1}\n{\"id\":2,\"name\":\"bob\"}\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "bob"]
+          ]
+        }
+      },
+      {
+        "description": "an explicit null is null",
+        "data": "{\"id\":1,\"name\":null}\n{\"id\":2,\"name\":\"bob\"}\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  },
+  {
     "description": "json array of objects",
     "format": "json",
     "tests": [
       {
         "description": "rows given as an array",
         "data": [
-          { "id": 1, "name": "alice" },
-          { "id": 2, "name": "bob" }
+          {
+            "id": 1,
+            "name": "alice"
+          },
+          {
+            "id": 2,
+            "name": "bob"
+          }
         ],
         "expected": {
           "columns": ["id", "name"],

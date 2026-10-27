@@ -200,6 +200,14 @@ describe("loadJsonTable (format=jsonl)", () => {
       expect((await table?.collect())?.getColumn("id").dtype).toEqual(pl.Int64)
     })
 
+    it("should scan an inferred object-row dialect natively", async () => {
+      const path = await writeTempFile('{"id":1}\n{"id":2}', { format: "jsonl" })
+
+      const table = await loadJsonTable({ data: path }, { denormalized: true })
+
+      expect((await table?.collect())?.getColumn("id").dtype).toEqual(pl.Int64)
+    })
+
     it("should load local file (multipart)", async () => {
       const body = '{"id":1,"name":"english"}\n{"id":2,"name":"中文"}'
       const path1 = await writeTempFile(body)

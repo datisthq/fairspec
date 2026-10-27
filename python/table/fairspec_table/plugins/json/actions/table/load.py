@@ -88,7 +88,10 @@ def _is_default_dialect(dialect: FileDialect) -> bool:
     for key in type(dialect).model_fields:
         if key in ("format", "type", "title", "description"):
             continue
-        if getattr(dialect, key, None) is not None:
+        value = getattr(dialect, key, None)
+        if key == "rowType" and value == RowType.object:
+            continue
+        if value is not None:
             return False
     return True
 
