@@ -18,8 +18,7 @@ def inspect_json(
     if isinstance(json_schema, str):
         json_schema = load_json_schema(json_schema)
 
-    registry = referencing.Registry(retrieve=_retrieve)  # type: ignore[call-arg]
-    validator = Draft202012Validator(json_schema, registry=registry, format_checker=None)
+    validator = _get_validator(json_schema)
 
     errors: list[dict[str, str]] = []
     for error in validator.iter_errors(value):
@@ -35,6 +34,24 @@ def inspect_json(
         )
 
     return errors
+
+
+# Keyed by identity, holding the schema so its id is never reused: callers pass one
+# schema object for a whole column, and a schema mutated after use keeps its validator
+_VALIDATORS: dict[int, tuple[JsonSchema, Draft202012Validator]] = {}
+
+
+def _get_validator(json_schema: JsonSchema) -> Draft202012Validator:
+    cached = _VALIDATORS.get(id(json_schema))
+    if cached and cached[0] is json_schema:
+        return cached[1]
+
+    registry = referencing.Registry(retrieve=_retrieve)  # type: ignore[call-arg]
+    validator = Draft202012Validator(json_schema, registry=registry, format_checker=None)
+    if len(_VALIDATORS) >= 128:
+        _VALIDATORS.clear()
+    _VALIDATORS[id(json_schema)] = (json_schema, validator)
+    return validator
 
 
 def _retrieve(uri: str) -> referencing.Resource:

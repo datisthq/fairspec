@@ -64,7 +64,8 @@ export async function inspectJsonColumn(
   const errors: CellError[] = []
 
   const typeJsonSchema = options.typeJsonSchema
-  const constraintJsonSchema = column.property
+  // The native kind check already holds what `type` would assert on every value
+  const { type: _type, ...constraintJsonSchema } = column.property
   const needsValidator =
     !!typeJsonSchema ||
     Object.entries(constraintJsonSchema).some(
@@ -122,7 +123,7 @@ export async function inspectJsonColumn(
       continue
     }
 
-    if (constraintJsonSchema) {
+    if (needsValidator) {
       const constraintErrors = await inspectJson(target, {
         jsonSchema: constraintJsonSchema,
       })

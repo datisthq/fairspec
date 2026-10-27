@@ -52,10 +52,12 @@ pub fn inspect_json_column(
     let type_json_schema = type_json_schema
         .and_then(Value::as_object)
         .filter(|json_schema| !json_schema.is_empty());
-    let constraint_json_schema = match serde_json::to_value(column.property()) {
+    // The native kind check already holds what `type` would assert on every value
+    let mut constraint_json_schema = match serde_json::to_value(column.property()) {
         Ok(Value::Object(json_schema)) => json_schema,
         _ => Default::default(),
     };
+    constraint_json_schema.remove("type");
     let needs_validator = type_json_schema.is_some()
         || constraint_json_schema
             .keys()
@@ -91,7 +93,7 @@ pub fn inspect_json_column(
             continue;
         }
 
-        if !constraint_json_schema.is_empty() {
+        if needs_validator {
             for issue in inspect_json(&target, constraint_json_schema.clone(), None)? {
                 errors.push(CellError::Json(CellJsonError {
                     resource_name: None,

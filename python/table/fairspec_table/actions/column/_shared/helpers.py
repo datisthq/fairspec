@@ -73,7 +73,10 @@ def inspect_json_column(
     errors: list[CellError] = []
 
     column_type = ColumnType(column.type)
-    constraint_json_schema = column.property.model_dump(exclude_none=True, by_alias=True)
+    # The native kind check already holds what `type` would assert on every value
+    constraint_json_schema = column.property.model_dump(
+        exclude_none=True, by_alias=True, exclude={"type"}
+    )
     needs_validator = bool(type_json_schema) or bool(
         constraint_json_schema.keys() - ANNOTATION_KEYWORDS
     )
@@ -123,7 +126,7 @@ def inspect_json_column(
                 )
             continue
 
-        if constraint_json_schema:
+        if needs_validator:
             constraint_errors = inspect_json(target, json_schema=constraint_json_schema)
 
             for error in constraint_errors:
