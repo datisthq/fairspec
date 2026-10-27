@@ -1,6 +1,6 @@
 use fairspec_metadata::{
-    Dataset, FairspecError, ForeignKey, ForeignKeyError, Report, Resource, ResourceError,
-    ResourceMissingError, Result, TableError, create_report, resolve_table_schema,
+    Dataset, FairspecError, ForeignKey, ForeignKeyError, MetadataError, Report, Resource,
+    ResourceError, ResourceMissingError, Result, TableError, create_report, resolve_table_schema,
 };
 use fairspec_table::{LoadTableOptions, QUERY_ENGINE};
 use polars::prelude::*;
@@ -14,16 +14,17 @@ pub fn validate_dataset_foreign_keys(
 ) -> Result<Report> {
     let mut errors = Vec::new();
 
-    for resource in dataset.resources.iter().flatten() {
+    for (index, resource) in dataset.resources.iter().flatten().enumerate() {
         let Some(table_schema) = resolve_table_schema(resource.table_schema.as_ref())? else {
             continue;
         };
 
-        for foreign_key in table_schema.foreign_keys.iter().flatten() {
+        for (fk_index, foreign_key) in table_schema.foreign_keys.iter().flatten().enumerate() {
             errors.extend(validate_foreign_key(
                 resource,
                 foreign_key,
                 dataset,
+                &format!("/resources/{index}/tableSchema/foreignKeys/{fk_index}"),
                 &options.load_table_options,
             )?);
         }
@@ -36,6 +37,7 @@ fn validate_foreign_key(
     resource: &Resource,
     foreign_key: &ForeignKey,
     dataset: &Dataset,
+    json_pointer: &str,
     options: &LoadTableOptions,
 ) -> Result<Vec<FairspecError>> {
     let reference = &foreign_key.reference;
@@ -65,22 +67,40 @@ fn validate_foreign_key(
         return Ok(Vec::new());
     };
 
+    let Some(key_types) = get_key_types(&table, &ref_table, columns, ref_columns)? else {
+        return Ok(vec![FairspecError::Metadata(MetadataError {
+            message: "foreign key columns and reference columns differ in type".to_string(),
+            json_pointer: json_pointer.to_string(),
+            ..Default::default()
+        })]);
+    };
+
+    let key_names: Vec<String> = (0..columns.len())
+        .map(|index| format!("fairspec:key:{index}"))
+        .collect();
+    let create_keys = |names: &[String]| -> Vec<Expr> {
+        names
+            .iter()
+            .zip(&key_types)
+            .zip(&key_names)
+            .map(|((name, key_type), key_name)| {
+                cast_key(col(name.as_str()), key_type.as_ref()).alias(key_name.as_str())
+            })
+            .collect()
+    };
     let ref_selected = ref_table
-        .select(
-            ref_columns
-                .iter()
-                .zip(columns)
-                .map(|(ref_name, name)| col(ref_name.as_str()).alias(name.as_str()))
-                .collect::<Vec<_>>(),
-        )
+        .select(create_keys(ref_columns))
         .unique_stable(None, UniqueKeepStrategy::Any);
 
-    let on: Vec<Expr> = columns.iter().map(|name| col(name.as_str())).collect();
+    let on: Vec<Expr> = key_names.iter().map(|name| col(name.as_str())).collect();
+    let selected: Vec<Expr> = columns.iter().map(|name| col(name.as_str())).collect();
     let violations = table
-        .select(on.clone())
+        .select(selected.clone())
         .drop_nulls(None)
+        .with_columns(create_keys(columns))
         .join(ref_selected, on.clone(), on, JoinArgs::new(JoinType::Anti))
         .map_err(|error| fairspec_metadata::Error::Load(error.to_string()))?
+        .select(selected)
         .unique_stable(None, UniqueKeepStrategy::Any)
         .collect_with_engine(QUERY_ENGINE)
         .map(|result| result.unwrap_single())
@@ -103,6 +123,56 @@ fn validate_foreign_key(
     }
     Ok(errors)
 }
+
+/// The type each key pair joins on: numeric columns of differing types compare by
+/// value, any other differing pair is `None`, which never joins.
+fn get_key_types(
+    table: &LazyFrame,
+    ref_table: &LazyFrame,
+    columns: &[String],
+    ref_columns: &[String],
+) -> Result<Option<Vec<Option<DataType>>>> {
+    let to_error = |error: PolarsError| fairspec_metadata::Error::Load(error.to_string());
+    let schema = table.clone().collect_schema().map_err(to_error)?;
+    let ref_schema = ref_table.clone().collect_schema().map_err(to_error)?;
+
+    let mut key_types = Vec::new();
+    for (name, ref_name) in columns.iter().zip(ref_columns) {
+        let (Some(dtype), Some(ref_dtype)) = (schema.get(name), ref_schema.get(ref_name)) else {
+            return Ok(None);
+        };
+        let key_type = if dtype.is_categorical() || dtype.is_enum() {
+            if !(ref_dtype.is_categorical() || ref_dtype.is_enum()) {
+                return Ok(None);
+            }
+            Some(DataType::String)
+        } else if dtype.is_numeric() && ref_dtype.is_numeric() {
+            if dtype == ref_dtype {
+                None
+            } else if dtype.is_float() || ref_dtype.is_float() {
+                Some(DataType::Float64)
+            } else {
+                Some(DataType::Decimal(DECIMAL_PRECISION, DECIMAL_SCALE))
+            }
+        } else if dtype == ref_dtype {
+            None
+        } else {
+            return Ok(None);
+        };
+        key_types.push(key_type);
+    }
+    Ok(Some(key_types))
+}
+
+fn cast_key(column_expr: Expr, key_type: Option<&DataType>) -> Expr {
+    match key_type {
+        Some(key_type) => column_expr.cast(key_type.clone()),
+        None => column_expr,
+    }
+}
+
+const DECIMAL_PRECISION: usize = 38;
+const DECIMAL_SCALE: usize = 18;
 
 fn find_resource<'a>(dataset: &'a Dataset, name: &str) -> Option<&'a Resource> {
     dataset

@@ -1,0 +1,904 @@
+[
+  {
+    "description": "an integer column referencing a number column",
+    "comment": "Integer, Number and Decimal columns compare by numeric value",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "users.csv": "id\n1.0\n2.5\n",
+          "posts.csv": "user_id\n1\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a value equal to none is a foreignKey error",
+        "data": {
+          "users.csv": "id\n1.0\n2.5\n",
+          "posts.csv": "user_id\n1\n2\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": {
+                "resource": "users",
+                "columns": ["id"]
+              }
+            },
+            "cells": ["2"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a number column referencing an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "number"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "users.csv": "id\n1\n2\n",
+          "posts.csv": "user_id\n1.0\n2e0\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a fraction is a foreignKey error",
+        "data": {
+          "users.csv": "id\n1\n2\n",
+          "posts.csv": "user_id\n1.0\n2.5\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": {
+                "resource": "users",
+                "columns": ["id"]
+              }
+            },
+            "cells": ["2.5"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an integer column referencing a decimal column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "decimal"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "users.csv": "id\n1.00\n2.50\n",
+          "posts.csv": "user_id\n1\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a value equal to none is a foreignKey error",
+        "data": {
+          "users.csv": "id\n1.00\n2.50\n",
+          "posts.csv": "user_id\n1\n2\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": {
+                "resource": "users",
+                "columns": ["id"]
+              }
+            },
+            "cells": ["2"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a decimal column referencing a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "format": "decimal"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "users.csv": "id\n1\n2.5\n",
+          "posts.csv": "user_id\n1.00\n2.50\n"
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a nullable integer column referencing a number column",
+    "comment": "A null in the type array aside, the column types match",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": ["integer", "null"]
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "users.csv": "id\n1.5\n2\n",
+          "posts.csv": "user_id\n2\n\n"
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an integer column referencing a string column",
+    "comment": "The join never runs, so no data is checked",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\n1\n",
+          "posts.csv": "user_id\n1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a string column referencing a date column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "string"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\n2024-01-01\n",
+          "posts.csv": "user_id\n2024-01-01\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a string column referencing an email column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "string"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\na@example.com\n",
+          "posts.csv": "user_id\na@example.com\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an integer column referencing an integer categorical column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "categorical",
+                "categories": [1, 2]
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\n1\n",
+          "posts.csv": "user_id\n1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an integer column referencing a boolean column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\ntrue\n",
+          "posts.csv": "user_id\n1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a date column referencing a date-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "users.csv": "id\n2024-01-01T00:00:00Z\n",
+          "posts.csv": "user_id\n2024-01-01\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "the second of two foreign keys with differing types",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "user_id": {
+                "type": "integer"
+              },
+              "user_code": {
+                "type": "integer"
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id"]
+                }
+              },
+              {
+                "columns": ["user_id", "user_code"],
+                "reference": {
+                  "resource": "users",
+                  "columns": ["id", "code"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at its position",
+        "data": {
+          "users.csv": "id,code\n1,a\n",
+          "posts.csv": "user_id,user_code\n9,1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/tableSchema/foreignKeys/1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a self-referencing foreign key with differing types",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "tree",
+          "data": "tree.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "parent_id": {
+                "type": ["string", "null"]
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["parent_id"],
+                "reference": {
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the foreign key",
+        "data": {
+          "tree.csv": "id,parent_id\n1,1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/tableSchema/foreignKeys/0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a self-referencing foreign key from a number to an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "tree",
+          "data": "tree.csv",
+          "fileDialect": {
+            "format": "csv"
+          },
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "parent_id": {
+                "type": ["number", "null"]
+              }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["parent_id"],
+                "reference": {
+                  "columns": ["id"]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "values equal as numbers resolve",
+        "data": {
+          "tree.csv": "id,parent_id\n1,1.0\n2,\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a value equal to none is a foreignKey error",
+        "data": {
+          "tree.csv": "id,parent_id\n1,1.0\n2,1.5\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "tree",
+            "foreignKey": {
+              "columns": ["parent_id"],
+              "reference": {
+                "columns": ["id"]
+              }
+            },
+            "cells": ["1.5"]
+          }
+        ]
+      }
+    ]
+  }
+]

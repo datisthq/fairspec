@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use serde_json::Value;
 
+use super::foreign_key::inspect_foreign_key_types;
 use crate::models::column::boolean::BooleanColumnProperty;
 use crate::models::column::column::ColumnProperty;
 use crate::models::descriptor::Descriptor;
@@ -80,6 +81,14 @@ pub fn inspect_table_schema(
             errors.push(create_error(
                 "foreign key columns and reference columns differ in length".to_string(),
                 format!("{root}/foreignKeys/{index}/reference/columns"),
+            ));
+        }
+        if foreign_key.reference.resource.is_none() {
+            errors.extend(inspect_foreign_key_types(
+                foreign_key,
+                table_schema,
+                table_schema,
+                &format!("{root}/foreignKeys/{index}"),
             ));
         }
     }

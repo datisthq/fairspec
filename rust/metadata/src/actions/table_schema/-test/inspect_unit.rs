@@ -139,3 +139,26 @@ fn test_null_values_on_nullable_or_unknown_column() {
     }));
     assert!(inspect_table_schema_nulls(&descriptor, None).is_empty());
 }
+
+#[test]
+fn test_self_referencing_foreign_key_with_differing_types() {
+    let errors = inspect(json!({
+        "properties": {
+            "id": {"type": "string"},
+            "parent_id": {"type": "integer"},
+            "rank": {"type": "number"},
+        },
+        "foreignKeys": [
+            {"columns": ["parent_id"], "reference": {"columns": ["rank"]}},
+            {"columns": ["parent_id"], "reference": {"columns": ["id"]}},
+        ],
+    }));
+    assert_eq!(
+        errors,
+        json!([{
+            "type": "metadata",
+            "message": "foreign key column \"parent_id\" is integer, but \"id\" is string",
+            "jsonPointer": "/foreignKeys/1",
+        }])
+    );
+}

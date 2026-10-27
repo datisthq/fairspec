@@ -52,6 +52,12 @@ const KNOWN_DIVERGENCES: Record<string, string> = {
     "https://github.com/datisthq/fairspec/issues/76",
   "table-query/order-sorting#an integer categorical column with withOrder in descending order":
     "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#an integer categorical column without withOrder":
+    "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#an integer categorical column without withOrder in descending order":
+    "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#a labelled string categorical column without withOrder":
+    "https://github.com/datisthq/fairspec/issues/76",
 }
 
 const UNSPECIFIED_MESSAGE_ERRORS = ["data", "metadata", "cell/json"]

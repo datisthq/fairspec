@@ -38,6 +38,7 @@
     "@fairspec/metadata": "workspace:*",
     "@fairspec/table": "workspace:*",
     "json-schema-it": "^1.2.23",
+    "nodejs-polars": "^0.26.1",
     "p-all": "^5.0.1",
     "zod": "^4.4.1"
   }

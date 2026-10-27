@@ -156,9 +156,21 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   a parser) that appends `NULLS LAST` to each ORDER BY item without a null order, since Polars
   sorts nulls first in descending order. A `withOrder` Categorical sorts by category order
   because `narrow_column` (Python, Rust) loads it as a polars `Enum` of its labels in category
-  order, so `ORDER BY`, `MIN`/`MAX` and comparisons follow that order; `denarrow_column` takes an
-  `Enum` source back to values. nodejs-polars has no `Enum`, so TypeScript skips those cases
-  (`KNOWN_DIVERGENCES`, #76)
+  order, so `ORDER BY`, `MIN`/`MAX` and comparisons follow that order; an integer Categorical,
+  or a string one with labels, without `withOrder` is an `Enum` in value order, since its labels
+  sort as text (`"10" < "2"`).
+  `denarrow_column` takes an `Enum` source back to values. nodejs-polars has no `Enum`, so
+  TypeScript skips those cases (`KNOWN_DIVERGENCES`, #76)
+- The row-parsed text types (duration, WKT, WKB) check `enum`, `const`, `minLength`,
+  `maxLength` and `pattern` in their row scan with the polars path's own check functions
+  (`TEXT_CHECK_FUNCTIONS` in `inspectTextColumn` and twins), evaluated in that scan's one
+  collect; a cell with a `cell/type` error gets no other
+- Foreign key column types are checked twice: `inspectForeignKeyTypes` (and twins) reports a
+  declared mismatch as `metadata` at `…/foreignKeys/<i>` (self-references in
+  `inspectTableSchema`, references to another resource in the dataset validator, which
+  reuses the schemas its loop already loaded, so a path schema is never fetched twice), and `validateDatasetForeignKeys` joins on cast key columns
+  (`getKeyTypes`: `Float64` when either side is a float, else `Decimal(38, 18)`), reporting a
+  loaded dtype mismatch the same way, so a Polars `SchemaError` never reaches the join
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - Number and integer text passes the JSON number regex before any cast (`parseNumberText`,

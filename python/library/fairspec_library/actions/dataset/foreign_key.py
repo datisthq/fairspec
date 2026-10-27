@@ -7,6 +7,7 @@ from fairspec_metadata import (
     FairspecError,
     ForeignKey,
     ForeignKeyError,
+    MetadataError,
     Report,
     ResourceMissingError,
     create_report,
@@ -27,13 +28,19 @@ def validate_dataset_foreign_keys(
 ) -> Report:
     errors: list[FairspecError] = []
 
-    for resource in dataset.resources or []:
+    for index, resource in enumerate(dataset.resources or []):
         table_schema = resolve_table_schema(resource.tableSchema)
         if not table_schema:
             continue
 
-        for foreign_key in table_schema.foreignKeys or []:
-            fk_errors = _validate_foreign_key(resource, foreign_key, dataset, **options)
+        for fk_index, foreign_key in enumerate(table_schema.foreignKeys or []):
+            fk_errors = _validate_foreign_key(
+                resource,
+                foreign_key,
+                dataset,
+                json_pointer=f"/resources/{index}/tableSchema/foreignKeys/{fk_index}",
+                **options,
+            )
             errors.extend(fk_errors)
 
     return create_report(errors)
@@ -43,6 +50,8 @@ def _validate_foreign_key(
     resource: Resource,
     foreign_key: ForeignKey,
     dataset: Dataset,
+    *,
+    json_pointer: str,
     **options: Unpack[ValidateTableOptions],
 ) -> list[FairspecError]:
     reference = foreign_key.reference
@@ -72,15 +81,33 @@ def _validate_foreign_key(
     if ref_table is None:
         return []
 
-    rename_mapping = dict(zip(ref_columns, columns))
+    key_types = _get_key_types(table, ref_table, columns, ref_columns)
+    if key_types is None:
+        return [
+            MetadataError(
+                type="metadata",
+                message="foreign key columns and reference columns differ in type",
+                jsonPointer=json_pointer,
+            )
+        ]
+
+    key_names = [f"fairspec:key:{index}" for index in range(len(columns))]
     ref_selected = ref_table.select(
-        [pl.col(name).alias(rename_mapping[name]) for name in ref_columns]
+        [
+            _cast_key(pl.col(name), key_type).alias(key_name)
+            for name, key_type, key_name in zip(ref_columns, key_types, key_names)
+        ]
     ).unique(maintain_order=True)
 
     violations: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         table.select(columns)
         .drop_nulls()
-        .join(ref_selected, on=columns, how="anti")
+        .with_columns(
+            _cast_key(pl.col(name), key_type).alias(key_name)
+            for name, key_type, key_name in zip(columns, key_types, key_names)
+        )
+        .join(ref_selected, on=key_names, how="anti")
+        .select(columns)
         .unique(maintain_order=True)
         .collect(engine=QUERY_ENGINE)
     )
@@ -106,3 +133,43 @@ def _find_resource(dataset: Dataset, name: str) -> Resource | None:
             return resource
 
     return None
+
+
+def _get_key_types(
+    table: pl.LazyFrame,
+    ref_table: pl.LazyFrame,
+    columns: list[str],
+    ref_columns: list[str],
+) -> list[pl.DataType | None] | None:
+    """The type each key pair joins on: numeric columns of differing types compare by
+    value, any other differing pair is None, which never joins"""
+    schema = table.collect_schema()
+    ref_schema = ref_table.collect_schema()
+    key_types: list[pl.DataType | None] = []
+
+    for name, ref_name in zip(columns, ref_columns):
+        dtype = schema.get(name)
+        ref_dtype = ref_schema.get(ref_name)
+        if dtype is None or ref_dtype is None:
+            return None
+        if isinstance(dtype, (pl.Categorical, pl.Enum)):
+            if not isinstance(ref_dtype, (pl.Categorical, pl.Enum)):
+                return None
+            key_types.append(pl.String())
+        elif dtype.is_numeric() and ref_dtype.is_numeric():
+            if dtype == ref_dtype:
+                key_types.append(None)
+            elif dtype.is_float() or ref_dtype.is_float():
+                key_types.append(pl.Float64())
+            else:
+                key_types.append(pl.Decimal(38, 18))
+        elif dtype == ref_dtype:
+            key_types.append(None)
+        else:
+            return None
+
+    return key_types
+
+
+def _cast_key(column_expr: pl.Expr, key_type: pl.DataType | None) -> pl.Expr:
+    return column_expr if key_type is None else column_expr.cast(key_type)

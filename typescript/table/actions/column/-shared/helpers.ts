@@ -13,6 +13,11 @@ import * as pl from "nodejs-polars"
 import type { ColumnMapping } from "../../../models/column.ts"
 import type { Table } from "../../../models/table.ts"
 import { NUMBER_COLUMN_NAME } from "../../../settings.ts"
+import { checkCellConst } from "../checks/const.ts"
+import { checkCellEnum } from "../checks/enum.ts"
+import { checkCellMaxLength } from "../checks/maxLength.ts"
+import { checkCellMinLength } from "../checks/minLength.ts"
+import { checkCellPattern } from "../checks/pattern.ts"
 import { normalizeColumn } from "../normalize.ts"
 
 // TODO: Generalize wkt/wkb/duration inspectors
@@ -26,7 +31,16 @@ export async function inspectTextColumn(
   },
 ) {
   const errors: CellError[] = []
-  const frame = await collectCellFrame(table, options.mapping)
+  const sourceExpr = pl.col("source")
+  const checks = TEXT_CHECK_FUNCTIONS.flatMap(checkCell => {
+    const check = checkCell(column, { source: sourceExpr, target: sourceExpr })
+    return check ? [check] : []
+  })
+  const frame = await selectCellFrame(table, options.mapping)
+    .withColumns(
+      ...checks.map((check, index) => check.isErrorExpr.alias(`check:${index}`)),
+    )
+    .collect()
 
   for (const row of frame.toRecords() as any[]) {
     if (row.source === null) {
@@ -47,11 +61,30 @@ export async function inspectTextColumn(
         columnType: column.type,
         rowNumber: row[NUMBER_COLUMN_NAME],
       })
+      continue
+    }
+
+    for (const [index, check] of checks.entries()) {
+      if (!row[`check:${index}`]) continue
+      errors.push({
+        ...check.errorTemplate,
+        rowNumber: row[NUMBER_COLUMN_NAME],
+        cell: String(row.cell ?? ""),
+      })
     }
   }
 
   return errors
 }
+
+// The string constraints in the spec's keyword order, checked on a cell its type reads
+const TEXT_CHECK_FUNCTIONS = [
+  checkCellEnum,
+  checkCellConst,
+  checkCellMinLength,
+  checkCellMaxLength,
+  checkCellPattern,
+]
 
 export async function inspectJsonColumn(
   column: ArrayColumn | ObjectColumn | GeojsonColumn | TopojsonColumn,
@@ -158,10 +191,6 @@ const ANNOTATION_KEYWORDS = [
   "rdfType",
   "missingValues",
 ]
-
-async function collectCellFrame(table: Table, mapping: ColumnMapping) {
-  return await selectCellFrame(table, mapping).collect()
-}
 
 function selectCellFrame(table: Table, mapping: ColumnMapping) {
   return table

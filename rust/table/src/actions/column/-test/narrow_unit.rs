@@ -159,3 +159,21 @@ fn test_integer_categorical_with_order_sorts_by_category_order() {
         [json!("10"), json!("2"), json!("1")]
     );
 }
+
+#[test]
+fn test_integer_categorical_without_order_sorts_by_value() {
+    let series = Series::new("name".into(), [1i64, 10, 2]);
+    let target = json!({
+        "name": "name",
+        "type": "categorical",
+        "property": {
+            "type": "integer",
+            "format": "categorical",
+            "categories": [10, 2, 1],
+        },
+    });
+    assert_eq!(
+        get_sorted_values(series, target),
+        [json!("1"), json!("2"), json!("10")]
+    );
+}

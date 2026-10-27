@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import polars as pl
 
-from fairspec_metadata import CategoricalColumn
+from fairspec_metadata import CategoricalColumn, get_base_property_type
 
 from fairspec_table.helpers import get_categorical_values_and_labels
 from fairspec_table.models import ColumnMapping
@@ -39,14 +39,43 @@ def narrow_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
             values, labels = get_categorical_values_and_labels(mapping.target)
 
             if values:
-                # An Enum sorts, compares and takes MIN/MAX by category position
-                return_dtype = (
-                    pl.Enum(list(dict.fromkeys(labels)))
-                    if mapping.target.property.withOrder
-                    else pl.Categorical
-                )
                 return column_expr.replace_strict(
-                    values, labels, default=None, return_dtype=return_dtype
+                    values,
+                    labels,
+                    default=None,
+                    return_dtype=_get_categorical_dtype(mapping.target, values, labels),
                 )
 
     return column_expr
+
+
+# An Enum sorts, compares and takes MIN/MAX by category position: the listed order
+# under withOrder, else value order, since labels sort as text ("10" < "2")
+def _get_categorical_dtype(
+    column: CategoricalColumn, values: list[str | int], labels: list[str]
+) -> pl.DataType | type[pl.DataType]:
+    if column.property.withOrder:
+        return pl.Enum(list(dict.fromkeys(labels)))
+    if get_base_property_type(column.property.type) == "integer":
+        int_pairs = [
+            (value, label)
+            for value, label in zip(values, labels)
+            if isinstance(value, int)
+        ]
+        return pl.Enum(
+            list(dict.fromkeys(label for _, label in sorted(int_pairs, key=_get_key)))
+        )
+    if any(value != label for value, label in zip(values, labels)):
+        str_pairs = [
+            (value, label)
+            for value, label in zip(values, labels)
+            if isinstance(value, str)
+        ]
+        return pl.Enum(
+            list(dict.fromkeys(label for _, label in sorted(str_pairs, key=_get_key)))
+        )
+    return pl.Categorical
+
+
+def _get_key[T](pair: tuple[T, str]) -> T:
+    return pair[0]

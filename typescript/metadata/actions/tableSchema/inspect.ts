@@ -4,6 +4,7 @@ import type { TableSchema } from "../../models/tableSchema.ts"
 import { isValidEcmaRegex } from "../../actions/jsonSchema/regex.ts"
 import type { ColumnProperty } from "../../models/column/column.ts"
 import { getBasePropertyType } from "../column/property.ts"
+import { inspectForeignKeyTypes } from "./foreignKey.ts"
 
 const NULLABLE_KEYWORDS = ["enum", "const", "default", "examples"]
 const DEFAULT_TRUE_VALUES = ["true", "True", "TRUE", "1"]
@@ -58,6 +59,15 @@ export function inspectTableSchema(
         message: "foreign key columns and reference columns differ in length",
         jsonPointer: `${root}/foreignKeys/${index}/reference/columns`,
       })
+    }
+    if (foreignKey.reference.resource === undefined) {
+      errors.push(
+        ...inspectForeignKeyTypes(foreignKey, {
+          tableSchema,
+          referencedSchema: tableSchema,
+          jsonPointer: `${root}/foreignKeys/${index}`,
+        }),
+      )
     }
   }
 

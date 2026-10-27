@@ -356,7 +356,11 @@ fn inspect_cells_in_polars(
     Ok(errors)
 }
 
-fn locate_cell_error(template: &CellError, row_number: usize, cell: String) -> Result<CellError> {
+pub(crate) fn locate_cell_error(
+    template: &CellError,
+    row_number: usize,
+    cell: String,
+) -> Result<CellError> {
     let mut error = serde_json::to_value(template).map_err(create_error)?;
     if let Value::Object(object) = &mut error {
         object.insert("rowNumber".to_string(), Value::from(row_number));

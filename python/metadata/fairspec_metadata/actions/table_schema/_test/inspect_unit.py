@@ -36,6 +36,29 @@ class TestInspectTableSchema:
         )
         assert inspect_table_schema(table_schema) == []
 
+    def test_self_referencing_foreign_key_with_differing_types(self):
+        table_schema = TableSchema.model_validate(
+            {
+                "properties": {
+                    "id": {"type": "string"},
+                    "parent_id": {"type": "integer"},
+                    "rank": {"type": "number"},
+                },
+                "foreignKeys": [
+                    {"columns": ["parent_id"], "reference": {"columns": ["rank"]}},
+                    {"columns": ["parent_id"], "reference": {"columns": ["id"]}},
+                ],
+            }
+        )
+        errors = inspect_table_schema(table_schema)
+        assert [error.model_dump(exclude_none=True) for error in errors] == [
+            {
+                "type": "metadata",
+                "message": 'foreign key column "parent_id" is integer, but "id" is string',
+                "jsonPointer": "/foreignKeys/1",
+            }
+        ]
+
     def test_boolean_value_in_both_lists(self):
         table_schema = TableSchema.model_validate(
             {

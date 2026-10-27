@@ -79,3 +79,32 @@ class TestValidateDatasetDescriptor:
         assert [error.model_dump().get("jsonPointer") for error in result.errors] == [
             "/resources/1/tableSchema/foreignKeys/0/reference/resource"
         ]
+
+    def test_foreign_key_columns_of_differing_types(self):
+        dataset = {
+            "resources": [
+                {
+                    "name": "users",
+                    "data": "users.csv",
+                    "tableSchema": {"properties": {"id": {"type": "string"}}},
+                },
+                {
+                    "name": "posts",
+                    "data": "posts.csv",
+                    "tableSchema": {
+                        "properties": {"user_id": {"type": "integer"}},
+                        "foreignKeys": [
+                            {
+                                "columns": ["user_id"],
+                                "reference": {"resource": "users", "columns": ["id"]},
+                            }
+                        ],
+                    },
+                },
+            ]
+        }
+        result = validate_dataset_descriptor(dataset)
+        assert result.valid is False
+        assert [error.model_dump().get("jsonPointer") for error in result.errors] == [
+            "/resources/1/tableSchema/foreignKeys/0"
+        ]

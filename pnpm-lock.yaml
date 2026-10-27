@@ -497,6 +497,9 @@ importers:
       json-schema-it:
         specifier: ^1.2.23
         version: 1.2.23
+      nodejs-polars:
+        specifier: ^0.26.1
+        version: 0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a)
       p-all:
         specifier: ^5.0.1
         version: 5.0.1

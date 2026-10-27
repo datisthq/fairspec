@@ -43,3 +43,17 @@ class TestInspectDurationColumn:
         table = pl.DataFrame({"name": [cell]}).lazy()
         errors = inspect_duration_column(COLUMN, table)
         assert (len(errors) == 0) == valid
+
+    def test_inspect_string_constraints_of_readable_cells(self):
+        column = DurationColumn(
+            name="name",
+            type="duration",
+            property=DurationColumnProperty(enum=["P1D"], maxLength=3),
+        )
+        table = pl.DataFrame({"name": ["P1D", "P22D", "1D"]}).lazy()
+        errors = inspect_duration_column(column, table)
+        assert [(error.type, error.rowNumber) for error in errors] == [
+            ("cell/enum", 2),
+            ("cell/maxLength", 2),
+            ("cell/type", 3),
+        ]

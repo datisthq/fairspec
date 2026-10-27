@@ -6,6 +6,8 @@ from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.error.metadata import MetadataError
 from fairspec_metadata.models.table_schema import TableSchema
 
+from .foreign_key import inspect_foreign_key_types
+
 NULLABLE_KEYWORDS = ("enum", "const", "default", "examples")
 DEFAULT_TRUE_VALUES = ("true", "True", "TRUE", "1")
 DEFAULT_FALSE_VALUES = ("false", "False", "FALSE", "0")
@@ -57,6 +59,15 @@ def inspect_table_schema(
                     type="metadata",
                     message="foreign key columns and reference columns differ in length",
                     jsonPointer=f"{root}/foreignKeys/{index}/reference/columns",
+                )
+            )
+        if foreign_key.reference.resource is None:
+            errors.extend(
+                inspect_foreign_key_types(
+                    foreign_key,
+                    table_schema=table_schema,
+                    referenced_schema=table_schema,
+                    json_pointer=f"{root}/foreignKeys/{index}",
                 )
             )
 

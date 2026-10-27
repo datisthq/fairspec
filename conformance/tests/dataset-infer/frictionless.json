@@ -331,7 +331,7 @@
                 "fields": "e",
                 "reference": {
                   "resource": "",
-                  "fields": "u"
+                  "fields": "e"
                 }
               },
               {
@@ -475,7 +475,7 @@
                   {
                     "columns": ["e"],
                     "reference": {
-                      "columns": ["u"]
+                      "columns": ["e"]
                     }
                   },
                   {

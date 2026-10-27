@@ -12,6 +12,7 @@ import {
   inspectTableSchema,
   inspectTableSchemaNulls,
 } from "../../actions/tableSchema/inspect.ts"
+import { inspectForeignKeyTypes } from "../../actions/tableSchema/foreignKey.ts"
 import { validateTableSchema } from "../../actions/tableSchema/validate.ts"
 import { Dataset } from "../../models/dataset.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
@@ -67,6 +68,7 @@ export async function validateDatasetDescriptor(
   if (dataset) {
     const names = new Set<string>()
     const resources = dataset.resources ?? []
+    const tableSchemas: (TableSchema | undefined)[] = resources.map(() => undefined)
     for (const [index, resource] of resources.entries()) {
       const rootJsonPointer = `/resources/${index}`
 
@@ -117,7 +119,9 @@ export async function validateDatasetDescriptor(
         })
 
         report.errors.push(...tableSchemaReport.errors)
+        tableSchemas[index] = tableSchemaReport.tableSchema
       } else if (resource.tableSchema) {
+        tableSchemas[index] = resource.tableSchema
         report.errors.push(
           ...inspectTableSchema(resource.tableSchema, {
             rootJsonPointer: `${rootJsonPointer}/tableSchema`,
@@ -131,6 +135,8 @@ export async function validateDatasetDescriptor(
         )
       }
     }
+
+    report.errors.push(...inspectForeignKeysTypes(resources, tableSchemas))
 
     if (report.errors.length) {
       dataset = undefined
@@ -162,6 +168,33 @@ function inspectForeignKeyTargets(
       })
     }
   }
+  return errors
+}
+
+function inspectForeignKeysTypes(
+  resources: Resource[],
+  tableSchemas: (TableSchema | undefined)[],
+) {
+  const errors: MetadataError[] = []
+
+  for (const [index, tableSchema] of tableSchemas.entries()) {
+    for (const [fkIndex, foreignKey] of (tableSchema?.foreignKeys ?? []).entries()) {
+      const name = foreignKey.reference.resource
+      if (!tableSchema || name === undefined) continue
+      const target = resources.findIndex(item => item.name === name)
+      const referencedSchema = tableSchemas[target]
+      if (target === -1 || resources[target]?.dataSchema || !referencedSchema) continue
+
+      errors.push(
+        ...inspectForeignKeyTypes(foreignKey, {
+          tableSchema,
+          referencedSchema,
+          jsonPointer: `/resources/${index}/tableSchema/foreignKeys/${fkIndex}`,
+        }),
+      )
+    }
+  }
+
   return errors
 }
 

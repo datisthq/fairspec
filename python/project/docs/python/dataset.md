@@ -244,6 +244,8 @@ report = validate_dataset_foreign_keys(dataset)
 
 This is useful when you have already validated each resource independently and only want to confirm cross-resource referential integrity.
 
+Integer, number and decimal key columns compare by value, so `1`, `1.0` and `1.00` are one key; a key column whose type differs from the column it refers to in any other way is a `metadata` error at `/foreignKeys/<i>`, and that foreign key is not checked against the data.
+
 ## Rendering a Dataset
 
 Render a dataset as Markdown, JSON, or other formats:

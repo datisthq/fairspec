@@ -143,4 +143,35 @@ describe("validateDatasetDescriptor", () => {
       ),
     ).toEqual(["/resources/1/tableSchema/foreignKeys/0/reference/resource"])
   })
+
+  it("reports foreign key columns of differing types", async () => {
+    const dataset = {
+      resources: [
+        {
+          name: "users",
+          data: "users.csv",
+          tableSchema: { properties: { id: { type: "string" } } },
+        },
+        {
+          name: "posts",
+          data: "posts.csv",
+          tableSchema: {
+            properties: { user_id: { type: "integer" } },
+            foreignKeys: [
+              { columns: ["user_id"], reference: { resource: "users", columns: ["id"] } },
+            ],
+          },
+        },
+      ],
+    }
+
+    const report = await validateDatasetDescriptor(dataset)
+
+    expect(report.valid).toBe(false)
+    expect(
+      report.errors.map(error =>
+        "jsonPointer" in error ? error.jsonPointer : undefined,
+      ),
+    ).toEqual(["/resources/1/tableSchema/foreignKeys/0"])
+  })
 })

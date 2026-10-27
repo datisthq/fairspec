@@ -17,6 +17,7 @@ from fairspec_metadata.actions.table_schema.inspect import (
     inspect_table_schema,
     inspect_table_schema_nulls,
 )
+from fairspec_metadata.actions.table_schema.foreign_key import inspect_foreign_key_types
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
 from fairspec_metadata.models.resource import Resource
@@ -66,6 +67,7 @@ def validate_dataset_descriptor(
     if normalized:
         names: set[str] = set()
         resources = normalized.resources or []
+        table_schemas: list[TableSchema | None] = [None] * len(resources)
         for index, resource in enumerate(resources):
             root_json_pointer = f"/resources/{index}"
 
@@ -116,7 +118,9 @@ def validate_dataset_descriptor(
                     root_json_pointer=root_json_pointer,
                 )
                 report.errors.extend(table_schema_result.errors)
+                table_schemas[index] = table_schema_result.table_schema
             elif resource.tableSchema:
+                table_schemas[index] = resource.tableSchema
                 report.errors.extend(
                     inspect_table_schema(
                         resource.tableSchema,
@@ -136,6 +140,8 @@ def validate_dataset_descriptor(
                         root_json_pointer=f"{root_json_pointer}/tableSchema",
                     )
                 )
+
+        report.errors.extend(_inspect_foreign_keys_types(resources, table_schemas))
 
         if report.errors:
             normalized = None
@@ -170,6 +176,38 @@ def _inspect_foreign_key_targets(
                     jsonPointer=f"{root_json_pointer}/foreignKeys/{index}/reference/resource",
                 )
             )
+    return errors
+
+
+def _inspect_foreign_keys_types(
+    resources: list[Resource], table_schemas: list[TableSchema | None]
+) -> list[MetadataError]:
+    errors: list[MetadataError] = []
+
+    for index, table_schema in enumerate(table_schemas):
+        if table_schema is None:
+            continue
+        for fk_index, foreign_key in enumerate(table_schema.foreignKeys or []):
+            name = foreign_key.reference.resource
+            if name is None:
+                continue
+            target = next(
+                (i for i, item in enumerate(resources) if item.name == name), None
+            )
+            if target is None or resources[target].dataSchema:
+                continue
+            referenced_schema = table_schemas[target]
+            if referenced_schema is None:
+                continue
+            errors.extend(
+                inspect_foreign_key_types(
+                    foreign_key,
+                    table_schema=table_schema,
+                    referenced_schema=referenced_schema,
+                    json_pointer=f"/resources/{index}/tableSchema/foreignKeys/{fk_index}",
+                )
+            )
+
     return errors
 
 

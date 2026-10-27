@@ -1,4 +1,4 @@
-import type { Dataset } from "@fairspec/metadata"
+import type { ColumnProperty, Dataset } from "@fairspec/metadata"
 import { describe, expect, it } from "vite-plus/test"
 import { validateDatasetForeignKeys } from "../foreignKey.ts"
 
@@ -217,4 +217,51 @@ describe("validateDatasetForeignKeys", () => {
       expect.objectContaining({ type: "foreignKey", cells: ["9", "9"] }),
     ])
   })
+
+  it("should compare numeric columns of differing types by value", async () => {
+    const report = await validateDatasetForeignKeys(
+      createDataset([{ id: 1.0 }, { id: 2.5 }], { type: "number" }),
+    )
+
+    expect(report.errors.map(error => "cells" in error && error.cells)).toEqual([["2"]])
+  })
+
+  it("should report differing column types as a metadata error", async () => {
+    const report = await validateDatasetForeignKeys(
+      createDataset([{ id: "1" }, { id: "2" }], { type: "string" }),
+    )
+
+    expect(report.errors).toEqual([
+      {
+        type: "metadata",
+        message: "foreign key columns and reference columns differ in type",
+        jsonPointer: "/resources/1/tableSchema/foreignKeys/0",
+      },
+    ])
+  })
 })
+
+function createDataset(
+  referencedData: Record<string, unknown>[],
+  referencedProperty: ColumnProperty,
+): Dataset {
+  return {
+    resources: [
+      {
+        name: "users",
+        data: referencedData,
+        tableSchema: { properties: { id: referencedProperty } },
+      },
+      {
+        name: "posts",
+        data: [{ user_id: 1 }, { user_id: 2 }],
+        tableSchema: {
+          properties: { user_id: { type: "integer" } },
+          foreignKeys: [
+            { columns: ["user_id"], reference: { resource: "users", columns: ["id"] } },
+          ],
+        },
+      },
+    ],
+  }
+}

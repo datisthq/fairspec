@@ -6,9 +6,17 @@ use polars::prelude::*;
 use serde_json::Value;
 
 use super::python::stringify_cell;
+use crate::actions::column::checks::check::ColumnCheck;
+use crate::actions::column::checks::r#const::check_cell_const;
+use crate::actions::column::checks::r#enum::check_cell_enum;
+use crate::actions::column::checks::max_length::check_cell_max_length;
+use crate::actions::column::checks::min_length::check_cell_min_length;
+use crate::actions::column::checks::pattern::check_cell_pattern;
+use crate::actions::column::inspect::locate_cell_error;
 use crate::actions::column::substitute::substitute_column;
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::table::LazyFrameExt;
+use crate::models::cell::CellMapping;
 use crate::models::column::{ColumnMapping, PolarsColumn};
 use crate::models::table::Table;
 use crate::settings::NUMBER_COLUMN_NAME;
@@ -21,7 +29,19 @@ pub fn inspect_text_column(
     mapping: Option<&ColumnMapping>,
 ) -> Result<Vec<CellError>> {
     let mut errors = Vec::new();
-    let rows = collect_cell_rows(table, mapping, column, None)?;
+    let cell_mapping = CellMapping {
+        source: col("source"),
+        target: col("source"),
+    };
+    let checks: Vec<ColumnCheck> = TEXT_CHECK_FUNCTIONS
+        .iter()
+        .filter_map(|check_cell| check_cell(column, &cell_mapping))
+        .collect();
+    let check_exprs: Vec<Expr> = checks
+        .iter()
+        .map(|check| check.is_error_expr.clone())
+        .collect();
+    let rows = collect_cell_rows(table, mapping, column, None, &check_exprs)?;
 
     for row in rows {
         let Some(source) = row.source.clone() else {
@@ -33,11 +53,33 @@ pub fn inspect_text_column(
 
         if !parse(&source) {
             errors.push(create_type_error(column, &row, source));
+            continue;
+        }
+
+        for (check, failed) in checks.iter().zip(&row.failed_checks) {
+            if *failed {
+                errors.push(locate_cell_error(
+                    &check.error_template,
+                    row.number,
+                    row.cell.clone(),
+                )?);
+            }
         }
     }
 
     Ok(errors)
 }
+
+type CheckCell = fn(&Column, &CellMapping) -> Option<ColumnCheck>;
+
+// The string constraints in the spec's keyword order, checked on a cell its type reads
+const TEXT_CHECK_FUNCTIONS: [CheckCell; 5] = [
+    check_cell_enum,
+    check_cell_const,
+    check_cell_min_length,
+    check_cell_max_length,
+    check_cell_pattern,
+];
 
 /// Checks each cell of a JSON column: it must parse, be an array/object, match the
 /// type schema if given, and satisfy the column's own JSON Schema constraints.
@@ -69,6 +111,7 @@ pub fn inspect_json_column(
         Some(JsonCells {
             errors_only: !needs_validator,
         }),
+        &[],
     )?;
 
     for row in rows {
@@ -130,6 +173,7 @@ struct CellRow {
     source: Option<String>,
     cell: String,
     valid: bool,
+    failed_checks: Vec<bool>,
 }
 
 /// Rows of a JSON column carry Polars' verdict on each cell; `errors_only` keeps just the failing ones.
@@ -142,6 +186,7 @@ fn collect_cell_rows(
     mapping: Option<&ColumnMapping>,
     column: &Column,
     json_cells: Option<JsonCells>,
+    check_exprs: &[Expr],
 ) -> Result<Vec<CellRow>> {
     let text_mapping;
     let mapping = match mapping {
@@ -171,6 +216,15 @@ fn collect_cell_rows(
             );
         }
     }
+    if !check_exprs.is_empty() {
+        cell_frame = cell_frame.with_columns(
+            check_exprs
+                .iter()
+                .enumerate()
+                .map(|(index, expr)| expr.clone().alias(format!("check:{index}")))
+                .collect::<Vec<_>>(),
+        );
+    }
     let frame = cell_frame.collect_table()?;
 
     let numbers = frame.column(NUMBER_COLUMN_NAME).into_result()?;
@@ -189,6 +243,12 @@ fn collect_cell_rows(
         ),
         None => None,
     };
+    let check_columns = (0..check_exprs.len())
+        .map(|index| {
+            let column = frame.column(&format!("check:{index}")).into_result()?;
+            Ok(column.bool().into_result()?.clone())
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     let mut rows = Vec::with_capacity(frame.height());
     for index in 0..frame.height() {
@@ -200,6 +260,10 @@ fn collect_cell_rows(
             valid: valids
                 .as_ref()
                 .is_none_or(|valids| valids.get(index).unwrap_or(false)),
+            failed_checks: check_columns
+                .iter()
+                .map(|checks| checks.get(index).unwrap_or(false))
+                .collect(),
         });
     }
     Ok(rows)

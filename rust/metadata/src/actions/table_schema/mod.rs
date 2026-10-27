@@ -1,5 +1,6 @@
 pub mod assert;
 pub mod column;
+pub mod foreign_key;
 pub mod from_frictionless;
 pub mod inspect;
 pub mod load;

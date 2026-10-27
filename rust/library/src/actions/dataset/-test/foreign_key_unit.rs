@@ -91,3 +91,41 @@ fn test_should_handle_no_foreign_keys() {
     }]));
     assert!(report.valid);
 }
+
+fn create_typed_names_resource(path: String, property: Value) -> Value {
+    json!({
+        "data": path,
+        "name": "names",
+        "tableSchema": {"properties": {"id": property}},
+    })
+}
+
+#[test]
+fn test_should_compare_numeric_columns_of_differing_types_by_value() {
+    let report = validate(json!([
+        create_typed_names_resource(write_csv("id\n1.0\n2.5"), json!({"type": "number"})),
+        create_refs_resource(write_csv("id,name_id\n1,1\n2,2")),
+    ]));
+    let cells: Vec<Vec<String>> = report
+        .errors
+        .iter()
+        .map(|error| match error {
+            FairspecError::Table(TableError::ForeignKey(error)) => error.cells.clone(),
+            other => panic!("expected a foreignKey error, got {other:?}"),
+        })
+        .collect();
+    assert_eq!(cells, vec![vec!["2".to_string()]]);
+}
+
+#[test]
+fn test_should_report_differing_column_types_as_a_metadata_error() {
+    let report = validate(json!([
+        create_typed_names_resource(write_csv("id\n1\n2"), json!({"type": "string"})),
+        create_refs_resource(write_csv("id,name_id\n1,1\n2,2")),
+    ]));
+    assert_eq!(report.errors.len(), 1);
+    let FairspecError::Metadata(error) = &report.errors[0] else {
+        panic!("expected a metadata error, got {:?}", report.errors[0]);
+    };
+    assert_eq!(error.json_pointer, "/resources/1/tableSchema/foreignKeys/0");
+}

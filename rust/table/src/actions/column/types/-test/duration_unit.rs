@@ -67,3 +67,34 @@ fn test_inspect_follows_rfc3339_appendix_a() {
         assert_eq!(get_is_valid(cell), valid, "{cell:?}");
     }
 }
+
+#[test]
+fn test_inspect_string_constraints_of_readable_cells() {
+    let column: DurationColumn = serde_json::from_value(json!({
+        "name": "name",
+        "property": {"type": "string", "format": "duration", "enum": ["P1D"], "maxLength": 3},
+    }))
+    .unwrap();
+    let table = df!("name" => ["P1D", "P22D", "1D"]).unwrap().lazy();
+    let errors = inspect_duration_column(&column, table, None).unwrap();
+    let errors: Vec<(String, u64)> = serde_json::to_value(&errors)
+        .unwrap()
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|error| {
+            (
+                error["type"].as_str().unwrap().to_string(),
+                error["rowNumber"].as_u64().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        errors,
+        [
+            ("cell/enum".to_string(), 2),
+            ("cell/maxLength".to_string(), 2),
+            ("cell/type".to_string(), 3),
+        ]
+    );
+}

@@ -217,5 +217,81 @@
         "valid": false
       }
     ]
+  },
+  {
+    "description": "a self-referencing foreign key with differing column types",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "tests": [
+      {
+        "description": "an integer column referencing a string column is a metadata error",
+        "data": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "parent_id": {
+              "type": "integer"
+            }
+          },
+          "foreignKeys": [
+            {
+              "columns": ["parent_id"],
+              "reference": {
+                "columns": ["id"]
+              }
+            }
+          ]
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/foreignKeys/0"
+          }
+        ]
+      },
+      {
+        "description": "an integer column referencing a number column is valid",
+        "data": {
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "parent_id": {
+              "type": ["integer", "null"]
+            }
+          },
+          "foreignKeys": [
+            {
+              "columns": ["parent_id"],
+              "reference": {
+                "columns": ["id"]
+              }
+            }
+          ]
+        },
+        "valid": true
+      },
+      {
+        "description": "a reference to another resource is not checked here",
+        "data": {
+          "properties": {
+            "parent_id": {
+              "type": "integer"
+            }
+          },
+          "foreignKeys": [
+            {
+              "columns": ["parent_id"],
+              "reference": {
+                "resource": "other",
+                "columns": ["id"]
+              }
+            }
+          ]
+        },
+        "valid": true
+      }
+    ]
   }
 ]

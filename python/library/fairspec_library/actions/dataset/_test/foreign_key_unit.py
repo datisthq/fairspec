@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from fairspec_dataset import write_temp_file
 from fairspec_metadata import (
+    ColumnProperty,
     Dataset,
     ForeignKey,
     ForeignKeyError,
     ForeignKeyReference,
     IntegerColumnProperty,
+    MetadataError,
+    NumberColumnProperty,
     Resource,
     ResourceMissingError,
     StringColumnProperty,
@@ -173,3 +176,53 @@ class TestValidateDatasetForeignKeys:
         )
         report = validate_dataset_foreign_keys(dataset)
         assert report.valid is True
+
+    def test_should_compare_numeric_columns_of_differing_types_by_value(self):
+        dataset = _create_dataset(
+            "id\n1.0\n2.5", "name_id\n1\n2", ref_property=NumberColumnProperty()
+        )
+        report = validate_dataset_foreign_keys(dataset)
+        assert [
+            error.cells for error in report.errors if isinstance(error, ForeignKeyError)
+        ] == [["2"]]
+        assert len(report.errors) == 1
+
+    def test_should_report_differing_column_types_as_a_metadata_error(self):
+        dataset = _create_dataset(
+            "id\n1\n2", "name_id\n1\n2", ref_property=StringColumnProperty()
+        )
+        report = validate_dataset_foreign_keys(dataset)
+        assert report.errors == [
+            MetadataError(
+                type="metadata",
+                message="foreign key columns and reference columns differ in type",
+                jsonPointer="/resources/1/tableSchema/foreignKeys/0",
+            )
+        ]
+
+
+def _create_dataset(ref_csv: str, csv: str, *, ref_property: ColumnProperty) -> Dataset:
+    return Dataset(
+        resources=[
+            Resource(
+                data=write_temp_file(ref_csv, format="csv"),
+                name="names",
+                tableSchema=TableSchema(properties={"id": ref_property}),
+            ),
+            Resource(
+                data=write_temp_file(csv, format="csv"),
+                name="refs",
+                tableSchema=TableSchema(
+                    properties={"name_id": IntegerColumnProperty()},
+                    foreignKeys=[
+                        ForeignKey(
+                            columns=["name_id"],
+                            reference=ForeignKeyReference(
+                                resource="names", columns=["id"]
+                            ),
+                        )
+                    ],
+                ),
+            ),
+        ]
+    )

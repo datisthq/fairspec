@@ -146,6 +146,8 @@ await saveDataset(dataset, { target: "./inferred-dataset" })
 
 `validateDataset(source)` accepts either a path or an in-memory `Dataset` value. It loads the descriptor, validates every resource against its schema, and checks foreign-key relationships, returning a report.
 
+Integer, number and decimal key columns compare by value, so `1`, `1.0` and `1.00` are one key; a key column whose type differs from the column it refers to in any other way is a `metadata` error at `/foreignKeys/<i>`, and that foreign key is not checked against the data.
+
 ```ts
 import { validateDataset } from "fairspec"
 

@@ -1,0 +1,542 @@
+[
+  {
+    "description": "enum on a duration column",
+    "comment": "A row-parsed type checks its string constraints like every other column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#duration",
+      "https://fairspec.org/specs/table-schema/#enum",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration",
+          "enum": ["P1D", "PT2H"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "id,x\n1,\"P1D\"\n2,\"PT2H\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/enum error",
+        "data": "id,x\n1,\"P1D\"\n2,\"P22D\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "P22D",
+            "enum": ["P1D", "PT2H"]
+          }
+        ]
+      },
+      {
+        "description": "an unreadable value is a cell/type error alone",
+        "data": "id,x\n1,\"P1D\"\n2,\"1D\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "1D"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const on a duration column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#duration",
+      "https://fairspec.org/specs/table-schema/#const"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration",
+          "const": "P1D"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the value is valid",
+        "data": "id,x\n1,\"P1D\"\n2,\"P1D\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/const error",
+        "data": "id,x\n1,\"P1D\"\n2,\"PT2H\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "PT2H",
+            "const": "P1D"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minLength and maxLength on a duration column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#duration",
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration",
+          "minLength": 4,
+          "maxLength": 4
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value of that length is valid",
+        "data": "id,x\n1,\"PT2H\"\n",
+        "valid": true
+      },
+      {
+        "description": "a value of another length is a cell/minLength error",
+        "data": "id,x\n1,\"PT2H\"\n2,\"P1D\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "P1D",
+            "minLength": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on a duration column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#duration",
+      "https://fairspec.org/specs/table-schema/#pattern"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration",
+          "pattern": "^PT"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a matching value is valid",
+        "data": "id,x\n1,\"PT2H\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/pattern error",
+        "data": "id,x\n1,\"PT2H\"\n2,\"P1D\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "P1D",
+            "pattern": "^PT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "enum on a wkt column",
+    "comment": "A row-parsed type checks its string constraints like every other column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkt",
+      "https://fairspec.org/specs/table-schema/#enum",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkt",
+          "enum": ["POINT (1 2)", "POINT (3 4)"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (3 4)\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/enum error",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (5 6)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "POINT (5 6)",
+            "enum": ["POINT (1 2)", "POINT (3 4)"]
+          }
+        ]
+      },
+      {
+        "description": "an unreadable value is a cell/type error alone",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"NOPE (1 2)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "NOPE (1 2)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const on a wkt column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkt",
+      "https://fairspec.org/specs/table-schema/#const"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkt",
+          "const": "POINT (1 2)"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the value is valid",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (1 2)\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/const error",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (3 4)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "POINT (3 4)",
+            "const": "POINT (1 2)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minLength and maxLength on a wkt column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkt",
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkt",
+          "minLength": 11,
+          "maxLength": 11
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value of that length is valid",
+        "data": "id,x\n1,\"POINT (1 2)\"\n",
+        "valid": true
+      },
+      {
+        "description": "a value of another length is a cell/maxLength error",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (10 20)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "POINT (10 20)",
+            "maxLength": 11
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on a wkt column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkt",
+      "https://fairspec.org/specs/table-schema/#pattern"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkt",
+          "pattern": "^POINT \\(1 "
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a matching value is valid",
+        "data": "id,x\n1,\"POINT (1 2)\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/pattern error",
+        "data": "id,x\n1,\"POINT (1 2)\"\n2,\"POINT (3 4)\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "POINT (3 4)",
+            "pattern": "^POINT \\(1 "
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "enum on a wkb column",
+    "comment": "A row-parsed type checks its string constraints like every other column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkb",
+      "https://fairspec.org/specs/table-schema/#enum",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkb",
+          "enum": [
+            "0101000000000000000000F03F0000000000000040",
+            "010100000000000000000008400000000000001040"
+          ]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed values are valid",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"010100000000000000000008400000000000001040\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted value is a cell/enum error",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"010100000000000000000014400000000000001840\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "010100000000000000000014400000000000001840",
+            "enum": [
+              "0101000000000000000000F03F0000000000000040",
+              "010100000000000000000008400000000000001040"
+            ]
+          }
+        ]
+      },
+      {
+        "description": "an unreadable value is a cell/type error alone",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"ZZ\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkb",
+            "rowNumber": 2,
+            "cell": "ZZ"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const on a wkb column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkb",
+      "https://fairspec.org/specs/table-schema/#const"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkb",
+          "const": "0101000000000000000000F03F0000000000000040"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the value is valid",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"0101000000000000000000F03F0000000000000040\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/const error",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"010100000000000000000008400000000000001040\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "010100000000000000000008400000000000001040",
+            "const": "0101000000000000000000F03F0000000000000040"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minLength and maxLength on a wkb column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkb",
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkb",
+          "minLength": 42,
+          "maxLength": 42
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value of that length is valid",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n",
+        "valid": true
+      },
+      {
+        "description": "a value of another length is a cell/maxLength error",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"0102000000020000000000000000000000000000000000000000000000000000F03F000000000000F03F\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0102000000020000000000000000000000000000000000000000000000000000F03F000000000000F03F",
+            "maxLength": 42
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on a wkb column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#wkb",
+      "https://fairspec.org/specs/table-schema/#pattern"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "wkb",
+          "pattern": "^0101"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a matching value is valid",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n",
+        "valid": true
+      },
+      {
+        "description": "another value is a cell/pattern error",
+        "data": "id,x\n1,\"0101000000000000000000F03F0000000000000040\"\n2,\"000000000140080000000000004010000000000000\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "000000000140080000000000004010000000000000",
+            "pattern": "^0101"
+          }
+        ]
+      }
+    ]
+  }
+]

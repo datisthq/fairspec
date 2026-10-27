@@ -17,6 +17,28 @@ describe("inspectTableSchema", () => {
     ])
   })
 
+  it("reports a self-referencing foreign key with differing column types", () => {
+    const errors = inspectTableSchema({
+      properties: {
+        id: { type: "string" },
+        parent_id: { type: "integer" },
+        rank: { type: "number" },
+      },
+      foreignKeys: [
+        { columns: ["parent_id"], reference: { columns: ["rank"] } },
+        { columns: ["parent_id"], reference: { columns: ["id"] } },
+      ],
+    })
+
+    expect(errors).toEqual([
+      {
+        type: "metadata",
+        message: 'foreign key column "parent_id" is integer, but "id" is string',
+        jsonPointer: "/foreignKeys/1",
+      },
+    ])
+  })
+
   it("reports a pattern that is not a regular expression", () => {
     const errors = inspectTableSchema({
       properties: { "a/b": { type: "string", pattern: "[a-" } },

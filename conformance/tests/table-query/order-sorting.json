@@ -77,6 +77,102 @@
     ]
   },
   {
+    "description": "an integer categorical column without withOrder",
+    "comment": "Without withOrder a categorical column sorts by value: integers numerically, not as label text",
+    "specification": ["https://fairspec.org/specs/table-schema/#sorting"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "level": {
+          "type": ["integer", "null"],
+          "format": "categorical",
+          "categories": [10, 2, 1]
+        }
+      }
+    },
+    "query": "SELECT id FROM self ORDER BY level, id",
+    "tests": [
+      {
+        "description": "matches the sorting rules",
+        "data": "id,level\n1,2\n2,\n3,1\n4,10\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[3], [1], [4], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "an integer categorical column without withOrder in descending order",
+    "specification": ["https://fairspec.org/specs/table-schema/#sorting"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "level": {
+          "type": ["integer", "null"],
+          "format": "categorical",
+          "categories": [10, 2, 1]
+        }
+      }
+    },
+    "query": "SELECT id FROM self ORDER BY level DESC, id",
+    "tests": [
+      {
+        "description": "matches the sorting rules",
+        "data": "id,level\n1,2\n2,\n3,1\n4,10\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[4], [1], [3], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a labelled string categorical column without withOrder",
+    "comment": "Without withOrder a categorical column sorts by value, not by label",
+    "specification": ["https://fairspec.org/specs/table-schema/#sorting"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "level": {
+          "type": "string",
+          "format": "categorical",
+          "categories": [
+            {
+              "value": "b",
+              "label": "Apple"
+            },
+            {
+              "value": "a",
+              "label": "Cherry"
+            },
+            {
+              "value": "c",
+              "label": "Banana"
+            }
+          ]
+        }
+      }
+    },
+    "query": "SELECT id FROM self ORDER BY level, id",
+    "tests": [
+      {
+        "description": "matches the sorting rules",
+        "data": "id,level\n1,b\n2,c\n3,a\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[3], [1], [2]]
+        }
+      }
+    ]
+  },
+  {
     "description": "a string categorical column with withOrder in ascending order",
     "specification": ["https://fairspec.org/specs/table-schema/#sorting"],
     "tableSchema": {

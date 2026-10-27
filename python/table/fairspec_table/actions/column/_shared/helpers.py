@@ -21,9 +21,14 @@ from fairspec_metadata import (
 from fairspec_metadata import ColumnType
 from fairspec_metadata import CellError
 
-from fairspec_table.models import ColumnMapping, PolarsColumn, Table
+from fairspec_table.models import CellMapping, ColumnMapping, PolarsColumn, Table
 from fairspec_table.settings import QUERY_ENGINE, NUMBER_COLUMN_NAME
 
+from ..checks.const import check_cell_const
+from ..checks.enum import check_cell_enum
+from ..checks.max_length import check_cell_max_length
+from ..checks.min_length import check_cell_min_length
+from ..checks.pattern import check_cell_pattern
 from ..substitute import substitute_column
 
 
@@ -35,7 +40,22 @@ def inspect_text_column(
     mapping: ColumnMapping | None = None,
 ) -> list[CellError]:
     errors: list[CellError] = []
-    frame = _collect_cell_frame(table, mapping or _create_text_mapping(column))
+    source_expr = pl.col("source")
+    cell_mapping = CellMapping(source=source_expr, target=source_expr)
+    checks = [
+        check
+        for check_cell in TEXT_CHECK_FUNCTIONS
+        if (check := check_cell(column, cell_mapping))
+    ]
+    frame = cast(
+        pl.DataFrame,
+        _select_cell_frame(table, mapping or _create_text_mapping(column))
+        .with_columns(
+            check.is_error_expr.alias(f"check:{index}")
+            for index, check in enumerate(checks)
+        )
+        .collect(engine=QUERY_ENGINE),
+    )
 
     for row in frame.to_dicts():
         if row["source"] is None:
@@ -59,8 +79,30 @@ def inspect_text_column(
                     rowNumber=row[NUMBER_COLUMN_NAME],
                 )
             )
+            continue
+
+        for index, check in enumerate(checks):
+            if row[f"check:{index}"]:
+                errors.append(
+                    check.error_template.model_copy(
+                        update={
+                            "rowNumber": row[NUMBER_COLUMN_NAME],
+                            "cell": str(row["cell"] if row["cell"] is not None else ""),
+                        }
+                    )
+                )
 
     return errors
+
+
+# The string constraints in the spec's keyword order, checked on a cell its type reads
+TEXT_CHECK_FUNCTIONS = [
+    check_cell_enum,
+    check_cell_const,
+    check_cell_min_length,
+    check_cell_max_length,
+    check_cell_pattern,
+]
 
 
 def inspect_json_column(
@@ -175,12 +217,6 @@ def _create_text_mapping(
 ) -> ColumnMapping:
     return ColumnMapping(
         source=PolarsColumn(name=column.name, type=pl.String), target=column
-    )
-
-
-def _collect_cell_frame(table: Table, mapping: ColumnMapping) -> pl.DataFrame:
-    return cast(
-        pl.DataFrame, _select_cell_frame(table, mapping).collect(engine=QUERY_ENGINE)
     )
 
 
