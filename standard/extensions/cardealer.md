@@ -12,7 +12,7 @@ order: 2
 
 ## Why look at it
 
-- **End-to-end example.** It demonstrates the full lifecycle of an extension — from JSON Schema profile to documentation to release — built on top of the [Fairspec Extension Template](/extensions/template/).
+- **End-to-end example.** It demonstrates the full lifecycle of an extension — from JSON Schema profile to documentation to release.
 - **Domain-specific properties.** Shows how to add custom fields (vehicle make, model, mileage, listing price) while remaining structurally compatible with the base [Fairspec Dataset](/specs/dataset/) schema.
 - **Composition with base profiles.** Illustrates the `allOf` pattern used to combine the base Fairspec dataset profile with a domain mixin.
 
