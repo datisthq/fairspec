@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from fairspec_metadata.actions.json_schema.regex import is_valid_ecma_regex
+from fairspec_metadata.models.column.boolean import BooleanColumnProperty
 from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.error.metadata import MetadataError
 from fairspec_metadata.models.table_schema import TableSchema
 
 NULLABLE_KEYWORDS = ("enum", "const", "default", "examples")
+DEFAULT_TRUE_VALUES = ("true", "True", "TRUE", "1")
+DEFAULT_FALSE_VALUES = ("false", "False", "FALSE", "0")
 
 
 def inspect_table_schema(
@@ -40,6 +43,9 @@ def inspect_table_schema(
                     jsonPointer=f"{root}/properties/{_escape_json_pointer(name)}/pattern",
                 )
             )
+    for name, property in (table_schema.properties or {}).items():
+        if isinstance(property, BooleanColumnProperty):
+            errors.extend(_inspect_boolean_values(name, property, root))
     check_columns(table_schema.primaryKey or [], "/primaryKey")
     for index, unique_key in enumerate(table_schema.uniqueKeys or []):
         check_columns(unique_key, f"/uniqueKeys/{index}")
@@ -104,6 +110,35 @@ def inspect_table_schema_nulls(
                 )
 
     return errors
+
+
+def _inspect_boolean_values(
+    name: str, property: BooleanColumnProperty, root: str
+) -> list[MetadataError]:
+    true_values = property.trueValues
+    false_values = property.falseValues
+    if true_values is None and false_values is None:
+        return []
+
+    # The error lands on the declared list, the false values when both are declared
+    keyword = "falseValues" if false_values is not None else "trueValues"
+    values = (false_values if false_values is not None else true_values) or []
+    others = set(
+        (true_values if true_values is not None else DEFAULT_TRUE_VALUES)
+        if false_values is not None
+        else DEFAULT_FALSE_VALUES
+    )
+
+    pointer = f"{root}/properties/{_escape_json_pointer(name)}/{keyword}"
+    return [
+        MetadataError(
+            type="metadata",
+            message=f'value "{value}" is in both trueValues and falseValues',
+            jsonPointer=f"{pointer}/{index}",
+        )
+        for index, value in enumerate(values)
+        if value in others
+    ]
 
 
 def _escape_json_pointer(key: str) -> str:

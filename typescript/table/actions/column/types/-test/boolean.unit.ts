@@ -23,6 +23,11 @@ describe("parseBooleanColumn", () => {
     ["t", null],
     ["f", null],
     ["3.14", null],
+    ["01", null],
+    ["+1", null],
+    ["-0", null],
+    ["true ", null],
+    [" true", null],
   ])("default: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {
@@ -45,6 +50,8 @@ describe("parseBooleanColumn", () => {
     ["y", true],
     ["yes", true],
     ["true", null],
+    ["1", null],
+    ["0", false],
   ])("trueValues: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {
@@ -90,6 +97,8 @@ describe("parseBooleanColumn", () => {
     ["n", false],
     ["no", false],
     ["false", null],
+    ["0", null],
+    ["1", true],
   ])("falseValues: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {

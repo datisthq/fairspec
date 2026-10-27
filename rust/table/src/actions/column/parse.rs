@@ -1,4 +1,4 @@
-use fairspec_metadata::Column;
+use fairspec_metadata::{CategoricalColumnProperty, Column};
 use polars::prelude::*;
 
 use super::types::base64::parse_base64_column;
@@ -8,7 +8,7 @@ use super::types::date_time::parse_date_time_column;
 use super::types::decimal::parse_decimal_column;
 use super::types::email::parse_email_column;
 use super::types::hex::parse_hex_column;
-use super::types::integer::parse_integer_column;
+use super::types::integer::{normalize_integer_text, parse_integer_column, parse_integer_text};
 use super::types::list::parse_list_column;
 use super::types::local_date_time::parse_local_date_time_column;
 use super::types::local_time::parse_local_time_column;
@@ -24,6 +24,12 @@ pub fn parse_column(mapping: &ColumnMapping, column_expr: Expr) -> Expr {
     match &mapping.target {
         Column::Base64(column) => parse_base64_column(column, column_expr),
         Column::Boolean(column) => parse_boolean_column(column, column_expr),
+        Column::Categorical(column) => match &column.property {
+            CategoricalColumnProperty::Integer(property) => {
+                parse_integer_text(normalize_integer_text(&property.base, column_expr))
+            }
+            CategoricalColumnProperty::String(_) => column_expr,
+        },
         Column::Date(column) => parse_date_column(column, column_expr),
         Column::DateTime(column) => parse_date_time_column(column, column_expr),
         Column::Decimal(column) => parse_decimal_column(column, column_expr),

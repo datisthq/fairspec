@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import polars as pl
 from fairspec_metadata import (
+    CategoricalColumn,
+    IntegerCategoricalColumnProperty,
     IntegerColumn,
     IntegerColumnProperty,
 )
@@ -154,3 +156,21 @@ class TestCheckCellMinimum:
         assert result is not None
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 2
+
+    def test_integer_categorical_reads_the_cell_value(self):
+        column = CategoricalColumn(
+            name="severity",
+            type="categorical",
+            property=IntegerCategoricalColumnProperty(categories=[1, 2, 3], minimum=2),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+        table = pl.DataFrame(
+            {"source": ["1", "2", "3.0"], "target": ["1", "2", "3"]}
+        ).lazy()
+        check = create_check_cell_minimum()
+
+        result = check(column, mapping)
+
+        assert result is not None
+        errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert errors.get_column("source").to_list() == ["1"]

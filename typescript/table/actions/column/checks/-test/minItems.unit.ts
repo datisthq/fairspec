@@ -116,7 +116,7 @@ describe("inspectTable (cell/minItems)", () => {
     ).toHaveLength(0)
   })
 
-  it("should handle minItems of 1", async () => {
+  it("should count an empty cell as an empty list", async () => {
     const table = pl
       .DataFrame({
         tags: ["a", "", "b,c"],
@@ -134,8 +134,14 @@ describe("inspectTable (cell/minItems)", () => {
     }
 
     const errors = await inspectTable(table, { tableSchema })
-    expect(
-      errors.filter((e: { type: string }) => e.type === "cell/minItems"),
-    ).toHaveLength(0)
+    expect(errors).toEqual([
+      {
+        type: "cell/minItems",
+        columnName: "tags",
+        minItems: 1,
+        rowNumber: 2,
+        cell: "",
+      },
+    ])
   })
 })

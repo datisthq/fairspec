@@ -527,5 +527,693 @@
         ]
       }
     ]
+  },
+  {
+    "description": "number column: the JSON number grammar",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "number"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "numbers in the JSON grammar are valid",
+        "data": "id,x\n1,0.5\n2,-2\n3,1E-3\n4,1e3\n5,1.5e+10\n6,0\n7,-0\n8,0.0\n9,-0.5\n10,1E+2\n",
+        "valid": true
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,1.5\n2,+1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "+1"
+          }
+        ]
+      },
+      {
+        "description": "leading zeros is a cell/type error",
+        "data": "id,x\n1,1.5\n2,007\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "007"
+          }
+        ]
+      },
+      {
+        "description": "two zeros is a cell/type error",
+        "data": "id,x\n1,1.5\n2,00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "00"
+          }
+        ]
+      },
+      {
+        "description": "a fraction without an integer part is a cell/type error",
+        "data": "id,x\n1,1.5\n2,.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": ".5"
+          }
+        ]
+      },
+      {
+        "description": "a fraction without digits is a cell/type error",
+        "data": "id,x\n1,1.5\n2,5.\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "5."
+          }
+        ]
+      },
+      {
+        "description": "a leading space is a cell/type error",
+        "data": "id,x\n1,1.5\n2, 1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": " 1"
+          }
+        ]
+      },
+      {
+        "description": "a trailing space is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1 \n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1 "
+          }
+        ]
+      },
+      {
+        "description": "hexadecimal is a cell/type error",
+        "data": "id,x\n1,1.5\n2,0x10\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "0x10"
+          }
+        ]
+      },
+      {
+        "description": "NaN is a cell/type error",
+        "data": "id,x\n1,1.5\n2,NaN\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "NaN"
+          }
+        ]
+      },
+      {
+        "description": "Infinity is a cell/type error",
+        "data": "id,x\n1,1.5\n2,Infinity\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "Infinity"
+          }
+        ]
+      },
+      {
+        "description": "-Infinity is a cell/type error",
+        "data": "id,x\n1,1.5\n2,-Infinity\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "-Infinity"
+          }
+        ]
+      },
+      {
+        "description": "inf is a cell/type error",
+        "data": "id,x\n1,1.5\n2,inf\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "inf"
+          }
+        ]
+      },
+      {
+        "description": "an exponent without digits is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1e\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1e"
+          }
+        ]
+      },
+      {
+        "description": "an exponent without a mantissa is a cell/type error",
+        "data": "id,x\n1,1.5\n2,e5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "e5"
+          }
+        ]
+      },
+      {
+        "description": "a lone minus is a cell/type error",
+        "data": "id,x\n1,1.5\n2,-\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "-"
+          }
+        ]
+      },
+      {
+        "description": "an exponent sign without digits is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1e+\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1e+"
+          }
+        ]
+      },
+      {
+        "description": "a Unicode minus sign is a cell/type error",
+        "data": "id,x\n1,1.5\n2,−1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "−1"
+          }
+        ]
+      },
+      {
+        "description": "full-width digits is a cell/type error",
+        "data": "id,x\n1,1.5\n2,１\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "１"
+          }
+        ]
+      },
+      {
+        "description": "an underscore separator is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1_000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1_000"
+          }
+        ]
+      },
+      {
+        "description": "two minus signs is a cell/type error",
+        "data": "id,x\n1,1.5\n2,--1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "--1"
+          }
+        ]
+      },
+      {
+        "description": "a negative with leading zeros is a cell/type error",
+        "data": "id,x\n1,1.5\n2,-01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "-01"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer column: a number with a zero fraction",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#integer",
+      "https://fairspec.org/specs/table-schema/#number"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "whole numbers in the JSON grammar are valid",
+        "data": "id,x\n1,1.0\n2,1e3\n3,1E2\n4,-0\n5,0\n6,1.50e1\n7,-2.0\n8,0.0e0\n9,100e-2\n",
+        "valid": true
+      },
+      {
+        "description": "a fraction is a cell/type error",
+        "data": "id,x\n1,1\n2,1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1.5"
+          }
+        ]
+      },
+      {
+        "description": "a negative exponent with a fraction left is a cell/type error",
+        "data": "id,x\n1,1\n2,1e-1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1e-1"
+          }
+        ]
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,1\n2,+1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "+1"
+          }
+        ]
+      },
+      {
+        "description": "leading zeros is a cell/type error",
+        "data": "id,x\n1,1\n2,007\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "007"
+          }
+        ]
+      },
+      {
+        "description": "two zeros is a cell/type error",
+        "data": "id,x\n1,1\n2,00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "00"
+          }
+        ]
+      },
+      {
+        "description": "a negative with leading zeros is a cell/type error",
+        "data": "id,x\n1,1\n2,-01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "-01"
+          }
+        ]
+      },
+      {
+        "description": "a leading space is a cell/type error",
+        "data": "id,x\n1,1\n2, 1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": " 1"
+          }
+        ]
+      },
+      {
+        "description": "a trailing space is a cell/type error",
+        "data": "id,x\n1,1\n2,1 \n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1 "
+          }
+        ]
+      },
+      {
+        "description": "hexadecimal is a cell/type error",
+        "data": "id,x\n1,1\n2,0x10\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "0x10"
+          }
+        ]
+      },
+      {
+        "description": "a fraction without digits is a cell/type error",
+        "data": "id,x\n1,1\n2,1.\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1."
+          }
+        ]
+      },
+      {
+        "description": "a fraction without an integer part is a cell/type error",
+        "data": "id,x\n1,1\n2,.0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": ".0"
+          }
+        ]
+      },
+      {
+        "description": "NaN is a cell/type error",
+        "data": "id,x\n1,1\n2,NaN\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "NaN"
+          }
+        ]
+      },
+      {
+        "description": "an exponent without digits is a cell/type error",
+        "data": "id,x\n1,1\n2,1e\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1e"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer column: the signed 64-bit range",
+    "specification": ["https://fairspec.org/specs/table-schema/#integer"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values inside the range are valid",
+        "data": "id,x\n1,1e18\n2,-9223372036854775808\n3,9223372036854775807\n4,9223372036854775807.0\n",
+        "valid": true
+      },
+      {
+        "description": "one above the largest value is a cell/type error",
+        "data": "id,x\n1,1\n2,9223372036854775808\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "9223372036854775808"
+          }
+        ]
+      },
+      {
+        "description": "one below the smallest value is a cell/type error",
+        "data": "id,x\n1,1\n2,-9223372036854775809\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "-9223372036854775809"
+          }
+        ]
+      },
+      {
+        "description": "an exponent past the range is a cell/type error",
+        "data": "id,x\n1,1\n2,1e19\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1e19"
+          }
+        ]
+      },
+      {
+        "description": "a huge exponent is a cell/type error",
+        "data": "id,x\n1,1\n2,1e400\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1e400"
+          }
+        ]
+      },
+      {
+        "description": "an exponent at the limit of a 64-bit exponent is a cell/type error",
+        "data": "id,x\n1,1\n2,1e9223372036854775807\n3,1.5e-9223372036854775808\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1e9223372036854775807"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 3,
+            "cell": "1.5e-9223372036854775808"
+          }
+        ]
+      },
+      {
+        "description": "a value of many digits is a cell/type error",
+        "data": "id,x\n1,1\n2,123456789012345678901234567890\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "123456789012345678901234567890"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "number column: the grammar after groupChar and decimalChar",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#number",
+      "https://fairspec.org/specs/table-schema/#groupchar",
+      "https://fairspec.org/specs/table-schema/#decimalchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "number",
+          "groupChar": ".",
+          "decimalChar": ","
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "grouped numbers with a decimal comma are valid",
+        "data": "id,x\n1,\"1.234,5\"\n2,\"-0,5\"\n3,7\n",
+        "valid": true
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,1\n2,\"+1,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "+1,5"
+          }
+        ]
+      },
+      {
+        "description": "a decimal comma without an integer part is a cell/type error",
+        "data": "id,x\n1,1\n2,\",5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": ",5"
+          }
+        ]
+      }
+    ]
   }
 ]

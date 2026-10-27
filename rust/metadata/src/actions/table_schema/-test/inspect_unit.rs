@@ -41,6 +41,45 @@ fn test_required_column_not_in_properties() {
 }
 
 #[test]
+fn test_boolean_value_in_both_lists() {
+    let errors = inspect(json!({
+        "properties": {
+            "x": {"type": "boolean", "trueValues": ["yes", "no"], "falseValues": ["no"]},
+            "y": {"type": "boolean", "trueValues": ["yes", "0"]},
+            "z": {"type": "boolean", "falseValues": ["Yes", "true"]},
+        },
+    }));
+    assert_eq!(
+        errors,
+        json!([
+            {
+                "type": "metadata",
+                "message": "value \"no\" is in both trueValues and falseValues",
+                "jsonPointer": "/properties/x/falseValues/0",
+            },
+            {
+                "type": "metadata",
+                "message": "value \"0\" is in both trueValues and falseValues",
+                "jsonPointer": "/properties/y/trueValues/1",
+            },
+            {
+                "type": "metadata",
+                "message": "value \"true\" is in both trueValues and falseValues",
+                "jsonPointer": "/properties/z/falseValues/1",
+            },
+        ])
+    );
+}
+
+#[test]
+fn test_boolean_values_in_separate_lists() {
+    let errors = inspect(json!({
+        "properties": {"x": {"type": "boolean", "trueValues": ["1"], "falseValues": ["0"]}},
+    }));
+    assert_eq!(errors, json!([]));
+}
+
+#[test]
 fn test_pattern_not_a_regular_expression() {
     let errors = inspect(json!({"properties": {"a/b": {"type": "string", "pattern": "[a-"}}}));
     assert_eq!(

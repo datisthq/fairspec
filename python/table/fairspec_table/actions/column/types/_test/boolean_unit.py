@@ -29,6 +29,11 @@ class TestParseBooleanColumn:
             ("t", None),
             ("f", None),
             ("3.14", None),
+            ("01", None),
+            ("+1", None),
+            ("-0", None),
+            ("true ", None),
+            (" true", None),
         ],
     )
     def test_default(self, cell: str, expected: bool | None):
@@ -51,6 +56,8 @@ class TestParseBooleanColumn:
             ("y", True),
             ("yes", True),
             ("true", None),
+            ("1", None),
+            ("0", False),
         ],
     )
     def test_true_values(self, cell: str, expected: bool | None):
@@ -75,6 +82,8 @@ class TestParseBooleanColumn:
             ("n", False),
             ("no", False),
             ("false", None),
+            ("0", None),
+            ("1", True),
         ],
     )
     def test_false_values(self, cell: str, expected: bool | None):
@@ -99,6 +108,8 @@ class TestParseBooleanColumn:
             ("si", True),
             ("non", False),
             ("no", False),
+            ("1", None),
+            ("0", None),
         ],
     )
     def test_true_values_and_false_values(self, cell: str, expected: bool | None):

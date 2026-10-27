@@ -10,6 +10,8 @@ describe("parseListColumn", () => {
     ["1,2,3", ["1", "2", "3"]],
     ["foo,bar,baz", ["foo", "bar", "baz"]],
     ["single", ["single"]],
+    [" a", [" a"]],
+    ["", []],
     ["a,,c", ["a", "", "c"]],
     [",b,", ["", "b", ""]],
     [",,,", ["", "", "", ""]],
@@ -36,10 +38,14 @@ describe("parseListColumn", () => {
     ["0,-1,42", [0, -1, 42]],
     ["-10,0,10", [-10, 0, 10]],
     ["42", [42]],
-    ["1,,3", [1, null, 3]],
-    [",2,", [null, 2, null]],
+    ["1,,3", null],
+    [",2,", null],
     ["1,a,3", null],
     ["1.5,2,3", null],
+    ["1,2.0", [1, 2]],
+    ["1,+2", null],
+    ["1, 2", null],
+    ["", []],
   ])("items integer: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {
@@ -64,8 +70,10 @@ describe("parseListColumn", () => {
     ["0,-1.1,42", [0, -1.1, 42]],
     ["-10.5,0,10", [-10.5, 0, 10]],
     ["3.14", [3.14]],
-    ["1.1,,3.3", [1.1, null, 3.3]],
-    [",2.2,", [null, 2.2, null]],
+    ["1.1,,3.3", null],
+    [",2.2,", null],
+    ["1,.5", null],
+    ["1,NaN", null],
     ["1.1,a,3.3", null],
   ])("items number: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()

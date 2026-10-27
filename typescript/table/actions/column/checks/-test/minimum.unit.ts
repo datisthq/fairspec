@@ -379,4 +379,32 @@ describe("inspectTable (cell/minimum)", () => {
     const errors = await inspectTable(table, { tableSchema })
     expect(errors).toEqual([])
   })
+
+  it("should read the value of an integer categorical column", async () => {
+    const table = pl
+      .DataFrame([pl.Series("severity", ["1", "2", "3.0"], pl.String)])
+      .lazy()
+
+    const tableSchema: TableSchema = {
+      properties: {
+        severity: {
+          type: "integer",
+          format: "categorical",
+          categories: [1, 2, 3],
+          minimum: 2,
+        },
+      },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/minimum",
+        columnName: "severity",
+        minimum: "2",
+        rowNumber: 1,
+        cell: "1",
+      },
+    ])
+  })
 })

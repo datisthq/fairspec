@@ -2,12 +2,16 @@ use std::collections::HashSet;
 
 use serde_json::Value;
 
+use crate::models::column::boolean::BooleanColumnProperty;
+use crate::models::column::column::ColumnProperty;
 use crate::models::descriptor::Descriptor;
 use crate::models::error::error::FairspecError;
 use crate::models::error::metadata::MetadataError;
 use crate::models::table_schema::TableSchema;
 
 const NULLABLE_KEYWORDS: [&str; 4] = ["enum", "const", "default", "examples"];
+const DEFAULT_TRUE_VALUES: [&str; 4] = ["true", "True", "TRUE", "1"];
+const DEFAULT_FALSE_VALUES: [&str; 4] = ["false", "False", "FALSE", "0"];
 
 /// Check the required columns, patterns and key definitions of a table schema against its columns
 pub fn inspect_table_schema(
@@ -51,6 +55,11 @@ pub fn inspect_table_schema(
                 format!("pattern \"{pattern}\" is not a valid regular expression"),
                 format!("{root}/properties/{}/pattern", escape_json_pointer(name)),
             ));
+        }
+    }
+    for (name, property) in table_schema.properties.iter().flatten() {
+        if let ColumnProperty::Boolean(property) = property {
+            errors.extend(inspect_boolean_values(name, property, root));
         }
     }
     check_columns(
@@ -129,6 +138,43 @@ pub fn inspect_table_schema_nulls(
     }
 
     errors
+}
+
+fn inspect_boolean_values(
+    name: &str,
+    property: &BooleanColumnProperty,
+    root: &str,
+) -> Vec<FairspecError> {
+    let true_values = property.true_values.as_deref();
+    let false_values = property.false_values.as_deref();
+
+    // The error lands on the declared list, the false values when both are declared
+    let (keyword, values, others): (&str, &[String], Vec<&str>) = match (true_values, false_values)
+    {
+        (None, None) => return Vec::new(),
+        (true_values, Some(false_values)) => (
+            "falseValues",
+            false_values,
+            match true_values {
+                Some(true_values) => true_values.iter().map(String::as_str).collect(),
+                None => DEFAULT_TRUE_VALUES.to_vec(),
+            },
+        ),
+        (Some(true_values), None) => ("trueValues", true_values, DEFAULT_FALSE_VALUES.to_vec()),
+    };
+
+    let pointer = format!("{root}/properties/{}/{keyword}", escape_json_pointer(name));
+    values
+        .iter()
+        .enumerate()
+        .filter(|(_, value)| others.contains(&value.as_str()))
+        .map(|(index, value)| {
+            create_error(
+                format!("value \"{value}\" is in both trueValues and falseValues"),
+                format!("{pointer}/{index}"),
+            )
+        })
+        .collect()
 }
 
 fn escape_json_pointer(key: &str) -> String {

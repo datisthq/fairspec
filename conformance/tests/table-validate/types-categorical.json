@@ -207,5 +207,115 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "integer categorical column: cells read as integers",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#integer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "whole numbers in the integer grammar are valid",
+        "data": "id,x\n1,1\n2,2.0\n3,3e0\n4,1E0\n",
+        "valid": true
+      },
+      {
+        "description": "leading zeros is a cell/type error",
+        "data": "id,x\n1,1\n2,01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "01"
+          }
+        ]
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,1\n2,+1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "+1"
+          }
+        ]
+      },
+      {
+        "description": "a leading space is a cell/type error",
+        "data": "id,x\n1,1\n2, 1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": " 1"
+          }
+        ]
+      },
+      {
+        "description": "a trailing space is a cell/type error",
+        "data": "id,x\n1,1\n2,1 \n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "1 "
+          }
+        ]
+      },
+      {
+        "description": "a fraction is a cell/type error",
+        "data": "id,x\n1,1\n2,1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "1.5"
+          }
+        ]
+      },
+      {
+        "description": "a value past the 64-bit range is a cell/type error",
+        "data": "id,x\n1,1\n2,9223372036854775808\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "9223372036854775808"
+          }
+        ]
+      }
+    ]
   }
 ]

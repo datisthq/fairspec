@@ -442,7 +442,7 @@ All table commands support these schema-related options:
 ### Array/List Parsing
 
 - `--array-type <type>` - Array item type
-- `--list-delimiter <char>` - List delimiter (default: `;`)
+- `--list-delimiter <char>` - List delimiter (default: `,`)
 - `--list-item-type <type>` - List item type
 
 ## Common Workflows

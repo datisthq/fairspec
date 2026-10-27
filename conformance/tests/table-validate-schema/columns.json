@@ -1070,5 +1070,130 @@
         ]
       }
     ]
+  },
+  {
+    "description": "a value in both trueValues and falseValues",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tests": [
+      {
+        "description": "a value in both declared lists is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["yes", "no"],
+              "falseValues": ["no"]
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/falseValues/0"
+          }
+        ]
+      },
+      {
+        "description": "a declared true value in the default false values is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["yes", "0"]
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/trueValues/1"
+          }
+        ]
+      },
+      {
+        "description": "a declared false value in the default true values is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "falseValues": ["true"]
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/falseValues/0"
+          }
+        ]
+      },
+      {
+        "description": "every shared value is an error",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["boolean", "null"],
+              "trueValues": ["a", "b"],
+              "falseValues": ["b", "c", "a"]
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/falseValues/0"
+          },
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/falseValues/2"
+          }
+        ]
+      },
+      {
+        "description": "values in another case are valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["Yes"],
+              "falseValues": ["yes"]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a declared list replaces its default before the check",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["1"],
+              "falseValues": ["0"]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a true value outside the default false values is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["Y", "1"]
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
   }
 ]

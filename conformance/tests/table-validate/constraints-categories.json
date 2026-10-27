@@ -346,5 +346,201 @@
         ]
       }
     ]
+  },
+  {
+    "description": "minimum and maximum on an integer categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3, 4, 5, 6],
+          "minimum": 2,
+          "maximum": 5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories within the bounds are valid",
+        "data": "id,x\n1,2\n2,5\n",
+        "valid": true
+      },
+      {
+        "description": "listed categories past the bounds are errors",
+        "data": "id,x\n1,1\n2,3\n3,6\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": "1",
+            "minimum": "2"
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 3,
+            "cell": "6",
+            "maximum": "5"
+          }
+        ]
+      },
+      {
+        "description": "an unlisted value is a cell/type error only",
+        "data": "id,x\n1,2\n2,7\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "categorical",
+            "rowNumber": 2,
+            "cell": "7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "exclusive bounds on an integer categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3, 4],
+          "exclusiveMinimum": 1,
+          "exclusiveMaximum": 4
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories strictly inside are valid",
+        "data": "id,x\n1,2\n2,3\n",
+        "valid": true
+      },
+      {
+        "description": "listed categories on the bounds are errors",
+        "data": "id,x\n1,1\n2,2\n3,4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": "1",
+            "minimum": "1"
+          },
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "x",
+            "rowNumber": 3,
+            "cell": "4",
+            "maximum": "4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf on an integer categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#multipleof"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3, 4],
+          "multipleOf": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed multiples are valid",
+        "data": "id,x\n1,2\n2,4\n",
+        "valid": true
+      },
+      {
+        "description": "a listed non-multiple is a cell/multipleOf error",
+        "data": "id,x\n1,2\n2,3\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "3",
+            "multipleOf": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minLength on a string categorical column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#minlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "categorical",
+          "categories": ["a", "bb"],
+          "minLength": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a listed category long enough is valid",
+        "data": "id,x\n1,bb\n",
+        "valid": true
+      },
+      {
+        "description": "a listed category too short is a cell/minLength error",
+        "data": "id,x\n1,bb\n2,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a",
+            "minLength": 2
+          }
+        ]
+      }
+    ]
   }
 ]

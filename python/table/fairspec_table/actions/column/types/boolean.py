@@ -12,22 +12,19 @@ DEFAULT_FALSE_VALUE = "false"
 
 
 def parse_boolean_column(column: BooleanColumn, column_expr: pl.Expr) -> pl.Expr:
-    true_values = column.property.trueValues or DEFAULT_TRUE_VALUES
-    false_values = column.property.falseValues or DEFAULT_FALSE_VALUES
-
-    for value in true_values:
-        column_expr = column_expr.str.replace(f"^{value}$", "1", literal=False)
-    for value in false_values:
-        column_expr = column_expr.str.replace(f"^{value}$", "0", literal=False)
-
-    column_expr = column_expr.cast(pl.Int8, strict=False)
+    true_values = column.property.trueValues
+    false_values = column.property.falseValues
+    if true_values is None:
+        true_values = DEFAULT_TRUE_VALUES
+    if false_values is None:
+        false_values = DEFAULT_FALSE_VALUES
 
     return (
-        pl.when(column_expr.eq(1))
+        pl.when(column_expr.is_in(true_values))
         .then(pl.lit(True))
-        .when(column_expr.eq(0))
+        .when(column_expr.is_in(false_values))
         .then(pl.lit(False))
-        .otherwise(pl.lit(None))
+        .otherwise(pl.lit(None, dtype=pl.Boolean))
         .alias(column.name)
     )
 

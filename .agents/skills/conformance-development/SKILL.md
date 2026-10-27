@@ -113,6 +113,17 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   candidate bytes and their order equal
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
+- Number and integer text passes the JSON number regex before any cast (`parseNumberText`,
+  `parseIntegerText` and twins), since Polars' casts take `+1`, `007`, `NaN` and `inf`. An
+  integer is read exactly from its digits and exponent, never through Float64, so
+  `9223372036854775807.0` holds; the integer column, an integer Categorical and list items
+  share it. A Categorical target is the label, so its numeric checks read the cell value again
+  (`getNumericValue` and twins)
+- Integer arithmetic over cell text (exponent plus digit counts) is clamped first: an exponent
+  near the Int64 limit wraps, passes the range check and asks Polars for a huge padding, which
+  aborts the whole query on one cell
+- Schema inference patterns follow the same grammar as the cell reading, so an inferred schema
+  accepts the data it came from: `00123` infers `string`, not `integer`
 - A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every
   load path, so the Python runner's strict compare fails it. That is an open divergence, not
   a reason to drop the strict compare; until it is fixed, give `number` cases fractional values

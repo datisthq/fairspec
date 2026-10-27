@@ -5,11 +5,12 @@ from decimal import Decimal
 
 import polars as pl
 from fairspec_metadata import CellMultipleOfError
-from fairspec_metadata import Column, DecimalColumn, NumberColumn
+from fairspec_metadata import CategoricalColumn, Column, DecimalColumn, NumberColumn
 
 from fairspec_table.models import CellMapping
 
 from ..types.decimal import normalize_number_text
+from ._shared.value import get_numeric_value
 
 MAX_DECIMAL_DIGITS = 38
 INTEGER_DECIMAL = pl.Decimal(MAX_DECIMAL_DIGITS, 0)
@@ -27,6 +28,12 @@ def check_cell_multiple_of(column: Column, mapping: CellMapping) -> ColumnCheck 
     if multiple_of is None:
         return None
 
+    value_expr = mapping.target
+    if isinstance(column, CategoricalColumn):
+        value_expr = get_numeric_value(column, mapping)
+        if value_expr is None:
+            return None
+
     error_template = CellMultipleOfError(
         type="cell/multipleOf",
         columnName=column.name,
@@ -35,7 +42,7 @@ def check_cell_multiple_of(column: Column, mapping: CellMapping) -> ColumnCheck 
         cell="",
     )
 
-    is_float_error_expr = (mapping.target.cast(pl.Float64) % multiple_of).eq(0).not_()
+    is_float_error_expr = (value_expr.cast(pl.Float64) % multiple_of).eq(0).not_()
 
     integer_digits, _, fraction_digits = format(Decimal(str(multiple_of)), "f").partition(
         "."
@@ -49,7 +56,7 @@ def check_cell_multiple_of(column: Column, mapping: CellMapping) -> ColumnCheck 
 
     # The value scaled by 10^scale must be an integer of at most 37 digits: the quotient rounds,
     # so multiplied back it can pass 38 and abort the query; anything else is checked as a float
-    text_expr = _select_value_text(column, mapping)
+    text_expr = _select_value_text(column, mapping, value_expr)
     is_exact_expr = text_expr.str.contains(
         f"^[+-]?0*[0-9]{{0,{MAX_VALUE_DIGITS - scale}}}(?:\\.[0-9]*)?$"
     ) & text_expr.str.contains("[0-9]")
@@ -80,8 +87,10 @@ def check_cell_multiple_of(column: Column, mapping: CellMapping) -> ColumnCheck 
 
 
 # A float target keeps no digit past double precision, so the text as written is used
-def _select_value_text(column: Column, mapping: CellMapping) -> pl.Expr:
-    target_text_expr = mapping.target.cast(pl.String)
+def _select_value_text(
+    column: Column, mapping: CellMapping, value_expr: pl.Expr
+) -> pl.Expr:
+    target_text_expr = value_expr.cast(pl.String)
     if not isinstance(column, (NumberColumn, DecimalColumn)):
         return target_text_expr
 
@@ -89,7 +98,7 @@ def _select_value_text(column: Column, mapping: CellMapping) -> pl.Expr:
     return (
         pl.when(
             source_text_expr.cast(pl.Float64, strict=False).eq(
-                mapping.target.cast(pl.Float64)
+                value_expr.cast(pl.Float64)
             )
         )
         .then(source_text_expr)

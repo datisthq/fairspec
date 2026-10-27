@@ -10,8 +10,7 @@ from fairspec_metadata import Column
 from fairspec_table.helpers import stringify_number
 from fairspec_table.models import CellMapping
 
-
-NUMERIC_COLUMN_TYPES = ("integer", "number", "decimal")
+from ._shared.value import get_numeric_value
 
 
 @dataclass
@@ -24,7 +23,8 @@ def create_check_cell_maximum(
     *, is_exclusive: bool = False
 ) -> Callable[[Column, CellMapping], ColumnCheck | None]:
     def check_cell_maximum(column: Column, mapping: CellMapping) -> ColumnCheck | None:
-        if column.type not in NUMERIC_COLUMN_TYPES:
+        value_expr = get_numeric_value(column, mapping)
+        if value_expr is None:
             return None
         if not hasattr(column.property, "maximum") and not hasattr(
             column.property, "exclusiveMaximum"
@@ -39,9 +39,7 @@ def create_check_cell_maximum(
         if maximum is None:
             return None
 
-        is_error_expr = (
-            mapping.target.ge(maximum) if is_exclusive else mapping.target.gt(maximum)
-        )
+        is_error_expr = value_expr.ge(maximum) if is_exclusive else value_expr.gt(maximum)
 
         error_template: CellMaximumError | CellExclusiveMaximumError
         if is_exclusive:

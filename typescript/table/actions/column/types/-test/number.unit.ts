@@ -16,6 +16,18 @@ describe("parseNumberColumn", () => {
     ["", null],
     ["bad", null],
     ["text", null],
+    ["1E-3", 0.001],
+    ["1.5e+1", 15],
+    ["+1", null],
+    ["007", null],
+    [".5", null],
+    ["5.", null],
+    [" 1", null],
+    ["0x10", null],
+    ["NaN", null],
+    ["inf", null],
+    ["-Infinity", null],
+    ["1e", null],
   ])("default: %s -> %s", async (cell, expected) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {

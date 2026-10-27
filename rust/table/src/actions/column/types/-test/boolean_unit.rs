@@ -55,6 +55,11 @@ fn test_parse_default() {
             ("t", None),
             ("f", None),
             ("3.14", None),
+            ("01", None),
+            ("+1", None),
+            ("-0", None),
+            ("true ", None),
+            (" true", None),
         ],
     );
 }
@@ -68,6 +73,8 @@ fn test_parse_true_values() {
             ("y", Some(true)),
             ("yes", Some(true)),
             ("true", None),
+            ("1", None),
+            ("0", Some(false)),
         ],
     );
 }
@@ -81,6 +88,8 @@ fn test_parse_false_values() {
             ("n", Some(false)),
             ("no", Some(false)),
             ("false", None),
+            ("0", None),
+            ("1", Some(true)),
         ],
     );
 }
@@ -94,6 +103,8 @@ fn test_parse_true_values_and_false_values() {
             ("si", Some(true)),
             ("non", Some(false)),
             ("no", Some(false)),
+            ("1", None),
+            ("0", None),
         ],
     );
 }

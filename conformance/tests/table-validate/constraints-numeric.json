@@ -719,7 +719,6 @@
   },
   {
     "description": "minimum on an integer categorical column",
-    "comment": "Categorical is its own column type, not Integer, so the bound MUST be ignored",
     "specification": [
       "https://fairspec.org/specs/table-schema/#categorical",
       "https://fairspec.org/specs/table-schema/#minimum"
@@ -742,9 +741,18 @@
         "valid": true
       },
       {
-        "description": "a listed category below the minimum is valid",
+        "description": "a listed category below the minimum is a cell/minimum error",
         "data": "id,x\n1,1\n2,3\n",
-        "valid": true
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": "1",
+            "minimum": "2"
+          }
+        ]
       }
     ]
   },

@@ -74,7 +74,7 @@ fn to_owned(items: &[Option<&str>]) -> Vec<Option<String>> {
 
 #[test]
 fn test_parse_default() {
-    let cases: [(&str, &[Option<&str>]); 7] = [
+    let cases: [(&str, &[Option<&str>]); 9] = [
         ("a,b,c", &[Some("a"), Some("b"), Some("c")]),
         ("1,2,3", &[Some("1"), Some("2"), Some("3")]),
         ("foo,bar,baz", &[Some("foo"), Some("bar"), Some("baz")]),
@@ -82,6 +82,8 @@ fn test_parse_default() {
         ("a,,c", &[Some("a"), Some(""), Some("c")]),
         (",b,", &[Some(""), Some("b"), Some("")]),
         (",,,", &[Some(""), Some(""), Some(""), Some("")]),
+        (" a", &[Some(" a")]),
+        ("", &[]),
     ];
     for (cell, expected) in cases {
         assert_eq!(
@@ -94,15 +96,19 @@ fn test_parse_default() {
 
 #[test]
 fn test_parse_items_integer() {
-    let cases: [(&str, Option<&[Option<i64>]>); 8] = [
+    let cases: [(&str, Option<&[Option<i64>]>); 12] = [
         ("1,2,3", Some(&[Some(1), Some(2), Some(3)])),
         ("0,-1,42", Some(&[Some(0), Some(-1), Some(42)])),
         ("-10,0,10", Some(&[Some(-10), Some(0), Some(10)])),
         ("42", Some(&[Some(42)])),
-        ("1,,3", Some(&[Some(1), None, Some(3)])),
-        (",2,", Some(&[None, Some(2), None])),
+        ("1,,3", None),
+        (",2,", None),
         ("1,a,3", None),
         ("1.5,2,3", None),
+        ("1,2.0", Some(&[Some(1), Some(2)])),
+        ("1,+2", None),
+        ("1, 2", None),
+        ("", Some(&[])),
     ];
     for (cell, expected) in cases {
         assert_eq!(
@@ -116,13 +122,15 @@ fn test_parse_items_integer() {
 #[test]
 #[allow(clippy::approx_constant)]
 fn test_parse_items_number() {
-    let cases: [(&str, Option<&[Option<f64>]>); 7] = [
+    let cases: [(&str, Option<&[Option<f64>]>); 9] = [
         ("1.5,2.1,3.7", Some(&[Some(1.5), Some(2.1), Some(3.7)])),
         ("0,-1.1,42", Some(&[Some(0.0), Some(-1.1), Some(42.0)])),
         ("-10.5,0,10", Some(&[Some(-10.5), Some(0.0), Some(10.0)])),
         ("3.14", Some(&[Some(3.14)])),
-        ("1.1,,3.3", Some(&[Some(1.1), None, Some(3.3)])),
-        (",2.2,", Some(&[None, Some(2.2), None])),
+        ("1.1,,3.3", None),
+        (",2.2,", None),
+        ("1,.5", None),
+        ("1,NaN", None),
         ("1.1,a,3.3", None),
     ];
     for (cell, expected) in cases {

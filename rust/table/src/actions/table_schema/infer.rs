@@ -329,9 +329,9 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
     };
 
     let entries: Vec<(String, Value)> = vec![
-        (r"^-?\d+$".into(), entry("integer", json!({"type": "integer"}))),
+        (r"^-?(?:0|[1-9]\d*)$".into(), entry("integer", json!({"type": "integer"}))),
         (
-            r"^\d{1,3}(,\d{3})+$".into(),
+            r"^[1-9]\d{0,2}(,\d{3})+$".into(),
             pick(
                 comma_decimal,
                 entry("number", json!({"type": "number"})),
@@ -339,24 +339,24 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
             ),
         ),
         (
-            r"^-?\d+(\.\d+)?$".into(),
+            r"^-?(?:0|[1-9]\d*)(\.\d+)?$".into(),
             pick(
                 comma_decimal,
                 entry("integer", json!({"type": "integer", "groupChar": "."})),
                 entry("number", json!({"type": "number"})),
             ),
         ),
-        (r"^\d{1,3}(,\d{3})+(\.\d+)?$".into(), entry("number", json!({"type": "number", "groupChar": ","}))),
+        (r"^[1-9]\d{0,2}(,\d{3})+(\.\d+)?$".into(), entry("number", json!({"type": "number", "groupChar": ","}))),
         (
-            r"^\d{1,3}(\.\d{3})+(,\d+)?$".into(),
+            r"^[1-9]\d{0,2}(\.\d{3})+(,\d+)?$".into(),
             entry("number", json!({"type": "number", "groupChar": ".", "decimalChar": ","})),
         ),
         (
-            r"^[\p{Sc}\s-]*\d+[%\p{Sc}\s]*$".into(),
+            r"^[\p{Sc}\s-]*(?:0|[1-9]\d*)[%\p{Sc}\s]*$".into(),
             entry("integer", json!({"type": "integer", "withText": true})),
         ),
         (
-            r"^[\p{Sc}\s-]*\d{1,3}(,\d{3})+[%\p{Sc}\s]*$".into(),
+            r"^[\p{Sc}\s-]*[1-9]\d{0,2}(,\d{3})+[%\p{Sc}\s]*$".into(),
             pick(
                 comma_decimal,
                 entry("number", json!({"type": "number", "withText": true})),
@@ -364,7 +364,7 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
             ),
         ),
         (
-            r"^[\p{Sc}\s-]*\d+(\.\d+)?[%\p{Sc}\s]*$".into(),
+            r"^[\p{Sc}\s-]*(?:0|[1-9]\d*)(\.\d+)?[%\p{Sc}\s]*$".into(),
             pick(
                 comma_decimal,
                 entry("integer", json!({"type": "integer", "groupChar": ".", "withText": true})),
@@ -372,11 +372,11 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
             ),
         ),
         (
-            r"^[\p{Sc}\s-]*\d{1,3}(,\d{3})+(\.\d+)?[%\p{Sc}\s]*$".into(),
+            r"^[\p{Sc}\s-]*[1-9]\d{0,2}(,\d{3})+(\.\d+)?[%\p{Sc}\s]*$".into(),
             entry("number", json!({"type": "number", "groupChar": ",", "withText": true})),
         ),
         (
-            r"^[\p{Sc}\s-]*\d{1,3}(\.\d{3})+(,\d+)?[%\p{Sc}\s]*$".into(),
+            r"^[\p{Sc}\s-]*[1-9]\d{0,2}(\.\d{3})+(,\d+)?[%\p{Sc}\s]*$".into(),
             entry(
                 "number",
                 json!({"type": "number", "groupChar": ".", "decimalChar": ",", "withText": true}),
@@ -423,11 +423,11 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
         (r"^\{".into(), entry("object", json!({"type": "object"}))),
         (r"^\[".into(), entry("array", json!({"type": "array"}))),
         (
-            format!(r"^\d+{list_escaped}\d+$"),
+            format!(r"^(?:0|[1-9]\d*){list_escaped}(?:0|[1-9]\d*)$"),
             entry("list", json!({"type": "string", "format": "list", "itemType": "integer"})),
         ),
         (
-            format!(r"^[\d.]+{list_escaped}[\d.]+$"),
+            format!(r"^(?:0|[1-9]\d*)(?:\.\d+)?{list_escaped}(?:0|[1-9]\d*)(?:\.\d+)?$"),
             entry("list", json!({"type": "string", "format": "list", "itemType": "number"})),
         ),
         (r"^https?://\S+$".into(), entry("url", json!({"type": "string", "format": "url"}))),

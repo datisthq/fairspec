@@ -2,6 +2,7 @@ import type { CellMultipleOfError, Column } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import type { CellMapping } from "../../../models/cell.ts"
 import { normalizeNumberText } from "../types/decimal.ts"
+import { getNumericValue } from "./-shared/value.ts"
 
 const MAX_DECIMAL_DIGITS = 38
 const INTEGER_DECIMAL = pl.Decimal(MAX_DECIMAL_DIGITS, 0)
@@ -14,6 +15,10 @@ export function checkCellMultipleOf(column: Column, mapping: CellMapping) {
   const multipleOf = property.multipleOf
   if (typeof multipleOf !== "number") return undefined
 
+  const valueExpr =
+    column.type === "categorical" ? getNumericValue(column, mapping) : mapping.target
+  if (!valueExpr) return undefined
+
   const errorTemplate: CellMultipleOfError = {
     type: "cell/multipleOf",
     columnName: column.name,
@@ -22,7 +27,7 @@ export function checkCellMultipleOf(column: Column, mapping: CellMapping) {
     cell: "",
   }
 
-  const isFloatErrorExpr = mapping.target.cast(pl.Float64).modulo(multipleOf).eq(0).not()
+  const isFloatErrorExpr = valueExpr.cast(pl.Float64).modulo(multipleOf).eq(0).not()
 
   const [integerDigits = "", fractionDigits = ""] =
     formatDecimalText(multipleOf).split(".")
@@ -34,7 +39,7 @@ export function checkCellMultipleOf(column: Column, mapping: CellMapping) {
 
   // The value scaled by 10^scale must be an integer of at most 37 digits: the quotient rounds,
   // so multiplied back it can pass 38 and abort the query; anything else is checked as a float
-  const textExpr = selectValueText(column, mapping)
+  const textExpr = selectValueText(column, mapping, valueExpr)
   const isExactExpr = textExpr.str
     .contains(`^[+-]?0*[0-9]{0,${MAX_VALUE_DIGITS - scale}}(?:\\.[0-9]*)?$`)
     .and(textExpr.str.contains("[0-9]"))
@@ -68,13 +73,13 @@ export function checkCellMultipleOf(column: Column, mapping: CellMapping) {
 }
 
 // A float target keeps no digit past double precision, so the text as written is used
-function selectValueText(column: Column, mapping: CellMapping) {
-  const targetTextExpr = mapping.target.cast(pl.String)
+function selectValueText(column: Column, mapping: CellMapping, valueExpr: pl.Expr) {
+  const targetTextExpr = valueExpr.cast(pl.String)
   if (column.type !== "number" && column.type !== "decimal") return targetTextExpr
 
   const sourceTextExpr = normalizeNumberText(column, mapping.source.cast(pl.String))
   return pl
-    .when(sourceTextExpr.cast(pl.Float64).eq(mapping.target.cast(pl.Float64)))
+    .when(sourceTextExpr.cast(pl.Float64).eq(valueExpr.cast(pl.Float64)))
     .then(sourceTextExpr)
     .otherwise(targetTextExpr)
 }

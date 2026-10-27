@@ -22,6 +22,8 @@ class TestParseListColumn:
             ("a,,c", ["a", "", "c"]),
             (",b,", ["", "b", ""]),
             (",,,", ["", "", "", ""]),
+            (" a", [" a"]),
+            ("", []),
         ],
     )
     def test_default(self, cell: str, expected: list[str]):
@@ -45,10 +47,14 @@ class TestParseListColumn:
             ("0,-1,42", [0, -1, 42]),
             ("-10,0,10", [-10, 0, 10]),
             ("42", [42]),
-            ("1,,3", [1, None, 3]),
-            (",2,", [None, 2, None]),
+            ("1,,3", None),
+            (",2,", None),
             ("1,a,3", None),
             ("1.5,2,3", None),
+            ("1,2.0", [1, 2]),
+            ("1,+2", None),
+            ("1, 2", None),
+            ("", []),
         ],
     )
     def test_items_integer(self, cell: str, expected: list[int | None] | None):
@@ -72,8 +78,10 @@ class TestParseListColumn:
             ("0,-1.1,42", [0.0, -1.1, 42.0]),
             ("-10.5,0,10", [-10.5, 0.0, 10.0]),
             ("3.14", [3.14]),
-            ("1.1,,3.3", [1.1, None, 3.3]),
-            (",2.2,", [None, 2.2, None]),
+            ("1.1,,3.3", None),
+            (",2.2,", None),
+            ("1,.5", None),
+            ("1,NaN", None),
             ("1.1,a,3.3", None),
         ],
     )

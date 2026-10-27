@@ -123,3 +123,16 @@ fn test_integer_exclusive_minimum() {
 
     assert_eq!(count_errors(table, result.is_error_expr), 2);
 }
+
+#[test]
+fn test_integer_categorical_reads_the_cell_value() {
+    let column = create_column(
+        "severity",
+        json!({"type": "integer", "format": "categorical", "categories": [1, 2, 3], "minimum": 2}),
+    );
+    let table = df!("source" => ["1", "2", "3.0"], "target" => ["1", "2", "3"]).unwrap();
+
+    let result = check_cell_minimum(&column, &create_mapping(), false).unwrap();
+
+    assert_eq!(count_errors(table, result.is_error_expr), 1);
+}

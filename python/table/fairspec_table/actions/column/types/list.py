@@ -4,6 +4,9 @@ import polars as pl
 
 from fairspec_metadata import ListColumn
 
+from .integer import parse_integer_text
+from .number import parse_number_text
+
 TRUE_VALUES = ["true", "True", "TRUE", "1"]
 FALSE_VALUES = ["false", "False", "FALSE", "0"]
 DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
@@ -13,19 +16,21 @@ def parse_list_column(column: ListColumn, column_expr: pl.Expr) -> pl.Expr:
     delimiter = column.property.delimiter or ","
     item_type = column.property.itemType
 
-    items_expr = column_expr.str.split(delimiter)
+    # An empty cell is an empty list, while every delimiter splits off an item, empty or not
+    split_expr = column_expr.str.split(delimiter)
+    items_expr = (
+        pl.when(column_expr.eq(pl.lit("")))
+        .then(split_expr.list.head(0))
+        .otherwise(split_expr)
+    )
     if not item_type or item_type == "string":
         return items_expr
 
-    list_expr = items_expr.list.eval(_parse_item(item_type, pl.element()))
+    list_expr = items_expr.list.eval(_cast_item(item_type, pl.element()))
 
-    # An unparsable item becomes null rather than failing, and an empty one is null
-    # by design, so a list holding more nulls than empty items had an invalid item
+    # An unparsable item becomes null rather than failing, so a null item marks the cell
     return (
-        pl.when(
-            _count_items(list_expr, pl.element().is_null())
-            > _count_items(items_expr, pl.element().eq(pl.lit("")))
-        )
+        pl.when(_count_items(list_expr, pl.element().is_null()) > 0)
         .then(pl.lit(None))
         .otherwise(list_expr)
     )
@@ -37,20 +42,12 @@ def stringify_list_column(column: ListColumn, column_expr: pl.Expr) -> pl.Expr:
     return column_expr.cast(pl.List(pl.String)).list.join(delimiter, ignore_nulls=True)
 
 
-def _parse_item(item_type: str, item_expr: pl.Expr) -> pl.Expr:
-    return (
-        pl.when(item_expr.eq(pl.lit("")))
-        .then(pl.lit(None))
-        .otherwise(_cast_item(item_type, item_expr))
-    )
-
-
 def _cast_item(item_type: str, item_expr: pl.Expr) -> pl.Expr:
     match item_type:
         case "integer":
-            return item_expr.cast(pl.Int64, strict=False)
+            return parse_integer_text(item_expr)
         case "number":
-            return item_expr.cast(pl.Float64, strict=False)
+            return parse_number_text(item_expr)
         case "boolean":
             return (
                 pl.when(item_expr.is_in(TRUE_VALUES))

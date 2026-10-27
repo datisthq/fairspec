@@ -5,11 +5,13 @@ import polars as pl
 from fairspec_metadata import (
     Base64Column,
     BooleanColumn,
+    CategoricalColumn,
     DateColumn,
     DateTimeColumn,
     DecimalColumn,
     EmailColumn,
     HexColumn,
+    IntegerCategoricalColumnProperty,
     IntegerColumn,
     ListColumn,
     LocalDateTimeColumn,
@@ -28,7 +30,11 @@ from .types.date_time import parse_date_time_column
 from .types.decimal import parse_decimal_column
 from .types.email import parse_email_column
 from .types.hex import parse_hex_column
-from .types.integer import parse_integer_column
+from .types.integer import (
+    normalize_integer_text,
+    parse_integer_column,
+    parse_integer_text,
+)
 from .types.list import parse_list_column
 from .types.local_date_time import parse_local_date_time_column
 from .types.local_time import parse_local_time_column
@@ -46,6 +52,12 @@ def parse_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
         return parse_base64_column(column, column_expr)
     elif isinstance(column, BooleanColumn):
         return parse_boolean_column(column, column_expr)
+    elif isinstance(column, CategoricalColumn):
+        if isinstance(column.property, IntegerCategoricalColumnProperty):
+            return parse_integer_text(
+                normalize_integer_text(column.property, column_expr)
+            )
+        return column_expr
     elif isinstance(column, DateColumn):
         return parse_date_column(column, column_expr)
     elif isinstance(column, DateTimeColumn):

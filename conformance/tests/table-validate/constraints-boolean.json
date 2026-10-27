@@ -263,5 +263,163 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "default trueValues and falseValues match exactly",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "boolean"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a trailing space is a cell/type error",
+        "data": "id,x\n1,true\n2,true \n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "true "
+          }
+        ]
+      },
+      {
+        "description": "a leading zero is a cell/type error",
+        "data": "id,x\n1,true\n2,01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "01"
+          }
+        ]
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,true\n2,+1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "+1"
+          }
+        ]
+      },
+      {
+        "description": "a negative zero is a cell/type error",
+        "data": "id,x\n1,true\n2,-0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "-0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "custom trueValues and falseValues replace both defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "boolean",
+          "trueValues": ["yes"],
+          "falseValues": ["no"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the custom values are valid",
+        "data": "id,x\n1,yes\n2,no\n",
+        "valid": true
+      },
+      {
+        "description": "the default value 1 is a cell/type error",
+        "data": "id,x\n1,yes\n2,1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "1"
+          }
+        ]
+      },
+      {
+        "description": "the default value 0 is a cell/type error",
+        "data": "id,x\n1,yes\n2,0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "0"
+          }
+        ]
+      },
+      {
+        "description": "the default value true is a cell/type error",
+        "data": "id,x\n1,yes\n2,true\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "true"
+          }
+        ]
+      },
+      {
+        "description": "the default value false is a cell/type error",
+        "data": "id,x\n1,yes\n2,false\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "false"
+          }
+        ]
+      }
+    ]
   }
 ]

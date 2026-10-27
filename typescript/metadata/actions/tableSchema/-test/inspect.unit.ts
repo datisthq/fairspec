@@ -31,6 +31,42 @@ describe("inspectTableSchema", () => {
     ])
   })
 
+  it("reports a boolean value in both trueValues and falseValues", () => {
+    const errors = inspectTableSchema({
+      properties: {
+        x: { type: "boolean", trueValues: ["yes", "no"], falseValues: ["no"] },
+        y: { type: "boolean", trueValues: ["yes", "0"] },
+        z: { type: "boolean", falseValues: ["Yes", "true"] },
+      },
+    })
+
+    expect(errors).toEqual([
+      {
+        type: "metadata",
+        message: 'value "no" is in both trueValues and falseValues',
+        jsonPointer: "/properties/x/falseValues/0",
+      },
+      {
+        type: "metadata",
+        message: 'value "0" is in both trueValues and falseValues',
+        jsonPointer: "/properties/y/trueValues/1",
+      },
+      {
+        type: "metadata",
+        message: 'value "true" is in both trueValues and falseValues',
+        jsonPointer: "/properties/z/falseValues/1",
+      },
+    ])
+  })
+
+  it("accepts boolean values in separate lists", () => {
+    const errors = inspectTableSchema({
+      properties: { x: { type: "boolean", trueValues: ["1"], falseValues: ["0"] } },
+    })
+
+    expect(errors).toEqual([])
+  })
+
   it("accepts a valid pattern", () => {
     const errors = inspectTableSchema({
       properties: { code: { type: "string", pattern: "^[A-Z]{3}-[0-9]{4}$" } },

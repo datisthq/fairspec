@@ -657,5 +657,507 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "list column: a literal split",
+    "specification": ["https://fairspec.org/specs/table-schema/#list"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "items in the integer grammar are valid",
+        "data": "id,x\n1,\"1,2.0,-0\"\n",
+        "valid": true
+      },
+      {
+        "description": "an empty item between delimiters is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,,2\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,,2"
+          }
+        ]
+      },
+      {
+        "description": "a trailing delimiter is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,2,\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,2,"
+          }
+        ]
+      },
+      {
+        "description": "a leading delimiter is a cell/type error",
+        "data": "id,x\n1,1\n2,\",1\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": ",1"
+          }
+        ]
+      },
+      {
+        "description": "an item with a leading space is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1, 2\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1, 2"
+          }
+        ]
+      },
+      {
+        "description": "an item with a plus sign is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,+2\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,+2"
+          }
+        ]
+      },
+      {
+        "description": "an item with leading zeros is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,02\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,02"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: empty items are counted",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#minitems"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "minItems": 3
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "empty items count as items",
+        "data": "id,x\n1,\"a,,b\"\n2,\"a,b,\"\n3,\",,\"\n",
+        "valid": true
+      },
+      {
+        "description": "two items are a cell/minItems error",
+        "data": "id,x\n1,\"a,,b\"\n2,\"a,b\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,b",
+            "minItems": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: an empty cell is an empty list",
+    "specification": ["https://fairspec.org/specs/table-schema/#list"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty cell is valid",
+        "data": "id,x\n1,\"1,2\"\n2,\"\"\n",
+        "valid": true
+      },
+      {
+        "description": "an unquoted empty cell is a cell/missing error",
+        "data": "id,x\n1,\"1,2\"\n2,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: an empty list has no items",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#minitems"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "minItems": 1
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty cell is a cell/minItems error",
+        "data": "id,x\n1,a\n2,\"\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "",
+            "minItems": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: length keywords on the whole text",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "minLength": 3,
+          "maxLength": 3
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "text of three characters is valid",
+        "data": "id,x\n1,\"a,b\"\n2,abc\n",
+        "valid": true
+      },
+      {
+        "description": "the delimiters count toward the length",
+        "data": "id,x\n1,\"a,b\"\n2,\"a,bc\"\n3,ab\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,bc",
+            "maxLength": 3
+          },
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 3,
+            "cell": "ab",
+            "minLength": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: a pattern on the whole text",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#pattern"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "pattern": "^a,b$"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the whole text matching is valid",
+        "data": "id,x\n1,\"a,b\"\n",
+        "valid": true
+      },
+      {
+        "description": "an item alone does not match",
+        "data": "id,x\n1,\"a,b\"\n2,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a",
+            "pattern": "^a,b$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: missing values match the whole cell",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "list",
+          "itemType": "integer"
+        }
+      },
+      "missingValues": ["NA"]
+    },
+    "tests": [
+      {
+        "description": "the whole cell is missing",
+        "data": "id,x\n1,NA\n2,\"1,2\"\n",
+        "valid": true
+      },
+      {
+        "description": "a missing value as an item is a cell/type error",
+        "data": "id,x\n1,\"1,2\"\n2,\"1,NA\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,NA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column: a missing value as an item is counted",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#maxitems"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "format": "list",
+          "maxItems": 1
+        }
+      },
+      "missingValues": ["NA"]
+    },
+    "tests": [
+      {
+        "description": "an item equal to a missing value is an item",
+        "data": "id,x\n1,NA\n2,\"a,NA\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,NA",
+            "maxItems": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of booleans: items match exactly",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#truevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "boolean"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an item with a leading space is a cell/type error",
+        "data": "id,x\n1,true\n2,\"true, false\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "true, false"
+          }
+        ]
+      },
+      {
+        "description": "an item with leading zeros is a cell/type error",
+        "data": "id,x\n1,true\n2,\"true,01\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "true,01"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of numbers: items in the JSON number grammar",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#number"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "number"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "numbers in the grammar are valid",
+        "data": "id,x\n1,\"0.5,-2,1E-3\"\n",
+        "valid": true
+      },
+      {
+        "description": "a fraction without an integer part is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,.5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,.5"
+          }
+        ]
+      },
+      {
+        "description": "NaN is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,NaN\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,NaN"
+          }
+        ]
+      },
+      {
+        "description": "a plus sign is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,+2\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,+2"
+          }
+        ]
+      }
+    ]
   }
 ]

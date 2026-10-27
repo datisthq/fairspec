@@ -5,12 +5,12 @@ import type {
 } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import type { CellMapping } from "../../../models/cell.ts"
-
-const NUMERIC_COLUMN_TYPES: Column["type"][] = ["integer", "number", "decimal"]
+import { getNumericValue } from "./-shared/value.ts"
 
 export function createCheckCellMaximum(options?: { isExclusive?: boolean }) {
   return (column: Column, mapping: CellMapping) => {
-    if (!NUMERIC_COLUMN_TYPES.includes(column.type)) return undefined
+    const valueExpr = getNumericValue(column, mapping)
+    if (!valueExpr) return undefined
 
     const property = column.property
     if (!("maximum" in property) && !("exclusiveMaximum" in property)) return undefined
@@ -20,8 +20,8 @@ export function createCheckCellMaximum(options?: { isExclusive?: boolean }) {
 
     const maximumExpr = createBoundExpr(maximum)
     const isErrorExpr = options?.isExclusive
-      ? mapping.target.gtEq(maximumExpr)
-      : mapping.target.gt(maximumExpr)
+      ? valueExpr.gtEq(maximumExpr)
+      : valueExpr.gt(maximumExpr)
 
     const errorTemplate: CellMaximumError | CellExclusiveMaximumError = {
       type: options?.isExclusive ? "cell/exclusiveMaximum" : "cell/maximum",

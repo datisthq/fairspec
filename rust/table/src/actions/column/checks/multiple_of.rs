@@ -2,6 +2,7 @@ use fairspec_metadata::{CellError, CellMultipleOfError, Column};
 use polars::prelude::*;
 use serde_json::Value;
 
+use super::_shared::value::get_numeric_value;
 use super::check::ColumnCheck;
 use crate::actions::column::types::decimal::normalize_number_text;
 use crate::helpers::general::format_python_float;
@@ -16,6 +17,10 @@ pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<
     let Some(Value::Number(multiple_of)) = property.get("multipleOf") else {
         return None;
     };
+    let value_expr = match column {
+        Column::Categorical(_) => get_numeric_value(column, mapping)?,
+        _ => mapping.target.clone(),
+    };
 
     let error_template = CellError::MultipleOf(CellMultipleOfError {
         resource_name: None,
@@ -26,10 +31,9 @@ pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<
     });
 
     let divisor_number = multiple_of.as_f64().unwrap_or_default();
-    let is_float_error_expr = (mapping.target.clone().cast(DataType::Float64)
-        % lit(divisor_number))
-    .eq(lit(0))
-    .not();
+    let is_float_error_expr = (value_expr.clone().cast(DataType::Float64) % lit(divisor_number))
+        .eq(lit(0))
+        .not();
 
     let divisor_text = match multiple_of.as_i64() {
         Some(integer) => integer.to_string(),
@@ -50,7 +54,7 @@ pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<
 
     // The value scaled by 10^scale must be an integer of at most 37 digits: the quotient rounds,
     // so multiplied back it can pass 38 and abort the query; anything else is checked as a float
-    let text_expr = select_value_text(column, mapping);
+    let text_expr = select_value_text(column, mapping, value_expr);
     let is_exact_expr = text_expr
         .clone()
         .str()
@@ -107,8 +111,8 @@ pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<
 }
 
 // A float target keeps no digit past double precision, so the text as written is used
-fn select_value_text(column: &Column, mapping: &CellMapping) -> Expr {
-    let target_text_expr = mapping.target.clone().cast(DataType::String);
+fn select_value_text(column: &Column, mapping: &CellMapping, value_expr: Expr) -> Expr {
+    let target_text_expr = value_expr.clone().cast(DataType::String);
     let (decimal_char, group_char, with_text) = match column {
         Column::Number(column) => {
             let property = &column.property.base;
@@ -139,7 +143,7 @@ fn select_value_text(column: &Column, mapping: &CellMapping) -> Expr {
         source_text_expr
             .clone()
             .cast(DataType::Float64)
-            .eq(mapping.target.clone().cast(DataType::Float64)),
+            .eq(value_expr.cast(DataType::Float64)),
     )
     .then(source_text_expr)
     .otherwise(target_text_expr)

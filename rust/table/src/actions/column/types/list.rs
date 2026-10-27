@@ -1,6 +1,8 @@
 use fairspec_metadata::{ListColumn, ListItemType};
 use polars::prelude::*;
 
+use super::integer::parse_integer_text;
+use super::number::parse_number_text;
 use super::temporal::{create_strptime_options, get_utc_datetime_type};
 
 const TRUE_VALUES: [&str; 4] = ["true", "True", "TRUE", "1"];
@@ -9,25 +11,23 @@ const DATE_PATTERN: &str = r"^\d{4}-\d{2}-\d{2}$";
 
 pub fn parse_list_column(column: &ListColumn, column_expr: Expr) -> Expr {
     let delimiter = get_delimiter(column);
-    let items_expr = column_expr.str().split(lit(delimiter));
+
+    // An empty cell is an empty list, while every delimiter splits off an item, empty or not
+    let split_expr = column_expr.clone().str().split(lit(delimiter));
+    let items_expr = when(column_expr.eq(lit("")))
+        .then(split_expr.clone().list().head(lit(0)))
+        .otherwise(split_expr);
     let item_type = match column.property.item_type {
         None | Some(ListItemType::String) => return items_expr,
         Some(item_type) => item_type,
     };
 
-    let list_expr = items_expr
-        .clone()
-        .list()
-        .eval(parse_item(item_type, col("")));
+    let list_expr = items_expr.list().eval(cast_item(item_type, col("")));
 
-    // An unparsable item becomes null rather than failing, and an empty one is null
-    // by design, so a list holding more nulls than empty items had an invalid item
-    when(
-        count_items(list_expr.clone(), col("").is_null())
-            .gt(count_items(items_expr, col("").eq(lit("")))),
-    )
-    .then(lit(NULL))
-    .otherwise(list_expr)
+    // An unparsable item becomes null rather than failing, so a null item marks the cell
+    when(count_items(list_expr.clone(), col("").is_null()).gt(lit(0)))
+        .then(lit(NULL))
+        .otherwise(list_expr)
 }
 
 pub fn stringify_list_column(column: &ListColumn, column_expr: Expr) -> Expr {
@@ -46,16 +46,10 @@ fn get_delimiter(column: &ListColumn) -> String {
         .unwrap_or_else(|| ",".to_string())
 }
 
-fn parse_item(item_type: ListItemType, item_expr: Expr) -> Expr {
-    when(item_expr.clone().eq(lit("")))
-        .then(lit(NULL))
-        .otherwise(cast_item(item_type, item_expr))
-}
-
 fn cast_item(item_type: ListItemType, item_expr: Expr) -> Expr {
     match item_type {
-        ListItemType::Integer => item_expr.cast(DataType::Int64),
-        ListItemType::Number => item_expr.cast(DataType::Float64),
+        ListItemType::Integer => parse_integer_text(item_expr),
+        ListItemType::Number => parse_number_text(item_expr),
         ListItemType::Boolean => when(item_expr.clone().is_in(
             lit(Series::new("".into(), TRUE_VALUES)).implode(true),
             false,

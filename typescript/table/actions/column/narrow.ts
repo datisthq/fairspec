@@ -1,3 +1,4 @@
+import { getBasePropertyType } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import { getCategoricalValuesAndLabels } from "../../helpers/column.ts"
 import type { ColumnMapping } from "../../models/column.ts"
@@ -38,7 +39,12 @@ export function narrowColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
   if (mapping.target.type === "categorical") {
     if (ALPHANUMERIC_VARIANTS.includes(variant)) {
       const { values, labels } = getCategoricalValuesAndLabels(mapping.target)
-      const sourceValues = STRING_VARIANTS.includes(variant) ? values.map(String) : values
+      // An integer categorical column parses String text to integers first
+      const isParsed =
+        variant === "String" &&
+        getBasePropertyType(mapping.target.property.type) === "integer"
+      const isText = STRING_VARIANTS.includes(variant) && !isParsed
+      const sourceValues = isText ? values.map(String) : values
 
       return values.length
         ? columnExpr.replaceStrict(sourceValues, labels, pl.lit(null), pl.Categorical)

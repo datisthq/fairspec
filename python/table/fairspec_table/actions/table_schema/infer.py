@@ -260,30 +260,30 @@ def _create_regex_mapping(
     list_esc = _escape_regex(list_delimiter or ",")
 
     mapping: dict[str, Descriptor] = {
-        "^-?\\d+$": {"type": "integer", "property": {"type": "integer"}},
-        "^\\d{1,3}(,\\d{3})+$": (
+        "^-?(?:0|[1-9]\\d*)$": {"type": "integer", "property": {"type": "integer"}},
+        "^[1-9]\\d{0,2}(,\\d{3})+$": (
             {"type": "number", "property": {"type": "number"}}
             if effective_comma_decimal
             else {"type": "integer", "property": {"type": "integer", "groupChar": ","}}
         ),
-        "^-?\\d+(\\.\\d+)?$": (
+        "^-?(?:0|[1-9]\\d*)(\\.\\d+)?$": (
             {"type": "integer", "property": {"type": "integer", "groupChar": "."}}
             if effective_comma_decimal
             else {"type": "number", "property": {"type": "number"}}
         ),
-        "^\\d{1,3}(,\\d{3})+(\\.\\d+)?$": {
+        "^[1-9]\\d{0,2}(,\\d{3})+(\\.\\d+)?$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ","},
         },
-        "^\\d{1,3}(\\.\\d{3})+(,\\d+)?$": {
+        "^[1-9]\\d{0,2}(\\.\\d{3})+(,\\d+)?$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ".", "decimalChar": ","},
         },
-        "^[\\p{Sc}\\s-]*\\d+[%\\p{Sc}\\s]*$": {
+        "^[\\p{Sc}\\s-]*(?:0|[1-9]\\d*)[%\\p{Sc}\\s]*$": {
             "type": "integer",
             "property": {"type": "integer", "withText": True},
         },
-        "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+[%\\p{Sc}\\s]*$": (
+        "^[\\p{Sc}\\s-]*[1-9]\\d{0,2}(,\\d{3})+[%\\p{Sc}\\s]*$": (
             {"type": "number", "property": {"type": "number", "withText": True}}
             if effective_comma_decimal
             else {
@@ -291,7 +291,7 @@ def _create_regex_mapping(
                 "property": {"type": "integer", "groupChar": ",", "withText": True},
             }
         ),
-        "^[\\p{Sc}\\s-]*\\d+(\\.\\d+)?[%\\p{Sc}\\s]*$": (
+        "^[\\p{Sc}\\s-]*(?:0|[1-9]\\d*)(\\.\\d+)?[%\\p{Sc}\\s]*$": (
             {
                 "type": "integer",
                 "property": {"type": "integer", "groupChar": ".", "withText": True},
@@ -299,11 +299,11 @@ def _create_regex_mapping(
             if effective_comma_decimal
             else {"type": "number", "property": {"type": "number", "withText": True}}
         ),
-        "^[\\p{Sc}\\s-]*\\d{1,3}(,\\d{3})+(\\.\\d+)?[%\\p{Sc}\\s]*$": {
+        "^[\\p{Sc}\\s-]*[1-9]\\d{0,2}(,\\d{3})+(\\.\\d+)?[%\\p{Sc}\\s]*$": {
             "type": "number",
             "property": {"type": "number", "groupChar": ",", "withText": True},
         },
-        "^[\\p{Sc}\\s-]*\\d{1,3}(\\.\\d{3})+(,\\d+)?[%\\p{Sc}\\s]*$": {
+        "^[\\p{Sc}\\s-]*[1-9]\\d{0,2}(\\.\\d{3})+(,\\d+)?[%\\p{Sc}\\s]*$": {
             "type": "number",
             "property": {
                 "type": "number",
@@ -473,11 +473,11 @@ def _create_regex_mapping(
         ),
         "^\\{": {"type": "object", "property": {"type": "object"}},
         "^\\[": {"type": "array", "property": {"type": "array"}},
-        f"^\\d+{list_esc}\\d+$": {
+        f"^(?:0|[1-9]\\d*){list_esc}(?:0|[1-9]\\d*)$": {
             "type": "list",
             "property": {"type": "string", "format": "list", "itemType": "integer"},
         },
-        f"^[\\d.]+{list_esc}[\\d.]+$": {
+        f"^(?:0|[1-9]\\d*)(?:\\.\\d+)?{list_esc}(?:0|[1-9]\\d*)(?:\\.\\d+)?$": {
             "type": "list",
             "property": {"type": "string", "format": "list", "itemType": "number"},
         },

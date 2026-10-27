@@ -22,6 +22,18 @@ class TestParseNumberColumn:
             ("", None),
             ("bad", None),
             ("text", None),
+            ("1E-3", 0.001),
+            ("1.5e+1", 15.0),
+            ("+1", None),
+            ("007", None),
+            (".5", None),
+            ("5.", None),
+            (" 1", None),
+            ("0x10", None),
+            ("NaN", None),
+            ("inf", None),
+            ("-Infinity", None),
+            ("1e", None),
         ],
     )
     def test_default(self, cell: str, expected: float | None):

@@ -119,7 +119,7 @@
   },
   {
     "description": "integer boundaries",
-    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. An integer column holds whole numbers of any size, so digits beyond 2^53 or 64 bits are still an integer",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. Digits beyond 2^53 are still an integer. Leading zeros are a string, as the number grammar rejects them in an integer cell. A value beyond 64 bits is still inferred an integer, although validation then rejects it",
     "specification": ["https://fairspec.org/specs/table-schema/#integer"],
     "tests": [
       {
@@ -179,7 +179,7 @@
         }
       },
       {
-        "description": "leading zeros are still digits",
+        "description": "leading zeros are a string",
         "data": "id,code\n1,00123\n2,00456\n",
         "expected": {
           "properties": {
@@ -187,7 +187,7 @@
               "type": "integer"
             },
             "code": {
-              "type": "integer"
+              "type": "string"
             }
           }
         }

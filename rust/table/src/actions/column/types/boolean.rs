@@ -11,26 +11,18 @@ pub fn parse_boolean_column(column: &BooleanColumn, column_expr: Expr) -> Expr {
     let true_values = get_values(&column.property.true_values, &DEFAULT_TRUE_VALUES);
     let false_values = get_values(&column.property.false_values, &DEFAULT_FALSE_VALUES);
 
-    // The values go into the pattern unescaped, as in Python
-    let mut column_expr = column_expr;
-    for value in true_values {
-        column_expr = column_expr
-            .str()
-            .replace(lit(format!("^{value}$")), lit("1"), false);
-    }
-    for value in false_values {
-        column_expr = column_expr
-            .str()
-            .replace(lit(format!("^{value}$")), lit("0"), false);
-    }
-
-    let column_expr = column_expr.cast(DataType::Int8);
-    when(column_expr.clone().eq(lit(1)))
-        .then(lit(true))
-        .when(column_expr.eq(lit(0)))
-        .then(lit(false))
-        .otherwise(lit(NULL))
-        .alias(column.name.as_str())
+    when(column_expr.clone().is_in(
+        lit(Series::new("".into(), true_values)).implode(true),
+        false,
+    ))
+    .then(lit(true))
+    .when(column_expr.is_in(
+        lit(Series::new("".into(), false_values)).implode(true),
+        false,
+    ))
+    .then(lit(false))
+    .otherwise(lit(NULL).cast(DataType::Boolean))
+    .alias(column.name.as_str())
 }
 
 pub fn stringify_boolean_column(column: &BooleanColumn, column_expr: Expr) -> Expr {
@@ -55,7 +47,7 @@ pub fn stringify_boolean_column(column: &BooleanColumn, column_expr: Expr) -> Ex
 
 fn get_values(values: &Option<Vec<String>>, defaults: &[&str]) -> Vec<String> {
     match values {
-        Some(values) if !values.is_empty() => values.clone(),
-        _ => defaults.iter().map(|value| value.to_string()).collect(),
+        Some(values) => values.clone(),
+        None => defaults.iter().map(|value| value.to_string()).collect(),
     }
 }

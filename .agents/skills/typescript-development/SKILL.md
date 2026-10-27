@@ -213,7 +213,10 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
   Float64. A JS number literal is a Float64, so an Int64 compared with it rounds past 2^53; a
   `BigInt` literal is UInt64 and drops a negative sign, so an exact integer goes in as text cast
-  to Int64. Decimal has no `modulo`: exact `multipleOf` divides Decimal(38, 0) integers and
+  to Int64. `str.slice` hands an Expr start or length to the binding unwrapped and throws
+  ("Failed to recover `JsExpr`"), so a per-row length goes through `repeatBy` + `lst.join`;
+  there is no `pl.coalesce` (use `fillNull(expr)`), and `concatString` skips nulls unless its
+  third argument is `false`. Decimal has no `modulo`: exact `multipleOf` divides Decimal(38, 0) integers and
   multiplies back, as all three twins do; the quotient rounds half-even, so values stop at 37
   digits or the product overflows and aborts the query
 - nodejs-polars has no `sqlExpr`: a SQL condition joins a frame as

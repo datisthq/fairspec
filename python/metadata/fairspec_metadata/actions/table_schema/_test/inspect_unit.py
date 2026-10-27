@@ -36,6 +36,49 @@ class TestInspectTableSchema:
         )
         assert inspect_table_schema(table_schema) == []
 
+    def test_boolean_value_in_both_lists(self):
+        table_schema = TableSchema.model_validate(
+            {
+                "properties": {
+                    "x": {
+                        "type": "boolean",
+                        "trueValues": ["yes", "no"],
+                        "falseValues": ["no"],
+                    },
+                    "y": {"type": "boolean", "trueValues": ["yes", "0"]},
+                    "z": {"type": "boolean", "falseValues": ["Yes", "true"]},
+                }
+            }
+        )
+        errors = inspect_table_schema(table_schema)
+        assert [error.model_dump(exclude_none=True) for error in errors] == [
+            {
+                "type": "metadata",
+                "message": 'value "no" is in both trueValues and falseValues',
+                "jsonPointer": "/properties/x/falseValues/0",
+            },
+            {
+                "type": "metadata",
+                "message": 'value "0" is in both trueValues and falseValues',
+                "jsonPointer": "/properties/y/trueValues/1",
+            },
+            {
+                "type": "metadata",
+                "message": 'value "true" is in both trueValues and falseValues',
+                "jsonPointer": "/properties/z/falseValues/1",
+            },
+        ]
+
+    def test_boolean_values_in_separate_lists(self):
+        table_schema = TableSchema.model_validate(
+            {
+                "properties": {
+                    "x": {"type": "boolean", "trueValues": ["1"], "falseValues": ["0"]}
+                }
+            }
+        )
+        assert inspect_table_schema(table_schema) == []
+
 
 class TestInspectTableSchemaNulls:
     def test_null_values_on_column_without_null(self):

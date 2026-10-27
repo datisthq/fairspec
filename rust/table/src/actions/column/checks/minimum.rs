@@ -1,9 +1,8 @@
-use fairspec_metadata::{
-    CellError, CellExclusiveMinimumError, CellMinimumError, Column, ColumnType,
-};
+use fairspec_metadata::{CellError, CellExclusiveMinimumError, CellMinimumError, Column};
 use polars::prelude::*;
 use serde_json::Value;
 
+use super::_shared::value::get_numeric_value;
 use super::check::ColumnCheck;
 use crate::helpers::general::stringify_number;
 use crate::models::cell::CellMapping;
@@ -13,12 +12,7 @@ pub fn check_cell_minimum(
     mapping: &CellMapping,
     is_exclusive: bool,
 ) -> Option<ColumnCheck> {
-    if !matches!(
-        column.column_type(),
-        ColumnType::Integer | ColumnType::Number | ColumnType::Decimal
-    ) {
-        return None;
-    }
+    let target = get_numeric_value(column, mapping)?;
     let property = serde_json::to_value(column.property()).ok()?;
     let key = if is_exclusive {
         "exclusiveMinimum"
@@ -37,7 +31,6 @@ pub fn check_cell_minimum(
         }
     };
 
-    let target = mapping.target.clone();
     let is_error_expr = if is_exclusive {
         target.lt_eq(literal)
     } else {
