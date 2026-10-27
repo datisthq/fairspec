@@ -54,3 +54,28 @@ class TestValidateDatasetDescriptor:
         resource = (result.dataset.resources or [])[0]
         assert isinstance(resource.tableSchema, str)
         assert os.path.samefile(resource.tableSchema, folder / "schema.json")
+
+    def test_foreign_key_to_a_data_schema_resource(self):
+        dataset = {
+            "resources": [
+                {"name": "doc", "data": "doc.json", "dataSchema": {"type": "array"}},
+                {
+                    "name": "posts",
+                    "data": "posts.csv",
+                    "tableSchema": {
+                        "properties": {"user_id": {"type": "integer"}},
+                        "foreignKeys": [
+                            {
+                                "columns": ["user_id"],
+                                "reference": {"resource": "doc", "columns": ["id"]},
+                            }
+                        ],
+                    },
+                },
+            ]
+        }
+        result = validate_dataset_descriptor(dataset)
+        assert result.valid is False
+        assert [error.model_dump().get("jsonPointer") for error in result.errors] == [
+            "/resources/1/tableSchema/foreignKeys/0/reference/resource"
+        ]

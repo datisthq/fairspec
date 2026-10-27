@@ -18,6 +18,8 @@ from fairspec_metadata.actions.table_schema.inspect import (
 )
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
+from fairspec_metadata.models.resource import Resource
+from fairspec_metadata.models.table_schema import TableSchema
 from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.error.metadata import MetadataError
 from fairspec_metadata.models.profile import ProfileType
@@ -62,7 +64,8 @@ def validate_dataset_descriptor(
 
     if normalized:
         names: set[str] = set()
-        for index, resource in enumerate(normalized.resources or []):
+        resources = normalized.resources or []
+        for index, resource in enumerate(resources):
             root_json_pointer = f"/resources/{index}"
 
             if resource.name is not None:
@@ -113,6 +116,13 @@ def validate_dataset_descriptor(
                     )
                 )
                 report.errors.extend(
+                    _inspect_foreign_key_targets(
+                        resource.tableSchema,
+                        resources,
+                        root_json_pointer=f"{root_json_pointer}/tableSchema",
+                    )
+                )
+                report.errors.extend(
                     inspect_table_schema_nulls(
                         _get_table_schema_descriptor(descriptor, index),
                         root_json_pointer=f"{root_json_pointer}/tableSchema",
@@ -132,6 +142,27 @@ def validate_dataset_descriptor(
         errors=errors,
         dataset=normalized,
     )
+
+
+def _inspect_foreign_key_targets(
+    table_schema: TableSchema,
+    resources: list[Resource],
+    *,
+    root_json_pointer: str,
+) -> list[MetadataError]:
+    errors: list[MetadataError] = []
+    for index, foreign_key in enumerate(table_schema.foreignKeys or []):
+        name = foreign_key.reference.resource
+        target = next((item for item in resources if item.name == name), None)
+        if name is not None and target is not None and target.dataSchema:
+            errors.append(
+                MetadataError(
+                    type="metadata",
+                    message=f'foreign key references resource "{name}", not a table',
+                    jsonPointer=f"{root_json_pointer}/foreignKeys/{index}/reference/resource",
+                )
+            )
+    return errors
 
 
 def _get_table_schema_descriptor(descriptor: Descriptor, index: int) -> Descriptor:

@@ -203,7 +203,7 @@ Its arguments are the table, the schema, the checks, `sample_rows`, `max_errors`
 
 ## Querying Tables
 
-Run SQL queries against a loaded table using the Polars SQL engine. The table is registered as `self`:
+Run SQL queries against a loaded table using the Polars SQL engine. The table is registered as `self`. An `ORDER BY` item that names no null order sorts nulls last, in ascending and descending order alike, as the [Table Schema](https://fairspec.org/specs/table-schema/#sorting) sets:
 
 ```rust
 use fairspec::fairspec_table::query_table;

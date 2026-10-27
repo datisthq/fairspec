@@ -1,6 +1,6 @@
 import * as pl from "nodejs-polars"
 import { describe, expect, it } from "vite-plus/test"
-import { queryTable, queryTables } from "../query.ts"
+import { queryTable, queryTables, setNullsLast } from "../query.ts"
 
 describe("queryTable", () => {
   it("should expose the table as self", async () => {
@@ -36,5 +36,39 @@ describe("queryTables", () => {
       { name: "Alice", n: 1 },
       { name: "Bob", n: 2 },
     ])
+  })
+})
+
+describe("setNullsLast", () => {
+  it("should sort nulls last in descending order", async () => {
+    const table = pl.DataFrame({ x: [1, null, 2] }).lazy()
+
+    const frame = await queryTable(table, "SELECT x FROM self ORDER BY x DESC").collect()
+
+    expect(frame.getColumn("x").toArray()).toEqual([2, 1, null])
+  })
+
+  it("should keep an explicit null order", () => {
+    const query = "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y"
+
+    expect(setNullsLast(query)).toBe(
+      "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y NULLS LAST",
+    )
+  })
+
+  it("should end items at parentheses and limits", () => {
+    const query = "SELECT * FROM (SELECT x FROM self ORDER BY f(x) LIMIT 2) ORDER BY 1"
+
+    expect(setNullsLast(query)).toBe(
+      "SELECT * FROM (SELECT x FROM self ORDER BY f(x) NULLS LAST LIMIT 2) ORDER BY 1 NULLS LAST",
+    )
+  })
+
+  it("should skip quoted text and comments", () => {
+    const query = `SELECT 'order by' AS "ORDER BY" FROM self -- order by x\nORDER BY a`
+
+    expect(setNullsLast(query)).toBe(
+      `SELECT 'order by' AS "ORDER BY" FROM self -- order by x\nORDER BY a NULLS LAST`,
+    )
   })
 })

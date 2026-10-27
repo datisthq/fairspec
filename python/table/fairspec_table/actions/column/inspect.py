@@ -166,10 +166,13 @@ CHECK_FUNCTIONS = [
     check_cell_multiple_of,
     check_cell_min_length,
     check_cell_max_length,
+    check_cell_pattern,
     check_cell_min_items,
     check_cell_max_items,
-    check_cell_pattern,
 ]
+
+# A cell failing one of these has that error alone; its constraints go unchecked
+SHORT_CIRCUIT_CHECKS = (check_cell_type, check_cell_missing)
 
 
 def _inspect_cells_in_polars(
@@ -195,24 +198,29 @@ def _inspect_cells_in_polars(
             target=pl.col(_get_target_name(index)),
         )
 
-        checks = [
-            check
+        pairs = [
+            (check_cell, check)
             for check_cell in CHECK_FUNCTIONS
             if (check := check_cell(mapping.target, cell_mapping))
         ]
-        if not checks:
+        if not pairs:
             continue
 
-        # The first failing check wins, so the chain is built from the last one back
-        error_expr = pl.lit(None, dtype=pl.UInt8)
-        for error_tag in reversed(range(len(checks))):
-            error_expr = (
-                pl.when(checks[error_tag].is_error_expr)
-                .then(pl.lit(error_tag, dtype=pl.UInt8))
-                .otherwise(error_expr)
-            )
+        # The error column is a bitmask over the checks, bit n set when check n fails
+        bits = [pl.lit(1 << tag, dtype=pl.UInt32) for tag in range(len(pairs))]
+        zero = pl.lit(0, dtype=pl.UInt32)
+        constraint_exprs = [
+            pl.when(check.is_error_expr).then(bit).otherwise(zero)
+            for (check_cell, check), bit in zip(pairs, bits)
+            if check_cell not in SHORT_CIRCUIT_CHECKS
+        ]
+        mask_expr = pl.sum_horizontal(constraint_exprs) if constraint_exprs else zero
+        for (check_cell, check), bit in reversed(list(zip(pairs, bits))):
+            if check_cell in SHORT_CIRCUIT_CHECKS:
+                mask_expr = pl.when(check.is_error_expr).then(bit).otherwise(mask_expr)
+        error_expr = pl.when(mask_expr != 0).then(mask_expr)
 
-        templates = [check.error_template for check in checks]
+        templates = [check.error_template for _, check in pairs]
         checked.append((index, mapping, templates, error_expr))
 
     if not checked:
@@ -275,16 +283,19 @@ def _inspect_cells_in_polars(
         cells = check_frame.get_column(_get_cell_name(index)).to_list()
         error_tags = check_frame.get_column(_get_error_name(index)).to_list()
 
-        for row_number, cell, error_tag in zip(row_numbers, cells, error_tags):
-            if error_tag is None:
+        for row_number, cell, error_mask in zip(row_numbers, cells, error_tags):
+            if error_mask is None:
                 continue
 
-            error_dict = templates[error_tag].model_dump(by_alias=True)
-            error_dict["rowNumber"] = row_number
-            error_dict["cell"] = str(cell if cell is not None else "")
-            errors[mapping.target.name].append(
-                _cell_error_adapter.validate_python(error_dict)
-            )
+            for error_tag, template in enumerate(templates):
+                if not error_mask >> error_tag & 1:
+                    continue
+                error_dict = template.model_dump(by_alias=True)
+                error_dict["rowNumber"] = row_number
+                error_dict["cell"] = str(cell if cell is not None else "")
+                errors[mapping.target.name].append(
+                    _cell_error_adapter.validate_python(error_dict)
+                )
 
     return errors
 

@@ -427,3 +427,35 @@ fn test_should_keep_errors_column_by_column_then_by_row() {
 
 // Python's test_should_check_every_column_in_one_collect patches LazyFrame.collect to
 // count calls; polars-Rust has no such hook, so it is not ported
+
+fn get_error_types(errors: &[Value]) -> Vec<&str> {
+    errors
+        .iter()
+        .map(|error| error["type"].as_str().unwrap())
+        .collect()
+}
+
+#[test]
+fn test_should_report_every_failing_constraint_in_keyword_order() {
+    let table = df!("n" => ["7"]).unwrap().lazy();
+    let schema = json!({
+        "properties": {"n": {"type": "integer", "multipleOf": 3, "maximum": 5, "enum": [1, 2]}}
+    });
+
+    let errors = inspect_table(table, schema);
+
+    assert_eq!(
+        get_error_types(&errors),
+        ["cell/enum", "cell/maximum", "cell/multipleOf"]
+    );
+}
+
+#[test]
+fn test_should_report_a_type_error_alone() {
+    let table = df!("n" => ["x"]).unwrap().lazy();
+    let schema = json!({"properties": {"n": {"type": "integer", "minimum": 5, "enum": [1, 2]}}});
+
+    let errors = inspect_table(table, schema);
+
+    assert_eq!(get_error_types(&errors), ["cell/type"]);
+}

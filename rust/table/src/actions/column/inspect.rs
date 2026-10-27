@@ -158,10 +158,14 @@ fn inspect_cells_by_row(mapping: &ColumnMapping, table: Table) -> Result<Vec<Cel
     }
 }
 
-fn check_cells(column: &Column, mapping: &CellMapping) -> Vec<ColumnCheck> {
-    [
+/// Each check with whether it short-circuits: a cell failing `type` or `missing` has
+/// that error alone, while every failing constraint is reported, in keyword order.
+fn check_cells(column: &Column, mapping: &CellMapping) -> Vec<(bool, ColumnCheck)> {
+    let short_circuits = [
         check_cell_type(column, mapping),
         check_cell_missing(column, mapping),
+    ];
+    let constraints = [
         check_cell_enum(column, mapping),
         check_cell_const(column, mapping),
         check_cell_minimum(column, mapping, false),
@@ -171,13 +175,19 @@ fn check_cells(column: &Column, mapping: &CellMapping) -> Vec<ColumnCheck> {
         check_cell_multiple_of(column, mapping),
         check_cell_min_length(column, mapping),
         check_cell_max_length(column, mapping),
+        check_cell_pattern(column, mapping),
         check_cell_min_items(column, mapping),
         check_cell_max_items(column, mapping),
-        check_cell_pattern(column, mapping),
-    ]
-    .into_iter()
-    .flatten()
-    .collect()
+    ];
+    let short_circuits = short_circuits
+        .into_iter()
+        .flatten()
+        .map(|check| (true, check));
+    let constraints = constraints
+        .into_iter()
+        .flatten()
+        .map(|check| (false, check));
+    short_circuits.chain(constraints).collect()
 }
 
 struct CheckedColumn<'a> {
@@ -206,7 +216,7 @@ fn inspect_cells_in_polars(
         .map(|index| col(get_flag_name(index)))
         .collect();
 
-    // The error columns carry a tag, not the error itself: a literal is broadcast to
+    // The error columns carry a bitmask, not the errors themselves: a literal is broadcast to
     // every row, so a template column would materialize per check. Templates are
     // resolved back once the frame is filtered down.
     let mut checked = Vec::new();
@@ -224,20 +234,36 @@ fn inspect_cells_in_polars(
             continue;
         }
 
-        // The first failing check wins, so the chain is built from the last one back
-        let mut error_expr = lit(NULL).cast(DataType::UInt8);
-        for (error_tag, check) in checks.iter().enumerate().rev() {
-            error_expr = when(check.is_error_expr.clone())
-                .then(lit(error_tag as u8))
-                .otherwise(error_expr);
+        // The error column is a bitmask over the checks, bit n set when check n fails
+        let zero = || lit(0u32);
+        let mut mask_expr = checks
+            .iter()
+            .enumerate()
+            .filter(|(_, (is_short_circuit, _))| !is_short_circuit)
+            .map(|(error_tag, (_, check))| {
+                when(check.is_error_expr.clone())
+                    .then(lit(1u32 << error_tag))
+                    .otherwise(zero())
+            })
+            .reduce(|left, right| left + right)
+            .unwrap_or_else(zero);
+        for (error_tag, (is_short_circuit, check)) in checks.iter().enumerate().rev() {
+            if *is_short_circuit {
+                mask_expr = when(check.is_error_expr.clone())
+                    .then(lit(1u32 << error_tag))
+                    .otherwise(mask_expr);
+            }
         }
+        let error_expr = when(mask_expr.clone().neq(zero()))
+            .then(mask_expr)
+            .otherwise(lit(NULL).cast(DataType::UInt32));
 
         checked.push(CheckedColumn {
             index,
             mapping,
             templates: checks
                 .into_iter()
-                .map(|check| check.error_template)
+                .map(|(_, check)| check.error_template)
                 .collect(),
             error_expr,
         });
@@ -301,24 +327,29 @@ fn inspect_cells_in_polars(
         let cells = check_frame
             .column(&get_cell_name(column.index))
             .into_result()?;
-        let error_tags = check_frame
+        let error_masks = check_frame
             .column(&get_error_name(column.index))
             .into_result()?;
-        let error_tags = error_tags.u8().into_result()?;
+        let error_masks = error_masks.u32().into_result()?;
         let column_errors = errors
             .entry(column.mapping.target.name().to_string())
             .or_default();
 
         for row in 0..check_frame.height() {
-            let Some(error_tag) = error_tags.get(row) else {
+            let Some(error_mask) = error_masks.get(row) else {
                 continue;
             };
-            let template = &column.templates[usize::from(error_tag)];
             let row_number = row_numbers.get(row).unwrap_or_default() as usize;
             let cell = stringify_cell(&cells.get(row).into_result()?);
-            column_errors.push(TableError::Cell(locate_cell_error(
-                template, row_number, cell,
-            )?));
+            for (error_tag, template) in column.templates.iter().enumerate() {
+                if error_mask >> error_tag & 1 == 1 {
+                    column_errors.push(TableError::Cell(locate_cell_error(
+                        template,
+                        row_number,
+                        cell.clone(),
+                    )?));
+                }
+            }
         }
     }
 

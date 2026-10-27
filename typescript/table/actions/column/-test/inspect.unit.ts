@@ -514,3 +514,31 @@ describe("inspectColumn", () => {
     })
   })
 })
+
+describe("inspectColumn constraint order", () => {
+  it("should report every failing constraint in keyword order", async () => {
+    const table = pl.DataFrame({ n: ["7"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { n: { type: "integer", multipleOf: 3, maximum: 5, enum: [1, 2] } },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors.map(error => error.type)).toEqual([
+      "cell/enum",
+      "cell/maximum",
+      "cell/multipleOf",
+    ])
+  })
+
+  it("should report a type error alone", async () => {
+    const table = pl.DataFrame({ n: ["x"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { n: { type: "integer", minimum: 5, enum: [1, 2] } },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors.map(error => error.type)).toEqual(["cell/type"])
+  })
+})

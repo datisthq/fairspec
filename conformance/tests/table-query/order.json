@@ -45,8 +45,11 @@
   },
   {
     "description": "order by with nulls first",
-    "comment": "SQL leaves the default position of nulls to the engine, so the queries name it with NULLS FIRST or NULLS LAST",
-    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "comment": "An explicit NULLS FIRST or NULLS LAST overrides the default of nulls last",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#sorting"
+    ],
     "tableSchema": {
       "properties": {
         "id": {
@@ -71,8 +74,11 @@
   },
   {
     "description": "order by with nulls last",
-    "comment": "SQL leaves the default position of nulls to the engine, so the queries name it with NULLS FIRST or NULLS LAST",
-    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "comment": "An explicit NULLS FIRST or NULLS LAST overrides the default of nulls last",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#sorting"
+    ],
     "tableSchema": {
       "properties": {
         "id": {

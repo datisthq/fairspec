@@ -117,6 +117,13 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   for a control byte none of them holds, then swaps it back in every cell and name. The
   single-byte path never reaches it, a preview copies only its `previewBytes`; keep the
   candidate bytes and their order equal
+- Cell checks build one bitmask column per column, bit n for check n of `CHECK_FUNCTIONS`
+  (`check_cells` in Rust), whose order is the spec's keyword order: `type` and `missing`
+  short-circuit, every failing constraint after them is reported. Keep the three lists equal
+- `table-query` passes every query through `setNullsLast` and its twins, a token scanner (not
+  a parser) that appends `NULLS LAST` to each ORDER BY item without a null order, since Polars
+  sorts nulls first in descending order. Sorting a `withOrder` Categorical by category order
+  is not implemented in any twin: it needs a polars `Enum`, which nodejs-polars lacks
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - Number and integer text passes the JSON number regex before any cast (`parseNumberText`,

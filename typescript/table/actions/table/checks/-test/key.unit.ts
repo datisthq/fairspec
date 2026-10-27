@@ -252,3 +252,33 @@ describe("inspectTable (row/unique)", () => {
     expect(errors.map(error => "rowNumber" in error && error.rowNumber)).toEqual([2, 3])
   })
 })
+
+describe("inspectTable (typed keys)", () => {
+  it("should compare numbers as values", async () => {
+    const table = pl.DataFrame({ id: ["1", "1.0", "2.5"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "number" } },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors).toEqual([
+      { type: "row/primaryKey", rowNumber: 2, columnNames: ["id"] },
+    ])
+  })
+
+  it("should find repeated keys that parse to one value", async () => {
+    const table = pl.DataFrame({ flag: ["yes", "y"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { flag: { type: "boolean", trueValues: ["yes", "y"] } },
+      primaryKey: ["flag"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors).toEqual([
+      { type: "row/primaryKey", rowNumber: 2, columnNames: ["flag"] },
+    ])
+  })
+})

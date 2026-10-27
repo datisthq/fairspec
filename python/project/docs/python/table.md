@@ -149,7 +149,7 @@ errors = inspect_table(table, table_schema=schema, sample_rows=1000, max_errors=
 
 ## Querying Tables
 
-Run SQL queries against a loaded table using the Polars SQL engine. The table is registered as `self`:
+Run SQL queries against a loaded table using the Polars SQL engine. The table is registered as `self`. An `ORDER BY` item that names no null order sorts nulls last, in ascending and descending order alike, as the [Table Schema](https://fairspec.org/specs/table-schema/#sorting) sets:
 
 ```python
 from fairspec import query_table

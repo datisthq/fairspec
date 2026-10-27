@@ -103,7 +103,9 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
   (`is_first_distinct` needs a feature the crate does not enable); nulls group as in
   `is_first_distinct`, so the same rows are flagged; a key with any null cell is never flagged
   (`create_key_presence_expr`), and `key_exprs` pass each key column through
-  `substitute_column` first, so a `missingValues` marker is null there too. The key probe hashes inside polars
+  `normalize_column`, so keys compare typed values and a `missingValues` marker is null there
+  too. A streamed constant batch reaches the probe's `map` as one row, so the probe adds the
+  raw cell's null flag to the hash, as Python's does. The key probe hashes inside polars
   (`row_hash`) before its callback, as Python does, so it keeps 8 bytes per key, not the keys
 
 ## Library

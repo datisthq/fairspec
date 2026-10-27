@@ -388,3 +388,41 @@ fn test_should_keep_row_check_order_under_concurrency() {
     );
     assert_eq!(serial, concurrent);
 }
+
+#[test]
+fn test_should_compare_numbers_as_values() {
+    let table = df!("id" => ["1", "1.0", "2.5"]).unwrap().lazy();
+    let schema = create_schema(json!({
+        "properties": {"id": {"type": "number"}},
+        "primaryKey": ["id"],
+    }));
+
+    let errors = inspect(table, &schema, None);
+
+    assert_eq!(
+        get_summary(&errors),
+        [("row/primaryKey".to_string(), json!(2))]
+    );
+}
+
+#[test]
+fn test_should_find_repeated_keys_that_parse_to_one_value() {
+    let folder = tempfile::tempdir().unwrap();
+    let path = folder.path().join("table.csv");
+    std::fs::write(&path, "flag\nyes\ny\n").unwrap();
+    let table = LazyCsvReader::new(PlRefPath::new(path.to_str().unwrap()))
+        .with_infer_schema_length(Some(0))
+        .finish()
+        .unwrap();
+    let schema = create_schema(json!({
+        "properties": {"flag": {"type": "boolean", "trueValues": ["yes", "y"]}},
+        "primaryKey": ["flag"],
+    }));
+
+    let errors = inspect(table, &schema, None);
+
+    assert_eq!(
+        get_summary(&errors),
+        [("row/primaryKey".to_string(), json!(2))]
+    );
+}

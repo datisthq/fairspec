@@ -159,10 +159,13 @@ const CHECK_FUNCTIONS = [
   checkCellMultipleOf,
   checkCellMinLength,
   checkCellMaxLength,
+  checkCellPattern,
   checkCellMinItems,
   checkCellMaxItems,
-  checkCellPattern,
 ]
+
+// A cell failing one of these has that error alone; its constraints go unchecked
+const SHORT_CIRCUIT_CHECKS: unknown[] = [checkCellType, checkCellMissing]
 
 async function inspectCellsInPolars(
   mappings: ColumnMapping[],
@@ -193,21 +196,37 @@ async function inspectCellsInPolars(
       target: pl.col(getTargetName(index)),
     }
 
-    const checks = CHECK_FUNCTIONS.map(checkCell =>
-      checkCell(mapping.target, cellMapping),
-    ).filter(check => !!check)
-    if (!checks.length) continue
+    const pairs = CHECK_FUNCTIONS.flatMap(checkCell => {
+      const check = checkCell(mapping.target, cellMapping)
+      return check ? [{ checkCell, check }] : []
+    })
+    if (!pairs.length) continue
 
-    // The first failing check wins, so the chain is built from the last one back
-    let errorExpr = pl.lit(null).cast(pl.UInt8)
-    for (const [errorTag, check] of [...checks.entries()].reverse()) {
-      errorExpr = pl
-        .when(check.isErrorExpr)
-        .then(pl.lit(errorTag).cast(pl.UInt8))
-        .otherwise(errorExpr)
+    // The error column is a bitmask over the checks, bit n set when check n fails
+    const bits = pairs.map((_, errorTag) => pl.lit(2 ** errorTag).cast(pl.UInt32))
+    const zero = pl.lit(0).cast(pl.UInt32)
+    const constraintExprs = pairs.flatMap(({ checkCell, check }, errorTag) =>
+      SHORT_CIRCUIT_CHECKS.includes(checkCell)
+        ? []
+        : [
+            pl
+              .when(check.isErrorExpr)
+              .then(bits[errorTag] ?? zero)
+              .otherwise(zero),
+          ],
+    )
+    let maskExpr = constraintExprs.length ? pl.sumHorizontal(constraintExprs) : zero
+    for (const [errorTag, { checkCell, check }] of [...pairs.entries()].reverse()) {
+      if (SHORT_CIRCUIT_CHECKS.includes(checkCell)) {
+        maskExpr = pl
+          .when(check.isErrorExpr)
+          .then(bits[errorTag] ?? zero)
+          .otherwise(maskExpr)
+      }
     }
+    const errorExpr = pl.when(maskExpr.neq(0)).then(maskExpr).otherwise(pl.lit(null))
 
-    const templates = checks.map(check => check.errorTemplate)
+    const templates = pairs.map(({ check }) => check.errorTemplate)
     checked.push({ index, mapping, templates, errorExpr })
   }
 
@@ -250,14 +269,17 @@ async function inspectCellsInPolars(
     const columnErrors = errors.get(mapping.target.name) ?? []
 
     for (const row of rows) {
-      const errorTag = row[getErrorName(index)]
-      if (errorTag === null || errorTag === undefined) continue
+      const errorMask = row[getErrorName(index)]
+      if (errorMask === null || errorMask === undefined) continue
 
-      columnErrors.push({
-        ...(templates[errorTag] as CellError),
-        rowNumber: row[NUMBER_COLUMN_NAME],
-        cell: String(row[getCellName(index)] ?? ""),
-      })
+      for (const [errorTag, template] of templates.entries()) {
+        if (!(Number(errorMask) & (2 ** errorTag))) continue
+        columnErrors.push({
+          ...template,
+          rowNumber: row[NUMBER_COLUMN_NAME],
+          cell: String(row[getCellName(index)] ?? ""),
+        })
+      }
     }
   }
 

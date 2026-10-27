@@ -1,6 +1,6 @@
 use polars::prelude::*;
 
-use crate::actions::table::query::{query_table, query_tables};
+use crate::actions::table::query::{query_table, query_tables, set_nulls_last};
 
 fn collect_rows(table: LazyFrame) -> Vec<Vec<String>> {
     let frame = table.collect().unwrap();
@@ -75,5 +75,44 @@ fn test_join_tables_by_name() {
     assert_eq!(
         collect_rows(frame.lazy()),
         [["\"Alice\"", "1"], ["\"Bob\"", "2"]]
+    );
+}
+
+#[test]
+fn test_should_sort_nulls_last_in_descending_order() {
+    let table = df!("x" => [Some(1i64), None, Some(2)]).unwrap().lazy();
+
+    let result = query_table(table, "SELECT x FROM self ORDER BY x DESC").unwrap();
+
+    assert_eq!(collect_rows(result), [["2"], ["1"], ["null"]]);
+}
+
+#[test]
+fn test_should_keep_an_explicit_null_order() {
+    let query = "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y";
+
+    assert_eq!(
+        set_nulls_last(query),
+        "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y NULLS LAST"
+    );
+}
+
+#[test]
+fn test_should_end_items_at_parentheses_and_limits() {
+    let query = "SELECT * FROM (SELECT x FROM self ORDER BY f(x) LIMIT 2) ORDER BY 1";
+
+    assert_eq!(
+        set_nulls_last(query),
+        "SELECT * FROM (SELECT x FROM self ORDER BY f(x) NULLS LAST LIMIT 2) ORDER BY 1 NULLS LAST"
+    );
+}
+
+#[test]
+fn test_should_skip_quoted_text_and_comments() {
+    let query = "SELECT 'order by' AS \"ORDER BY\" FROM self -- order by x\nORDER BY a";
+
+    assert_eq!(
+        set_nulls_last(query),
+        "SELECT 'order by' AS \"ORDER BY\" FROM self -- order by x\nORDER BY a NULLS LAST"
     );
 }

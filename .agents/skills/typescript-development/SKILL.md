@@ -98,8 +98,12 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
   while key checks skip any key with a null cell (`createKeyPresenceExpr`; a null primary key
   cell is `cell/missing` instead), and a key whose columns are not all in the data is skipped.
-  Keys read the raw cells, so each key column goes through `substituteColumn` first (`keyExprs`):
-  a `missingValues` marker is null there too, or two `NA` cells conflict.
+  Keys compare typed values, so each key column goes through `normalizeColumn` (`keyExprs`):
+  `1.0` and `1` are one number key, and a `missingValues` marker is null, or two `NA` cells
+  conflict. nodejs-polars has no `Enum` dtype (casting to one throws, reading one fails
+  `dtypes`), so a `withOrder` Categorical cannot sort by category order here.
+  Its window functions also ignore `NULLS LAST` in `OVER (ORDER BY …)` (`ROW_NUMBER` ranks a
+  null first in descending order), unlike Python and Rust; `ORDER BY` and `ARRAY_AGG` honour it.
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.

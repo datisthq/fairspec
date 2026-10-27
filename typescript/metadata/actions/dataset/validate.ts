@@ -14,6 +14,9 @@ import {
 import { validateTableSchema } from "../../actions/tableSchema/validate.ts"
 import { Dataset } from "../../models/dataset.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
+import type { MetadataError } from "../../models/error/metadata.ts"
+import type { Resource } from "../../models/resource.ts"
+import type { TableSchema } from "../../models/tableSchema.ts"
 import { normalizeDataset } from "./normalize.ts"
 
 export async function validateDatasetDescriptor(
@@ -62,7 +65,8 @@ export async function validateDatasetDescriptor(
 
   if (dataset) {
     const names = new Set<string>()
-    for (const [index, resource] of (dataset?.resources ?? []).entries()) {
+    const resources = dataset.resources ?? []
+    for (const [index, resource] of resources.entries()) {
       const rootJsonPointer = `/resources/${index}`
 
       if (resource.name !== undefined) {
@@ -114,6 +118,9 @@ export async function validateDatasetDescriptor(
           ...inspectTableSchemaNulls(getTableSchemaDescriptor(descriptor, index), {
             rootJsonPointer: `${rootJsonPointer}/tableSchema`,
           }),
+          ...inspectForeignKeyTargets(resource.tableSchema, resources, {
+            rootJsonPointer: `${rootJsonPointer}/tableSchema`,
+          }),
         )
       }
     }
@@ -129,6 +136,26 @@ export async function validateDatasetDescriptor(
   }
 
   return { ...report, dataset }
+}
+
+function inspectForeignKeyTargets(
+  tableSchema: TableSchema,
+  resources: Resource[],
+  options: { rootJsonPointer: string },
+) {
+  const errors: MetadataError[] = []
+  for (const [index, foreignKey] of (tableSchema.foreignKeys ?? []).entries()) {
+    const name = foreignKey.reference.resource
+    const target = resources.find(item => item.name === name)
+    if (name !== undefined && target?.dataSchema) {
+      errors.push({
+        type: "metadata",
+        message: `foreign key references resource "${name}", not a table`,
+        jsonPointer: `${options.rootJsonPointer}/foreignKeys/${index}/reference/resource`,
+      })
+    }
+  }
+  return errors
 }
 
 function getTableSchemaDescriptor(descriptor: Descriptor, index: number) {

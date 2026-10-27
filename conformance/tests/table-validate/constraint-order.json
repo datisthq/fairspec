@@ -1,0 +1,303 @@
+[
+  {
+    "description": "a cell that cannot be read",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 5,
+          "enum": [6, 7],
+          "multipleOf": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "has a cell/type error and no other",
+        "data": "n\nx\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "n",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "several numeric constraints failing on one cell",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "n": {
+          "type": "integer",
+          "multipleOf": 3,
+          "exclusiveMaximum": 6,
+          "maximum": 5,
+          "enum": [1, 2, 3]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are reported in keyword order, not schema order",
+        "data": "n\n7\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "7",
+            "enum": ["1", "2", "3"]
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "7",
+            "maximum": "5"
+          },
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "7",
+            "maximum": "6"
+          },
+          {
+            "type": "cell/multipleOf",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "7",
+            "multipleOf": 3
+          }
+        ]
+      },
+      {
+        "description": "only the failing ones are reported",
+        "data": "n\n6\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "6",
+            "enum": ["1", "2", "3"]
+          },
+          {
+            "type": "cell/maximum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "6",
+            "maximum": "5"
+          },
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "6",
+            "maximum": "6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "several string constraints failing on one cell",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "s": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "minLength": 3,
+          "const": "123",
+          "enum": ["123", "456"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are reported in keyword order, not schema order",
+        "data": "s\nab\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "ab",
+            "enum": ["123", "456"]
+          },
+          {
+            "type": "cell/const",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "ab",
+            "const": "123"
+          },
+          {
+            "type": "cell/minLength",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "ab",
+            "minLength": 3
+          },
+          {
+            "type": "cell/pattern",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "ab",
+            "pattern": "^[0-9]+$"
+          }
+        ]
+      },
+      {
+        "description": "a listed value can still break const",
+        "data": "s\n456\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/const",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "456",
+            "const": "123"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "length and item constraints failing on one list cell",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#validation",
+      "https://fairspec.org/specs/table-schema/#list"
+    ],
+    "tableSchema": {
+      "properties": {
+        "tags": {
+          "type": "string",
+          "format": "list",
+          "minItems": 3,
+          "maxLength": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the length comes before the item count",
+        "data": "tags\n\"a,b\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "tags",
+            "rowNumber": 1,
+            "cell": "a,b",
+            "maxLength": 2
+          },
+          {
+            "type": "cell/minItems",
+            "columnName": "tags",
+            "rowNumber": 1,
+            "cell": "a,b",
+            "minItems": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "several failures on several cells",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 5,
+          "multipleOf": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are listed by row, then by keyword",
+        "data": "n\n3\nx\n1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "3",
+            "minimum": "5"
+          },
+          {
+            "type": "cell/multipleOf",
+            "columnName": "n",
+            "rowNumber": 1,
+            "cell": "3",
+            "multipleOf": 2
+          },
+          {
+            "type": "cell/type",
+            "columnName": "n",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          },
+          {
+            "type": "cell/minimum",
+            "columnName": "n",
+            "rowNumber": 3,
+            "cell": "1",
+            "minimum": "5"
+          },
+          {
+            "type": "cell/multipleOf",
+            "columnName": "n",
+            "rowNumber": 3,
+            "cell": "1",
+            "multipleOf": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a required column named in another case",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#properties",
+      "https://fairspec.org/specs/table-schema/#required"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "required": ["id"]
+    },
+    "tests": [
+      {
+        "description": "is a column/missing error",
+        "data": "ID\n1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "id"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -200,7 +200,7 @@ console.log(frame?.schema)
 
 ## Querying a Table
 
-`queryTable(table, sql)` runs a SQL query against the loaded table using Polars' SQL engine. The table is exposed as `self` inside the query.
+`queryTable(table, sql)` runs a SQL query against the loaded table using Polars' SQL engine. The table is exposed as `self` inside the query. An `ORDER BY` item that names no null order sorts nulls last, in ascending and descending order alike, as the [Table Schema](https://fairspec.org/specs/table-schema/#sorting) sets.
 
 ```ts
 import { loadTable, queryTable } from "fairspec"

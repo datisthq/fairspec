@@ -1,0 +1,304 @@
+[
+  {
+    "description": "primary key on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "distinct values are valid",
+        "data": "id\n1\n1.5\n10\n",
+        "valid": true
+      },
+      {
+        "description": "1 and 1.0 are one key",
+        "data": "id\n1\n1.0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      },
+      {
+        "description": "1.0 and 1.00 are one key",
+        "data": "id\n1.0\n1.00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      },
+      {
+        "description": "100 and 1e2 are one key",
+        "data": "id\n100\n1e2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      },
+      {
+        "description": "-0 and 0 are one key",
+        "data": "id\n0\n-0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "primary key on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "distinct values are valid",
+        "data": "id\n1\n10\n100\n",
+        "valid": true
+      },
+      {
+        "description": "10 and 1e1 are one key",
+        "data": "id\n10\n1e1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      },
+      {
+        "description": "1 and 1.0 are one key",
+        "data": "id\n1.0\n1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "primary key on a grouped integer column",
+    "comment": "groupChar is removed before the value is read, so the key compares the number",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "groupChar": "_"
+        }
+      },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "1_000 and 1000 are one key",
+        "data": "id\n1_000\n1000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "primary key on a decimal column",
+    "comment": "A decimal is exact, so two values a Float64 cannot tell apart stay distinct",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "decimal"
+        }
+      },
+      "primaryKey": ["id"]
+    },
+    "tests": [
+      {
+        "description": "1.0 and 1.00 are one key",
+        "data": "id\n1.0\n1.00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      },
+      {
+        "description": "values one float would round together are distinct",
+        "data": "id\n12345678901234567.1\n12345678901234567.2\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "primary key on a date-time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "primaryKey": ["at"]
+    },
+    "tests": [
+      {
+        "description": "one instant written with two offsets is one key",
+        "data": "at\n2024-01-01T12:00:00+02:00\n2024-01-01T10:00:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["at"]
+          }
+        ]
+      },
+      {
+        "description": "one wall-clock time with two offsets is two keys",
+        "data": "at\n2024-01-01T12:00:00+02:00\n2024-01-01T12:00:00Z\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "primary key on a boolean column with custom values",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "flag": {
+          "type": "boolean",
+          "trueValues": ["yes", "y"],
+          "falseValues": ["no"]
+        }
+      },
+      "primaryKey": ["flag"]
+    },
+    "tests": [
+      {
+        "description": "a true and a false value are valid",
+        "data": "flag\nyes\nno\n",
+        "valid": true
+      },
+      {
+        "description": "two spellings of true are one key",
+        "data": "flag\nyes\ny\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["flag"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "unique key on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#uniquekeys",
+      "https://fairspec.org/specs/table-schema/#primarykey"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "score": {
+          "type": "number"
+        }
+      },
+      "uniqueKeys": [["score"]]
+    },
+    "tests": [
+      {
+        "description": "2.5 and 2.50 conflict",
+        "data": "id,score\n1,2.5\n2,2.50\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/uniqueKey",
+            "rowNumber": 2,
+            "columnNames": ["score"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "composite primary key with a number part",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "number"
+        },
+        "b": {
+          "type": "string"
+        }
+      },
+      "primaryKey": ["a", "b"]
+    },
+    "tests": [
+      {
+        "description": "the same number with another string is valid",
+        "data": "a,b\n1,x\n1.0,y\n",
+        "valid": true
+      },
+      {
+        "description": "the same number and string are one key",
+        "data": "a,b\n1,x\n1.0,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["a", "b"]
+          }
+        ]
+      }
+    ]
+  }
+]

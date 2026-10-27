@@ -5,7 +5,7 @@ use fairspec_metadata::{
 };
 use polars::prelude::*;
 
-use crate::actions::column::substitute::substitute_column;
+use crate::actions::column::normalize::normalize_column;
 use crate::actions::table::_shared::helpers::merge_missing_values;
 use crate::actions::table::normalize::get_schema_descriptor;
 use crate::helpers::error::PolarsResultExt;
@@ -104,9 +104,14 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     } else {
         as_struct(keys.clone())
     };
+    // polars passes a constant batch, such as a parsed all-`true` key, as one row;
+    // adding the raw cell's null flag, 0 wherever the key is present, keeps every row
+    let row_expr = col(check.key_columns[0].as_str())
+        .is_null()
+        .cast(DataType::UInt64);
     // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
     let flag_expr = when(create_key_presence_expr(keys))
-        .then(key_expr.hash(0))
+        .then(key_expr.hash(0) + row_expr)
         .otherwise(lit(NULL))
         .map(record_hashes, |_, field| {
             Ok(Field::new(field.name().clone(), DataType::Boolean))
@@ -186,7 +191,7 @@ fn create_row_key_check(
     })
 }
 
-// Keys compare the raw cells, so a missing value must become null here as in the cells
+// Keys compare the typed values, so `1.0` and `1` in a number column are one key
 fn create_key_column_expr(mapping: &SchemaMapping, name: &str) -> Result<Expr> {
     let source = mapping
         .source
@@ -204,5 +209,5 @@ fn create_key_column_expr(mapping: &SchemaMapping, name: &str) -> Result<Expr> {
         source: source.clone(),
         target,
     };
-    Ok(substitute_column(&column_mapping, col(name)))
+    Ok(normalize_column(&column_mapping, false))
 }

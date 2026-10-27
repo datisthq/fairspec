@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal
 import polars as pl
 from fairspec_metadata import RowPrimaryKeyError, RowUniqueKeyError, get_columns
 
-from fairspec_table.actions.column.substitute import substitute_column
+from fairspec_table.actions.column.normalize import normalize_column
 from fairspec_table.models import ColumnMapping
 
 from .._shared.helpers import merge_missing_values
@@ -73,9 +73,12 @@ def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
         return result
 
     key_expr = keys[0] if len(keys) == 1 else pl.struct(keys)
+    # py-polars passes a constant batch, such as a parsed all-`true` key, as one row;
+    # adding the raw cell's null flag, 0 wherever the key is present, keeps every row
+    row_expr = pl.col(check.key_columns[0]).is_null().cast(pl.UInt64)
     flag_expr = (
         pl.when(create_key_presence_expr(keys))
-        .then(key_expr.hash())
+        .then(key_expr.hash() + row_expr)
         .map_batches(record_hashes, return_dtype=pl.Boolean, is_elementwise=True)
     )
     return KeyHashProbe(flag_expr=flag_expr, hashes=hashes)
@@ -115,7 +118,7 @@ def _create_row_key_check(
     )
 
 
-# Keys compare the raw cells, so a missing value must become null here as in the cells
+# Keys compare the typed values, so `1.0` and `1` in a number column are one key
 def _create_key_column_expr(mapping: SchemaMapping, name: str) -> pl.Expr:
     source = next((c for c in mapping.source.columns if c.name == name), None)
     columns = get_columns(mapping.target.model_dump())
@@ -124,4 +127,4 @@ def _create_key_column_expr(mapping: SchemaMapping, name: str) -> pl.Expr:
         return pl.col(name)
 
     target = merge_missing_values(column, mapping.target)
-    return substitute_column(ColumnMapping(source=source, target=target), pl.col(name))
+    return normalize_column(ColumnMapping(source=source, target=target))

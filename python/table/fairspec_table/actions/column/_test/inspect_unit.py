@@ -333,3 +333,29 @@ class TestInspectColumnsScan:
             ("cell/type", "c", 1),
             ("cell/type", "c", 2),
         ]
+
+
+class TestInspectConstraintOrder:
+    def test_should_report_every_failing_constraint_in_keyword_order(self):
+        table = pl.DataFrame({"n": ["7"]}).lazy()
+        table_schema = TableSchema(
+            properties={"n": IntegerColumnProperty(multipleOf=3, maximum=5, enum=[1, 2])}
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [error.type for error in errors] == [
+            "cell/enum",
+            "cell/maximum",
+            "cell/multipleOf",
+        ]
+
+    def test_should_report_a_type_error_alone(self):
+        table = pl.DataFrame({"n": ["x"]}).lazy()
+        table_schema = TableSchema(
+            properties={"n": IntegerColumnProperty(minimum=5, enum=[1, 2])}
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [error.type for error in errors] == ["cell/type"]

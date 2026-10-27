@@ -158,8 +158,11 @@ relative import reaches beyond the top-level package.
   `inspect_table` skips the row checks once it is full. Never locate rows with a join: joins
   drop null keys, while key checks skip any key with a null cell (`create_key_presence_expr`;
   a null primary key cell is `cell/missing` instead), and a key whose columns are not all in
-  the data is skipped. Keys read the raw cells, so each key column goes through
-  `substitute_column` first (`key_exprs`): a `missingValues` marker is null there too
+  the data is skipped. Keys compare typed values, so each key column goes through
+  `normalize_column` (`key_exprs`): `1.0` and `1` are one number key, and a `missingValues`
+  marker is null there too. py-polars hands `map_batches` a constant batch (every key parsed
+  to one literal, such as `true`) as one row, so the probe adds the raw cell's null flag to
+  the hash to keep a row per cell
 - **Never share one read between two queries** with a diagonal `pl.concat` or `pl.collect_all`:
   polars holds the shared scan in memory, so a 10GB validation runs out of memory under a 10G
   cap. Ride along in the one query instead, as the key hashes do

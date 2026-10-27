@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import polars as pl
 
-from ..query import query_table, query_tables
+from ..query import query_table, query_tables, set_nulls_last
 
 
 class TestQueryTable:
@@ -46,3 +46,36 @@ class TestQueryTables:
 
         frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert frame.to_dicts() == [{"name": "Alice", "n": 1}, {"name": "Bob", "n": 2}]
+
+
+class TestSetNullsLast:
+    def test_should_sort_nulls_last_in_descending_order(self):
+        table = pl.DataFrame({"x": [1, None, 2]}).lazy()
+
+        result = query_table(table, "SELECT x FROM self ORDER BY x DESC")
+
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert frame.get_column("x").to_list() == [2, 1, None]
+
+    def test_should_keep_an_explicit_null_order(self):
+        query = "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y"
+
+        assert set_nulls_last(query) == (
+            "SELECT x FROM self ORDER BY x DESC NULLS FIRST, y NULLS LAST"
+        )
+
+    def test_should_end_items_at_parentheses_and_limits(self):
+        query = "SELECT * FROM (SELECT x FROM self ORDER BY f(x) LIMIT 2) ORDER BY 1"
+
+        assert set_nulls_last(query) == (
+            "SELECT * FROM (SELECT x FROM self ORDER BY f(x) NULLS LAST LIMIT 2)"
+            " ORDER BY 1 NULLS LAST"
+        )
+
+    def test_should_skip_quoted_text_and_comments(self):
+        query = "SELECT 'order by' AS \"ORDER BY\" FROM self -- order by x\nORDER BY a"
+
+        assert set_nulls_last(query) == (
+            "SELECT 'order by' AS \"ORDER BY\" FROM self -- order by x\n"
+            "ORDER BY a NULLS LAST"
+        )

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import polars as pl
-from fairspec_metadata import IntegerColumnProperty
+from fairspec_metadata import BooleanColumnProperty, IntegerColumnProperty
+from fairspec_metadata import NumberColumnProperty
 from fairspec_metadata import StringColumnProperty
 from fairspec_metadata import RowPrimaryKeyError, RowUniqueKeyError
 from fairspec_metadata import TableSchema
@@ -356,4 +357,33 @@ class TestInspectTableRowChecksConcurrency:
         ]
         assert [error.model_dump() for error in serial] == [
             error.model_dump() for error in concurrent
+        ]
+
+
+class TestInspectTableTypedKeys:
+    def test_should_compare_numbers_as_values(self):
+        table = pl.DataFrame({"id": ["1", "1.0", "2.5"]}).lazy()
+        table_schema = TableSchema(
+            properties={"id": NumberColumnProperty()}, primaryKey=["id"]
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert errors == [
+            RowPrimaryKeyError(type="row/primaryKey", rowNumber=2, columnNames=["id"])
+        ]
+
+    def test_should_find_repeated_keys_that_parse_to_one_literal(self, tmp_path):
+        path = tmp_path / "table.csv"
+        path.write_text("flag\nyes\ny\n")
+        table = pl.scan_csv(path, infer_schema=False)
+        table_schema = TableSchema(
+            properties={"flag": BooleanColumnProperty(trueValues=["yes", "y"])},
+            primaryKey=["flag"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert errors == [
+            RowPrimaryKeyError(type="row/primaryKey", rowNumber=2, columnNames=["flag"])
         ]

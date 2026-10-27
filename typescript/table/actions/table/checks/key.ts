@@ -2,7 +2,7 @@ import type { RowPrimaryKeyError, RowUniqueKeyError } from "@fairspec/metadata"
 import { getColumns } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import type { SchemaMapping } from "../../../models/schema.ts"
-import { substituteColumn } from "../../column/substitute.ts"
+import { normalizeColumn } from "../../column/normalize.ts"
 import { mergeMissingValues } from "../-shared/helpers.ts"
 
 type KeyCheckType = "primary" | "unique"
@@ -49,12 +49,12 @@ function createRowKeyCheck(
   return { keyColumns, keyExprs, isErrorExpr, errorTemplate }
 }
 
-// Keys compare the raw cells, so a missing value must become null here as in the cells
+// Keys compare the typed values, so `1.0` and `1` in a number column are one key
 function createKeyColumnExpr(mapping: SchemaMapping, name: string) {
   const source = mapping.source.columns.find(column => column.name === name)
   const column = getColumns(mapping.target).find(column => column.name === name)
   if (!source || !column) return pl.col(name)
 
   const target = mergeMissingValues(column, mapping.target)
-  return substituteColumn({ source, target }, pl.col(name))
+  return normalizeColumn({ source, target })
 }

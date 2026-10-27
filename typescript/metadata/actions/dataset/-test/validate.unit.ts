@@ -116,4 +116,31 @@ describe("validateDatasetDescriptor", () => {
     expect(report.valid).toBe(true)
     expect(report.errors).toEqual([])
   })
+
+  it("reports a foreign key to a data schema resource", async () => {
+    const dataset = {
+      resources: [
+        { name: "doc", data: "doc.json", dataSchema: { type: "array" } },
+        {
+          name: "posts",
+          data: "posts.csv",
+          tableSchema: {
+            properties: { user_id: { type: "integer" } },
+            foreignKeys: [
+              { columns: ["user_id"], reference: { resource: "doc", columns: ["id"] } },
+            ],
+          },
+        },
+      ],
+    }
+
+    const report = await validateDatasetDescriptor(dataset)
+
+    expect(report.valid).toBe(false)
+    expect(
+      report.errors.map(error =>
+        "jsonPointer" in error ? error.jsonPointer : undefined,
+      ),
+    ).toEqual(["/resources/1/tableSchema/foreignKeys/0/reference/resource"])
+  })
 })

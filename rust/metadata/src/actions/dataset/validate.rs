@@ -19,6 +19,8 @@ use crate::models::error::metadata::MetadataError;
 use crate::models::exception::Result;
 use crate::models::path::PathOr;
 use crate::models::profile::ProfileType;
+use crate::models::resource::Resource;
+use crate::models::table_schema::TableSchema;
 
 use super::normalize::normalize_dataset;
 
@@ -59,7 +61,8 @@ pub fn validate_dataset_descriptor(
     let dataset = normalize_dataset(&dataset, basepath)?;
 
     let mut names = HashSet::new();
-    for (index, resource) in dataset.resources.iter().flatten().enumerate() {
+    let resources = dataset.resources.as_deref().unwrap_or_default();
+    for (index, resource) in resources.iter().enumerate() {
         let root_json_pointer = format!("/resources/{index}");
         if let Some(name) = &resource.name
             && !names.insert(name.as_str())
@@ -103,6 +106,11 @@ pub fn validate_dataset_descriptor(
                     &get_table_schema_descriptor(&descriptor, index),
                     Some(&pointer),
                 ));
+                report.errors.extend(inspect_foreign_key_targets(
+                    table_schema,
+                    resources,
+                    &pointer,
+                ));
             }
             None => {}
         }
@@ -124,6 +132,30 @@ fn map_errors(
         Some(mapping) => map_frictionless_errors(errors, mapping),
         None => errors,
     }
+}
+
+fn inspect_foreign_key_targets(
+    table_schema: &TableSchema,
+    resources: &[Resource],
+    root_json_pointer: &str,
+) -> Vec<FairspecError> {
+    let mut errors = Vec::new();
+    for (index, foreign_key) in table_schema.foreign_keys.iter().flatten().enumerate() {
+        let Some(name) = &foreign_key.reference.resource else {
+            continue;
+        };
+        let target = resources
+            .iter()
+            .find(|item| item.name.as_ref() == Some(name));
+        if target.is_some_and(|target| target.data_schema.is_some()) {
+            errors.push(FairspecError::Metadata(MetadataError {
+                message: format!("foreign key references resource \"{name}\", not a table"),
+                json_pointer: format!("{root_json_pointer}/foreignKeys/{index}/reference/resource"),
+                ..Default::default()
+            }));
+        }
+    }
+    errors
 }
 
 fn get_table_schema_descriptor(descriptor: &Descriptor, index: usize) -> Descriptor {
