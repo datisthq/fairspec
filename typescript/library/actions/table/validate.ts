@@ -1,11 +1,27 @@
 import type { FairspecError, Resource } from "@fairspec/metadata"
 import { createReport, resolveTableSchema } from "@fairspec/metadata"
-import { inspectTable, inspectTableSchemaPatterns } from "@fairspec/table"
+import {
+  getIsLongRowError,
+  inspectTable,
+  inspectTableSchemaPatterns,
+} from "@fairspec/table"
 import { inferTableSchema } from "../../actions/tableSchema/infer.ts"
 import type { ValidateTableOptions } from "../../models/table.ts"
 import { loadTable } from "./load.ts"
 
 export async function validateTable(resource: Resource, options?: ValidateTableOptions) {
+  try {
+    return await validateLoadableTable(resource, options)
+  } catch (error) {
+    if (!getIsLongRowError(error)) throw error
+    const errors: FairspecError[] = [
+      { type: "resource/type", expectedResourceType: "table" },
+    ]
+    return createReport(errors)
+  }
+}
+
+async function validateLoadableTable(resource: Resource, options?: ValidateTableOptions) {
   const { maxErrors, checks } = options ?? {}
   const errors: FairspecError[] = []
 

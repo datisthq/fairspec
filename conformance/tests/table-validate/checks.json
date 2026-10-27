@@ -62,7 +62,7 @@
     "tests": [
       {
         "description": "values compare as numbers, a missing value passes and a bad value is reported once",
-        "data": "amount\n9\n10\n\nbad\n",
+        "data": "amount,note\n9,a\n10,b\n,c\nbad,d\n",
         "valid": false,
         "errors": [
           {

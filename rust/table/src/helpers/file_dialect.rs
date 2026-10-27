@@ -1,4 +1,4 @@
-use fairspec_metadata::{FileDialect, HeaderRows};
+use fairspec_metadata::{Error, FileDialect, HeaderRows, Result};
 use serde_json::Value;
 
 use crate::models::data::DataRow;
@@ -79,4 +79,23 @@ fn stringify_cell(cell: &Value) -> String {
         }
         other => other.to_string(),
     }
+}
+
+/// Fails when a header gives two columns one name; an empty name is a name too.
+pub fn assert_unique_column_names(names: &[String]) -> Result<()> {
+    let mut seen = std::collections::HashSet::new();
+    for name in names {
+        if !seen.insert(name.as_str()) {
+            return Err(Error::Load(format!(
+                "Column name \"{name}\" is repeated in the header"
+            )));
+        }
+    }
+    Ok(())
+}
+
+/// Tells a row with more cells than the table has columns, which Polars raises while
+/// reading, so a validator reports the file as not loadable instead of failing.
+pub fn get_is_long_row_error(error: &Error) -> bool {
+    error.to_string().contains("found more fields than defined")
 }

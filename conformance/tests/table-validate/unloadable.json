@@ -2,13 +2,108 @@
   {
     "description": "data in a format no table plugin reads",
     "format": "bin",
-    "tableSchema": { "properties": { "id": { "type": "integer" } } },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
     "tests": [
       {
         "description": "is a resource/type error",
         "data": "id\n1\n",
         "valid": false,
-        "errors": [{ "type": "resource/type", "expectedResourceType": "table" }]
+        "errors": [
+          {
+            "type": "resource/type",
+            "expectedResourceType": "table"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a csv row with more cells than the header",
+    "comment": "A file that cannot be loaded is reported as unloadable data, the same error as data no table plugin reads",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": "id,name\n1,a\n2,b,extra\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/type",
+            "expectedResourceType": "table"
+          }
+        ]
+      },
+      {
+        "description": "a short row is valid",
+        "data": "id,name\n1,a\n2\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a csv row with more cells than the header, without a table schema",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": "id,name\n1,a\n2,b,extra\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/type",
+            "expectedResourceType": "table"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a tsv row with more cells than the header",
+    "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": "id\tname\n1\ta\tb\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/type",
+            "expectedResourceType": "table"
+          }
+        ]
       }
     ]
   }

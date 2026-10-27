@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from fairspec_table.helpers import get_header_rows, join_header_labels
+from fairspec_table.helpers.file_dialect import (
+    assert_unique_column_names,
+    get_header_rows,
+    join_header_labels,
+)
 from fairspec_table.models import (
     DataRecord,
     DataRow,
@@ -20,16 +24,23 @@ def get_records_from_rows(
     labels = _get_labels_from_header(header, file_dialect)
     if labels is None:
         return records
+    column_names = file_dialect.columnNames if file_dialect is not None else None
+    if column_names is None:
+        assert_unique_column_names(labels)
 
     for row in content:
         if _get_is_commented_row(row, file_dialect):
             continue
 
+        if column_names is not None and len(row) > len(labels):
+            raise Exception(
+                f"A row has {len(row)} cells but columnNames has {len(labels)}"
+            )
+
         records.append(
             {
-                labels[index]: row[index]
-                for index in range(len(labels))
-                if index < len(row)
+                label: row[index] if index < len(row) else None
+                for index, label in enumerate(labels)
             }
         )
 
@@ -52,8 +63,9 @@ def _get_header_from_rows(
 
     header: list[DataRow] = []
     for number in header_rows:
-        if number - 1 < len(rows):
-            header.append(rows[number - 1])
+        if number - 1 >= len(rows):
+            raise Exception(f"Header row {number} is past the end of the data")
+        header.append(rows[number - 1])
 
     return header
 
@@ -68,16 +80,13 @@ def _get_content_from_rows(
         if file_dialect is not None and file_dialect.commentRows is not None
         else []
     )
-    skip_rows = header_rows[0] - 1 if header_rows else 0
+    skip_rows = max([0, *header_rows])
 
     content: list[DataRow] = []
     for index, row in enumerate(rows):
         number = index + 1
 
         if number <= skip_rows:
-            continue
-
-        if number in header_rows:
             continue
 
         if number in comment_rows:
@@ -99,7 +108,7 @@ def _get_labels_from_header(
         return None
 
     if len(header) == 1:
-        return [str(v) for v in header[0]]
+        return ["" if cell is None else str(cell) for cell in header[0]]
 
     header_join = (
         file_dialect.headerJoin

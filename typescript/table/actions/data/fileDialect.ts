@@ -1,4 +1,8 @@
-import { getHeaderRows, joinHeaderLabels } from "../../helpers/fileDialect.ts"
+import {
+  assertUniqueColumnNames,
+  getHeaderRows,
+  joinHeaderLabels,
+} from "../../helpers/fileDialect.ts"
 import type { DataRecord, DataRow } from "../../models/data.ts"
 import type { FileDialectWithHeaderAndCommentRows } from "../../models/fileDialect.ts"
 
@@ -15,11 +19,20 @@ export function getRecordsFromRows(
   if (!labels) {
     return records
   }
+  if (!fileDialect?.columnNames) {
+    assertUniqueColumnNames(labels)
+  }
 
   for (const row of content) {
     const isCommentedRow = getIsCommentedRow(row, fileDialect)
     if (isCommentedRow) {
       continue
+    }
+
+    if (fileDialect?.columnNames && row.length > labels.length) {
+      throw new Error(
+        `A row has ${row.length} cells but columnNames has ${labels.length}`,
+      )
     }
 
     records.push(Object.fromEntries(labels.map((label, index) => [label, row[index]])))
@@ -48,9 +61,10 @@ function getHeaderFromRows(
   const header: DataRow[] = []
   for (const number of headerRows) {
     const row = rows[number - 1]
-    if (row) {
-      header.push(row)
+    if (!row) {
+      throw new Error(`Header row ${number} is past the end of the data`)
     }
+    header.push(row)
   }
 
   return header
@@ -62,17 +76,13 @@ function getContentFromRows(
 ) {
   const headerRows = getHeaderRows(fileDialect)
   const commentRows = fileDialect?.commentRows ?? []
-  const skipRows = headerRows[0] ? headerRows[0] - 1 : 0
+  const skipRows = Math.max(0, ...headerRows)
 
   const content: DataRow[] = []
   for (const [index, row] of rows.entries()) {
     const number = index + 1
 
     if (number <= skipRows) {
-      continue
-    }
-
-    if (headerRows.includes(number)) {
       continue
     }
 
@@ -100,7 +110,9 @@ function getLabelsFromHeader(
   }
 
   if (header.length === 1) {
-    return header[0].map(String)
+    return header[0].map(cell =>
+      cell === null || cell === undefined ? "" : String(cell),
+    )
   }
 
   return joinHeaderLabels(header, fileDialect?.headerJoin ?? " ")

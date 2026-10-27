@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from fairspec_metadata import CsvFileDialect
 
 from ..file_dialect import get_records_from_rows
@@ -30,9 +32,35 @@ class TestGetRecordsFromRows:
     def test_empty_rows(self):
         rows: list[list[object]] = []
 
-        result = get_records_from_rows(rows)
+        with pytest.raises(Exception, match="past the end"):
+            get_records_from_rows(rows)
+
+    def test_empty_rows_without_header(self):
+        rows: list[list[object]] = []
+
+        result = get_records_from_rows(rows, CsvFileDialect(headerRows=False))
 
         assert result == []
+
+    def test_rows_between_header_rows_are_dropped(self):
+        rows: list[list[object]] = [["a", "b"], ["skip", "me"], ["c", "d"], [1, 2]]
+
+        result = get_records_from_rows(rows, CsvFileDialect(headerRows=[1, 3]))
+
+        assert result == [{"a c": 1, "b d": 2}]
+
+    def test_repeated_header_name(self):
+        rows: list[list[object]] = [["a", "a"], [1, 2]]
+
+        with pytest.raises(Exception, match="repeated"):
+            get_records_from_rows(rows)
+
+    def test_empty_header_cell_is_an_empty_name(self):
+        rows: list[list[object]] = [["a", None], [1, 2]]
+
+        result = get_records_from_rows(rows)
+
+        assert result == [{"a": 1, "": 2}]
 
     def test_rows_without_header_when_header_is_false(self):
         rows = [
@@ -199,9 +227,9 @@ class TestGetRecordsFromRows:
         result = get_records_from_rows(rows)
 
         assert result == [
-            {"name": "Alice", "age": 30, "city": "NYC"},
+            {"name": "Alice", "age": 30, "city": "NYC", "country": None},
             {"name": "Bob", "age": 25, "city": "LA", "country": "USA"},
-            {"name": "Charlie"},
+            {"name": "Charlie", "age": None, "city": None, "country": None},
         ]
 
     def test_null_values(self):
@@ -327,9 +355,9 @@ class TestGetRecordsFromRows:
         )
 
         assert result == [
-            {"column1": "Alice", "column2": 30},
+            {"column1": "Alice", "column2": 30, "column3": None, "column4": None},
             {"column1": "Bob", "column2": 25, "column3": "LA", "column4": "USA"},
-            {"column1": "Charlie", "column2": 35, "column3": "SF"},
+            {"column1": "Charlie", "column2": 35, "column3": "SF", "column4": None},
         ]
 
     def test_use_column_names_when_provided_with_header_rows_false(self):
@@ -370,24 +398,20 @@ class TestGetRecordsFromRows:
         ]
 
     def test_column_names_with_rows_longer_than_column_names_array(self):
-        rows = [
+        rows: list[list[object]] = [
             ["Alice", 30, "NYC", "USA"],
             ["Bob", 25, "LA", "USA"],
         ]
 
-        result = get_records_from_rows(
-            rows,
-            CsvFileDialect(
-                format="csv",
-                headerRows=False,
-                columnNames=["name", "age"],
-            ),
-        )
-
-        assert result == [
-            {"name": "Alice", "age": 30},
-            {"name": "Bob", "age": 25},
-        ]
+        with pytest.raises(Exception, match="columnNames"):
+            get_records_from_rows(
+                rows,
+                CsvFileDialect(
+                    format="csv",
+                    headerRows=False,
+                    columnNames=["name", "age"],
+                ),
+            )
 
     def test_column_names_with_rows_shorter_than_column_names_array(self):
         rows: list[list[object]] = [["Alice", 30], ["Bob"]]
@@ -402,6 +426,6 @@ class TestGetRecordsFromRows:
         )
 
         assert result == [
-            {"name": "Alice", "age": 30},
-            {"name": "Bob"},
+            {"name": "Alice", "age": 30, "city": None, "country": None},
+            {"name": "Bob", "age": None, "city": None, "country": None},
         ]

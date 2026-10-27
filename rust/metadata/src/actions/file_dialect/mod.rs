@@ -1,6 +1,7 @@
 pub mod assert;
 pub mod from_frictionless;
 pub mod infer;
+pub mod inspect;
 pub mod load;
 pub mod resolve;
 pub mod save;

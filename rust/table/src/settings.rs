@@ -65,4 +65,3 @@ pub static DURATION_REGEX: LazyLock<String> = LazyLock::new(|| {
         "^[Pp](?:[0-9]+(?:[Dd]|[Mm](?:[0-9]+[Dd])?|[Yy](?:[0-9]+[Mm](?:[0-9]+[Dd])?)?)(?:{DURATION_TIME})?|{DURATION_TIME}|[0-9]+[Ww])$"
     )
 });
-

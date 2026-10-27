@@ -343,5 +343,106 @@
         }
       }
     ]
+  },
+  {
+    "description": "a quoted nullSequence in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA"
+    },
+    "tests": [
+      {
+        "description": "only the unquoted sequence is null",
+        "data": "a,b\nNA,\"NA\"\nx,y\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [null, "NA"],
+            ["x", "y"]
+          ]
+        }
+      }
+    ],
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "string"
+        }
+      }
+    },
+    "comment": "A declared schema, since inference reads NA and an empty string as missing values"
+  },
+  {
+    "description": "a quoted nullSequence with a custom quoteChar",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#nullsequence",
+      "https://fairspec.org/specs/file-dialect/#quotechar"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA",
+      "quoteChar": "'"
+    },
+    "tests": [
+      {
+        "description": "only the unquoted sequence is null",
+        "data": "a,b\nNA,'NA'\nx,y\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [null, "NA"],
+            ["x", "y"]
+          ]
+        }
+      }
+    ],
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "string"
+        }
+      }
+    },
+    "comment": "A declared schema, since inference reads NA and an empty string as missing values"
+  },
+  {
+    "description": "a nullSequence in quotes in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#nullsequence",
+      "https://fairspec.org/specs/file-dialect/#tsv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "nullSequence": "NA"
+    },
+    "tests": [
+      {
+        "description": "tsv has no quoting, so the quotes stay and it is not null",
+        "data": "a\tb\nNA\t\"NA\"\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[null, "\"NA\""]]
+        }
+      }
+    ],
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "string"
+        }
+      }
+    },
+    "comment": "A declared schema, since inference reads NA and an empty string as missing values"
   }
 ]

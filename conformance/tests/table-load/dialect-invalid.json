@@ -1,0 +1,51 @@
+[
+  {
+    "description": "an invalid dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": ";;"
+    },
+    "tests": [
+      {
+        "description": "the load fails",
+        "data": "a;;b\n1;;2\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "a dialect with headerRows zero",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [0]
+    },
+    "tests": [
+      {
+        "description": "the load fails",
+        "data": "a,b\n1,2\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "a dialect listing a row in headerRows and commentRows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2],
+      "commentRows": [2]
+    },
+    "tests": [
+      {
+        "description": "the load fails",
+        "data": "a,b\nc,d\n1,2\n",
+        "throws": true
+      }
+    ]
+  }
+]

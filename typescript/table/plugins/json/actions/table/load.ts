@@ -8,6 +8,8 @@ import { normalizeTable } from "../../../../actions/table/normalize.ts"
 import { getRecordsFromRows } from "../../../../actions/data/fileDialect.ts"
 import { getIsObject } from "../../../../helpers/general.ts"
 import type { Table } from "../../../../models/table.ts"
+import { Buffer } from "node:buffer"
+import { buffer as readStreamBuffer } from "node:stream/consumers"
 import * as pl from "nodejs-polars"
 import { decodeJsonBuffer } from "../../actions/buffer/decode.ts"
 import { parseJsonPointer } from "../../helpers/pointer.ts"
@@ -48,16 +50,25 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
 
   const tables: Table[] = []
   for (const path of paths) {
-    if (isLines && isDefault && !(await getIsFirstItemArray(path))) {
-      const table = pl.scanJson(path)
-      tables.push(table)
-      continue
+    // Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
+    const isNative = isDefault && !(await getHasByteOrderMark(path))
+    if (isLines && isNative && !(await getIsFirstItemArray(path))) {
+      const keys = await readFirstLineKeys(path)
+      const lineScan = pl.scanJson(path, { inferSchemaLength: null })
+      const lineTable = keys && orderFirstSeenColumns(lineScan, keys)
+      if (lineTable) {
+        tables.push(lineTable)
+        continue
+      }
     }
 
     const buffer = await loadFile(path)
-    const frame = !isLines && isDefault ? readObjectArray(buffer) : undefined
-    if (frame) {
-      tables.push(frame.lazy())
+    const frame = !isLines && isNative ? readObjectArray(buffer) : undefined
+    const frameKeys = frame && readFirstObjectKeys(buffer)
+    const frameTable =
+      frame && frameKeys && orderFirstSeenColumns(frame.lazy(), frameKeys)
+    if (frameTable) {
+      tables.push(frameTable)
       continue
     }
 
@@ -104,9 +115,73 @@ function getRecordsFromJson(
 }
 
 // An empty array has no records to take the columns from
+// Polars takes a key first seen after the rows it infers from as no column at all
 function createRecordsFrame(records: Record<string, unknown>[], columnNames?: string[]) {
-  if (records.length || !columnNames) return pl.DataFrame(records)
+  if (records.length || !columnNames) {
+    return pl.DataFrame(records, { inferSchemaLength: records.length })
+  }
   return pl.DataFrame(columnNames.map(name => pl.Series(name, [], pl.String)))
+}
+
+// The union of the keys is the first row's keys in their order unless a later row
+// adds one, whose place then needs every row read in order
+function orderFirstSeenColumns(table: Table, keys: string[]) {
+  const columns = table.columns
+  if (columns.length !== keys.length) return undefined
+  if (!columns.every(name => keys.includes(name))) return undefined
+  return table.select(keys)
+}
+
+async function getHasByteOrderMark(path: string) {
+  const stream = await loadFileStream(path, { maxBytes: 3 })
+  const start = await readStreamBuffer(stream)
+  return start[0] === 0xef && start[1] === 0xbb && start[2] === 0xbf
+}
+
+async function readFirstLineKeys(path: string) {
+  const stream = await loadFileStream(path)
+  let line = Buffer.alloc(0)
+  try {
+    for await (const chunk of stream) {
+      const data = Buffer.concat([line, chunk])
+      const end = data.indexOf(0x0a)
+      if (end !== -1) {
+        line = data.subarray(0, end)
+        break
+      }
+      line = data
+    }
+  } finally {
+    stream.destroy()
+  }
+  return getObjectKeys(line.toString("utf-8"))
+}
+
+function readFirstObjectKeys(data: Buffer) {
+  const start = data.indexOf(0x7b)
+  let depth = 0
+  let isString = false
+  for (let index = start; index >= 0 && index < data.length; index++) {
+    const byte = data[index]
+    if (isString) {
+      if (byte === 0x5c) index++
+      else if (byte === 0x22) isString = false
+    } else if (byte === 0x22) isString = true
+    else if (byte === 0x7b || byte === 0x5b) depth++
+    else if ((byte === 0x7d || byte === 0x5d) && --depth === 0) {
+      return getObjectKeys(data.subarray(start, index + 1).toString("utf-8"))
+    }
+  }
+  return undefined
+}
+
+function getObjectKeys(text: string) {
+  try {
+    const value: unknown = JSON.parse(text)
+    return getIsObject(value) ? Object.keys(value) : undefined
+  } catch {
+    return undefined
+  }
 }
 
 // Polars reads only object lines, while a default dialect takes array rows when

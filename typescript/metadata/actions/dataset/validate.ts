@@ -4,6 +4,7 @@ import { mapFrictionlessErrors } from "../../actions/frictionless/mapping.ts"
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
 import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
+import { inspectFileDialect } from "../../actions/fileDialect/inspect.ts"
 import { validateFileDialect } from "../../actions/fileDialect/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import { getDataPaths } from "../../actions/resource/data.ts"
@@ -94,6 +95,12 @@ export async function validateDatasetDescriptor(
         })
 
         report.errors.push(...fileDialectReport.errors)
+      } else if (resource.fileDialect) {
+        report.errors.push(
+          ...inspectFileDialect(resource.fileDialect, {
+            rootJsonPointer: `${rootJsonPointer}/fileDialect`,
+          }),
+        )
       }
 
       if (typeof resource.dataSchema === "string") {

@@ -1,6 +1,8 @@
 [
   {
     "description": "temporalFormat on a date column",
+    "comment": "A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {
@@ -69,6 +71,8 @@
   },
   {
     "description": "temporalFormat on a local-date-time column",
+    "comment": "A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {
@@ -103,6 +107,8 @@
   },
   {
     "description": "numeric fields without leading zeros",
+    "comment": "A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {
@@ -177,6 +183,8 @@
   },
   {
     "description": "two-digit years",
+    "comment": "A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {
@@ -398,7 +406,8 @@
   },
   {
     "description": "two-digit years in the 2000s",
-    "comment": "%y 00 is 2000, a leap year; read as 1900 it would not be one",
+    "comment": "%y 00 is 2000, a leap year; read as 1900 it would not be one. A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {
@@ -585,6 +594,8 @@
   },
   {
     "description": "literal text in a pattern",
+    "comment": "A declared dialect, since the sniffer takes the slash of a single-column file as its delimiter",
+    "fileDialect": { "format": "csv" },
     "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
     "tableSchema": {
       "properties": {

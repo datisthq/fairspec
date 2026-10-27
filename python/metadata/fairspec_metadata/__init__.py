@@ -36,6 +36,7 @@ from .actions.file_dialect.from_frictionless import (
     convert_file_dialect_from_frictionless,
 )
 from .actions.file_dialect.infer import infer_file_dialect_format
+from .actions.file_dialect.inspect import inspect_file_dialect
 from .actions.file_dialect.load import load_file_dialect
 from .actions.file_dialect.resolve import resolve_file_dialect
 from .actions.file_dialect.save import save_file_dialect
@@ -344,6 +345,7 @@ __all__ = [
     "get_is_remote_resource",
     "get_supported_file_dialect",
     "infer_file_dialect_format",
+    "inspect_file_dialect",
     "infer_resource_name",
     "inspect_json",
     "inspect_json_schema",

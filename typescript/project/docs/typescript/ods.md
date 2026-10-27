@@ -156,10 +156,13 @@ const table = await loadXlsxTable({
 })
 ```
 
-### Column Selection
+### Column Names
+
+The n-th name names the n-th column. A sheet with more columns than names fails to
+load; names past its last column add columns that are empty in every row.
 
 ```typescript
-// Select specific columns
+// Name the three columns of the sheet
 const table = await loadXlsxTable({
   data: "data.ods",
   format: {

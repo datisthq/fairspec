@@ -35,6 +35,53 @@ describe("loadCsvTable", () => {
     ])
   })
 
+  it("should fail on a row longer than the header", async () => {
+    const path = await writeTempFile("id,name\n1,a,extra\n")
+    const load = async () =>
+      (await loadCsvTable({ data: path, fileDialect: { format: "csv" } })).collect()
+
+    await expect(load()).rejects.toThrow()
+  })
+
+  it("should pad a short row with nulls", async () => {
+    const path = await writeTempFile("id,name\n1\n")
+    const table = await loadCsvTable({ data: path, fileDialect: { format: "csv" } })
+
+    expect((await table.collect()).toRecords()).toEqual([{ id: 1, name: null }])
+  })
+
+  it("should fail on a repeated header name", async () => {
+    const path = await writeTempFile("id,id\n1,2\n")
+
+    await expect(
+      loadCsvTable({ data: path, fileDialect: { format: "csv" } }),
+    ).rejects.toThrow()
+  })
+
+  it("should skip blank lines without numbering them", async () => {
+    const path = await writeTempFile("id\n\n1\n\n2\n3\n")
+    const table = await loadCsvTable({
+      data: path,
+      fileDialect: { format: "csv", commentRows: [3] },
+    })
+
+    expect((await table.collect()).toRecords()).toEqual([{ id: 1 }, { id: 3 }])
+  })
+
+  it("should keep a quoted nullSequence as text", async () => {
+    const path = await writeTempFile('id,name\n1,\\N\n2,"\\N"\n')
+    const table = await loadCsvTable({
+      data: path,
+      fileDialect: { format: "csv", nullSequence: "\\N" },
+      tableSchema: { properties: { id: { type: "integer" }, name: { type: "string" } } },
+    })
+
+    expect((await table.collect()).toRecords()).toEqual([
+      { id: 1, name: null },
+      { id: 2, name: "\\N" },
+    ])
+  })
+
   it.skip("should load remote file", async () => {
     const table = await loadCsvTable({
       data: "https://raw.githubusercontent.com/datisthq/fairspec-typescript/refs/heads/main/table/plugins/csv/actions/table/-test/fixtures/table.csv",

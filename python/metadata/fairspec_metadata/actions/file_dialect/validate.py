@@ -7,6 +7,7 @@ from fairspec_metadata.actions.frictionless.convert import prepare_frictionless_
 from fairspec_metadata.actions.frictionless.mapping import map_frictionless_errors
 from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
+from fairspec_metadata.actions.file_dialect.inspect import inspect_file_dialect
 from fairspec_metadata.actions.profile.load import load_profile
 from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.models.descriptor import Descriptor
@@ -57,7 +58,14 @@ def validate_file_dialect(
             model=TypeAdapter(FileDialect),
             root_json_pointer=root_json_pointer,
         )
-        report = create_report([*report.errors, *model_errors])
+        dialect_errors = (
+            inspect_file_dialect(file_dialect, root_json_pointer=root_json_pointer)
+            if file_dialect is not None
+            else []
+        )
+        report = create_report([*report.errors, *model_errors, *dialect_errors])
+        if not report.valid:
+            file_dialect = None
 
     errors = report.errors
     if prepared.mapping is not None:

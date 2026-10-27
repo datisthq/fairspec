@@ -1,31 +1,48 @@
-use fairspec_metadata::FileDialect;
+use fairspec_metadata::{Error, FileDialect, Result};
 use serde_json::{Map, Value};
 
-use crate::helpers::file_dialect::{get_header_rows, join_header_labels};
+use crate::helpers::file_dialect::{
+    assert_unique_column_names, get_header_rows, join_header_labels,
+};
 use crate::helpers::general::format_python_float;
 use crate::models::data::{DataRecord, DataRow};
 
 pub fn get_records_from_rows(
     rows: &[DataRow],
     file_dialect: Option<&FileDialect>,
-) -> Vec<DataRecord> {
+) -> Result<Vec<DataRecord>> {
     let options = get_dialect_options(file_dialect);
-    let header = get_header_from_rows(rows, file_dialect, &options);
+    let header = get_header_from_rows(rows, file_dialect, &options)?;
     let content = get_content_from_rows(rows, file_dialect, &options);
 
     let Some(labels) = get_labels_from_header(&header, &options) else {
-        return vec![];
+        return Ok(vec![]);
     };
+    if options.column_names.is_none() {
+        assert_unique_column_names(&labels)?;
+    }
 
     content
         .into_iter()
         .filter(|row| !get_is_commented_row(row, &options))
         .map(|row| {
-            labels
+            if options.column_names.is_some() && row.len() > labels.len() {
+                return Err(Error::Load(format!(
+                    "A row has {} cells but columnNames has {}",
+                    row.len(),
+                    labels.len()
+                )));
+            }
+            Ok(labels
                 .iter()
-                .zip(row)
-                .map(|(label, value)| (label.clone(), value.clone()))
-                .collect::<Map<String, Value>>()
+                .enumerate()
+                .map(|(index, label)| {
+                    (
+                        label.clone(),
+                        row.get(index).cloned().unwrap_or(Value::Null),
+                    )
+                })
+                .collect::<Map<String, Value>>())
         })
         .collect()
 }
@@ -55,24 +72,34 @@ fn get_header_from_rows(
     rows: &[DataRow],
     file_dialect: Option<&FileDialect>,
     options: &DialectOptions,
-) -> Vec<DataRow> {
+) -> Result<Vec<DataRow>> {
     if let Some(column_names) = &options.column_names {
-        return vec![column_names.iter().cloned().map(Value::String).collect()];
+        return Ok(vec![
+            column_names.iter().cloned().map(Value::String).collect(),
+        ]);
     }
 
     let header_rows = get_header_rows(file_dialect);
     if header_rows.is_empty() {
         let length = rows.iter().map(Vec::len).max().unwrap_or(0);
-        return vec![
+        return Ok(vec![
             (1..=length)
                 .map(|index| Value::String(format!("column{index}")))
                 .collect(),
-        ];
+        ]);
     }
 
     header_rows
         .iter()
-        .filter_map(|number| rows.get(number.checked_sub(1)?).cloned())
+        .map(|number| {
+            number
+                .checked_sub(1)
+                .and_then(|index| rows.get(index))
+                .cloned()
+                .ok_or_else(|| {
+                    Error::Load(format!("Header row {number} is past the end of the data"))
+                })
+        })
         .collect()
 }
 
@@ -82,14 +109,13 @@ fn get_content_from_rows<'a>(
     options: &DialectOptions,
 ) -> Vec<&'a DataRow> {
     let header_rows = get_header_rows(file_dialect);
-    let skip_rows = header_rows.first().map_or(0, |row| row.saturating_sub(1));
+    let skip_rows = header_rows.iter().copied().max().unwrap_or(0);
 
     rows.iter()
         .enumerate()
         .filter(|(index, row)| {
             let number = index + 1;
             number > skip_rows
-                && !header_rows.contains(&number)
                 && !options.comment_rows.contains(&number)
                 && !get_is_commented_row(row, options)
         })
@@ -100,7 +126,15 @@ fn get_content_from_rows<'a>(
 fn get_labels_from_header(header: &[DataRow], options: &DialectOptions) -> Option<Vec<String>> {
     match header {
         [] => None,
-        [labels] => Some(labels.iter().map(format_python_str).collect()),
+        [labels] => Some(
+            labels
+                .iter()
+                .map(|label| match label {
+                    Value::Null => String::new(),
+                    label => format_python_str(label),
+                })
+                .collect(),
+        ),
         _ => Some(join_header_labels(
             header,
             options.header_join.as_deref().unwrap_or(" "),
@@ -119,7 +153,6 @@ fn get_is_commented_row(row: &[Value], options: &DialectOptions) -> bool {
 fn format_python_str(value: &Value) -> String {
     match value {
         Value::String(text) => text.clone(),
-        Value::Null => "None".to_string(),
         Value::Bool(true) => "True".to_string(),
         Value::Bool(false) => "False".to_string(),
         Value::Number(number) if number.is_f64() => {

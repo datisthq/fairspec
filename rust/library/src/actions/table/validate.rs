@@ -2,7 +2,9 @@ use fairspec_metadata::{
     ExpectedResourceType, FairspecError, PathOr, Report, Resource, ResourceError,
     ResourceTypeError, Result, create_report, resolve_table_schema,
 };
-use fairspec_table::{LoadTableOptions, inspect_table, inspect_table_schema_patterns};
+use fairspec_table::{
+    LoadTableOptions, get_is_long_row_error, inspect_table, inspect_table_schema_patterns,
+};
 
 use super::load::load_table;
 use crate::actions::file_dialect::infer::infer_file_dialect;
@@ -10,6 +12,23 @@ use crate::actions::table_schema::infer::infer_table_schema;
 use crate::models::table::ValidateTableOptions;
 
 pub fn validate_table(resource: &Resource, options: &ValidateTableOptions) -> Result<Report> {
+    match validate_loadable_table(resource, options) {
+        Err(error) if get_is_long_row_error(&error) => {
+            Ok(create_report(vec![create_table_type_error()], None))
+        }
+        result => result,
+    }
+}
+
+fn create_table_type_error() -> FairspecError {
+    FairspecError::Resource(ResourceError::Type(ResourceTypeError {
+        resource_name: None,
+        expected_resource_type: ExpectedResourceType::Table,
+        referencing_resource_name: None,
+    }))
+}
+
+fn validate_loadable_table(resource: &Resource, options: &ValidateTableOptions) -> Result<Report> {
     let mut resource = resource.clone();
 
     if resource.file_dialect.is_none() {
@@ -45,15 +64,7 @@ pub fn validate_table(resource: &Resource, options: &ValidateTableOptions) -> Re
         ..load_table_options.clone()
     };
     let Some(table) = load_table(&resource, &load_options)? else {
-        let error = ResourceTypeError {
-            resource_name: None,
-            expected_resource_type: ExpectedResourceType::Table,
-            referencing_resource_name: None,
-        };
-        return Ok(create_report(
-            vec![FairspecError::Resource(ResourceError::Type(error))],
-            None,
-        ));
+        return Ok(create_report(vec![create_table_type_error()], None));
     };
 
     let errors = inspect_table(

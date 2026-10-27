@@ -7,7 +7,11 @@ from typing import TYPE_CHECKING, Literal
 
 import polars as pl
 
-from fairspec_table.helpers.file_dialect import get_header_rows, join_header_labels
+from fairspec_table.helpers.file_dialect import (
+    assert_unique_column_names,
+    get_header_rows,
+    join_header_labels,
+)
 
 if TYPE_CHECKING:
     from fairspec_metadata import OdsFileDialect, XlsxFileDialect
@@ -33,6 +37,14 @@ def create_table_from_sheet_rows(
     labels = file_dialect.columnNames
     if labels is None:
         labels = _get_sheet_labels(rows, content, header_rows, file_dialect)
+        assert_unique_column_names(labels)
+
+    first_row = header_rows[0] - 1 if header_rows else 0
+    width = max((_get_row_width(row) for row in rows[first_row:]), default=0)
+    if file_dialect.columnNames is not None and width > len(labels):
+        raise Exception(
+            f"The sheet has {width} columns but columnNames has {len(labels)}"
+        )
 
     columns = [
         [row[index] if index < len(row) else None for row in content]
@@ -56,7 +68,10 @@ def create_table_from_sheet_rows(
         for label, column, kind in zip(labels, columns, types, strict=True)
     ]
 
-    return pl.DataFrame(series).lazy()
+    # Polars names an unnamed series of a new frame by its position; an empty name stays
+    frame = pl.DataFrame(series)
+    frame.columns = list(labels)
+    return frame.lazy()
 
 
 def format_sheet_cell(cell: SheetCell) -> str | None:
@@ -72,6 +87,12 @@ def format_sheet_cell(cell: SheetCell) -> str | None:
     return cell
 
 
+def _get_row_width(row: list[SheetCell]) -> int:
+    return max(
+        (index + 1 for index, cell in enumerate(row) if cell is not None), default=0
+    )
+
+
 def _get_sheet_labels(
     rows: list[list[SheetCell]],
     content: list[list[SheetCell]],
@@ -82,10 +103,12 @@ def _get_sheet_labels(
         width = max((len(row) for row in content), default=0)
         return [f"column{index + 1}" for index in range(width)]
 
+    for number in header_rows:
+        if number - 1 >= len(rows):
+            raise Exception(f"Header row {number} is past the end of the sheet")
     header: list[list[object]] = [
         [format_sheet_cell(cell) or "" for cell in rows[number - 1]]
         for number in header_rows
-        if number - 1 < len(rows)
     ]
 
     if len(header) <= 1:

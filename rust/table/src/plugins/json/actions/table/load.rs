@@ -55,20 +55,30 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
 
     let mut tables = Vec::new();
     for path in &paths {
-        if is_lines && is_default && !get_is_first_item_array(path)? {
-            tables.push(
-                LazyJsonLineReader::new(PlRefPath::new(path))
-                    .finish()
-                    .into_result()?,
-            );
-            continue;
+        // Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
+        let is_native = is_default && !get_has_byte_order_mark(path)?;
+        if is_lines
+            && is_native
+            && !get_is_first_item_array(path)?
+            && let Some(keys) = read_first_line_keys(path)?
+        {
+            let table = LazyJsonLineReader::new(PlRefPath::new(path))
+                .with_infer_schema_length(None)
+                .finish()
+                .into_result()?;
+            if let Some(table) = order_first_seen_columns(table, &keys)? {
+                tables.push(table);
+                continue;
+            }
         }
         let buffer = load_file(path, None)?;
         if !is_lines
-            && is_default
+            && is_native
             && let Some(frame) = read_object_array(&buffer)
+            && let Some(keys) = read_first_object_keys(&buffer)
+            && let Some(table) = order_first_seen_columns(frame.lazy(), &keys)?
         {
-            tables.push(frame.lazy());
+            tables.push(table);
             continue;
         }
         let document = decode_json_buffer(&buffer, is_lines)?;
@@ -161,12 +171,105 @@ fn create_table_from_records(
             .collect();
         return Ok(DataFrame::empty_with_schema(&schema).lazy());
     }
+    let mut keys: Vec<String> = Vec::new();
+    for record in &records {
+        for key in record.keys() {
+            if !keys.contains(key) {
+                keys.push(key.clone());
+            }
+        }
+    }
     let text = serde_json::to_vec(&records).map_err(|error| Error::Parse(error.to_string()))?;
-    Ok(JsonReader::new(Cursor::new(text))
+    let table = JsonReader::new(Cursor::new(text))
         .infer_schema_len(None)
         .finish()
         .into_result()?
-        .lazy())
+        .lazy();
+    Ok(order_first_seen_columns(table.clone(), &keys)?.unwrap_or(table))
+}
+
+/// The union of the keys is the first row's keys in their order unless a later row
+/// adds one, whose place then needs every row read in order.
+fn order_first_seen_columns(mut table: Table, keys: &[String]) -> Result<Option<Table>> {
+    let schema = table.collect_schema().into_result()?;
+    let is_same =
+        schema.len() == keys.len() && keys.iter().all(|key| schema.contains(key.as_str()));
+    if !is_same {
+        return Ok(None);
+    }
+    let exprs: Vec<Expr> = keys.iter().map(|key| col(key.as_str())).collect();
+    Ok(Some(table.select(exprs)))
+}
+
+fn get_has_byte_order_mark(path: &str) -> Result<bool> {
+    let mut stream = load_file_stream(path, None, None)?;
+    let mut start = [0; 3];
+    let mut size = 0;
+    while size < 3 {
+        let read = stream
+            .read(&mut start[size..])
+            .map_err(|error| Error::Load(error.to_string()))?;
+        if read == 0 {
+            break;
+        }
+        size += read;
+    }
+    Ok(size == 3 && start == *b"\xEF\xBB\xBF")
+}
+
+fn read_first_line_keys(path: &str) -> Result<Option<Vec<String>>> {
+    let mut stream = load_file_stream(path, None, None)?;
+    let mut line: Vec<u8> = Vec::new();
+    let mut chunk = vec![0; 65536];
+    loop {
+        let size = stream
+            .read(&mut chunk)
+            .map_err(|error| Error::Load(error.to_string()))?;
+        if size == 0 {
+            break;
+        }
+        if let Some(end) = chunk[..size].iter().position(|byte| *byte == b'\n') {
+            line.extend_from_slice(&chunk[..end]);
+            break;
+        }
+        line.extend_from_slice(&chunk[..size]);
+    }
+    Ok(get_object_keys(&line))
+}
+
+fn read_first_object_keys(data: &[u8]) -> Option<Vec<String>> {
+    let start = data.iter().position(|byte| *byte == b'{')?;
+    let mut depth = 0;
+    let mut is_string = false;
+    let mut index = start;
+    while index < data.len() {
+        let byte = data[index];
+        if is_string {
+            if byte == b'\\' {
+                index += 1;
+            } else if byte == b'"' {
+                is_string = false;
+            }
+        } else if byte == b'"' {
+            is_string = true;
+        } else if byte == b'{' || byte == b'[' {
+            depth += 1;
+        } else if byte == b'}' || byte == b']' {
+            depth -= 1;
+            if depth == 0 {
+                return get_object_keys(&data[start..=index]);
+            }
+        }
+        index += 1;
+    }
+    None
+}
+
+fn get_object_keys(text: &[u8]) -> Option<Vec<String>> {
+    match serde_json::from_slice::<Value>(text) {
+        Ok(Value::Object(object)) => Some(object.keys().cloned().collect()),
+        _ => None,
+    }
 }
 
 fn get_records_from_json(
@@ -204,7 +307,7 @@ fn get_records_from_json(
                 _ => None,
             })
             .collect();
-        return Ok(Some(get_records_from_rows(&rows, Some(file_dialect))));
+        return Ok(Some(get_records_from_rows(&rows, Some(file_dialect))?));
     }
 
     let records = data.into_iter().filter_map(|row| match row {

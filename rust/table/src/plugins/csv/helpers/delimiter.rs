@@ -192,7 +192,7 @@ fn replace_bytes(data: &[u8], needle: &[u8], placeholder: u8, output: &mut Vec<u
 }
 
 // A preview reads only its first bytes, so neither pass reads past them
-fn open_file(path: &str, max_bytes: Option<usize>) -> Result<Take<File>> {
+pub(crate) fn open_file(path: &str, max_bytes: Option<usize>) -> Result<Take<File>> {
     let limit = max_bytes.filter(|max_bytes| *max_bytes > 0);
     Ok(File::open(path)?.take(limit.map_or(u64::MAX, |limit| limit as u64)))
 }

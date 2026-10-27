@@ -31,6 +31,30 @@ describe("loadJsonTable", () => {
       expect((await table?.collect())?.getColumn("id").dtype).toEqual(pl.Int64)
     })
 
+    it("should ignore a byte order mark", async () => {
+      const path = await writeTempFile('\uFEFF[{"id":1}]', { format: "json" })
+
+      const table = await loadJsonTable({ data: path })
+
+      expect((await table?.collect())?.toRecords()).toEqual([{ id: 1 }])
+    })
+
+    it("should order the columns by the first row a key is seen in", async () => {
+      const path = await writeTempFile('[{"b":1},{"a":2,"b":3}]', { format: "json" })
+
+      const table = await loadJsonTable({ data: path }, { denormalized: true })
+
+      expect((await table?.collect())?.columns).toEqual(["b", "a"])
+    })
+
+    it("should order jsonl columns by the first line a key is seen in", async () => {
+      const path = await writeTempFile('{"b":1}\n{"a":2,"b":3}\n', { format: "jsonl" })
+
+      const table = await loadJsonTable({ data: path }, { denormalized: true })
+
+      expect((await table?.collect())?.columns).toEqual(["b", "a"])
+    })
+
     it("should fall back when the native reader refuses the rows", async () => {
       const path = await writeTempFile('[{"id":1},5,{"id":2}]')
 

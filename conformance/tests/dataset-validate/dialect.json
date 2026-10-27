@@ -1,0 +1,306 @@
+[
+  {
+    "description": "a delimiter of two characters",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#delimiter",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "delimiter": ";;"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": {
+          "table.csv": "a;;b\n1;;2\n"
+        },
+        "valid": false
+      }
+    ],
+    "comment": "The profile's validator reports the property among the branches it tried, which differ by language, so only validity is compared"
+  },
+  {
+    "description": "a quoteChar of two characters",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#quotechar",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "quoteChar": "''"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": {
+          "table.csv": "a,b\n1,2\n"
+        },
+        "valid": false
+      }
+    ],
+    "comment": "The profile's validator reports the property among the branches it tried, which differ by language, so only validity is compared"
+  },
+  {
+    "description": "headerRows with a zero",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": [0]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": {
+          "table.csv": "a,b\n1,2\n"
+        },
+        "valid": false
+      }
+    ],
+    "comment": "The profile's validator reports the property among the branches it tried, which differ by language, so only validity is compared"
+  },
+  {
+    "description": "headerRows true",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": true
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": {
+          "table.csv": "a,b\n1,2\n"
+        },
+        "valid": false
+      }
+    ],
+    "comment": "The profile's validator reports the property among the branches it tried, which differ by language, so only validity is compared"
+  },
+  {
+    "description": "a row both in headerRows and commentRows",
+    "comment": "The spec puts the error at the dialect property that is not valid; commentRows is the one that lists a header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": [1, 2],
+            "commentRows": [2]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the property",
+        "data": {
+          "table.csv": "a,b\nc,d\n1,2\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/fileDialect/commentRows"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a header row also commented with a single header row",
+    "comment": "headerRows defaults to [1], so commenting row 1 lists it in both",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "commentRows": [1]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the property",
+        "data": {
+          "table.csv": "a,b\n1,2\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/fileDialect/commentRows"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "commentRows apart from headerRows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": [1],
+            "commentRows": [2]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": {
+          "table.csv": "a,b\nx,y\n1,2\n"
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "commentRows with headerRows false",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": false,
+            "commentRows": [1]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": {
+          "table.csv": "x,y\n1,2\n"
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an invalid dialect over data that is not valid either",
+    "specification": ["https://fairspec.org/specs/file-dialect/#format-properties"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": {
+            "format": "csv",
+            "delimiter": ";;"
+          },
+          "tableSchema": {
+            "properties": {
+              "a": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "only the metadata error is reported, the data is not checked",
+        "data": {
+          "table.csv": "a,b\n1,2,3\nx,y\n"
+        },
+        "valid": false
+      }
+    ],
+    "comment": "The profile's validator reports the property among the branches it tried, which differ by language, so only validity is compared"
+  },
+  {
+    "description": "a csv row with more cells than the header",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "tableSchema": {
+            "properties": {
+              "id": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": {
+          "table.csv": "id,name\n1,a,b\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "resource/type",
+            "expectedResourceType": "table",
+            "resourceName": "table"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -4,7 +4,8 @@ import json
 
 
 def decode_json_buffer(data: bytes, *, is_lines: bool) -> object:
-    text = data.decode("utf-8")
+    text = data.decode("utf-8-sig")
     if is_lines:
-        return [json.loads(line) for line in text.split("\n") if line.strip()]
+        lines = (line.removesuffix("\r") for line in text.split("\n"))
+        return [json.loads(line) for line in lines if line]
     return json.loads(text)

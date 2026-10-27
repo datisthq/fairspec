@@ -37,3 +37,19 @@ def _fill_header_row(row: DataRow, width: int) -> list[str]:
         labels.append(label)
 
     return labels
+
+
+def assert_unique_column_names(names: list[str]) -> None:
+    """Raises when a header gives two columns one name; an empty name is a name too"""
+    seen: set[str] = set()
+    for name in names:
+        if name in seen:
+            raise Exception(f'Column name "{name}" is repeated in the header')
+        seen.add(name)
+
+
+def get_is_long_row_error(error: BaseException) -> bool:
+    """Tells a row with more cells than the table has columns, which Polars raises while
+    reading, so a validator reports the file as not loadable instead of raising
+    """
+    return "found more fields than defined" in str(error)

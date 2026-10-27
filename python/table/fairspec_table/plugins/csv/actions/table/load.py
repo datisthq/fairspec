@@ -13,9 +13,13 @@ from fairspec_table.actions.table.file_dialect import (
 )
 from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
-from fairspec_table.helpers.file_dialect import get_header_rows
+from fairspec_table.helpers.file_dialect import (
+    assert_unique_column_names,
+    get_header_rows,
+)
 from fairspec_table.plugins.csv.actions.file_dialect.infer import infer_csv_file_dialect
 from fairspec_table.plugins.csv.helpers.delimiter import restore_delimiter, swap_delimiter
+from fairspec_table.plugins.csv.helpers.rows import clean_csv_rows
 from fairspec_table.settings import NUMBER_COLUMN_NAME, QUERY_ENGINE
 
 if TYPE_CHECKING:
@@ -47,6 +51,14 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     if swapped:
         paths = swapped.paths
         file_dialect = swapped.file_dialect
+    cleaned = (
+        clean_csv_rows(paths, file_dialect, max_bytes=max_bytes)  # type: ignore[arg-type]
+        if file_dialect
+        else None
+    )
+    if cleaned:
+        paths = cleaned.paths
+        file_dialect = cleaned.file_dialect
     file_dialect = _renumber_prefixed_rows(paths[0], file_dialect)
 
     scan_options = _get_scan_options(file_dialect)
@@ -54,19 +66,26 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     header_rows = get_header_rows(file_dialect)  # type: ignore[arg-type]
     is_multi_header = len(header_rows) > 1 and not column_names
     if is_multi_header:
-        scan_options["schema"] = _get_headerless_schema(paths[0], scan_options)
-        # Polars 2 sizes a headerless file by its first line, which may be the shorter
-        # first header row; inserting keeps the wider rows' cells
+        scan_options["schema"] = _get_headerless_schema(
+            paths[0], scan_options, header_rows
+        )
+        # A first header row may be shorter than the schema
         scan_options["missing_columns"] = "insert"
 
+    has_header = scan_options.get("has_header", True)
     tables: list[Table] = []
     for path in paths:
+        if has_header:
+            names = _read_header_names(path, scan_options)
+            if not column_names:
+                assert_unique_column_names(names)
         table = pl.scan_csv(path, **scan_options)  # type: ignore[arg-type]
+        if has_header and column_names:
+            table = _rename_header_columns(table, names, column_names)
         tables.append(table)
 
     result = pl.concat(tables)
 
-    has_header = scan_options.get("has_header", True)
     if not has_header and not column_names and not is_multi_header:
         # By position, not from polars' own names: polars 2 numbers them from column_0
         result = result.rename(
@@ -99,7 +118,7 @@ def _get_scan_options(
 
     options: dict[str, object] = {
         "infer_schema_length": 0,
-        "truncate_ragged_lines": True,
+        "truncate_ragged_lines": False,
     }
 
     column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
@@ -128,19 +147,55 @@ def _get_scan_options(
         options["comment_prefix"] = comment_prefix
 
     # Polars 2 matches a schema against the header row by name, so names that replace a
-    # header go in by position through new_columns
-    if column_names and options["has_header"]:
-        options["new_columns"] = column_names
-    elif column_names:
+    # header are put in by position after the scan (`_rename_header_columns`)
+    if column_names and not options["has_header"]:
         options["schema"] = {name: pl.String for name in column_names}
+        options["missing_columns"] = "insert"
 
     return options
 
 
+# Polars renames a repeated header name, so the names are read as a data row
+def _read_header_names(path: str, options: dict[str, object]) -> list[str]:
+    scan_options = {
+        key: value
+        for key, value in options.items()
+        if key not in ("null_values", "schema", "missing_columns")
+    }
+    scan_options.update(has_header=False, truncate_ragged_lines=True)
+    table = pl.scan_csv(path, **scan_options)  # type: ignore[arg-type]
+    frame: pl.DataFrame = table.head(1).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+    cells = frame.row(0) if frame.height else ()
+    return [cell if isinstance(cell, str) else "" for cell in cells]
+
+
+# The n-th name names the n-th column; fewer names than columns is an error, and more
+# names add columns that are null in every row
+def _rename_header_columns(
+    table: Table, header_names: list[str], column_names: list[str]
+) -> Table:
+    if len(header_names) > len(column_names):
+        raise Exception(
+            f"The file has {len(header_names)} columns but columnNames has {len(column_names)}"
+        )
+    names = table.collect_schema().names()
+    return table.select(
+        *(pl.col(name).alias(column_names[index]) for index, name in enumerate(names)),
+        *(pl.lit(None, pl.String).alias(name) for name in column_names[len(names) :]),
+    )
+
+
 # Header rows are joined from the data, so every column is read as text and the
-# widest of the first rows sets the width: a first header row may be shorter
-def _get_headerless_schema(path: str, options: dict[str, object]) -> dict[str, object]:
-    scan_options = {**options, "infer_schema_length": 100}
+# widest header row sets the width: a first header row may be shorter, and a data
+# row wider than every header row is a long row
+def _get_headerless_schema(
+    path: str, options: dict[str, object], header_rows: list[int]
+) -> dict[str, object]:
+    scan_options = {
+        **options,
+        "infer_schema_length": max(header_rows) - min(header_rows) + 1,
+        "truncate_ragged_lines": True,
+    }
     names = pl.scan_csv(path, **scan_options).collect_schema().names()  # type: ignore[arg-type]
     return {name: pl.String for name in names}
 
@@ -162,9 +217,17 @@ def _renumber_prefixed_rows(
     scan_options = {
         key: value
         for key, value in _get_scan_options(file_dialect).items()
-        if key not in ("null_values", "comment_prefix", "schema", "new_columns")
+        if key not in ("null_values", "comment_prefix", "schema", "missing_columns")
     }
-    table = pl.scan_csv(path, **{**scan_options, "skip_rows": 0, "has_header": False})  # type: ignore[arg-type]
+    table = pl.scan_csv(
+        path,
+        **{
+            **scan_options,
+            "skip_rows": 0,
+            "has_header": False,
+            "truncate_ragged_lines": True,
+        },  # type: ignore[arg-type]
+    )
     first = pl.col(table.collect_schema().names()[0])
     frame: pl.DataFrame = (
         table.head(last_row)

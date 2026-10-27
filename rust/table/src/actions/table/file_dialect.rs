@@ -1,8 +1,10 @@
-use fairspec_metadata::{FileDialect, Result};
+use fairspec_metadata::{Error, FileDialect, Result};
 use polars::prelude::*;
 
 use crate::helpers::error::PolarsResultExt;
-use crate::helpers::file_dialect::{get_comment_rows, get_header_rows, join_header_labels};
+use crate::helpers::file_dialect::{
+    assert_unique_column_names, get_comment_rows, get_header_rows, join_header_labels,
+};
 use crate::helpers::table::LazyFrameExt;
 use crate::helpers::value::get_json_value;
 use crate::models::data::DataRow;
@@ -22,22 +24,25 @@ pub fn join_header_rows(
         return Ok(table);
     }
 
-    let skipped_rows = header_rows[0] - 1;
-    if get_column_names(dialect).is_some_and(|names| !names.is_empty()) {
-        return Ok(drop_rows(table, &header_rows, skipped_rows + 1));
-    }
-
-    let height = header_rows[header_rows.len() - 1] - skipped_rows;
+    // Every row up to the last header row is consumed by the header, listed or not
+    let skipped_rows = header_rows[0].saturating_sub(1);
+    let last_header_row = header_rows[header_rows.len() - 1];
+    let has_column_names = get_column_names(dialect).is_some_and(|names| !names.is_empty());
+    let height = last_header_row - skipped_rows - usize::from(has_column_names);
     let header_frame = table.clone().limit(height as u32).collect_table()?;
+    if header_frame.height() < height {
+        return Err(Error::Load(format!(
+            "Header row {last_header_row} is past the end of the file"
+        )));
+    }
+    if has_column_names {
+        return Ok(drop_first_rows(table, height));
+    }
     let header: Vec<DataRow> = header_rows
         .iter()
         .map(|number| {
-            let index = number - skipped_rows - 1;
-            if index >= header_frame.height() {
-                return Vec::new();
-            }
             header_frame
-                .get_row(index)
+                .get_row(number - skipped_rows - 1)
                 .map(|row| row.0.iter().map(get_json_value).collect())
                 .unwrap_or_default()
         })
@@ -50,15 +55,18 @@ pub fn join_header_rows(
         .iter_names()
         .enumerate()
         .map(|(index, name)| {
-            let label = labels.get(index).filter(|label| !label.is_empty());
             (
                 name.to_string(),
-                label.cloned().unwrap_or_else(|| name.to_string()),
+                labels
+                    .get(index)
+                    .cloned()
+                    .unwrap_or_else(|| name.to_string()),
             )
         })
         .unzip();
+    assert_unique_column_names(&new)?;
 
-    Ok(drop_rows(table, &header_rows, skipped_rows).rename(existing, new, true))
+    Ok(drop_first_rows(table, height).rename(existing, new, true))
 }
 
 pub fn skip_comment_rows(table: Table, dialect: &FileDialectWithHeaderAndCommentRows) -> Table {
@@ -69,6 +77,17 @@ pub fn skip_comment_rows(table: Table, dialect: &FileDialectWithHeaderAndComment
         return table;
     }
     drop_rows(table, &comment_rows, comment_offset)
+}
+
+fn drop_first_rows(table: Table, count: usize) -> Table {
+    table
+        .with_row_index(NUMBER_COLUMN_NAME, Some(1))
+        .filter(
+            col(NUMBER_COLUMN_NAME)
+                .cast(DataType::Int64)
+                .gt(lit(count as i64)),
+        )
+        .drop(by_name([NUMBER_COLUMN_NAME], true, false))
 }
 
 fn drop_rows(table: Table, numbers: &[usize], offset: usize) -> Table {

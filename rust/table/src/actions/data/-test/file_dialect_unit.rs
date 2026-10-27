@@ -5,12 +5,19 @@ use crate::actions::data::file_dialect::get_records_from_rows;
 use crate::models::data::DataRow;
 
 fn get_records(rows: Value, dialect: Option<Value>) -> Value {
+    serde_json::to_value(try_get_records(rows, dialect).unwrap()).unwrap()
+}
+
+fn try_get_records(
+    rows: Value,
+    dialect: Option<Value>,
+) -> fairspec_metadata::Result<Vec<crate::models::data::DataRecord>> {
     let rows: Vec<DataRow> = serde_json::from_value(rows).unwrap();
     let dialect: Option<FileDialect> = dialect.map(|mut dialect| {
         dialect["format"] = json!("csv");
         serde_json::from_value(dialect).unwrap()
     });
-    serde_json::to_value(get_records_from_rows(&rows, dialect.as_ref())).unwrap()
+    get_records_from_rows(&rows, dialect.as_ref())
 }
 
 #[test]
@@ -39,7 +46,35 @@ fn test_single_row_with_header() {
 
 #[test]
 fn test_empty_rows() {
-    assert_eq!(get_records(json!([]), None), json!([]));
+    assert!(try_get_records(json!([]), None).is_err());
+}
+
+#[test]
+fn test_empty_rows_without_header() {
+    let dialect = json!({"headerRows": false});
+    assert_eq!(get_records(json!([]), Some(dialect)), json!([]));
+}
+
+#[test]
+fn test_rows_between_header_rows_are_dropped() {
+    let rows = json!([["a", "b"], ["skip", "me"], ["c", "d"], [1, 2]]);
+    assert_eq!(
+        get_records(rows, Some(json!({"headerRows": [1, 3]}))),
+        json!([{"a c": 1, "b d": 2}])
+    );
+}
+
+#[test]
+fn test_repeated_header_name() {
+    assert!(try_get_records(json!([["a", "a"], [1, 2]]), None).is_err());
+}
+
+#[test]
+fn test_empty_header_cell_is_an_empty_name() {
+    assert_eq!(
+        get_records(json!([["a", null], [1, 2]]), None),
+        json!([{"a": 1, "": 2}])
+    );
 }
 
 #[test]
@@ -188,9 +223,9 @@ fn test_rows_with_different_lengths() {
     assert_eq!(
         get_records(rows, None),
         json!([
-            {"name": "Alice", "age": 30, "city": "NYC"},
+            {"name": "Alice", "age": 30, "city": "NYC", "country": null},
             {"name": "Bob", "age": 25, "city": "LA", "country": "USA"},
-            {"name": "Charlie"},
+            {"name": "Charlie", "age": null, "city": null, "country": null},
         ])
     );
 }
@@ -317,9 +352,9 @@ fn test_generate_column_names_based_on_longest_row_when_no_header() {
     assert_eq!(
         get_records(rows, Some(json!({"headerRows": false}))),
         json!([
-            {"column1": "Alice", "column2": 30},
+            {"column1": "Alice", "column2": 30, "column3": null, "column4": null},
             {"column1": "Bob", "column2": 25, "column3": "LA", "column4": "USA"},
-            {"column1": "Charlie", "column2": 35, "column3": "SF"},
+            {"column1": "Charlie", "column2": 35, "column3": "SF", "column4": null},
         ])
     );
 }
@@ -357,10 +392,7 @@ fn test_use_column_names_even_when_file_has_headers() {
 fn test_column_names_with_rows_longer_than_column_names_array() {
     let rows = json!([["Alice", 30, "NYC", "USA"], ["Bob", 25, "LA", "USA"]]);
     let dialect = json!({"headerRows": false, "columnNames": ["name", "age"]});
-    assert_eq!(
-        get_records(rows, Some(dialect)),
-        json!([{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}])
-    );
+    assert!(try_get_records(rows, Some(dialect)).is_err());
 }
 
 #[test]
@@ -369,6 +401,9 @@ fn test_column_names_with_rows_shorter_than_column_names_array() {
     let dialect = json!({"headerRows": false, "columnNames": ["name", "age", "city", "country"]});
     assert_eq!(
         get_records(rows, Some(dialect)),
-        json!([{"name": "Alice", "age": 30}, {"name": "Bob"}])
+        json!([
+            {"name": "Alice", "age": 30, "city": null, "country": null},
+            {"name": "Bob", "age": null, "city": null, "country": null},
+        ])
     );
 }

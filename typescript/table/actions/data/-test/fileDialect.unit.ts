@@ -25,12 +25,51 @@ describe("getRecordsFromRows", () => {
     expect(result).toEqual([])
   })
 
-  it("should handle empty rows", () => {
+  it("should throw when the header row is past the end of empty rows", () => {
     const rows: unknown[][] = []
+
+    expect(() => getRecordsFromRows(rows)).toThrow()
+  })
+
+  it("should handle empty rows without a header", () => {
+    const rows: unknown[][] = []
+
+    const result = getRecordsFromRows(rows, { format: "json", headerRows: false })
+
+    expect(result).toEqual([])
+  })
+
+  it("should drop the rows between header rows", () => {
+    const rows = [
+      ["a", "b"],
+      ["skip", "me"],
+      ["c", "d"],
+      [1, 2],
+    ]
+
+    const result = getRecordsFromRows(rows, { format: "json", headerRows: [1, 3] })
+
+    expect(result).toEqual([{ "a c": 1, "b d": 2 }])
+  })
+
+  it("should throw on a repeated header name", () => {
+    const rows = [
+      ["a", "a"],
+      [1, 2],
+    ]
+
+    expect(() => getRecordsFromRows(rows)).toThrow()
+  })
+
+  it("should read an empty header cell as an empty name", () => {
+    const rows = [
+      ["a", null],
+      [1, 2],
+    ]
 
     const result = getRecordsFromRows(rows)
 
-    expect(result).toEqual([])
+    expect(result).toEqual([{ a: 1, "": 2 }])
   })
 
   it("should handle rows without header when header is false", () => {
@@ -392,22 +431,19 @@ describe("getRecordsFromRows", () => {
     ])
   })
 
-  it("should handle columnNames with rows longer than columnNames array", () => {
+  it("should throw for columnNames with rows longer than columnNames array", () => {
     const rows = [
       ["Alice", 30, "NYC", "USA"],
       ["Bob", 25, "LA", "USA"],
     ]
 
-    const result = getRecordsFromRows(rows, {
-      format: "json",
-      headerRows: false,
-      columnNames: ["name", "age"],
-    })
-
-    expect(result).toEqual([
-      { name: "Alice", age: 30 },
-      { name: "Bob", age: 25 },
-    ])
+    expect(() =>
+      getRecordsFromRows(rows, {
+        format: "json",
+        headerRows: false,
+        columnNames: ["name", "age"],
+      }),
+    ).toThrow()
   })
 
   it("should handle columnNames with rows shorter than columnNames array", () => {

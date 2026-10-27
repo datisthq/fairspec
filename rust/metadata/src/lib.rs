@@ -189,6 +189,7 @@ pub use actions::descriptor::validate::validate_descriptor;
 pub use actions::file_dialect::assert::assert_file_dialect;
 pub use actions::file_dialect::from_frictionless::convert_file_dialect_from_frictionless;
 pub use actions::file_dialect::infer::infer_file_dialect_format;
+pub use actions::file_dialect::inspect::inspect_file_dialect;
 pub use actions::file_dialect::load::load_file_dialect;
 pub use actions::file_dialect::resolve::resolve_file_dialect;
 pub use actions::file_dialect::save::save_file_dialect;

@@ -34,6 +34,9 @@ pub use actions::table_schema::infer::{
 };
 pub use actions::table_schema::pattern::inspect_table_schema_patterns;
 
+// helpers
+pub use helpers::file_dialect::get_is_long_row_error;
+
 // plugins
 pub use plugins::arrow::actions::table::load::load_arrow_table;
 pub use plugins::arrow::actions::table::save::save_arrow_table;

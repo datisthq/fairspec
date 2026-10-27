@@ -148,13 +148,16 @@ table = load_xlsx_table(Resource(data=[
 ]))
 ```
 
-### Column Selection
+### Column Names
+
+The n-th name names the n-th column. A sheet with more columns than names fails to
+load; names past its last column add columns that are empty in every row.
 
 ```python
 from fairspec import load_xlsx_table, Resource
 from fairspec_metadata import XlsxFileDialect
 
-# Select specific columns
+# Name the three columns of the sheet
 table = load_xlsx_table(Resource(
     data="data.ods",
     fileDialect=XlsxFileDialect(format="ods", columnNames=["name", "age", "city"]),

@@ -44,7 +44,7 @@
     "tests": [
       {
         "description": "integers, decimals and missing values are valid",
-        "data": "x\n1\n1.5\n\n",
+        "data": "x,note\n1,a\n1.5,b\n,c\n",
         "valid": true
       },
       {
@@ -77,7 +77,7 @@
     "tests": [
       {
         "description": "a listed value and a missing one are valid",
-        "data": "x\na\n\n",
+        "data": "x,note\na,a\n,b\n",
         "valid": true
       }
     ]

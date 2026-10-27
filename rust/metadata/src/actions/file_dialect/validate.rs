@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::inspect::inspect_file_dialect;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::load::load_descriptor_source;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
@@ -40,10 +41,14 @@ pub fn validate_file_dialect(
 
     let file_dialect = match report.valid {
         true => {
-            let (file_dialect, errors) = inspect_model(&descriptor, root_json_pointer);
+            let (file_dialect, mut errors) =
+                inspect_model::<FileDialect>(&descriptor, root_json_pointer);
+            if let Some(file_dialect) = &file_dialect {
+                errors.extend(inspect_file_dialect(file_dialect, root_json_pointer));
+            }
             report.valid = errors.is_empty();
             report.errors.extend(errors);
-            file_dialect
+            file_dialect.filter(|_| report.valid)
         }
         false => None,
     };

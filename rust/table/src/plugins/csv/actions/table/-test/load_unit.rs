@@ -319,3 +319,63 @@ mod tsv {
         );
     }
 }
+
+mod rows {
+    use super::*;
+
+    fn try_load(body: &str, dialect: Value) -> fairspec_metadata::Result<Value> {
+        let resource: Resource =
+            serde_json::from_value(json!({"data": write(body), "fileDialect": dialect})).unwrap();
+        let table = load_csv_table(&resource, &Default::default())?;
+        Ok(collect_records(table))
+    }
+
+    #[test]
+    fn test_should_fail_on_a_row_longer_than_the_header() {
+        let resource: Resource = serde_json::from_value(
+            json!({"data": write("id,name\n1,a,extra\n"), "fileDialect": csv(json!({}))}),
+        )
+        .unwrap();
+        let options = LoadTableOptions {
+            denormalized: Some(true),
+            ..Default::default()
+        };
+        let table = load_csv_table(&resource, &options).unwrap();
+        assert!(table.collect().is_err());
+    }
+
+    #[test]
+    fn test_should_pad_a_short_row_with_nulls() {
+        assert_eq!(
+            try_load("id,name\n1\n", csv(json!({}))).unwrap(),
+            json!([{"id": 1, "name": null}])
+        );
+    }
+
+    #[test]
+    fn test_should_fail_on_a_repeated_header_name() {
+        assert!(try_load("id,id\n1,2\n", csv(json!({}))).is_err());
+    }
+
+    #[test]
+    fn test_should_skip_blank_lines_without_numbering_them() {
+        assert_eq!(
+            try_load("id\n\n1\n\n2\n3\n", csv(json!({"commentRows": [3]}))).unwrap(),
+            json!([{"id": 1}, {"id": 3}])
+        );
+    }
+
+    #[test]
+    fn test_should_keep_a_quoted_null_sequence_as_text() {
+        let resource: Resource = serde_json::from_value(json!({
+            "data": write("id,name\n1,\\N\n2,\"\\N\"\n"),
+            "fileDialect": csv(json!({"nullSequence": "\\N"})),
+            "tableSchema": {"properties": {"id": {"type": "integer"}, "name": {"type": "string"}}},
+        }))
+        .unwrap();
+        assert_eq!(
+            collect_records(load_csv_table(&resource, &Default::default()).unwrap()),
+            json!([{"id": 1, "name": null}, {"id": 2, "name": "\\N"}])
+        );
+    }
+}

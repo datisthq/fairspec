@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use fairspec_metadata::{FileDialect, Result};
+use fairspec_metadata::{Error, FileDialect, Result};
 use polars::prelude::{
     Column as PolarsColumn, DataFrame, DataType, IntoLazy, LazyFrame, NamedFrom, Series, TimeUnit,
 };
@@ -7,7 +7,9 @@ use serde_json::Value;
 
 use super::sheet::SheetCell;
 use crate::helpers::error::PolarsResultExt;
-use crate::helpers::file_dialect::{get_header_rows, join_header_labels};
+use crate::helpers::file_dialect::{
+    assert_unique_column_names, get_header_rows, join_header_labels,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SheetType {
@@ -30,8 +32,31 @@ pub fn create_table_from_sheet_rows(
 
     let labels = match options.column_names {
         Some(column_names) => column_names.clone(),
-        None => get_sheet_labels(rows, content, &header_rows, options.header_join),
+        None => {
+            let labels = get_sheet_labels(rows, content, &header_rows, options.header_join)?;
+            assert_unique_column_names(&labels)?;
+            labels
+        }
     };
+
+    let first_row = header_rows.first().map_or(0, |row| row.saturating_sub(1));
+    let width = rows
+        .get(first_row..)
+        .unwrap_or_default()
+        .iter()
+        .map(|row| {
+            row.iter()
+                .rposition(Option::is_some)
+                .map_or(0, |index| index + 1)
+        })
+        .max()
+        .unwrap_or(0);
+    if options.column_names.is_some() && width > labels.len() {
+        return Err(Error::Load(format!(
+            "The sheet has {width} columns but columnNames has {}",
+            labels.len()
+        )));
+    }
 
     let columns: Vec<Vec<Option<&SheetCell>>> = (0..labels.len())
         .map(|index| {
@@ -68,15 +93,9 @@ pub fn create_table_from_sheet_rows(
         .iter()
         .zip(&columns)
         .zip(&types)
-        .enumerate()
-        .map(|(index, ((label, column), kind))| {
+        .map(|((label, column), kind)| {
             let values: Vec<Option<&SheetCell>> = kept.iter().map(|&row| column[row]).collect();
-            // Python polars names an unnamed series of a new frame by its position
-            let label = match label.is_empty() {
-                true => format!("column_{index}"),
-                false => label.clone(),
-            };
-            create_sheet_series(&label, &values, *kind).map(PolarsColumn::from)
+            create_sheet_series(label, &values, *kind).map(PolarsColumn::from)
         })
         .collect::<Result<Vec<_>>>()?;
 
@@ -129,30 +148,34 @@ fn get_sheet_labels(
     content: &[Vec<Option<SheetCell>>],
     header_rows: &[usize],
     header_join: Option<&String>,
-) -> Vec<String> {
+) -> Result<Vec<String>> {
     if header_rows.is_empty() {
         let width = content.iter().map(Vec::len).max().unwrap_or(0);
-        return (1..=width).map(|index| format!("column{index}")).collect();
+        return Ok((1..=width).map(|index| format!("column{index}")).collect());
     }
 
     let header: Vec<Vec<Value>> = header_rows
         .iter()
-        .filter_map(|number| rows.get(number.checked_sub(1)?))
-        .map(|row| {
-            row.iter()
+        .map(|number| {
+            let row = number.checked_sub(1).and_then(|index| rows.get(index));
+            let row = row.ok_or_else(|| {
+                Error::Load(format!("Header row {number} is past the end of the sheet"))
+            })?;
+            Ok(row
+                .iter()
                 .map(|cell| Value::String(format_sheet_cell(cell.as_ref()).unwrap_or_default()))
-                .collect()
+                .collect())
         })
-        .collect();
+        .collect::<Result<_>>()?;
 
-    match header.as_slice() {
+    Ok(match header.as_slice() {
         [] => vec![],
         [labels] => labels
             .iter()
             .map(|label| label.as_str().unwrap_or_default().to_string())
             .collect(),
         _ => join_header_labels(&header, header_join.map_or(" ", String::as_str)),
-    }
+    })
 }
 
 fn get_column_type(cells: &[Option<&SheetCell>]) -> SheetType {

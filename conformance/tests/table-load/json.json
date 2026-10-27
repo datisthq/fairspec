@@ -191,5 +191,344 @@
         }
       }
     ]
+  },
+  {
+    "description": "json object rows in first-seen key order",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object"
+    },
+    "tests": [
+      {
+        "description": "a key first seen on a later row follows the earlier keys",
+        "data": "[{\"b\":1},{\"a\":2,\"c\":3,\"b\":4}]",
+        "expected": {
+          "columns": ["b", "a", "c"],
+          "rows": [
+            [1, null, null],
+            [4, 2, 3]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json object rows at a jsonPointer in first-seen key order",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#jsonpointer"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/rows"
+    },
+    "tests": [
+      {
+        "description": "a key first seen on a later row follows the earlier keys",
+        "data": "{\"rows\":[{\"b\":1},{\"a\":2,\"b\":4}]}",
+        "expected": {
+          "columns": ["b", "a"],
+          "rows": [
+            [1, null],
+            [4, 2]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl object rows in first-seen key order",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "object"
+    },
+    "tests": [
+      {
+        "description": "a key first seen on a later line follows the earlier keys",
+        "data": "{\"b\":1}\n{\"a\":2,\"c\":3,\"b\":4}\n",
+        "expected": {
+          "columns": ["b", "a", "c"],
+          "rows": [
+            [1, null, null],
+            [4, 2, 3]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames on json object rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object",
+      "columnNames": ["b", "z"]
+    },
+    "tests": [
+      {
+        "description": "a key no row has is a null column",
+        "data": "[{\"a\":1},{\"a\":2,\"b\":3}]",
+        "expected": {
+          "columns": ["b", "z"],
+          "rows": [
+            [null, null],
+            [3, null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl object rows with a key first seen after a hundred lines",
+    "comment": "Polars infers the columns from the first 100 lines by default and drops a key seen later",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "the late key is a column",
+        "data": "{\"a\":0}\n{\"a\":1}\n{\"a\":2}\n{\"a\":3}\n{\"a\":4}\n{\"a\":5}\n{\"a\":6}\n{\"a\":7}\n{\"a\":8}\n{\"a\":9}\n{\"a\":10}\n{\"a\":11}\n{\"a\":12}\n{\"a\":13}\n{\"a\":14}\n{\"a\":15}\n{\"a\":16}\n{\"a\":17}\n{\"a\":18}\n{\"a\":19}\n{\"a\":20}\n{\"a\":21}\n{\"a\":22}\n{\"a\":23}\n{\"a\":24}\n{\"a\":25}\n{\"a\":26}\n{\"a\":27}\n{\"a\":28}\n{\"a\":29}\n{\"a\":30}\n{\"a\":31}\n{\"a\":32}\n{\"a\":33}\n{\"a\":34}\n{\"a\":35}\n{\"a\":36}\n{\"a\":37}\n{\"a\":38}\n{\"a\":39}\n{\"a\":40}\n{\"a\":41}\n{\"a\":42}\n{\"a\":43}\n{\"a\":44}\n{\"a\":45}\n{\"a\":46}\n{\"a\":47}\n{\"a\":48}\n{\"a\":49}\n{\"a\":50}\n{\"a\":51}\n{\"a\":52}\n{\"a\":53}\n{\"a\":54}\n{\"a\":55}\n{\"a\":56}\n{\"a\":57}\n{\"a\":58}\n{\"a\":59}\n{\"a\":60}\n{\"a\":61}\n{\"a\":62}\n{\"a\":63}\n{\"a\":64}\n{\"a\":65}\n{\"a\":66}\n{\"a\":67}\n{\"a\":68}\n{\"a\":69}\n{\"a\":70}\n{\"a\":71}\n{\"a\":72}\n{\"a\":73}\n{\"a\":74}\n{\"a\":75}\n{\"a\":76}\n{\"a\":77}\n{\"a\":78}\n{\"a\":79}\n{\"a\":80}\n{\"a\":81}\n{\"a\":82}\n{\"a\":83}\n{\"a\":84}\n{\"a\":85}\n{\"a\":86}\n{\"a\":87}\n{\"a\":88}\n{\"a\":89}\n{\"a\":90}\n{\"a\":91}\n{\"a\":92}\n{\"a\":93}\n{\"a\":94}\n{\"a\":95}\n{\"a\":96}\n{\"a\":97}\n{\"a\":98}\n{\"a\":99}\n{\"a\":100}\n{\"a\":101,\"b\":\"x\"}\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [0, null],
+            [1, null],
+            [2, null],
+            [3, null],
+            [4, null],
+            [5, null],
+            [6, null],
+            [7, null],
+            [8, null],
+            [9, null],
+            [10, null],
+            [11, null],
+            [12, null],
+            [13, null],
+            [14, null],
+            [15, null],
+            [16, null],
+            [17, null],
+            [18, null],
+            [19, null],
+            [20, null],
+            [21, null],
+            [22, null],
+            [23, null],
+            [24, null],
+            [25, null],
+            [26, null],
+            [27, null],
+            [28, null],
+            [29, null],
+            [30, null],
+            [31, null],
+            [32, null],
+            [33, null],
+            [34, null],
+            [35, null],
+            [36, null],
+            [37, null],
+            [38, null],
+            [39, null],
+            [40, null],
+            [41, null],
+            [42, null],
+            [43, null],
+            [44, null],
+            [45, null],
+            [46, null],
+            [47, null],
+            [48, null],
+            [49, null],
+            [50, null],
+            [51, null],
+            [52, null],
+            [53, null],
+            [54, null],
+            [55, null],
+            [56, null],
+            [57, null],
+            [58, null],
+            [59, null],
+            [60, null],
+            [61, null],
+            [62, null],
+            [63, null],
+            [64, null],
+            [65, null],
+            [66, null],
+            [67, null],
+            [68, null],
+            [69, null],
+            [70, null],
+            [71, null],
+            [72, null],
+            [73, null],
+            [74, null],
+            [75, null],
+            [76, null],
+            [77, null],
+            [78, null],
+            [79, null],
+            [80, null],
+            [81, null],
+            [82, null],
+            [83, null],
+            [84, null],
+            [85, null],
+            [86, null],
+            [87, null],
+            [88, null],
+            [89, null],
+            [90, null],
+            [91, null],
+            [92, null],
+            [93, null],
+            [94, null],
+            [95, null],
+            [96, null],
+            [97, null],
+            [98, null],
+            [99, null],
+            [100, null],
+            [101, "x"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json object rows with a key first seen after a hundred rows",
+    "comment": "Polars infers the columns from the first rows by default and drops a key seen later",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json"
+    },
+    "tests": [
+      {
+        "description": "the late key is a column",
+        "data": "[{\"a\":0},{\"a\":1},{\"a\":2},{\"a\":3},{\"a\":4},{\"a\":5},{\"a\":6},{\"a\":7},{\"a\":8},{\"a\":9},{\"a\":10},{\"a\":11},{\"a\":12},{\"a\":13},{\"a\":14},{\"a\":15},{\"a\":16},{\"a\":17},{\"a\":18},{\"a\":19},{\"a\":20},{\"a\":21},{\"a\":22},{\"a\":23},{\"a\":24},{\"a\":25},{\"a\":26},{\"a\":27},{\"a\":28},{\"a\":29},{\"a\":30},{\"a\":31},{\"a\":32},{\"a\":33},{\"a\":34},{\"a\":35},{\"a\":36},{\"a\":37},{\"a\":38},{\"a\":39},{\"a\":40},{\"a\":41},{\"a\":42},{\"a\":43},{\"a\":44},{\"a\":45},{\"a\":46},{\"a\":47},{\"a\":48},{\"a\":49},{\"a\":50},{\"a\":51},{\"a\":52},{\"a\":53},{\"a\":54},{\"a\":55},{\"a\":56},{\"a\":57},{\"a\":58},{\"a\":59},{\"a\":60},{\"a\":61},{\"a\":62},{\"a\":63},{\"a\":64},{\"a\":65},{\"a\":66},{\"a\":67},{\"a\":68},{\"a\":69},{\"a\":70},{\"a\":71},{\"a\":72},{\"a\":73},{\"a\":74},{\"a\":75},{\"a\":76},{\"a\":77},{\"a\":78},{\"a\":79},{\"a\":80},{\"a\":81},{\"a\":82},{\"a\":83},{\"a\":84},{\"a\":85},{\"a\":86},{\"a\":87},{\"a\":88},{\"a\":89},{\"a\":90},{\"a\":91},{\"a\":92},{\"a\":93},{\"a\":94},{\"a\":95},{\"a\":96},{\"a\":97},{\"a\":98},{\"a\":99},{\"a\":100},{\"a\":101,\"b\":\"x\"}]",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [0, null],
+            [1, null],
+            [2, null],
+            [3, null],
+            [4, null],
+            [5, null],
+            [6, null],
+            [7, null],
+            [8, null],
+            [9, null],
+            [10, null],
+            [11, null],
+            [12, null],
+            [13, null],
+            [14, null],
+            [15, null],
+            [16, null],
+            [17, null],
+            [18, null],
+            [19, null],
+            [20, null],
+            [21, null],
+            [22, null],
+            [23, null],
+            [24, null],
+            [25, null],
+            [26, null],
+            [27, null],
+            [28, null],
+            [29, null],
+            [30, null],
+            [31, null],
+            [32, null],
+            [33, null],
+            [34, null],
+            [35, null],
+            [36, null],
+            [37, null],
+            [38, null],
+            [39, null],
+            [40, null],
+            [41, null],
+            [42, null],
+            [43, null],
+            [44, null],
+            [45, null],
+            [46, null],
+            [47, null],
+            [48, null],
+            [49, null],
+            [50, null],
+            [51, null],
+            [52, null],
+            [53, null],
+            [54, null],
+            [55, null],
+            [56, null],
+            [57, null],
+            [58, null],
+            [59, null],
+            [60, null],
+            [61, null],
+            [62, null],
+            [63, null],
+            [64, null],
+            [65, null],
+            [66, null],
+            [67, null],
+            [68, null],
+            [69, null],
+            [70, null],
+            [71, null],
+            [72, null],
+            [73, null],
+            [74, null],
+            [75, null],
+            [76, null],
+            [77, null],
+            [78, null],
+            [79, null],
+            [80, null],
+            [81, null],
+            [82, null],
+            [83, null],
+            [84, null],
+            [85, null],
+            [86, null],
+            [87, null],
+            [88, null],
+            [89, null],
+            [90, null],
+            [91, null],
+            [92, null],
+            [93, null],
+            [94, null],
+            [95, null],
+            [96, null],
+            [97, null],
+            [98, null],
+            [99, null],
+            [100, null],
+            [101, "x"]
+          ]
+        }
+      }
+    ]
   }
 ]

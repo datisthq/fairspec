@@ -174,7 +174,7 @@
       },
       {
         "description": "skips missing values",
-        "data": "price\n0.5\n\n2.0\n",
+        "data": "price,note\n0.5,a\n,b\n2.0,c\n",
         "expected": {
           "columns": ["a"],
           "rows": [[1.25]]
@@ -253,7 +253,7 @@
     "tests": [
       {
         "description": "counts each value once and skips nulls",
-        "data": "city\nparis\nrome\nparis\n\n",
+        "data": "city,note\nparis,a\nrome,b\nparis,c\n,d\n",
         "expected": {
           "columns": ["n"],
           "rows": [[2]]
@@ -275,7 +275,7 @@
     "tests": [
       {
         "description": "skips missing values",
-        "data": "count\n1\n\n3\n",
+        "data": "count,note\n1,a\n,b\n3,c\n",
         "expected": {
           "columns": ["total"],
           "rows": [[4]]

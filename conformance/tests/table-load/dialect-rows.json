@@ -1,0 +1,626 @@
+[
+  {
+    "description": "short rows in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "the cells a row lacks are null",
+        "data": "a,b,c\n1,2,x\n3,4\n5\n",
+        "expected": {
+          "columns": ["a", "b", "c"],
+          "rows": [
+            [1, 2, "x"],
+            [3, 4, null],
+            [5, null, null]
+          ]
+        }
+      },
+      {
+        "description": "a short last row without a terminator",
+        "data": "a,b\n1,x\n2",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [1, "x"],
+            [2, null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "short rows in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#tsv",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "the cells a row lacks are null",
+        "data": "a\tb\tc\n1\t2\tx\n3\n",
+        "expected": {
+          "columns": ["a", "b", "c"],
+          "rows": [
+            [1, 2, "x"],
+            [3, null, null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "short rows in a headerless csv",
+    "comment": "With columnNames the table has two columns, so the three-cell row is a long row",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false,
+      "columnNames": ["a", "b"]
+    },
+    "tests": [
+      {
+        "description": "the first row sets no width: a later longer row cannot be read",
+        "data": "1,2\n3,4,5\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "long rows in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a row with more cells than the header cannot be loaded",
+        "data": "a,b\n1,2\n3,4,5\n",
+        "throws": true
+      },
+      {
+        "description": "a trailing delimiter is one more cell",
+        "data": "a,b\n1,2,\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "long rows in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#tsv",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "a row with more cells than the header cannot be loaded",
+        "data": "a\tb\n1\t2\t3\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "duplicate header names in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a repeated name is an error",
+        "data": "a,b,a\n1,2,3\n",
+        "throws": true
+      },
+      {
+        "description": "two empty names are a repeated name",
+        "data": "a,,\n1,2,3\n",
+        "throws": true
+      },
+      {
+        "description": "names differing only in case are different",
+        "data": "a,A\n1,2\n",
+        "expected": {
+          "columns": ["a", "A"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "duplicate header names in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#tsv",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "a repeated name is an error",
+        "data": "a\ta\n1\t2\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "duplicate names joined from several header rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "two columns joining to one name are an error",
+        "data": "x,x\ny,y\n1,2\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "an empty header name",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "an empty name is a valid name",
+        "data": "a,,c\n1,2,3\n",
+        "expected": {
+          "columns": ["a", "", "c"],
+          "rows": [[1, 2, 3]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a blank line between rows is not a row",
+        "data": "a,b\n1,2\n\n3,4\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [1, 2],
+            [3, 4]
+          ]
+        }
+      },
+      {
+        "description": "blank lines before the header are not rows",
+        "data": "\n\na,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      },
+      {
+        "description": "blank lines at the end are not rows",
+        "data": "a,b\n1,2\n\n\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      },
+      {
+        "description": "a crlf blank line is not a row",
+        "data": "a,b\r\n1,2\r\n\r\n3,4\r\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [1, 2],
+            [3, 4]
+          ]
+        }
+      },
+      {
+        "description": "a line of delimiters is a row of nulls",
+        "data": "a,b,c\n1,2,3\n,,\n",
+        "expected": {
+          "columns": ["a", "b", "c"],
+          "rows": [
+            [1, 2, 3],
+            [null, null, null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a quoted empty line in csv",
+    "comment": "A declared schema, since inference reads an empty string as a missing value",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a row holding an empty string",
+        "data": "a\nx\n\"\"\n\ny\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [["x"], [""], ["y"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#tsv",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "a blank line between rows is not a row",
+        "data": "a\tb\n1\t2\n\n3\t4\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [
+            [1, 2],
+            [3, 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines take no row number in csv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [2]
+    },
+    "tests": [
+      {
+        "description": "commentRows counts rows, not blank lines",
+        "data": "a,b\n\n1,2\n3,4\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[3, 4]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines take no row number above the header",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2]
+    },
+    "tests": [
+      {
+        "description": "headerRows counts rows, not blank lines",
+        "data": "x,y\n\na,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines take no row number in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#tsv",
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "commentRows": [2]
+    },
+    "tests": [
+      {
+        "description": "commentRows counts rows, not blank lines",
+        "data": "a\tb\n\n1\t2\n3\t4\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[3, 4]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines in jsonl",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "a blank line between objects is not a row",
+        "data": "{\"a\":1}\n\n{\"a\":2}\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1], [2]]
+        }
+      },
+      {
+        "description": "blank lines at the end are not rows",
+        "data": "{\"a\":1}\n\n\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "blank lines take no row number in jsonl",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array",
+      "commentRows": [2]
+    },
+    "tests": [
+      {
+        "description": "commentRows counts lines that are rows",
+        "data": "[\"a\"]\n\n[1]\n[2]\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "the mark is not part of the first name",
+        "data": "﻿a,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in csv without a dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "tests": [
+      {
+        "description": "the mark is not part of the first name",
+        "data": "﻿a,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in a headerless csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false
+    },
+    "tests": [
+      {
+        "description": "the mark is not part of the first cell",
+        "data": "﻿x,1\ny,2\n",
+        "expected": {
+          "columns": ["column1", "column2"],
+          "rows": [
+            ["x", 1],
+            ["y", 2]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "the mark is not part of the first name",
+        "data": "﻿a\tb\n1\t2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in json",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json"
+    },
+    "tests": [
+      {
+        "description": "the document is read after the mark",
+        "data": "﻿[{\"a\":1},{\"a\":2}]",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in json without a dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "format": "json",
+    "tests": [
+      {
+        "description": "the document is read after the mark",
+        "data": "﻿[{\"a\":1},{\"a\":2}]",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in jsonl",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "the first line is read after the mark",
+        "data": "﻿{\"a\":1}\n{\"a\":2}\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark in jsonl without a dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#file-formats"],
+    "format": "jsonl",
+    "tests": [
+      {
+        "description": "the first line is read after the mark",
+        "data": "﻿{\"a\":1}\n{\"a\":2}\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark before a blank line",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#file-formats",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "the blank line after the mark is not a row",
+        "data": "﻿\na,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark before a blank line in a headerless csv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#file-formats",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false
+    },
+    "tests": [
+      {
+        "description": "the blank line after the mark is not a row",
+        "data": "﻿\n1,2\n",
+        "expected": {
+          "columns": ["column1", "column2"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a utf-8 byte order mark before a quoted name holding a blank line",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#file-formats",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tableSchema": {
+      "properties": {
+        "a\n\nb": {
+          "type": "string"
+        },
+        "c": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the quote after the mark opens the cell",
+        "data": "﻿\"a\n\nb\",c\nx,y\n",
+        "expected": {
+          "columns": ["a\n\nb", "c"],
+          "rows": [["x", "y"]]
+        }
+      }
+    ]
+  }
+]

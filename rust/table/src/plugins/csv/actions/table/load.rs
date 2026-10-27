@@ -12,11 +12,12 @@ use crate::actions::table::file_dialect::{join_header_rows, skip_comment_rows};
 use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
-use crate::helpers::file_dialect::{get_comment_rows, get_header_rows};
+use crate::helpers::file_dialect::{assert_unique_column_names, get_comment_rows, get_header_rows};
 use crate::helpers::table::LazyFrameExt;
 use crate::models::table::{LoadTableOptions, Table};
 use crate::plugins::csv::actions::file_dialect::infer::infer_csv_file_dialect;
 use crate::plugins::csv::helpers::delimiter::{restore_delimiter, swap_delimiter};
+use crate::plugins::csv::helpers::rows::clean_csv_rows;
 use crate::settings::NUMBER_COLUMN_NAME;
 
 pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result<Table> {
@@ -48,6 +49,10 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         paths = swapped.paths.clone();
         file_dialect = swapped.file_dialect.clone();
     }
+    if let Some(cleaned) = clean_csv_rows(&paths, &file_dialect, options.preview_bytes)? {
+        paths = cleaned.paths;
+        file_dialect = cleaned.file_dialect;
+    }
     let first_path = &paths[0];
     let file_dialect = renumber_prefixed_rows(first_path, file_dialect)?;
 
@@ -57,11 +62,19 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
     let is_multi_header = header_rows.len() > 1 && column_names.is_none();
     let mut schema = scan.schema.clone();
     if is_multi_header {
-        schema = Some(get_headerless_schema(first_path, &scan)?);
+        schema = Some(get_headerless_schema(first_path, &scan, &header_rows)?);
     }
 
     let mut tables = Vec::new();
+    let mut header_width = 0;
     for path in &paths {
+        if scan.has_header {
+            let names = read_header_names(path, &scan)?;
+            if column_names.is_none() {
+                assert_unique_column_names(&names)?;
+            }
+            header_width = names.len();
+        }
         tables.push(
             scan.create_reader(path, schema.clone(), is_multi_header)
                 .finish()
@@ -85,9 +98,25 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
     } else if scan.has_header
         && let Some(column_names) = column_names
     {
-        // Names that replace a header go in by position, as polars' new_columns does
-        let count = column_names.len().min(names.len());
-        result = result.rename(&names[..count], &column_names[..count], true);
+        // The n-th name names the n-th column; fewer names than columns is an error,
+        // and more names add columns that are null in every row
+        if header_width > column_names.len() {
+            return Err(Error::Load(format!(
+                "The file has {header_width} columns but columnNames has {}",
+                column_names.len()
+            )));
+        }
+        let mut exprs: Vec<Expr> = names
+            .iter()
+            .zip(column_names)
+            .map(|(name, new)| col(name.as_str()).alias(new.as_str()))
+            .collect();
+        exprs.extend(
+            column_names[names.len().min(column_names.len())..]
+                .iter()
+                .map(|name| lit(NULL).cast(DataType::String).alias(name.as_str())),
+        );
+        result = result.select(exprs);
     }
     if let Some(swapped) = &swapped {
         result = restore_delimiter(result, &swapped.swap)?;
@@ -166,7 +195,7 @@ impl CsvScan {
             _ => None,
         };
         CsvScan {
-            skip_rows: header_rows.first().map_or(0, |row| row - 1),
+            skip_rows: header_rows.first().map_or(0, |row| row.saturating_sub(1)),
             has_header,
             eol_char,
             separator,
@@ -185,7 +214,7 @@ impl CsvScan {
     ) -> LazyCsvReader {
         let mut reader = LazyCsvReader::new(PlRefPath::new(path))
             .with_infer_schema_length(Some(0))
-            .with_truncate_ragged_lines(true)
+            .with_truncate_ragged_lines(false)
             .with_skip_rows(self.skip_rows)
             .with_has_header(self.has_header)
             .with_eol_char(self.eol_char)
@@ -198,8 +227,9 @@ impl CsvScan {
             )
             .with_comment_prefix(self.comment_prefix.as_deref().map(Into::into))
             .with_schema(schema);
-        if is_multi_header {
-            // A first header row may be shorter than the rows below it
+        if is_multi_header || (self.schema.is_some() && !self.has_header) {
+            // A first header row may be shorter than the rows below it, and columnNames
+            // may name more columns than the file has
             reader = reader
                 .with_missing_columns_policy(Some(MissingColumnsPolicy::Insert))
                 .with_missing_is_null(true);
@@ -240,6 +270,7 @@ fn renumber_prefixed_rows(path: &str, mut file_dialect: FileDialect) -> Result<F
 
     let table = CsvScan::new(&file_dialect)
         .create_reader(path, None, false)
+        .with_truncate_ragged_lines(true)
         .with_skip_rows(0)
         .with_has_header(false)
         .with_null_values(None)
@@ -304,11 +335,15 @@ fn renumber_prefixed_rows(path: &str, mut file_dialect: FileDialect) -> Result<F
 }
 
 // Header rows are joined from the data, so every column is read as text and the
-// widest of the first rows sets the width: a first header row may be shorter
-fn get_headerless_schema(path: &str, scan: &CsvScan) -> Result<SchemaRef> {
+// widest header row sets the width: a first header row may be shorter, and a data
+// row wider than every header row is a long row
+fn get_headerless_schema(path: &str, scan: &CsvScan, header_rows: &[usize]) -> Result<SchemaRef> {
+    let first = header_rows.iter().min().copied().unwrap_or(1);
+    let last = header_rows.iter().max().copied().unwrap_or(1);
     let names = scan
         .create_reader(path, None, false)
-        .with_infer_schema_length(Some(100))
+        .with_truncate_ragged_lines(true)
+        .with_infer_schema_length(Some(last - first + 1))
         .finish()
         .into_result()?
         .collect_schema()
@@ -319,6 +354,33 @@ fn get_headerless_schema(path: &str, scan: &CsvScan) -> Result<SchemaRef> {
             .map(|name| Field::new(name.clone(), DataType::String))
             .collect::<Schema>(),
     ))
+}
+
+// Polars renames a repeated header name, so the names are read as a data row
+fn read_header_names(path: &str, scan: &CsvScan) -> Result<Vec<String>> {
+    let frame = scan
+        .create_reader(path, None, false)
+        .with_has_header(false)
+        .with_null_values(None)
+        .with_truncate_ragged_lines(true)
+        .finish()
+        .into_result()?
+        .limit(1)
+        .collect()
+        .into_result()?;
+    if frame.height() == 0 {
+        return Ok(Vec::new());
+    }
+    let row = frame.get_row(0).into_result()?;
+    Ok(row
+        .0
+        .iter()
+        .map(|cell| match cell {
+            AnyValue::String(text) => text.to_string(),
+            AnyValue::StringOwned(text) => text.to_string(),
+            _ => String::new(),
+        })
+        .collect())
 }
 
 fn get_column_names(file_dialect: &FileDialect) -> Option<&Vec<String>> {

@@ -373,5 +373,244 @@
         }
       }
     ]
+  },
+  {
+    "description": "headerRows [1, 3]",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 3]
+    },
+    "tests": [
+      {
+        "description": "the row between the header rows is dropped",
+        "data": "a,b\nskip,me\nc,d\n1,2\n",
+        "expected": {
+          "columns": ["a c", "b d"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [3]",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [3]
+    },
+    "tests": [
+      {
+        "description": "every row above the header row is consumed",
+        "data": "x,y\n1,2\na,b\n3,4\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[3, 4]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows []",
+    "comment": "The spec does not name the columns of a headerless file without columnNames; both libraries use column1, column2, …",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": []
+    },
+    "tests": [
+      {
+        "description": "the file has no header",
+        "data": "1,2\n3,4\n",
+        "expected": {
+          "columns": ["column1", "column2"],
+          "rows": [
+            [1, 2],
+            [3, 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [] in json arrays",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": []
+    },
+    "tests": [
+      {
+        "description": "every array is a row",
+        "data": "[[1,2],[3,4]]",
+        "expected": {
+          "columns": ["column1", "column2"],
+          "rows": [
+            [1, 2],
+            [3, 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a header row past the end of the file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [3]
+    },
+    "tests": [
+      {
+        "description": "is an error",
+        "data": "a,b\n1,2\n",
+        "throws": true
+      },
+      {
+        "description": "is an error for an empty file with a header row only",
+        "data": "a,b\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "the last row as the header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2]
+    },
+    "tests": [
+      {
+        "description": "the table has no rows",
+        "data": "x,y\na,b\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": []
+        }
+      }
+    ]
+  },
+  {
+    "description": "a header row past the end of a json file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": [1, 3]
+    },
+    "tests": [
+      {
+        "description": "is an error",
+        "data": "[[\"a\",\"b\"],[1,2]]",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "an empty first cell in a header row",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "adds nothing to the join",
+        "data": ",x\na,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "x b"],
+          "rows": [[1, 2]]
+        }
+      },
+      {
+        "description": "an empty second header row adds nothing",
+        "data": "a,b\n,\n1,2\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "an empty first cell with headerJoin",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2],
+      "headerJoin": "_"
+    },
+    "tests": [
+      {
+        "description": "adds nothing to the join",
+        "data": ",x\na,b\n1,2\n",
+        "expected": {
+          "columns": ["a", "x_b"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a long row under several header rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "a row wider than every header row cannot be loaded",
+        "data": "a,b\nc,d\n1,2,3\n",
+        "throws": true
+      },
+      {
+        "description": "a wide row far below the header cannot be loaded",
+        "data": "a,b\nc,d\n0,0\n1,1\n2,2\n3,3\n4,4\n5,5\n6,6\n7,7\n8,8\n9,9\n10,10\n11,11\n12,12\n13,13\n14,14\n15,15\n16,16\n17,17\n18,18\n19,19\n20,20\n21,21\n22,22\n23,23\n24,24\n25,25\n26,26\n27,27\n28,28\n29,29\n30,30\n31,31\n32,32\n33,33\n34,34\n35,35\n36,36\n37,37\n38,38\n39,39\n40,40\n41,41\n42,42\n43,43\n44,44\n45,45\n46,46\n47,47\n48,48\n49,49\n50,50\n51,51\n52,52\n53,53\n54,54\n55,55\n56,56\n57,57\n58,58\n59,59\n60,60\n61,61\n62,62\n63,63\n64,64\n65,65\n66,66\n67,67\n68,68\n69,69\n70,70\n71,71\n72,72\n73,73\n74,74\n75,75\n76,76\n77,77\n78,78\n79,79\n80,80\n81,81\n82,82\n83,83\n84,84\n85,85\n86,86\n87,87\n88,88\n89,89\n90,90\n91,91\n92,92\n93,93\n94,94\n95,95\n96,96\n97,97\n98,98\n99,99\n100,100\n101,101\n102,102\n103,103\n104,104\n105,105\n106,106\n107,107\n108,108\n109,109\n110,110\n111,111\n112,112\n113,113\n114,114\n115,115\n116,116\n117,117\n118,118\n119,119\n120,120\n121,121\n122,122\n123,123\n124,124\n125,125\n126,126\n127,127\n128,128\n129,129\n130,130\n131,131\n132,132\n133,133\n134,134\n135,135\n136,136\n137,137\n138,138\n139,139\n140,140\n141,141\n142,142\n143,143\n144,144\n145,145\n146,146\n147,147\n148,148\n149,149\n9,9,9\n",
+        "throws": true
+      },
+      {
+        "description": "a trailing delimiter is one more cell",
+        "data": "a,b\nc,d\n1,2,\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "a short first header row above short data rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "the widest header row sets the width",
+        "data": "x\na,b,c\n1,2,3\n4\n",
+        "expected": {
+          "columns": ["x a", "x b", "x c"],
+          "rows": [
+            [1, 2, 3],
+            [4, null, null]
+          ]
+        }
+      }
+    ]
   }
 ]

@@ -1,0 +1,36 @@
+[
+  {
+    "description": "tsv has no quoting",
+    "specification": ["https://fairspec.org/specs/file-dialect/#tsv"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "a double quote is a literal character",
+        "data": "a\tb\n\"x\"\t\"y\"\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [["\"x\"", "\"y\""]]
+        }
+      },
+      {
+        "description": "a tab inside quotes still separates cells",
+        "data": "a\tb\n\"x\ty\"\n",
+        "expected": {
+          "columns": ["a", "b"],
+          "rows": [["\"x", "y\""]]
+        }
+      },
+      {
+        "description": "a quote does not join lines",
+        "data": "a\n\"x\ny\"\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [["\"x"], ["y\""]]
+        }
+      }
+    ]
+  }
+]

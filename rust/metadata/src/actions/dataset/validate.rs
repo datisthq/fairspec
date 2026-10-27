@@ -6,6 +6,7 @@ use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::load::load_descriptor_source;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
+use crate::actions::file_dialect::inspect::inspect_file_dialect;
 use crate::actions::file_dialect::validate::validate_file_dialect;
 use crate::actions::frictionless::convert::{FrictionlessKind, prepare_frictionless_descriptor};
 use crate::actions::frictionless::mapping::{FrictionlessMapping, map_frictionless_errors};
@@ -82,9 +83,18 @@ pub fn validate_dataset_descriptor(
         }
         let root_json_pointer = Some(root_json_pointer.as_str());
 
-        if let Some(PathOr::Path(path)) = &resource.file_dialect {
-            let result = validate_file_dialect(path.as_str(), root_json_pointer)?;
-            report.errors.extend(result.errors);
+        match &resource.file_dialect {
+            Some(PathOr::Path(path)) => {
+                let result = validate_file_dialect(path.as_str(), root_json_pointer)?;
+                report.errors.extend(result.errors);
+            }
+            Some(PathOr::Value(file_dialect)) => {
+                let pointer = format!("{}/fileDialect", root_json_pointer.unwrap_or_default());
+                report
+                    .errors
+                    .extend(inspect_file_dialect(file_dialect, Some(pointer.as_str())));
+            }
+            None => {}
         }
 
         if let Some(PathOr::Path(path)) = &resource.data_schema {

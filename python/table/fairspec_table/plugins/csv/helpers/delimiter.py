@@ -111,7 +111,7 @@ def _find_absent_byte(
 
 
 def _get_is_byte_present(path: str, needle: bytes, max_bytes: int | None) -> bool:
-    return any(needle in chunk for chunk in _read_chunks(path, max_bytes))
+    return any(needle in chunk for chunk in read_file_chunks(path, max_bytes))
 
 
 def _swap_file_delimiter(
@@ -122,7 +122,7 @@ def _swap_file_delimiter(
     target = get_temp_file_path(format="csv")
     carry = b""
     with open(target, "wb") as output:
-        for chunk in _read_chunks(path, max_bytes):
+        for chunk in read_file_chunks(path, max_bytes):
             data = carry + chunk
             # A delimiter cut by the chunk boundary waits for the next chunk
             cut = len(data)
@@ -137,7 +137,7 @@ def _swap_file_delimiter(
 
 
 # A preview reads only its first bytes, so neither pass reads past them
-def _read_chunks(path: str, max_bytes: int | None) -> Iterator[bytes]:
+def read_file_chunks(path: str, max_bytes: int | None) -> Iterator[bytes]:
     read = 0
     with open(path, "rb") as file:
         while chunk := file.read(

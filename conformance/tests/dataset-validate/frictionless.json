@@ -137,7 +137,7 @@
       {
         "description": "NA is null",
         "data": {
-          "readings.csv": "value\n1\nNA\n\n"
+          "readings.csv": "value,note\n1,a\nNA,b\n,c\n"
         },
         "valid": true
       },

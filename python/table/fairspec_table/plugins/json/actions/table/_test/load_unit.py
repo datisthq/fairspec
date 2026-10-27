@@ -40,6 +40,31 @@ class TestLoadJsonTable:
 
         read_json.assert_called_once()
 
+    def test_should_ignore_a_byte_order_mark(self):
+        path = write_temp_file('\ufeff[{"id":1}]', format="json")
+
+        table = load_json_table(Resource(data=path))
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1}]
+
+    def test_should_order_the_columns_by_the_first_row_a_key_is_seen_in(self):
+        path = write_temp_file('[{"b":1},{"a":2,"b":3}]', format="json")
+
+        table = load_json_table(Resource(data=path), denormalized=True)
+        assert table is not None
+
+        assert table.collect_schema().names() == ["b", "a"]
+
+    def test_should_order_jsonl_columns_by_the_first_line_a_key_is_seen_in(self):
+        path = write_temp_file('{"b":1}\n{"a":2,"b":3}\n', format="jsonl")
+
+        table = load_json_table(Resource(data=path), denormalized=True)
+        assert table is not None
+
+        assert table.collect_schema().names() == ["b", "a"]
+
     def test_should_fall_back_when_the_native_reader_refuses_the_rows(self):
         path = write_temp_file('[{"id":1},5,{"id":2}]')
 
@@ -181,7 +206,7 @@ class TestLoadJsonTableJsonl:
             assert table is not None
             table.collect()
 
-        scan_ndjson.assert_called_once_with(path)
+        scan_ndjson.assert_called_once_with(path, infer_schema_length=None)
 
     def test_should_load_local_file_multipart(self):
         body = '{"id":1,"name":"english"}\n{"id":2,"name":"中文"}'

@@ -54,7 +54,8 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
    spec now pins error order (`table-schema.md` and `dataset.md` "Validation", including the
    keyword order of several failures on one cell), null foreign keys, typed key comparison, the
    number grammar and int64 range, RFC 3339 temporal defaults, the string formats, list splitting,
-   CSV/TSV row structure, `headerRows` and RFC 6901 pointers. When it is silent and the answer is
+   CSV/TSV row structure, blank lines and the BOM, `headerRows`, `columnNames`, object-row key
+   order, invalid dialects and RFC 6901 pointers. When it is silent and the answer is
    normative, ask, then write the decision into the spec as `fix(standard)`; when it is only
    library shape (inferred dialects, data-schema inference, error field rendering), follow
    TypeScript and say so in the group's `comment`
@@ -112,6 +113,30 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `headerRows` and `commentRows` count every row of the file: the CSV loaders renumber both past
   the prefixed rows above them before scanning (`renumberPrefixedRows` and its twins). Polars' native JSONL scan reads only
   object lines, so a default dialect peeks at the first item and takes array rows when it is one
+- Polars reads a blank line as a row of nulls (a `,,` row looks the same afterwards) and a quoted
+  `nullSequence` as null: the CSV loaders' `cleanCsvRows` (and twins) copy a file holding a
+  blank line, or read with a `nullSequence`, with blank lines dropped and unquoted sequences
+  emptied, in a quote-aware pass that leaves header and comment rows alone. A file without
+  either is never copied; the copy drops a leading BOM, so a blank line or quote after it reads
+  as at the start. Long rows load with `truncateRaggedLines` off. Several header rows are read
+  headerless at the widest header row's width (inferred from the header rows only, never 100
+  rows, or a long data row widens it); nodejs-polars refuses a first row shorter than that
+  schema, so TypeScript truncates there and `cleanCsvRows` copies the file to fail on a wider
+  data row. `validateTable` reports the long-row error as `resource/type`
+  (`getIsLongRowError`), never another load failure
+- Polars renames a repeated header name (`_duplicated_`) and an empty-named Series of a new
+  frame (`column_0`): the CSV loaders read the header row as data to check it
+  (`assertUniqueColumnNames`), and the sheet loaders rename by position after building the frame
+- Polars orders the union of uneven JSON object rows by its own merge rule: the native JSON and
+  JSONL reads keep their columns only when they equal the first row's keys, reordered to them,
+  and otherwise fall back to decoding, which takes keys first-seen. Neither native reader skips
+  a UTF-8 BOM, so a file starting with one is decoded too. Every JSON read, native or from
+  decoded records, infers its columns from all rows: Polars' default 50 or 100 drops a key
+  first seen later
+- A row in both `headerRows` and `commentRows` is checked by `inspectFileDialect` (and twins) in
+  `validateFileDialect` and in the dataset validator, at `…/commentRows`; `resolveFileDialect`
+  asserts every inline dialect, so a load never reads a file through an invalid one. Profile
+  errors for a dialect differ by validator, so those cases compare `valid` only
 - Polars splits CSV cells on one byte, while a `delimiter` is one Unicode character: the CSV
   loaders' `swapDelimiter` (and its twins) copies the files with a multi-byte delimiter swapped
   for a control byte none of them holds, then swaps it back in every cell and name. The

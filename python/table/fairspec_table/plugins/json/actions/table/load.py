@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 from typing import TYPE_CHECKING, Unpack, cast
 
 import polars as pl
@@ -60,16 +61,29 @@ def load_json_table(
 
     tables: list[Table] = []
     for path in paths:
-        if is_lines and is_default and not _get_is_first_item_array(path):
-            table = pl.scan_ndjson(path)
-            tables.append(table)
-            continue
+        # Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
+        is_native = is_default and not _get_has_byte_order_mark(path)
+        if is_lines and is_native and not _get_is_first_item_array(path):
+            keys = _read_first_line_keys(path)
+            table = (
+                _order_first_seen_columns(
+                    pl.scan_ndjson(path, infer_schema_length=None), keys
+                )
+                if keys is not None
+                else None
+            )
+            if table is not None:
+                tables.append(table)
+                continue
 
         buffer = load_file(path)
-        frame = _read_object_array(buffer) if not is_lines and is_default else None
-        if frame is not None:
-            tables.append(frame.lazy())
-            continue
+        frame = _read_object_array(buffer) if not is_lines and is_native else None
+        frame_keys = _read_first_object_keys(buffer) if frame is not None else None
+        if frame is not None and frame_keys is not None:
+            table = _order_first_seen_columns(frame.lazy(), frame_keys)
+            if table is not None:
+                tables.append(table)
+                continue
 
         records = _get_records_from_json(
             decode_json_buffer(buffer, is_lines=is_lines), file_dialect
@@ -102,14 +116,71 @@ def _is_default_dialect(dialect: FileDialect) -> bool:
     return True
 
 
-# An empty array has no records to take the columns from
+# An empty array has no records to take the columns from, and polars takes a key first
+# seen after the rows it infers from as no column at all
 def _create_records_frame(
     records: list[DataRecord], dialect: FileDialect
 ) -> pl.DataFrame:
     column_names: list[str] | None = getattr(dialect, "columnNames", None)
     if records or not column_names:
-        return pl.DataFrame(records)
+        return pl.DataFrame(records, infer_schema_length=None)
     return pl.DataFrame(schema={name: pl.String for name in column_names})
+
+
+# The union of the keys is the first row's keys in their order unless a later row
+# adds one, whose place then needs every row read in order
+def _order_first_seen_columns(table: Table, keys: list[str]) -> Table | None:
+    columns = table.collect_schema().names()
+    if len(columns) != len(keys) or set(columns) != set(keys):
+        return None
+    return table.select(keys)
+
+
+def _get_has_byte_order_mark(path: str) -> bool:
+    with load_file_stream(path) as stream:
+        return stream.read(3) == b"\xef\xbb\xbf"
+
+
+def _read_first_line_keys(path: str) -> list[str] | None:
+    line = b""
+    with load_file_stream(path) as stream:
+        while chunk := stream.read(65536):
+            line += chunk
+            if b"\n" in chunk:
+                break
+    return _get_object_keys(line.split(b"\n", 1)[0])
+
+
+def _read_first_object_keys(data: bytes) -> list[str] | None:
+    start = data.find(b"{")
+    depth = 0
+    is_string = False
+    index = start
+    while 0 <= index < len(data):
+        byte = data[index]
+        if is_string:
+            if byte == 0x5C:
+                index += 1
+            elif byte == 0x22:
+                is_string = False
+        elif byte == 0x22:
+            is_string = True
+        elif byte in (0x7B, 0x5B):
+            depth += 1
+        elif byte in (0x7D, 0x5D):
+            depth -= 1
+            if depth == 0:
+                return _get_object_keys(data[start : index + 1])
+        index += 1
+    return None
+
+
+def _get_object_keys(text: bytes) -> list[str] | None:
+    try:
+        value = json.loads(text)
+    except ValueError:
+        return None
+    return list(value) if isinstance(value, dict) else None
 
 
 # Polars reads only object lines, while a default dialect takes array rows when

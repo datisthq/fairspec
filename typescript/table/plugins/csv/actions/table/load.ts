@@ -14,6 +14,8 @@ import { inferCsvFileDialect } from "../../actions/fileDialect/infer.ts"
 import { NUMBER_COLUMN_NAME } from "../../../../settings.ts"
 import { getSupportedFileDialect } from "@fairspec/metadata"
 import { restoreDelimiter, swapDelimiter } from "../../helpers/delimiter.ts"
+import { cleanCsvRows } from "../../helpers/rows.ts"
+import { assertUniqueColumnNames } from "../../../../helpers/fileDialect.ts"
 
 export async function loadCsvTable(resource: Resource, options?: LoadTableOptions) {
   const maxBytes = options?.previewBytes
@@ -36,6 +38,11 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
     paths = swapped.paths
     fileDialect = swapped.fileDialect
   }
+  const cleaned = fileDialect && (await cleanCsvRows(paths, fileDialect, { maxBytes }))
+  if (cleaned) {
+    paths = cleaned.paths
+    fileDialect = cleaned.fileDialect
+  }
   if (fileDialect) {
     fileDialect = await renumberPrefixedRows(paths[0], fileDialect)
   }
@@ -43,11 +50,17 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   const scanOptions = getScanOptions(fileDialect)
   const isMultiHeader = getHeaderRows(fileDialect).length > 1 && !fileDialect?.columnNames
   if (isMultiHeader) {
-    scanOptions.schema = getHeaderlessSchema(paths[0], scanOptions)
+    scanOptions.schema = getHeaderlessSchema(paths[0], scanOptions, fileDialect)
+    // nodejs-polars refuses a first row shorter than a given schema unless it may
+    // truncate; cleanCsvRows has already failed on a long row
+    scanOptions.truncateRaggedLines = true
   }
 
   const tables: Table[] = []
   for (const path of paths) {
+    if (scanOptions.hasHeader && !fileDialect?.columnNames) {
+      assertUniqueColumnNames(await readHeaderNames(path, scanOptions))
+    }
     const table = pl.scanCSV(path, scanOptions)
     tables.push(table)
   }
@@ -85,7 +98,7 @@ function getScanOptions(fileDialect?: TsvFileDialect | CsvFileDialect) {
 
   const options: Partial<pl.ScanCsvOptions> = {
     inferSchemaLength: 0,
-    truncateRaggedLines: true,
+    truncateRaggedLines: false,
   }
 
   options.skipRows = headerRows[0] ? headerRows[0] - 1 : 0
@@ -103,19 +116,43 @@ function getScanOptions(fileDialect?: TsvFileDialect | CsvFileDialect) {
     options.schema = Object.fromEntries(
       fileDialect.columnNames.map(name => [name, pl.String]),
     )
+    options.missingColumns = "insert"
   }
 
   return options
 }
 
+// Polars renames a repeated header name, so the names are read as a data row
+async function readHeaderNames(path: string, options: Partial<pl.ScanCsvOptions>) {
+  const frame = await pl
+    .scanCSV(path, {
+      ...options,
+      hasHeader: false,
+      schema: undefined,
+      nullValues: undefined,
+      truncateRaggedLines: true,
+    })
+    .head(1)
+    .collect()
+  return frame.columns.map(name => {
+    const cell: unknown = frame.getColumn(name).get(0)
+    return typeof cell === "string" ? cell : ""
+  })
+}
+
 // Header rows are joined from the data, so every column is read as text and the
-// widest of the first rows sets the width: a first header row may be shorter
+// widest header row sets the width: a first header row may be shorter, and a data
+// row wider than every header row is a long row
 function getHeaderlessSchema(
   path: string | undefined,
   options: Partial<pl.ScanCsvOptions>,
+  fileDialect?: TsvFileDialect | CsvFileDialect,
 ) {
+  const headerRows = getHeaderRows(fileDialect)
+  const inferSchemaLength = Math.max(...headerRows) - Math.min(...headerRows) + 1
   const columns = path
-    ? pl.scanCSV(path, { ...options, inferSchemaLength: 100 }).columns
+    ? pl.scanCSV(path, { ...options, inferSchemaLength, truncateRaggedLines: true })
+        .columns
     : []
   return Object.fromEntries(columns.map(name => [name, pl.String]))
 }
@@ -137,6 +174,7 @@ async function renumberPrefixedRows(
     nullValues: undefined,
     commentPrefix: undefined,
     schema: undefined,
+    truncateRaggedLines: true,
   })
   const frame = await table
     .head(lastRow)

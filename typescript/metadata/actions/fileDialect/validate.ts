@@ -6,6 +6,7 @@ import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
 import { FileDialect } from "../../models/fileDialect/fileDialect.ts"
+import { inspectFileDialect } from "./inspect.ts"
 
 export async function validateFileDialect(
   source: FileDialect | Descriptor | string,
@@ -47,7 +48,13 @@ export async function validateFileDialect(
     })
     fileDialect = parsed.data
     report.errors.push(...parsed.errors)
+    if (fileDialect) {
+      report.errors.push(
+        ...inspectFileDialect(fileDialect, { rootJsonPointer: options?.rootJsonPointer }),
+      )
+    }
     report.valid = report.errors.length === 0
+    if (!report.valid) fileDialect = undefined
   }
 
   if (prepared.mapping) {

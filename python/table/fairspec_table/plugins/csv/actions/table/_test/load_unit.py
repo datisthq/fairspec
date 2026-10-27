@@ -3,7 +3,14 @@ from __future__ import annotations
 import polars as pl
 import pytest
 from fairspec_dataset import write_temp_file
-from fairspec_metadata import CsvFileDialect, Resource, TsvFileDialect
+from fairspec_metadata import (
+    CsvFileDialect,
+    IntegerColumnProperty,
+    Resource,
+    StringColumnProperty,
+    TableSchema,
+    TsvFileDialect,
+)
 
 from ..load import load_csv_table
 
@@ -331,3 +338,52 @@ class TestLoadCsvTableTsv:
             {"id": 1, "name": "english"},
             {"id": 2, "name": "中文"},
         ]
+
+    def test_should_fail_on_a_row_longer_than_the_header(self):
+        path = write_temp_file("id,name\n1,a,extra\n")
+
+        with pytest.raises(Exception, match="more fields"):
+            load_csv_table(Resource(data=path, fileDialect=CsvFileDialect())).collect()
+
+    def test_should_pad_a_short_row_with_nulls(self):
+        path = write_temp_file("id,name\n1\n")
+
+        table = load_csv_table(Resource(data=path, fileDialect=CsvFileDialect()))
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1, "name": None}]
+
+    def test_should_fail_on_a_repeated_header_name(self):
+        path = write_temp_file("id,id\n1,2\n")
+
+        with pytest.raises(Exception, match="repeated"):
+            load_csv_table(Resource(data=path, fileDialect=CsvFileDialect()))
+
+    def test_should_skip_blank_lines_without_numbering_them(self):
+        path = write_temp_file("id\n\n1\n\n2\n3\n")
+
+        table = load_csv_table(
+            Resource(data=path, fileDialect=CsvFileDialect(commentRows=[3]))
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1}, {"id": 3}]
+
+    def test_should_keep_a_quoted_null_sequence_as_text(self):
+        path = write_temp_file('id,name\n1,\\N\n2,"\\N"\n')
+
+        table = load_csv_table(
+            Resource(
+                data=path,
+                fileDialect=CsvFileDialect(nullSequence="\\N"),
+                tableSchema=TableSchema(
+                    properties={
+                        "id": IntegerColumnProperty(),
+                        "name": StringColumnProperty(),
+                    }
+                ),
+            )
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1, "name": None}, {"id": 2, "name": "\\N"}]

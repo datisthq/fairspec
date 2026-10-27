@@ -162,13 +162,16 @@ let resource = serde_json::from_value(json!({
 let table = load_xlsx_table(&resource, &LoadTableOptions::default())?;
 ```
 
-### Column Selection
+### Column Names
+
+The n-th name names the n-th column. A sheet with more columns than names fails to
+load; names past its last column add columns that are empty in every row.
 
 ```rust
 use fairspec::fairspec_table::{LoadTableOptions, load_xlsx_table};
 use serde_json::json;
 
-// Select specific columns
+// Name the three columns of the sheet
 let resource = serde_json::from_value(json!({
     "data": "data.ods",
     "fileDialect": {"format": "ods", "columnNames": ["name", "age", "city"]},

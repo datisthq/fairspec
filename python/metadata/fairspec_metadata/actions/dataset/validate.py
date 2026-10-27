@@ -6,6 +6,7 @@ from fairspec_metadata.actions.data_schema.validate import validate_data_schema
 from fairspec_metadata.actions.descriptor.load import load_descriptor
 from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
+from fairspec_metadata.actions.file_dialect.inspect import inspect_file_dialect
 from fairspec_metadata.actions.file_dialect.validate import validate_file_dialect
 from fairspec_metadata.actions.frictionless.convert import prepare_frictionless_descriptor
 from fairspec_metadata.actions.frictionless.mapping import map_frictionless_errors
@@ -94,6 +95,13 @@ def validate_dataset_descriptor(
                     root_json_pointer=root_json_pointer,
                 )
                 report.errors.extend(file_dialect_result.errors)
+            elif resource.fileDialect is not None:
+                report.errors.extend(
+                    inspect_file_dialect(
+                        resource.fileDialect,
+                        root_json_pointer=f"{root_json_pointer}/fileDialect",
+                    )
+                )
 
             if isinstance(resource.dataSchema, str):
                 data_schema_result = validate_data_schema(

@@ -8,7 +8,11 @@ from fairspec_metadata import (
     create_report,
     resolve_table_schema,
 )
-from fairspec_table import inspect_table, inspect_table_schema_patterns
+from fairspec_table import (
+    get_is_long_row_error,
+    inspect_table,
+    inspect_table_schema_patterns,
+)
 
 from fairspec_library.actions.file_dialect.infer import infer_file_dialect
 from fairspec_library.actions.table.load import load_table
@@ -20,6 +24,19 @@ if TYPE_CHECKING:
 
 
 def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) -> Report:
+    try:
+        return _validate_loadable_table(resource, **options)
+    except Exception as error:
+        if not get_is_long_row_error(error):
+            raise
+        return create_report(
+            [ResourceTypeError(type="resource/type", expectedResourceType="table")]
+        )
+
+
+def _validate_loadable_table(
+    resource: Resource, **options: Unpack[ValidateTableOptions]
+) -> Report:
     resource = resource.model_copy(deep=True)
 
     if not resource.fileDialect:

@@ -31,3 +31,24 @@ function fillHeaderRow(row: DataRow, width: number) {
 
   return labels
 }
+
+/**
+ * Throws when a header gives two columns one name; an empty name is a name too
+ */
+export function assertUniqueColumnNames(names: string[]) {
+  const seen = new Set<string>()
+  for (const name of names) {
+    if (seen.has(name)) throw new Error(`Column name "${name}" is repeated in the header`)
+    seen.add(name)
+  }
+}
+
+/**
+ * Tells a row with more cells than the table has columns, which Polars raises while
+ * reading, so a validator reports the file as not loadable instead of throwing
+ */
+export function getIsLongRowError(error: unknown) {
+  return (
+    error instanceof Error && error.message.includes("found more fields than defined")
+  )
+}

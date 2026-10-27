@@ -1,6 +1,10 @@
 import type { OdsFileDialect, XlsxFileDialect } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { getHeaderRows, joinHeaderLabels } from "../../../helpers/fileDialect.ts"
+import {
+  assertUniqueColumnNames,
+  getHeaderRows,
+  joinHeaderLabels,
+} from "../../../helpers/fileDialect.ts"
 import type { SheetCell } from "./sheet.ts"
 
 type SheetType = "number" | "boolean" | "date" | "string"
@@ -19,6 +23,15 @@ export function createTableFromSheetRows(
 
   const labels =
     fileDialect.columnNames ?? getSheetLabels(rows, content, headerRows, fileDialect)
+  if (!fileDialect.columnNames) assertUniqueColumnNames(labels)
+
+  const width = Math.max(
+    0,
+    ...rows.slice(headerRows[0] ? headerRows[0] - 1 : 0).map(getRowWidth),
+  )
+  if (fileDialect.columnNames && width > fileDialect.columnNames.length) {
+    throw new Error(`The sheet has ${width} columns but columnNames has ${labels.length}`)
+  }
 
   const columns = labels.map((_, index) => content.map(row => row[index] ?? null))
   const types = columns.map(getColumnType)
@@ -41,7 +54,12 @@ export function createTableFromSheetRows(
     return createSheetSeries(label, values, type)
   })
 
-  return pl.DataFrame(series).lazy()
+  // Polars names an unnamed series of a new frame by its position; an empty name stays
+  const frame = pl.DataFrame(series)
+  const names = Object.fromEntries(
+    frame.columns.map((name, index) => [name, labels[index] ?? name]),
+  )
+  return frame.rename(names).lazy()
 }
 
 /**
@@ -64,13 +82,18 @@ function getSheetLabels(
     return Array.from({ length: width }, (_, index) => `column${index + 1}`)
   }
 
-  const header = headerRows.flatMap(number => {
+  const header = headerRows.map(number => {
     const row = rows[number - 1]
-    return row ? [row.map(cell => formatSheetCell(cell) ?? "")] : []
+    if (!row) throw new Error(`Header row ${number} is past the end of the sheet`)
+    return row.map(cell => formatSheetCell(cell) ?? "")
   })
 
   if (header.length <= 1) return header[0] ?? []
   return joinHeaderLabels(header, fileDialect.headerJoin ?? " ")
+}
+
+function getRowWidth(row: SheetCell[]) {
+  return row.findLastIndex(cell => cell !== null) + 1
 }
 
 function getColumnType(cells: SheetCell[]) {

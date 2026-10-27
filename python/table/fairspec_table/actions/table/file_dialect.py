@@ -4,7 +4,11 @@ from typing import TYPE_CHECKING
 
 import polars as pl
 
-from fairspec_table.helpers.file_dialect import get_header_rows, join_header_labels
+from fairspec_table.helpers.file_dialect import (
+    assert_unique_column_names,
+    get_header_rows,
+    join_header_labels,
+)
 from fairspec_table.settings import QUERY_ENGINE, NUMBER_COLUMN_NAME
 
 if TYPE_CHECKING:
@@ -21,29 +25,31 @@ def join_header_rows(
     if len(header_rows) < 2:
         return table
 
+    # Every row up to the last header row is consumed by the header, listed or not
     skipped_rows = header_rows[0] - 1
-    if dialect.columnNames:
-        return _drop_rows(table, header_rows, skipped_rows + 1)
-
-    header_frame: pl.DataFrame = table.head(header_rows[-1] - skipped_rows).collect(  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+    last_header_row = header_rows[-1]
+    header_height = last_header_row - skipped_rows - (1 if dialect.columnNames else 0)
+    header_frame: pl.DataFrame = table.head(header_height).collect(  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         engine=QUERY_ENGINE
     )
-    header = [
-        list(header_frame.row(number - skipped_rows - 1))
-        if number - skipped_rows - 1 < header_frame.height
-        else []
-        for number in header_rows
-    ]
+    if header_frame.height < header_height:
+        raise Exception(f"Header row {last_header_row} is past the end of the file")
+    if dialect.columnNames:
+        return _drop_first_rows(table, header_height)
+
+    header = [list(header_frame.row(number - skipped_rows - 1)) for number in header_rows]
     header_join = dialect.headerJoin if dialect.headerJoin is not None else " "
     labels = join_header_labels(header, header_join)
 
     names = table.collect_schema().names()
-    mapping = {
-        name: labels[index] if index < len(labels) and labels[index] else name
-        for index, name in enumerate(names)
-    }
+    new_names = [
+        labels[index] if index < len(labels) else name for index, name in enumerate(names)
+    ]
+    assert_unique_column_names(new_names)
 
-    return _drop_rows(table, header_rows, skipped_rows).rename(mapping)
+    return _drop_first_rows(table, last_header_row - skipped_rows).rename(
+        dict(zip(names, new_names, strict=True))
+    )
 
 
 def skip_comment_rows(
@@ -56,6 +62,14 @@ def skip_comment_rows(
         return table
 
     return _drop_rows(table, dialect.commentRows, comment_offset)
+
+
+def _drop_first_rows(table: Table, count: int) -> Table:
+    return (
+        table.with_row_index(NUMBER_COLUMN_NAME, 1)
+        .filter(pl.col(NUMBER_COLUMN_NAME) > count)
+        .drop(NUMBER_COLUMN_NAME)
+    )
 
 
 def _drop_rows(table: Table, numbers: list[int], offset: int) -> Table:
