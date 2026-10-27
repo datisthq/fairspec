@@ -76,6 +76,8 @@ For example:
 
 An object defining the schema for table columns. Each key represents a column name, and its value `MUST` be a valid [Column](#column) definition.
 
+A key matches a column of the data whose name is equal to it character for character: names are case-sensitive and never trimmed, so `ID` in the data is not the column `id`. The same holds for every column name this specification lists, such as in [`required`](#required) or the keys.
+
 For example, for a simple table with different column types:
 
 ```json
@@ -155,6 +157,8 @@ An optional array of column names that form the table's primary key. The combina
 
 A primary key column `MUST` be present in the data, as if it were [`required`](#required), and its cells `MUST NOT` be null, even where the column's `type` allows `null`.
 
+Keys compare the typed values of their cells, as parsed by the column's type, not the text the file holds: in a number column `1.0` and `1` are the same value, and in a [DateTime](#datetime) column `2024-01-01T12:00:00+02:00` and `2024-01-01T10:00:00Z` are. This holds for [`primaryKey`](#primarykey), [`uniqueKeys`](#uniquekeys) and [`foreignKeys`](#foreignkeys) alike.
+
 For example, with a single-column primary key:
 
 ```json
@@ -195,7 +199,7 @@ For example, with a composite primary key:
 
 An optional array of unique key constraints. Each unique key is an array of column names whose combined values `MUST` be unique across all rows in the table. Each unique key array `MUST` contain at least one column name, and every name `MUST` be a column in [`properties`](#properties).
 
-A row in which any of the key's columns is null is not compared, as in SQL: such rows never conflict with each other or with any other row.
+A row in which any of the key's columns is null is not compared, as in SQL: such rows never conflict with each other or with any other row. Values are compared as typed values, as for [`primaryKey`](#primarykey).
 
 For example, with multiple unique constraints:
 
@@ -224,7 +228,9 @@ For example, with multiple unique constraints:
 
 An optional array of foreign key constraints that define relationships between this table and other tables. Each foreign key specifies local `columns` and their `reference` to columns in another resource (identified by resource [`name`](../dataset#name) in the dataset context). Both `columns` lists `MUST` name at least one column, and they `MUST` have the same length: the n-th local column refers to the n-th referenced column. Every local column `MUST` be a column in [`properties`](#properties).
 
-A row in which any of the local `columns` is null is not checked against the reference. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource.
+A row in which any of the local `columns` is null is not checked against the reference, as SQL's `MATCH SIMPLE`: a composite key with one null part is skipped whatever its other parts hold. Every other row `MUST` have its `columns` values present in the referenced `columns` of some row of the referenced resource, compared as typed values, as for [`primaryKey`](#primarykey). The referenced values need not be unique: a value present in several referenced rows satisfies the key.
+
+The referenced resource `MAY` be any table resource of the dataset, whether its data is a file, inline or multipart. A `reference.resource` naming a resource that is not a table, such as one described by a [Data Schema](../data-schema), `MUST` be reported as a metadata error.
 
 For example, referencing another resource:
 
@@ -687,6 +693,8 @@ Type properties:
 
 A column for categorical values. It `MUST` have [`type`](#type) set to `"integer"` or `"string"` and [`format`](#format) set to `"categorical"`.
 
+A value is read as a value of its `type`: an integer categorical column reads its cells as an [Integer](#integer) column does, and a string categorical column matches a cell against its [`categories`](#categories) exactly, character for character, without trimming or case folding. The constraints below apply to every value in addition to `categories`, so a listed category that fails one, such as a category below [`minimum`](#minimum), is an error.
+
 Metadata example:
 
 ```json
@@ -740,6 +748,10 @@ In addition, type properties if type is `"string"`:
 
 A column for whole number values. It `MUST` have [`type`](#type) set to `"integer"` and `MUST NOT` have a [`format`](#format) property.
 
+A cell delivered as text `MUST` be a number in the grammar of a [Number](#number) column whose fraction is zero, as an integer is in [JSON Schema 2020-12](https://json-schema.org/draft/2020-12/json-schema-validation#section-6.1.1): `1.0` and `1e3` are integers, `1.5` and `1e-1` are not.
+
+An integer value `MUST` lie in the signed 64-bit range, from `-9223372036854775808` to `9223372036854775807`; a value outside it is a `cell/type` error. This is a deliberate deviation from JSON Schema, whose integers are unbounded, so that every implementation holds the same values exactly: a whole number that needs more digits belongs in a [Decimal](#decimal) column. The range applies to every column of type `"integer"`, including an integer [Categorical](#categorical) one.
+
 Metadata example:
 
 ```json
@@ -774,6 +786,8 @@ Type properties:
 #### Number
 
 A column for numeric values including decimals. It `MUST` have [`type`](#type) set to `"number"` and `MUST NOT` have a [`format`](#format) property.
+
+A cell delivered as text `MUST` be a JSON number, as [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259#section-6) section 6 defines it, once these have been applied, in this order: [`withText`](#withtext) strips the text around the number, every [`groupChar`](#groupchar) is removed, and [`decimalChar`](#decimalchar) is read as `.`. The grammar is an optional minus sign and never a plus sign, an integer part without leading zeros (`0` alone is allowed), an optional fraction of a `.` with digits on both sides, and an optional exponent of `e` or `E`, an optional sign and digits. A value `MUST NOT` contain whitespace, and `NaN`, `Infinity` and their variants are not numbers. So `0.5`, `-2` and `1E-3` are numbers, and `+1`, `007`, `.5`, `5.`, ` 1` and `0x10` are not. `-0` is a number equal to `0`.
 
 Metadata example:
 
@@ -882,6 +896,10 @@ Type properties:
 
 A column for delimited list values stored as strings. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"list"`.
 
+A cell is split at every [`delimiter`](#delimiter), literally: there is no quoting or escaping inside a cell, and items are not trimmed. So `a,,b` has three items, the second empty, `a,b,` has a trailing empty item, and ` a` is an item with a leading space. An empty cell, such as a quoted `""` in CSV, is an empty list. Each item is then read as an [`itemType`](#itemtype) value.
+
+Since the column is of type `"string"`, as in JSON Schema [`minLength`](#minlength), [`maxLength`](#maxlength) and [`pattern`](#pattern) apply to the cell's whole text before it is split, and [`minItems`](#minitems) and [`maxItems`](#maxitems) to the number of items. Missing values match the whole cell only, never an item: with `"NA"` a missing value, the cell `NA` is null and the cell `a,NA` is a list of two items.
+
 Metadata example:
 
 ```json
@@ -918,6 +936,8 @@ Type properties:
 
 A column for URLs with HTTP/HTTPS protocol. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"url"`.
 
+A value `MUST` match the `URI` production of [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3), so it has a scheme and is never a relative reference, and it `MAY` end in a `#` fragment. In addition: its scheme `MUST` be `http` or `https`, in any case (`HTTPS://example.com` is valid), its host `MUST NOT` be empty (`http:///path` is invalid), and it `MUST` consist of ASCII characters only, so a non-ASCII character is written percent-encoded.
+
 Metadata example:
 
 ```json
@@ -949,6 +969,8 @@ Type properties:
 #### Email
 
 A column for email addresses. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"email"`.
+
+A value `MUST` match the `Mailbox` production of [RFC 5321](https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.2): a local part, as a dot-string or a quoted string (`"john doe"@example.com`), then `@` and a domain or an address literal (`user@[192.0.2.1]`). A domain of a single label, such as `user@localhost`, is valid. A value with a non-ASCII character is invalid, as RFC 5321 allows none.
 
 Metadata example:
 
@@ -982,7 +1004,7 @@ Type properties:
 
 A column for ISO 8601 calendar dates. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date"`, as the JSON Schema `date` format. A date is not associated with any time zone.
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be a calendar date `YYYY-MM-DD` with nothing before or after it.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be a calendar date `YYYY-MM-DD` with nothing before or after it. Its fields follow RFC 3339 as the [default forms](#temporalformat) set out, so the year `0000` is valid.
 
 Metadata example:
 
@@ -1017,7 +1039,7 @@ Type properties:
 
 A column for times of day with a UTC offset, as the RFC 3339 `full-time` and the JSON Schema `time` format. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"time"`. For times of day without an offset, use [LocalTime](#localtime).
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid. Its fields and offset follow RFC 3339 as the [default forms](#temporalformat) set out, so a lowercase `z` is valid in place of `Z`.
 
 A value denotes a time of day in UTC: an implementation `MUST` apply the offset, so `14:30:00+02:00` and `12:30:00Z` are the same value.
 
@@ -1054,7 +1076,7 @@ Type properties:
 
 A column for times of day without a UTC offset. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"local-time"`. A local time is not associated with any time zone, including the reader's: an implementation `MUST NOT` convert it to UTC.
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `HH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid. Its fields follow RFC 3339 as the [default forms](#temporalformat) set out.
 
 Metadata example:
 
@@ -1089,7 +1111,7 @@ Type properties:
 
 A column for instants: a date with a time of day and a UTC offset, as the RFC 3339 `date-time` and the JSON Schema `date-time` format. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"date-time"`. For dates with times without an offset, use [LocalDateTime](#localdatetime).
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), and then by `Z` or a `+HH:MM` or `-HH:MM` offset, with nothing before or after it. A value without an offset is invalid. Its fields, separators and offset follow RFC 3339 as the [default forms](#temporalformat) set out, so a lowercase `t` or `z` is valid in place of `T` or `Z`.
 
 A value denotes an instant: an implementation `MUST` apply the offset, so `2024-03-20T18:00:00-05:00` and `2024-03-20T23:00:00Z` are the same value.
 
@@ -1126,7 +1148,7 @@ Type properties:
 
 A column for dates with times of day without a UTC offset. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"local-date-time"`. A local date-time is not associated with any time zone, including the reader's: an implementation `MUST NOT` convert it to an instant.
 
-Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid.
+Without [`temporalFormat`](#temporalformat), a value `MUST` be `YYYY-MM-DDTHH:MM:SS`, optionally followed by fractional seconds (`.` and one or more digits), with nothing before or after it. A value with an offset is invalid. Its fields and separator follow RFC 3339 as the [default forms](#temporalformat) set out, so a lowercase `t` is valid in place of `T`.
 
 Metadata example:
 
@@ -1160,6 +1182,8 @@ Type properties:
 #### Duration
 
 A column for ISO 8601 duration values. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"duration"`.
+
+A value `MUST` match the `duration` production of [RFC 3339 Appendix A](https://datatracker.ietf.org/doc/html/rfc3339#appendix-A), letters in any case. So weeks stand alone (`P1W`, never `P1W2D`), every number is a whole number (`PT1.5S` is invalid), a value has no sign (`-P1D` is invalid), and `P` or `PT` with no component is invalid.
 
 Metadata example:
 
@@ -1257,6 +1281,8 @@ Type properties:
 
 A column for hexadecimal encoded data. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"hex"`.
 
+A value `MUST` be an even number of hexadecimal digits, `0`–`9` and `a`–`f` in any case, two per byte. It `MUST NOT` have a `0x` prefix or any whitespace.
+
 Metadata example:
 
 ```json
@@ -1288,6 +1314,8 @@ Type properties:
 #### Base64
 
 A column for Base64 encoded binary data. It `MUST` have [`type`](#type) set to `"string"` and [`format`](#format) set to `"base64"`.
+
+A value `MUST` be Base64 in the standard alphabet of [RFC 4648](https://datatracker.ietf.org/doc/html/rfc4648#section-4) section 4, with the `=` padding that makes its length a multiple of four. The URL-safe alphabet (`-` and `_`), a value without its padding and a value with whitespace or line breaks are invalid.
 
 Metadata example:
 
@@ -1497,7 +1525,9 @@ charlie@domain.net
 > [!NOTE]
 > Supported types: **Boolean**
 
-An optional array of string values that `SHOULD` be interpreted as `true` when parsing data. It `MUST` be an array of strings. It defaults to `["true", "True", "TRUE", "1"]`.
+An optional array of string values that `MUST` be interpreted as `true` when parsing data. It `MUST` be an array of strings. It defaults to `["true", "True", "TRUE", "1"]`; a declared list replaces the default rather than adding to it, so with `["yes"]` the cell `true` is not a boolean.
+
+A cell matches an item exactly, character for character, without trimming or case folding. A value `MUST NOT` be both in `trueValues` and in [`falseValues`](#falsevalues), counting the default of a list the column does not declare: a Table Schema with such a value is invalid.
 
 Metadata example:
 
@@ -1527,7 +1557,7 @@ Y
 > [!NOTE]
 > Supported types: **Boolean**
 
-An optional array of string values that `SHOULD` be interpreted as `false` when parsing data. It `MUST` be an array of strings. It defaults to `["false", "False", "FALSE", "0"]`.
+An optional array of string values that `MUST` be interpreted as `false` when parsing data. It `MUST` be an array of strings. It defaults to `["false", "False", "FALSE", "0"]`; a declared list replaces the default rather than adding to it. A cell matches an item exactly, as for [`trueValues`](#truevalues), and a value `MUST NOT` be in both lists.
 
 Metadata example:
 
@@ -1555,9 +1585,9 @@ N
 #### `minimum`
 
 > [!NOTE]
-> Supported types: **Integer**, **Number**, **Decimal**
+> Supported types: **Integer**, **Number**, **Decimal**, **Categorical**
 
-An optional minimum value constraint (inclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional minimum value constraint (inclusive). It `MUST` be an integer for an integer column or an integer [Categorical](#categorical) one and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1584,9 +1614,9 @@ temperature
 #### `maximum`
 
 > [!NOTE]
-> Supported types: **Integer**, **Number**, **Decimal**
+> Supported types: **Integer**, **Number**, **Decimal**, **Categorical**
 
-An optional maximum value constraint (inclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional maximum value constraint (inclusive). It `MUST` be an integer for an integer column or an integer [Categorical](#categorical) one and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1613,9 +1643,9 @@ temperature
 #### `exclusiveMinimum`
 
 > [!NOTE]
-> Supported types: **Integer**, **Number**, **Decimal**
+> Supported types: **Integer**, **Number**, **Decimal**, **Categorical**
 
-An optional minimum value constraint (exclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional minimum value constraint (exclusive). It `MUST` be an integer for an integer column or an integer [Categorical](#categorical) one and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1642,9 +1672,9 @@ probability
 #### `exclusiveMaximum`
 
 > [!NOTE]
-> Supported types: **Integer**, **Number**, **Decimal**
+> Supported types: **Integer**, **Number**, **Decimal**, **Categorical**
 
-An optional maximum value constraint (exclusive). It `MUST` be an integer for an integer column and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
+An optional maximum value constraint (exclusive). It `MUST` be an integer for an integer column or an integer [Categorical](#categorical) one and a number for a number or decimal column; a decimal column's bound is a JSON number although its values are text, so a bound with more precision than a JSON number holds is not exact. It applies only to the supported types; on any other column, such as a temporal one, it `MUST` be ignored.
 
 Metadata example:
 
@@ -1671,9 +1701,9 @@ probability
 #### `multipleOf`
 
 > [!NOTE]
-> Supported types: **Integer**, **Number**, **Decimal**
+> Supported types: **Integer**, **Number**, **Decimal**, **Categorical**
 
-An optional constraint that values `MUST` be a multiple of this number. For integers, it `MUST` be a positive integer. For numbers and decimals, it `MUST` be a positive number.
+An optional constraint that values `MUST` be a multiple of this number. For integers, including an integer [Categorical](#categorical) column, it `MUST` be a positive integer. For numbers and decimals, it `MUST` be a positive number.
 
 The check `MUST` use exact decimal arithmetic on the value as written, not binary floating point: a value is a multiple when dividing it by `multipleOf` gives an integer, so `99.99` is a multiple of `0.01`.
 
@@ -1790,7 +1820,7 @@ $19.99
 #### `minLength`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
+> Supported types: **Categorical**, **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional minimum length constraint for string values. It `MUST` be a non-negative integer.
 
@@ -1819,7 +1849,7 @@ charlie
 #### `maxLength`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
+> Supported types: **Categorical**, **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional maximum length constraint for string values. It `MUST` be a non-negative integer.
 
@@ -1848,7 +1878,7 @@ charlie
 #### `pattern`
 
 > [!NOTE]
-> Supported types: **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
+> Supported types: **Categorical**, **Decimal**, **String**, **List**, **Base64**, **Hex**, **Email**, **URL**, **Date**, **Time**, **LocalTime**, **DateTime**, **LocalDateTime**, **Duration**, **WKT**, **WKB**
 
 An optional regular expression pattern that values `MUST` match. It `MUST` be a valid regular expression in the ECMA-262 dialect, as in JSON Schema. An implementation that cannot compile a pattern, such as one using look-around its regex engine lacks, `MUST` report it as an error at the pattern rather than fail. As in JSON Schema, the pattern is not anchored: a value matches when the pattern matches any part of it, so a pattern meant for the whole value uses `^` and `$`.
 
@@ -1914,7 +1944,7 @@ severity
 > [!NOTE]
 > Supported types: **Categorical**
 
-An optional boolean indicating that the categorical values in the column have natural order.
+An optional boolean indicating that the categorical values in the column have natural order: the order of [`categories`](#categories). Sorting by the column then follows that order, as [Sorting](#sorting) sets out.
 
 Metadata example:
 
@@ -1950,7 +1980,7 @@ severity
 > [!NOTE]
 > Supported types: **List**
 
-An optional single character used to delimit items in a list column.
+An optional single character used to delimit items in a list column. It defaults to a comma (`,`).
 
 Metadata example:
 
@@ -2093,6 +2123,13 @@ An optional string specifying the pattern values are written in. A pattern is li
 
 Reading a value, a numeric field matches with or without its leading zeros, so `1/5/2024` matches `%m/%d/%Y`, and month names and `%p` match regardless of case. Writing a value, an implementation `MUST` use the forms in the last column, with fractional seconds in 3, 6 or 9 digits.
 
+Without a pattern, a value is in the default form its type states, which follows the grammar of [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) section 5.6 for [Date](#date), [Time](#time), [LocalTime](#localtime), [DateTime](#datetime) and [LocalDateTime](#localdatetime) alike:
+
+- A date is `YYYY-MM-DD`, with any year from `0000` to `9999`, and a day that exists in its month and year
+- An hour is `00`–`23`, so `24:00:00` is invalid; a minute is `00`–`59`; a second is `00`–`59`, or `60` for a leap second. A leap second is valid only at `23:59:60` in UTC once the offset is applied (`23:59:60Z`, `15:59:60-08:00`), or at `23:59:60` as written in a type without an offset
+- A date and a time are separated by `T` or `t`; a space or any other separator is invalid
+- An offset is `Z` or `z`, or a sign, two digits of hours `00`–`23`, a colon and two digits of minutes `00`–`59`, so offsets lie from `-23:59` to `+23:59`; `+0200`, `+02` and `+24:00` are invalid
+
 Writing a [DateTime](#datetime) or [Time](#time) value, an implementation `MUST` write it in UTC. Without a pattern, it `MUST` write the default form of the type, with fractional seconds only when they are not zero and with `Z` as the offset.
 
 A pattern for [DateTime](#datetime) or [Time](#time) `MUST` contain one offset specification, `%z` or `%:z`. A pattern for [LocalDateTime](#localdatetime), [Date](#date) or [LocalTime](#localtime) `MUST NOT` contain one.
@@ -2181,6 +2218,8 @@ metadata
 
 ## Validation
 
+A Table Schema that is not valid is reported with metadata errors, and no table is checked against it.
+
 A validator that reports the errors of a table `MUST` list them in this order:
 
 1. Column errors, such as a [required](#required) column missing from the data, then the columns [`additionalProperties`](#additionalproperties) does not allow, in the order of the data
@@ -2188,6 +2227,20 @@ A validator that reports the errors of a table `MUST` list them in this order:
 3. Row errors: [`primaryKey`](#primarykey) errors, then [`uniqueKeys`](#uniquekeys) errors
 
 [`foreignKeys`](#foreignkeys) errors are dataset-level and follow these, as the [Dataset](../dataset#validation) specification sets out.
+
+A cell that cannot be read as its column's type has a `cell/type` error and no other: its constraints are not checked. A cell that can be read is checked against every constraint of its column, and each one it fails is a separate error. A validator `MUST` report them in this keyword order:
+
+1. [`enum`](#enum), [`const`](#const)
+2. [`minimum`](#minimum), [`maximum`](#maximum), [`exclusiveMinimum`](#exclusiveminimum), [`exclusiveMaximum`](#exclusivemaximum), [`multipleOf`](#multipleof)
+3. [`minLength`](#minlength), [`maxLength`](#maxlength), [`pattern`](#pattern)
+4. [`minItems`](#minitems), [`maxItems`](#maxitems)
+5. The JSON Schema keywords of an [Array](#array), [Object](#object), [GeoJSON](#geojson) or [TopoJSON](#topojson) column ([`<jsonSchema>`](#jsonschema))
+
+A cell matches a boolean or category value exactly, character for character, without trimming or case folding, as [`trueValues`](#truevalues) and [Categorical](#categorical) set out.
+
+## Sorting
+
+An implementation that sorts a table by a column, such as in a query, `MUST` place null values last, in ascending and in descending order alike. A [Categorical](#categorical) column with [`withOrder`](#withorder) set to `true` sorts by the position of each value in [`categories`](#categories); every other column, including a Categorical one without `withOrder`, sorts by value.
 
 ## JSON Schema
 

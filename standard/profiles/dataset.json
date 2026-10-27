@@ -133,7 +133,7 @@
     },
     "ExternalPath": {
       "type": "string",
-      "pattern": "^https?://"
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://"
     },
     "Textual": {
       "type": "boolean"

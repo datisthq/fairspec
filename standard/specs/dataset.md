@@ -125,7 +125,7 @@ A resource without `data` describes no content. It `MAY` carry metadata, but a [
 
 When multiple paths are provided, the resource is multipart: the files are the ordered parts of one resource. Every part `MUST` be a complete file of the same format, and the [File Dialect](#filedialect) and [Table Schema](#tableschema), if present, apply to every part. The order of the paths is significant.
 
-For tabular formats, the records of the resource are the records of each part, taken in order. If the dialect declares header rows, every part `MUST` carry its own; such rows describe their part and are not records of the resource.
+For tabular formats, the records of the resource are the records of each part, taken in order. If the dialect declares header rows, every part `MUST` carry its own; such rows describe their part and are not records of the resource. The header of every part `MUST` give the same column names, in the same order, as the header of the first part; a part whose header differs is an error that names the part. A part with no bytes at all has no header, so under a dialect with header rows it is an error too.
 
 For other formats, the content of the resource is the content of each part, taken in order.
 
@@ -175,7 +175,7 @@ For a JSON array of objects:
 
 ### `name`
 
-An optional name for the resource. It `MUST` be a string consisting of alphanumeric characters and underscores, and it `MUST` be unique among the resources of the dataset; names that differ only in case are distinct. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table-schema#foreignkeys) specified in [Fairspec Table Schema](../table-schema).
+An optional name for the resource. It `MUST` be a non-empty string of ASCII letters, digits and underscores (`[A-Za-z0-9_]+`), of any length, and it `MAY` start with a digit. It `MUST` be unique among the resources of the dataset; names that differ only in case are distinct. If provided, it can be used to reference resource within a dataset context. For example, a name of the resource is used in [Foreign Keys](../table-schema#foreignkeys) specified in [Fairspec Table Schema](../table-schema).
 
 For example:
 
@@ -187,7 +187,7 @@ For example:
 
 ### `textual`
 
-A boolean indicating whether the file is text-based. When `true`, the file `MUST` be `utf-8` encoded. For a multipart resource, every part `MUST` be `utf-8` encoded.
+A boolean indicating whether the file is text-based. When `true`, the file `MUST` be `utf-8` encoded. For a multipart resource, every part `MUST` be `utf-8` encoded. A UTF-8 byte order mark at the start of a file is valid UTF-8.
 
 For example:
 
@@ -213,7 +213,7 @@ The type of the integrity check. It `MUST` be one of the following values:
 
 **`hash`**
 
-The hash of the resource's content. It `MUST` be the digest in lowercase hexadecimal, of the length its `type` produces: 32 characters for `md5`, 40 for `sha1`, 64 for `sha256` and 128 for `sha512`. Hashes are compared exactly.
+The hash of the resource's content. It `MUST` be the digest in lowercase hexadecimal, of the length its `type` produces: 32 characters for `md5`, 40 for `sha1`, 64 for `sha256` and 128 for `sha512`. Hashes are compared exactly. A hash with an uppercase digit or of another length is a metadata error at `integrity/hash`, and the content is not hashed.
 
 For example for a file with SHA-256 hash:
 
@@ -337,7 +337,9 @@ For example for a resource with geolocation:
 
 ## Validation
 
-A validator that reports the errors of a dataset `MUST` list the errors of its resources first, each resource's table errors in the order the [Table Schema](../table-schema#validation) specification sets. Dataset-level errors follow them: [foreign key](../table-schema#foreignkeys) violations, and foreign keys that reference a resource the dataset does not contain.
+A validator `MUST` check the descriptor first. When the descriptor has metadata errors, including those of a [File Dialect](#filedialect), [Data Schema](#dataschema) or [Table Schema](#tableschema) it holds, the validator reports them and checks no data.
+
+Otherwise a validator that reports the errors of a dataset `MUST` list the errors of its resources first, each resource's table errors in the order the [Table Schema](../table-schema#validation) specification sets. Dataset-level errors follow them: [foreign key](../table-schema#foreignkeys) violations, and foreign keys that reference a resource the dataset does not contain.
 
 ## Common
 
@@ -365,6 +367,8 @@ The path `MUST NOT` contain any of the following:
 
 The path `MAY` contain unicode characters, spaces, and special characters in file and directory names.
 
+An internal path is a file path, not a URL: it is used as written, and a percent sign is a literal character, so `a%20b.csv` names a file whose name holds `%20`, not a space.
+
 For example:
 
 ```json
@@ -391,7 +395,7 @@ For example with unicode and special characters:
 
 ### External Path
 
-It `MUST` be a string representing an HTTP or HTTPS URL to a remote file.
+It `MUST` be a string representing an HTTP or HTTPS URL to a remote file. As in [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.1), the scheme is case-insensitive, so `HTTPS://example.com/data.csv` is an external path.
 
 For example:
 

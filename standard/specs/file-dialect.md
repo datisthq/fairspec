@@ -95,9 +95,17 @@ For example:
 
 ### File Formats
 
+A UTF-8 byte order mark at the start of a CSV, TSV, JSON or JSONL file is not part of its content: an implementation `MUST` ignore it.
+
 #### CSV
 
 A format for comma-separated values files. It `MUST` have [`format`](#format) set to `"csv"`. It `MUST` be `utf-8` encoded. An unquoted empty cell (`,,`) is `null`, and a quoted empty cell (`,"",`) is an empty string.
+
+A line with no characters at all is blank: it is not a row and takes no row number, wherever it is in the file. The terminator of the last line ends that row and starts no other, so a file ending in a terminator has no empty last row. A line holding only delimiters, such as `,,`, is a row whose cells are all `null`.
+
+A row with fewer cells than the table has columns is read with `null` in the cells it lacks. A row with more cells than the table has columns cannot be read: loading the file `MUST` fail, and validating it `MUST` report that the file cannot be loaded.
+
+The names a header gives the columns `MUST` be unique; a header that repeats a name is an error. An empty name is a valid name, so two empty names are a repeated one.
 
 Metadata example:
 
@@ -133,6 +141,8 @@ Format properties:
 #### TSV
 
 A format for tab-separated values files. It `MUST` have [`format`](#format) set to `"tsv"`. It `MUST` be `utf-8` encoded. An empty cell (two adjacent tabs) is `null`.
+
+TSV has no quoting: a `"` is a literal character of its cell, and a cell cannot hold a tab or a line terminator. Blank lines, short and long rows and the names a header gives follow the rules of [CSV](#csv).
 
 Metadata example:
 
@@ -203,6 +213,8 @@ Format properties:
 
 A format for JSON Lines files (newline-delimited JSON). It `MUST` have [`format`](#format) set to `"jsonl"`.
 
+As in [CSV](#csv), a line with no characters at all is blank: it is not a row and takes no row number, and the terminator of the last line starts no other row.
+
 Metadata example:
 
 ```json
@@ -233,7 +245,7 @@ Format properties:
 
 #### XLSX
 
-A format for Microsoft Excel files. It `MUST` have [`format`](#format) set to `"xlsx"`. Empty cells are `null` values.
+A format for Microsoft Excel files. It `MUST` have [`format`](#format) set to `"xlsx"`. Empty cells are `null` values. A merged range holds its value in its top-left cell only; its other cells are empty.
 
 Metadata example:
 
@@ -264,7 +276,7 @@ Format properties:
 
 #### ODS
 
-A format for OpenDocument Spreadsheet files. It `MUST` have [`format`](#format) set to `"ods"`. Empty cells are `null` values.
+A format for OpenDocument Spreadsheet files. It `MUST` have [`format`](#format) set to `"ods"`. Empty cells are `null` values. A merged range holds its value in its top-left cell only; its other cells are empty.
 
 Metadata example:
 
@@ -381,9 +393,11 @@ Data example:
 
 ### Format Properties
 
-A **row** is one parsed record of the file: in CSV and TSV, a quoted cell spanning several lines belongs to one row. Rows are numbered from `1`, counting every row of the file before any is removed, so [`headerRows`](#headerrows) and [`commentRows`](#commentrows) refer to the same numbering.
+A **row** is one parsed record of the file: in CSV and TSV, a quoted cell spanning several lines belongs to one row. Rows are numbered from `1`, counting every row of the file before any is removed, so [`headerRows`](#headerrows) and [`commentRows`](#commentrows) refer to the same numbering. A blank line of CSV, TSV or JSONL is not a row and is not counted. A row `MUST NOT` be listed both in `headerRows` and in `commentRows`: a dialect that lists one in both is invalid.
 
 A property the dialect leaves out takes its default, as stated for each property below; an implementation `MUST NOT` infer it from the data. Inference is only for a resource without a dialect (see [Dataset](../dataset#filedialect)), so a declared dialect reads the same in every implementation.
+
+A file is never read with a dialect that is not valid: loading the file `MUST` fail, and validating it `MUST` report a metadata error at the dialect property that is not valid instead of checking the data.
 
 #### `delimiter`
 
@@ -460,7 +474,7 @@ id,name
 > [!NOTE]
 > Supported formats: **csv**, **tsv**
 
-It `MUST` be a string. This property specifies the null sequence representing missing values in the data. A cell equal to the sequence is read as `null`, in addition to the empty cells the format reads as `null`.
+It `MUST` be a string. This property specifies the null sequence representing missing values in the data. An unquoted cell equal to the sequence is read as `null`, in addition to the empty cells the format reads as `null`. A quoted cell is a string even when its text equals the sequence, as a quoted empty cell is.
 
 For example:
 
@@ -487,7 +501,9 @@ id,name,notes
 > [!NOTE]
 > Supported formats: **csv**, **tsv**, **json**, **jsonl**, **xlsx**, **ods**
 
-It `MUST` be `false` or an array of positive integers starting from `1`. This property specifies the row numbers for the header. It defaults to `[1]`, the first row; `false` means the file has no header.
+It `MUST` be `false` or an array of positive integers starting from `1`. This property specifies the row numbers for the header. It defaults to `[1]`, the first row; `false` means the file has no header, and so does an empty array `[]`.
+
+The listed rows form the header. Every row up to the last header row is consumed by the header and is never data: a row between two header rows that the list leaves out is dropped. With `[1, 3]`, rows `1` and `3` form the header, row `2` is dropped and the data starts at row `4`. A header row past the end of the file is an error.
 
 For example with a single header row:
 
@@ -522,7 +538,7 @@ id,name,price
 
 This would produce headers: "fruit id", "fruit name", "fruit price"
 
-With several header rows, a label carries forward to the empty cells to its right in the same header row; the labels of each column are then joined across the header rows with [`headerJoin`](#headerjoin).
+With several header rows, a label carries forward to the empty cells to its right in the same header row; the labels of each column are then joined across the header rows with [`headerJoin`](#headerjoin). A cell still empty after that, such as an empty first cell, adds nothing to the join: its column's name joins only the labels that are not empty.
 
 For example with no headers:
 
@@ -630,6 +646,8 @@ Rows starting with `#` will be skipped.
 
 It `MUST` be an array of strings. This property specifies explicit column names to use instead of deriving them from the file.
 
+With rows of cells, the n-th name is the name of the n-th column. Fewer names than the file has columns is an error; more names than the file has columns add columns that are `null` in every row. With [`rowType`](#rowtype) `object`, the names select the keys to read and give their order.
+
 For example:
 
 ```json
@@ -688,6 +706,8 @@ For a JSON file like:
 
 It `MUST` be one of the following values: `array`, `object`. This property specifies whether the data items are arrays or objects. Without it, the first item decides: an array means `array`, anything else `object`.
 
+With `object` rows, the columns are the union of the rows' keys, in the order each key is first seen, and a row without a key is `null` in its column. [`columnNames`](#columnnames), when present, selects and orders the columns instead.
+
 For example with array of objects:
 
 ```json
@@ -734,7 +754,7 @@ For data like:
 > [!NOTE]
 > Supported formats: **xlsx**, **ods**
 
-It `MUST` be a positive integer, counting sheets from `1`. This property specifies a sheet number of a table in the spreadsheet file. If not provided, a first sheet is used.
+It `MUST` be a positive integer, counting sheets from `1`. This property specifies a sheet number of a table in the spreadsheet file. If not provided, a first sheet is used. Sheets are counted in the order of the workbook, hidden sheets included, so the first sheet is the first of the workbook whether or not it is hidden.
 
 For example:
 

@@ -30,7 +30,7 @@
     "Location": {
       "type": "string",
       "format": "uri",
-      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://"
     },
     "Updated": {
       "type": "string",

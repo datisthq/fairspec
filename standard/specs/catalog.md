@@ -26,7 +26,9 @@ The key words `MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, `SHALL NOT`, `SHOULD`, `S
 
 ## Descriptor
 
-A Fairspec Catalog is a [JSON Lines](https://jsonlines.org/) resource with each line represents a [Fairspec Dataset](../dataset) and its last updated time. The dataset locations `MUST` be unique within a catalog and the datasets `MUST` be sorted by the last updated time in descending order.
+A Fairspec Catalog is a [JSON Lines](https://jsonlines.org/) resource with each line represents a [Fairspec Dataset](../dataset) and its last updated time. The dataset locations `MUST` be unique within a catalog, except for the tombstone and entry that share an `upd` as [`del`](#del) sets out, and the datasets `MUST` be sorted by the last updated time in descending order.
+
+A line with no characters at all is skipped and is not an entry, so an empty file is a valid catalog with no datasets.
 
 ## Catalog
 
@@ -46,7 +48,7 @@ A catalog entry pointing to a [Fairspec Dataset](../dataset). It `MUST` have the
 
 ### `loc` [required] [#loc]
 
-URI to the [Fairspec Dataset](../dataset) descriptor. The property `MUST` be [JSON Schema URI](https://json-schema.org/understanding-json-schema/reference/type#resource-identifiers).
+URL of the [Fairspec Dataset](../dataset) descriptor. The property `MUST` be an absolute HTTP or HTTPS URL: a [JSON Schema URI](https://json-schema.org/understanding-json-schema/reference/type#resource-identifiers) whose scheme is `http` or `https`, in any case as in [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.1).
 
 For example:
 
@@ -71,6 +73,8 @@ For example:
 ### `del`
 
 An optional boolean marking the dataset as removed from the catalog: a tombstone. It is sorted by `upd`, the time of the removal, like any other entry. A client that reads a tombstone `MUST` drop the dataset at `loc`. A publisher `SHOULD` keep a tombstone for as long as a client may still hold the dataset.
+
+A dataset removed and added again within one timestamp has a tombstone and an entry with the same `loc` and `upd`. The later of the two lines wins: a client `MUST` keep the dataset when the entry comes after the tombstone, and drop it when the tombstone comes after the entry.
 
 For example:
 

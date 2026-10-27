@@ -51,11 +51,13 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
 ## Adding a test
 
 1. Find the expected value in the spec (`standard/specs/`), not in either library's output. The
-   spec now pins error order (`table-schema.md` and `dataset.md` "Validation"), null foreign keys,
-   exact temporal parsing and RFC 6901 pointers. When it is silent and the answer is normative,
-   ask, then write the decision into the spec as `fix(standard)`; when it is only library shape
-   (inferred dialects, data-schema inference, error field rendering), follow TypeScript and say so
-   in the group's `comment`
+   spec now pins error order (`table-schema.md` and `dataset.md` "Validation", including the
+   keyword order of several failures on one cell), null foreign keys, typed key comparison, the
+   number grammar and int64 range, RFC 3339 temporal defaults, the string formats, list splitting,
+   CSV/TSV row structure, `headerRows` and RFC 6901 pointers. When it is silent and the answer is
+   normative, ask, then write the decision into the spec as `fix(standard)`; when it is only
+   library shape (inferred dialects, data-schema inference, error field rendering), follow
+   TypeScript and say so in the group's `comment`
 2. Link the spec section in `specification` when one decides the outcome
 3. Run both runners. A test that fails on one side is a divergence to fix in that library
 
