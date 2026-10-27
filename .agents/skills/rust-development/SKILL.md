@@ -12,7 +12,7 @@ wrap as a CLI. `rust/metadata/` (`fairspec-metadata`), `rust/dataset/` (`fairspe
 ported from their Python packages; the crates follow Python's package DAG. `rust/terminal/`
 (`fairspec-terminal`) is the CLI and `rust/fairspec/` the umbrella crate whose `fairspec` binary
 runs it (`cargo build --release -p fairspec`). No crate goes to crates.io; the binary ships as
-`fairspec-cli` archives on the GitHub release (**Releases** below).
+`fairspec-terminal` archives on the GitHub release (**Releases** below).
 
 ## Commands
 
@@ -166,7 +166,7 @@ fails, so a new operation in `conformance/` lands here too (**`conformance-devel
 
 This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own changelog.
 `release.yaml`'s `rust` job builds `fairspec` with the `build:dist` profile and attaches
-`fairspec-cli-<os>-<arch>-<version>.{tar.gz,zip}` plus a `.sha256` each for linux, macOS
+`fairspec-terminal-<os>-<arch>-<version>.{tar.gz,zip}` plus a `.sha256` each for linux, macOS
 (x64, arm64) and windows x64. No Windows on Arm: the desktop app cannot ship there
 (`nodejs-polars` has no win32-arm64 build) and the CLI keeps parity with it.
 

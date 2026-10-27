@@ -232,7 +232,11 @@ const privacyPoints: Point[] = [
         <code className="font-mono text-foreground">.exe</code>,{" "}
         <code className="font-mono text-foreground">.AppImage</code>,{" "}
         <code className="font-mono text-foreground">.deb</code>) on the GitHub releases
-        page.
+        page, or{" "}
+        <code className="font-mono text-foreground">
+          curl -fsSL https://fairspec.org/install.sh | sh -s -- desktop
+        </code>{" "}
+        on macOS and Linux.
       </>
     ),
   },

@@ -178,7 +178,7 @@ jobs:
         shell: bash
 
     env:
-      NAME: fairspec-cli-${{ matrix.os }}-${{ matrix.arch }}-${{ needs.release.outputs.rust-version }}
+      NAME: fairspec-terminal-${{ matrix.os }}-${{ matrix.arch }}-${{ needs.release.outputs.rust-version }}
 
     steps:
       - name: Checkout Repo

@@ -281,17 +281,17 @@ const installs: Record<Language, InstallMethod[]> = {
   ],
   rust: [
     {
-      name: "binary",
+      name: "script",
       description: (
         <>
-          Download <code>fairspec-cli</code> for your platform from the{" "}
+          Download the <code>fairspec</code> binary for your platform from the{" "}
           <a href={RUST_RELEASES} target="_blank" rel="noopener noreferrer">
             GitHub releases
-          </a>{" "}
-          and put the <code>fairspec</code> binary on your PATH.
+          </a>
+          , check its checksum, and put it in <code>~/.local/bin</code>.
         </>
       ),
-      command: "tar -xzf fairspec-cli-*.tar.gz && mv fairspec /usr/local/bin/",
+      command: "curl -fsSL https://fairspec.org/install.sh | sh -s -- cli",
     },
     {
       name: "cargo",

@@ -393,15 +393,8 @@ function Installation(props: { language: Language }) {
         </pre>
         {props.language === "rust" ? (
           <p className="mt-4 text-sm text-muted-foreground">
-            Download <code>fairspec-cli</code> from the{" "}
-            <a
-              href="https://github.com/datisthq/fairspec/releases?q=rust-v"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub releases
-            </a>{" "}
-            first and put the <code>fairspec</code> binary on your PATH.
+            Install the <code>fairspec</code> binary first:{" "}
+            <code>curl -fsSL https://fairspec.org/install.sh | sh -s -- cli</code>
           </p>
         ) : null}
       </div>
