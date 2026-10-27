@@ -44,3 +44,24 @@ fn test_should_skip_object_rows_which_comment_rows_does_not_apply_to() {
     let dialect = json!({"format": "jsonl", "rowType": "object", "commentRows": [1]});
     assert!(inspect(dialect, None).is_empty());
 }
+
+#[test]
+fn test_should_report_header_rows_out_of_ascending_order() {
+    let errors = inspect(
+        json!({"format": "csv", "headerRows": [1, 3, 2]}),
+        Some("/fileDialect"),
+    );
+    let pointers: Vec<String> = errors
+        .iter()
+        .map(|error| match error {
+            FairspecError::Metadata(error) => error.json_pointer.clone(),
+            _ => String::new(),
+        })
+        .collect();
+    assert_eq!(pointers, vec!["/fileDialect/headerRows"]);
+}
+
+#[test]
+fn test_should_accept_header_rows_in_ascending_order_with_a_gap() {
+    assert!(inspect(json!({"format": "csv", "headerRows": [1, 3]}), None).is_empty());
+}

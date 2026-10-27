@@ -381,4 +381,61 @@ describe("loadJsonTable (format=jsonl)", () => {
       ])
     })
   })
+
+  describe("dialect rows", () => {
+    it("should skip a jsonl line of only whitespace", async () => {
+      const path = await writeTempFile('["a"]\n \t\r\n[1]\n', { format: "jsonl" })
+
+      const table = await loadJsonTable({
+        data: path,
+        fileDialect: { format: "jsonl", rowType: "array" },
+      })
+
+      expect((await table?.collect())?.toRecords()).toEqual([{ a: 1 }])
+    })
+
+    it("should fail on an array row longer than the header", async () => {
+      const path = await writeTempFile('[["id"],[1,2]]', { format: "json" })
+
+      const load = async () =>
+        await loadJsonTable({
+          data: path,
+          fileDialect: { format: "json", rowType: "array" },
+        })
+
+      await expect(load()).rejects.toThrow("found more fields than defined")
+    })
+  })
+
+  describe("multipart", () => {
+    it("should fail with a file/header report on array-row parts whose headers differ", async () => {
+      const path1 = await writeTempFile('[["id"],[1]]', { format: "json" })
+      const path2 = await writeTempFile('[["nr"],[2]]', { format: "json" })
+
+      const load = async () =>
+        await loadJsonTable({
+          data: [path1, path2],
+          fileDialect: { format: "json", rowType: "array", columnNames: ["id"] },
+        })
+
+      await expect(load()).rejects.toMatchObject({
+        report: { errors: [{ type: "file/header", partNumber: 2, columnNames: ["nr"] }] },
+      })
+    })
+
+    it("should not compare object-row parts", async () => {
+      const path1 = await writeTempFile('{"id":1,"name":"a"}\n', { format: "jsonl" })
+      const path2 = await writeTempFile('{"id":2}\n', { format: "jsonl" })
+
+      const table = await loadJsonTable({
+        data: [path1, path2],
+        fileDialect: { format: "jsonl" },
+      })
+
+      expect((await table?.collect())?.toRecords()).toEqual([
+        { id: 1, name: "a" },
+        { id: 2, name: null },
+      ])
+    })
+  })
 })

@@ -74,6 +74,16 @@ def create_table_from_sheet_rows(
     return frame.lazy()
 
 
+def get_sheet_header(
+    rows: list[list[SheetCell]],
+    file_dialect: XlsxFileDialect | OdsFileDialect,
+) -> list[str]:
+    """The column names a sheet's own header rows give, whatever columnNames says"""
+    header_rows = get_header_rows(file_dialect)
+    content = rows[max(header_rows, default=0) :]
+    return _get_sheet_labels(rows, content, header_rows, file_dialect)
+
+
 def format_sheet_cell(cell: SheetCell) -> str | None:
     """Format a cell as the text a mixed-type column holds."""
     if cell is None:

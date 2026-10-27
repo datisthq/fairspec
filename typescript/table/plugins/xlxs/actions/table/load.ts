@@ -8,7 +8,7 @@ import { normalizeTable } from "../../../../actions/table/normalize.ts"
 import type { Table } from "../../../../models/table.ts"
 import { concatPartTables } from "../../../../actions/table/fileDialect.ts"
 import { readSheetRows } from "../../helpers/sheet.ts"
-import { createTableFromSheetRows } from "../../helpers/table.ts"
+import { createTableFromSheetRows, getSheetHeader } from "../../helpers/table.ts"
 import { inferXlsxFileDialect } from "../fileDialect/infer.ts"
 
 export async function loadXlsxTable(resource: Resource, options?: LoadTableOptions) {
@@ -28,16 +28,20 @@ export async function loadXlsxTable(resource: Resource, options?: LoadTableOptio
       (await inferXlsxFileDialect({ ...resource, data: paths[0] })) ?? fileDialect
   }
 
+  // With columnNames the tables carry those names, so each part's own header is compared
+  const isOwnHeader = paths.length > 1 && !!fileDialect.columnNames
   const tables: Table[] = []
+  const partHeaders: string[][] = []
   for (const path of paths) {
     const rows = await readSheetRows(path, fileDialect)
 
     if (rows) {
       tables.push(createTableFromSheetRows(rows, fileDialect))
+      if (isOwnHeader) partHeaders.push(getSheetHeader(rows, fileDialect))
     }
   }
 
-  let table = concatPartTables(tables, fileDialect)
+  let table = concatPartTables(tables, fileDialect, isOwnHeader ? partHeaders : undefined)
 
   if (!options?.denormalized) {
     let tableSchema = await resolveTableSchema(resource.tableSchema)

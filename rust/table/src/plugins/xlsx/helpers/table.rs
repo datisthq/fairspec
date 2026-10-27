@@ -21,6 +21,18 @@ enum SheetType {
 
 /// Builds a table from sheet rows. Data starts after the last header row; a column keeps
 /// its cells' type when they share one and becomes text when they mix.
+/// The column names a sheet's own header rows give, whatever `columnNames` says.
+pub fn get_sheet_header(
+    rows: &[Vec<Option<SheetCell>>],
+    file_dialect: &FileDialect,
+) -> Result<Vec<String>> {
+    let header_rows = get_header_rows(Some(file_dialect));
+    let data_start = header_rows.iter().copied().max().unwrap_or(0);
+    let content = rows.get(data_start..).unwrap_or_default();
+    let options = get_sheet_options(file_dialect);
+    get_sheet_labels(rows, content, &header_rows, options.header_join)
+}
+
 pub fn create_table_from_sheet_rows(
     rows: &[Vec<Option<SheetCell>>],
     file_dialect: &FileDialect,

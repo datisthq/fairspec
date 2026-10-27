@@ -48,6 +48,15 @@ def assert_unique_column_names(names: list[str]) -> None:
         seen.add(name)
 
 
+def create_long_row_error(cell_count: int, column_count: int) -> Exception:
+    """The error of a row with more cells than the table has columns, worded as Polars
+    words its own so that `get_is_long_row_error` tells both
+    """
+    return Exception(
+        f"A row has {cell_count} cells: found more fields than defined by {column_count} columns"
+    )
+
+
 def get_is_long_row_error(error: BaseException) -> bool:
     """Tells a row with more cells than the table has columns, which Polars raises while
     reading, so a validator reports the file as not loadable instead of raising

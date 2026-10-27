@@ -47,5 +47,13 @@
         "throws": true
       }
     ]
+  },
+  {
+    "description": "a dialect listing headerRows out of order",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": { "format": "csv", "headerRows": [2, 1] },
+    "tests": [
+      { "description": "the load fails", "data": "a,b\nc,d\n1,2\n", "throws": true }
+    ]
   }
 ]

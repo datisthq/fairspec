@@ -7,8 +7,7 @@ export function decodeJsonBuffer(buffer: Buffer, options: { isLines: boolean }) 
   return options.isLines
     ? string
         .split("\n")
-        .map(line => (line.endsWith("\r") ? line.slice(0, -1) : line))
-        .filter(Boolean)
+        .filter(line => !/^[ \t\r]*$/.test(line))
         .map(line => JSON.parse(line))
     : JSON.parse(string)
 }

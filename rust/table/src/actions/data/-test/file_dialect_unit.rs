@@ -1,7 +1,7 @@
 use fairspec_metadata::FileDialect;
 use serde_json::{Value, json};
 
-use crate::actions::data::file_dialect::get_records_from_rows;
+use crate::actions::data::file_dialect::{get_header_labels_from_rows, get_records_from_rows};
 use crate::models::data::DataRow;
 
 fn get_records(rows: Value, dialect: Option<Value>) -> Value {
@@ -405,5 +405,29 @@ fn test_column_names_with_rows_shorter_than_column_names_array() {
             {"name": "Alice", "age": 30, "city": null, "country": null},
             {"name": "Bob", "age": null, "city": null, "country": null},
         ])
+    );
+}
+
+#[test]
+fn test_row_longer_than_the_header_is_a_long_row_error() {
+    let rows = json!([["id", "name"], [1, "apple", "extra"]]);
+    let error = try_get_records(rows, None).unwrap_err();
+    assert!(crate::helpers::file_dialect::get_is_long_row_error(&error));
+}
+
+#[test]
+fn test_header_labels_are_the_own_header_whatever_column_names_says() {
+    let rows: Vec<DataRow> = serde_json::from_value(json!([["a", "b"], [1, 2]])).unwrap();
+    let dialect: FileDialect =
+        serde_json::from_value(json!({"format": "csv", "columnNames": ["id", "name"]})).unwrap();
+    let labels = get_header_labels_from_rows(&rows, Some(&dialect)).unwrap();
+    assert_eq!(labels, Some(vec!["a".to_string(), "b".to_string()]));
+}
+
+#[test]
+fn test_header_labels_are_none_when_the_rows_end_before_the_header_rows() {
+    assert_eq!(
+        get_header_labels_from_rows(&[], None).unwrap(),
+        Some(vec![])
     );
 }

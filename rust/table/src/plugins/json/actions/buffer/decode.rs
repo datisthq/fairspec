@@ -11,8 +11,7 @@ pub fn decode_json_buffer(data: &[u8], is_lines: bool) -> Result<Value> {
         return parse(text);
     }
     text.split('\n')
-        .map(|line| line.strip_suffix('\r').unwrap_or(line))
-        .filter(|line| !line.is_empty())
+        .filter(|line| !line.trim_matches([' ', '\t', '\r']).is_empty())
         .map(parse)
         .collect::<Result<Vec<_>>>()
         .map(Value::Array)

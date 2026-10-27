@@ -44,6 +44,17 @@ class TestLoadCsvTable:
             }
         ]
 
+    def test_should_compare_the_own_header_of_every_part_under_column_names(self):
+        path1 = write_temp_file("a,b\n1,english\n")
+        path2 = write_temp_file("a,c\n2,german\n")
+        dialect = CsvFileDialect(columnNames=["id", "name"])
+
+        with pytest.raises(FairspecException) as error:
+            load_csv_table(Resource(data=[path1, path2], fileDialect=dialect))
+        assert error.value.report is not None
+        assert error.value.report.errors[0].partNumber == 2  # type: ignore[union-attr]
+        assert error.value.report.errors[0].columnNames == ["a", "c"]  # type: ignore[union-attr]
+
     def test_should_fail_with_a_file_header_report_on_an_empty_part_under_a_header(
         self,
     ):

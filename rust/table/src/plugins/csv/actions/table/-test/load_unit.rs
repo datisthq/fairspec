@@ -437,3 +437,16 @@ fn test_should_join_the_header_rows_of_every_part() {
         json!([{"a id": 1, "b name": "english"}, {"a id": 2, "b name": "german"}])
     );
 }
+
+#[test]
+fn test_should_compare_the_own_header_of_every_part_under_column_names() {
+    let error = load_error(
+        json!([write("a,b\n1,english\n"), write("a,c\n2,german\n")]),
+        csv(json!({"columnNames": ["id", "name"]})),
+    );
+    let report = serde_json::to_value(error.report().unwrap()).unwrap();
+    assert_eq!(
+        report["errors"],
+        json!([{"type": "file/header", "partNumber": 2, "columnNames": ["a", "c"]}])
+    );
+}

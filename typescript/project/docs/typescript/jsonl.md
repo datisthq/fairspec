@@ -74,6 +74,8 @@ JSONL uses newline-delimited JSON objects:
 {"id": 3, "name": "Charlie", "age": 35}
 ```
 
+A blank line, or one holding only spaces, tabs and a carriage return, is not a row and takes no row number.
+
 ## Advanced Features
 
 ### Column Selection

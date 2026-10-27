@@ -16,7 +16,11 @@ from fairspec_metadata import (
 )
 from fairspec_metadata.models.file_dialect.common import RowType
 
-from fairspec_table.actions.data.file_dialect import get_records_from_rows
+from fairspec_table.actions.data.file_dialect import (
+    get_header_labels_from_rows,
+    get_records_from_rows,
+)
+from fairspec_table.actions.table.file_dialect import assert_part_headers
 from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.helpers.general import get_is_object
@@ -56,10 +60,14 @@ def load_json_table(
         if inferred:
             file_dialect = inferred
 
-    is_lines = getattr(file_dialect, "format", None) == "jsonl"
+    if not isinstance(file_dialect, JsonFileDialect | JsonlFileDialect):
+        raise Exception("Resource data is not compatible")
+
+    is_lines = file_dialect.format == "jsonl"
     is_default = _is_default_dialect(file_dialect)
 
     tables: list[Table] = []
+    part_headers: list[list[str] | None] = []
     for path in paths:
         # Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
         is_native = is_default and not _get_has_byte_order_mark(path)
@@ -74,6 +82,7 @@ def load_json_table(
             )
             if table is not None:
                 tables.append(table)
+                part_headers.append(None)
                 continue
 
         buffer = load_file(path)
@@ -83,17 +92,34 @@ def load_json_table(
             table = _order_first_seen_columns(frame.lazy(), frame_keys)
             if table is not None:
                 tables.append(table)
+                part_headers.append(None)
                 continue
 
-        records = _get_records_from_json(
+        items = _get_items_from_json(
             decode_json_buffer(buffer, is_lines=is_lines), file_dialect
         )
-        if records is None:
+        if items is None:
             return None
+
+        # Array rows compare their header rows across parts before any row is read;
+        # object rows have none
+        rows, records = items
+        header = (
+            get_header_labels_from_rows(rows, file_dialect)
+            if len(paths) > 1 and rows is not None
+            else None
+        )
+        part_headers.append(header)
+        headers = [item for item in part_headers if item is not None]
+        if header is not None and len(headers) == len(part_headers):
+            assert_part_headers(headers)
+
+        if rows is not None:
+            records = get_records_from_rows(rows, file_dialect)
         table = _create_records_frame(records, file_dialect).lazy()
         tables.append(table)
 
-    result = pl.concat(tables)
+    result = pl.concat(tables, how="diagonal_relaxed")
 
     if not options.get("denormalized"):
         table_schema = resolve_table_schema(resource.tableSchema)
@@ -217,10 +243,10 @@ def _skip_json_whitespace(buffer: bytes, index: int) -> int:
     return index
 
 
-def _get_records_from_json(
+def _get_items_from_json(
     document: object,
     dialect: FileDialect,
-) -> list[DataRecord] | None:
+) -> tuple[list[DataRow] | None, list[DataRecord]] | None:
     if not isinstance(dialect, (JsonFileDialect, JsonlFileDialect)):
         return None
 
@@ -235,14 +261,14 @@ def _get_records_from_json(
     )
     if row_type == RowType.array:
         rows: list[DataRow] = [list(row) for row in data if isinstance(row, list)]
-        return get_records_from_rows(rows, dialect)
+        return rows, []
 
     records = [row for row in data if get_is_object(row)]
     column_names = dialect.columnNames
     if not column_names:
-        return records
+        return None, records
 
-    return [{name: row.get(name) for name in column_names} for row in records]
+    return None, [{name: row.get(name) for name in column_names} for row in records]
 
 
 def _get_json_pointer_value(document: object, pointer: str) -> object:

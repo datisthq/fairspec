@@ -9,6 +9,7 @@ from fairspec_dataset import prefetch_files
 from fairspec_metadata import Resource, get_supported_file_dialect, resolve_table_schema
 
 from fairspec_table.actions.table.file_dialect import (
+    assert_part_headers,
     concat_part_tables,
     create_part_header_exception,
     join_header_rows,
@@ -19,6 +20,7 @@ from fairspec_table.actions.table_schema.infer import infer_table_schema_from_ta
 from fairspec_table.helpers.file_dialect import (
     assert_unique_column_names,
     get_header_rows,
+    join_header_labels,
 )
 from fairspec_table.plugins.csv.actions.file_dialect.infer import infer_csv_file_dialect
 from fairspec_table.plugins.csv.helpers.delimiter import restore_delimiter, swap_delimiter
@@ -76,13 +78,21 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
     header_rows = get_header_rows(file_dialect)  # type: ignore[arg-type]
     is_multi_header = len(header_rows) > 1 and not column_names
+    is_own_header = len(paths) > 1 and not is_headerless and bool(column_names)
 
     # Header and comment rows count the rows of each part, so each part reads its own
     tables: list[Table] = []
+    part_headers: list[list[str]] = []
     for path in paths:
         part_dialect = _renumber_prefixed_rows(path, file_dialect)
         scan_options = _get_scan_options(part_dialect)
         part_header_rows = get_header_rows(part_dialect)  # type: ignore[arg-type]
+        # Compared before the part is read: joining its header rows reads it eagerly
+        if is_own_header:
+            part_headers.append(
+                _read_own_header(path, scan_options, part_dialect)  # type: ignore[arg-type]
+            )
+            assert_part_headers(part_headers)
         if is_multi_header:
             scan_options["schema"] = _get_headerless_schema(
                 path, scan_options, part_header_rows
@@ -106,7 +116,11 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
             table = skip_comment_rows(table, part_dialect)  # type: ignore[arg-type]
         tables.append(table)
 
-    result = concat_part_tables(tables, file_dialect)  # type: ignore[arg-type]
+    result = concat_part_tables(
+        tables,
+        file_dialect,  # type: ignore[arg-type]
+        part_headers if is_own_header else None,
+    )
 
     if is_headerless and not column_names:
         # By position, not from polars' own names: polars 2 numbers them from column_0
@@ -182,6 +196,45 @@ def _read_header_names(path: str, options: dict[str, object]) -> list[str]:
     frame: pl.DataFrame = table.head(1).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
     cells = frame.row(0) if frame.height else ()
     return [cell if isinstance(cell, str) else "" for cell in cells]
+
+
+# With columnNames the scan names the columns, so a part's own header rows are read
+# as data for the multipart check
+def _read_own_header(
+    path: str,
+    options: dict[str, object],
+    file_dialect: CsvFileDialect | TsvFileDialect | None,
+) -> list[str]:
+    header_rows = get_header_rows(file_dialect)
+    first_row = header_rows[0]
+    height = header_rows[-1] - first_row + 1
+    scan_options = {
+        key: value
+        for key, value in options.items()
+        if key not in ("null_values", "schema")
+    }
+    # A first header row may be shorter than the rows below it
+    scan_options.update(
+        has_header=False, truncate_ragged_lines=True, missing_columns="insert"
+    )
+    # The widest header row sets the width, and every cell is read as text
+    names = (
+        pl.scan_csv(path, **{**scan_options, "infer_schema_length": height})  # type: ignore[arg-type]
+        .collect_schema()
+        .names()
+    )
+    scan_options["schema"] = {name: pl.String for name in names}
+    table = pl.scan_csv(path, **scan_options)  # type: ignore[arg-type]
+    frame: pl.DataFrame = table.head(height).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+    rows = frame.rows()
+    header = [
+        list(rows[number - first_row]) if number - first_row < len(rows) else []
+        for number in header_rows
+    ]
+    if len(header) > 1:
+        header_join = getattr(file_dialect, "headerJoin", None)
+        return join_header_labels(header, " " if header_join is None else header_join)
+    return [cell if isinstance(cell, str) else "" for cell in header[0]]
 
 
 # The n-th name names the n-th column; fewer names than columns is an error, and more

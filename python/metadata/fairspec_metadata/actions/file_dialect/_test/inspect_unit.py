@@ -26,3 +26,13 @@ class TestInspectFileDialect:
     def test_should_skip_object_rows_which_comment_rows_does_not_apply_to(self):
         dialect = JsonlFileDialect(rowType=RowType.object, commentRows=[1])
         assert inspect_file_dialect(dialect) == []
+
+    def test_should_report_header_rows_out_of_ascending_order(self):
+        errors = inspect_file_dialect(
+            CsvFileDialect(headerRows=[1, 3, 2]), root_json_pointer="/fileDialect"
+        )
+
+        assert [error.jsonPointer for error in errors] == ["/fileDialect/headerRows"]
+
+    def test_should_accept_header_rows_in_ascending_order_with_a_gap(self):
+        assert inspect_file_dialect(CsvFileDialect(headerRows=[1, 3])) == []

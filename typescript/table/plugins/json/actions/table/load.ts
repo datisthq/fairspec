@@ -5,9 +5,14 @@ import { loadFile, loadFileStream, prefetchFiles } from "@fairspec/dataset"
 import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
-import { getRecordsFromRows } from "../../../../actions/data/fileDialect.ts"
+import {
+  getHeaderLabelsFromRows,
+  getRecordsFromRows,
+} from "../../../../actions/data/fileDialect.ts"
+import { assertPartHeaders } from "../../../../actions/table/fileDialect.ts"
 import { getIsObject } from "../../../../helpers/general.ts"
 import type { Table } from "../../../../models/table.ts"
+import type { DataRow } from "../../../../models/data.ts"
 import { Buffer } from "node:buffer"
 import { buffer as readStreamBuffer } from "node:stream/consumers"
 import * as pl from "nodejs-polars"
@@ -49,6 +54,7 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
   )
 
   const tables: Table[] = []
+  const partHeaders: (string[] | undefined)[] = []
   for (const path of paths) {
     // Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
     const isNative = isDefault && !(await getHasByteOrderMark(path))
@@ -58,6 +64,7 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
       const lineTable = keys && orderFirstSeenColumns(lineScan, keys)
       if (lineTable) {
         tables.push(lineTable)
+        partHeaders.push(undefined)
         continue
       }
     }
@@ -69,17 +76,30 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
       frame && frameKeys && orderFirstSeenColumns(frame.lazy(), frameKeys)
     if (frameTable) {
       tables.push(frameTable)
+      partHeaders.push(undefined)
       continue
     }
 
-    const records = getRecordsFromJson(decodeJsonBuffer(buffer, { isLines }), fileDialect)
-    if (!records) return undefined
+    const rows = getRowsFromJson(decodeJsonBuffer(buffer, { isLines }), fileDialect)
+    if (!rows) return undefined
 
-    const table = createRecordsFrame(records, fileDialect.columnNames).lazy()
-    tables.push(table)
+    // Array rows compare their header rows across parts before any row is read;
+    // object rows have none
+    const header =
+      paths.length > 1 && rows.rows
+        ? getHeaderLabelsFromRows(rows.rows, fileDialect)
+        : undefined
+    partHeaders.push(header)
+    const headers = partHeaders.filter(item => item !== undefined)
+    if (header && headers.length === partHeaders.length) assertPartHeaders(headers)
+
+    const records = rows.rows
+      ? getRecordsFromRows(rows.rows, fileDialect)
+      : (rows.records ?? [])
+    tables.push(createRecordsFrame(records, fileDialect.columnNames).lazy())
   }
 
-  let table = pl.concat(tables)
+  let table = pl.concat(tables, { how: "diagonal" })
 
   if (!options?.denormalized) {
     let tableSchema = await resolveTableSchema(resource.tableSchema)
@@ -90,10 +110,7 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
   return table
 }
 
-function getRecordsFromJson(
-  document: unknown,
-  dialect: JsonFileDialect | JsonlFileDialect,
-) {
+function getRowsFromJson(document: unknown, dialect: JsonFileDialect | JsonlFileDialect) {
   const data =
     dialect.format === "json" && dialect.jsonPointer !== undefined
       ? getJsonPointerValue(document, dialect.jsonPointer)
@@ -102,16 +119,19 @@ function getRecordsFromJson(
 
   const rowType = dialect.rowType ?? (Array.isArray(data[0]) ? "array" : "object")
   if (rowType === "array") {
-    return getRecordsFromRows(data.filter(Array.isArray), dialect)
+    const rows: DataRow[] = data.filter(Array.isArray)
+    return { rows }
   }
 
   const records = data.filter(getIsObject)
   const columnNames = dialect.columnNames
-  if (!columnNames) return records
+  if (!columnNames) return { records }
 
-  return records.map(row =>
-    Object.fromEntries(columnNames.map(name => [name, row[name]])),
-  )
+  return {
+    records: records.map(row =>
+      Object.fromEntries(columnNames.map(name => [name, row[name]])),
+    ),
+  }
 }
 
 // An empty array has no records to take the columns from

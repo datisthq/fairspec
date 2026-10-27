@@ -49,6 +49,23 @@ describe("loadCsvTable", () => {
     })
   })
 
+  it("should compare the own header of every part under columnNames", async () => {
+    const path1 = await writeTempFile("a,b\n1,english\n")
+    const path2 = await writeTempFile("a,c\n2,german\n")
+
+    const load = async () =>
+      await loadCsvTable({
+        data: [path1, path2],
+        fileDialect: { format: "csv", columnNames: ["id", "name"] },
+      })
+
+    await expect(load()).rejects.toMatchObject({
+      report: {
+        errors: [{ type: "file/header", partNumber: 2, columnNames: ["a", "c"] }],
+      },
+    })
+  })
+
   it("should fail with a file/header report on a 0-byte part under a header", async () => {
     const path1 = await writeTempFile("id,name\n1,english\n")
     const path2 = await writeTempFile("")

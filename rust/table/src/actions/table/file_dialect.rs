@@ -16,30 +16,80 @@ use crate::settings::NUMBER_COLUMN_NAME;
 
 /// Concatenates the tables of a multipart resource's parts; under a dialect with header
 /// rows every part's header gives the first part's column names, else a `file/header`.
+/// With `columnNames` the tables carry those names, so `part_headers` gives each part's own.
 pub fn concat_part_tables(
     tables: Vec<Table>,
     dialect: &FileDialectWithHeaderAndCommentRows,
+    part_headers: Option<Vec<Vec<String>>>,
 ) -> Result<Table> {
     if !get_header_rows(Some(dialect)).is_empty() {
-        let mut first_names: Option<Vec<String>> = None;
-        for (index, table) in tables.iter().enumerate() {
-            let names: Vec<String> = table
-                .clone()
-                .collect_schema()
-                .into_result()?
-                .iter_names()
-                .map(|name| name.to_string())
-                .collect();
-            match &first_names {
-                None => first_names = Some(names),
-                Some(first) if *first != names => {
-                    return Err(create_part_header_error(index + 1, names));
-                }
-                Some(_) => {}
-            }
-        }
+        let part_headers = match part_headers {
+            Some(part_headers) => part_headers,
+            None => tables
+                .iter()
+                .map(|table| {
+                    Ok(table
+                        .clone()
+                        .collect_schema()
+                        .into_result()?
+                        .iter_names()
+                        .map(|name| name.to_string())
+                        .collect())
+                })
+                .collect::<Result<_>>()?,
+        };
+        assert_part_headers(&part_headers)?;
     }
     concat(tables, UnionArgs::default()).into_result()
+}
+
+/// Fails with a `file/header` error for the first part whose header differs from part 1's.
+pub fn assert_part_headers(part_headers: &[Vec<String>]) -> Result<()> {
+    let Some(first_names) = part_headers.first() else {
+        return Ok(());
+    };
+    for (index, names) in part_headers.iter().enumerate() {
+        if names != first_names {
+            return Err(create_part_header_error(index + 1, names.clone()));
+        }
+    }
+    Ok(())
+}
+
+/// Concatenates tables by column name, as Polars' diagonal concat: the columns are the
+/// union of the tables' in the order first seen, null where a table has none, each
+/// cast to the supertype of its parts as Polars' relaxed concat does.
+pub fn concat_diagonal_tables(tables: Vec<Table>) -> Result<Table> {
+    let mut schemas = Vec::new();
+    let mut fields: Vec<(PlSmallStr, DataType)> = Vec::new();
+    for table in &tables {
+        let schema = table.clone().collect_schema().into_result()?;
+        for (name, dtype) in schema.iter() {
+            if !fields.iter().any(|(field, _)| field == name) {
+                fields.push((name.clone(), dtype.clone()));
+            }
+        }
+        schemas.push(schema);
+    }
+    let tables: Vec<Table> = tables
+        .into_iter()
+        .zip(&schemas)
+        .map(|(table, schema)| {
+            let exprs: Vec<Expr> = fields
+                .iter()
+                .map(|(name, dtype)| match schema.contains(name) {
+                    true => col(name.clone()),
+                    false => lit(NULL).cast(dtype.clone()).alias(name.clone()),
+                })
+                .collect();
+            table.select(exprs)
+        })
+        .collect();
+    let args = UnionArgs {
+        to_supertypes: true,
+        ..Default::default()
+    };
+    concat(tables, args).into_result()
 }
 
 /// The error of a part whose header differs from the first part's, or that has none.

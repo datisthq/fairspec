@@ -140,6 +140,8 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   a UTF-8 BOM, so a file starting with one is decoded too. Every JSON read, native or from
   decoded records, infers its columns from all rows: Polars' default 50 or 100 drops a key
   first seen later
+- `headerRows` out of ascending order (`[3, 1]`) is a `metadata` error at `…/headerRows` from
+  `inspectFileDialect` (and twins), whatever the `rowType`; a repeated row is not flagged
 - A row in both `headerRows` and `commentRows` is checked by `inspectFileDialect` (and twins) in
   `validateFileDialect` and in the dataset validator, at `…/commentRows`; `resolveFileDialect`
   asserts every inline dialect, so a load never reads a file through an invalid one. Profile
@@ -207,4 +209,15 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   delimiter pipeline, then `concatPartTables` (and twins; the sheet loaders too) compares each
   part's column names with part 1's and raises a `FairspecException` holding a `file/header`
   error (`partNumber`, `columnNames`), which `validateTable` reports. A 0-byte part is that error
-  under header rows and skipped without them. JSON parts are not compared yet
+  under header rows and skipped without them. Under `columnNames` the tables carry the dialect's
+  names, so each loader passes every part's own header as `partHeaders` (`readOwnHeader`,
+  `getSheetHeader` and twins). JSON array-row parts compare `getHeaderLabelsFromRows` through
+  `assertPartHeaders` before reading any row; object-row parts are not compared and concatenate
+  diagonally and relaxed, a column cast to its parts' supertype as in one file (Python's
+  `diagonal_relaxed`, Rust's `concat_diagonal_tables` with `to_supertypes`, since its polars build
+  lacks `diagonal_concat`). The CSV loaders read a part's own header rows with missing columns
+  inserted, as a first header row may be shorter
+- A JSON array row longer than its header or `columnNames` throws `createLongRowError` (and
+  twins), worded so `getIsLongRowError` reports it as `resource/type`, as a long CSV row. A
+  JSONL line of only spaces, tabs and `\r` is skipped by `decodeJsonBuffer`; Polars' native
+  object-line scan already skips it

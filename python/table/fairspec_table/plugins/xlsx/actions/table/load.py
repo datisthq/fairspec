@@ -18,7 +18,10 @@ from fairspec_table.plugins.xlsx.actions.file_dialect.infer import (
     infer_xlsx_file_dialect,
 )
 from fairspec_table.plugins.xlsx.helpers.sheet import read_sheet_rows
-from fairspec_table.plugins.xlsx.helpers.table import create_table_from_sheet_rows
+from fairspec_table.plugins.xlsx.helpers.table import (
+    create_table_from_sheet_rows,
+    get_sheet_header,
+)
 
 if TYPE_CHECKING:
     from fairspec_table.models.table import LoadTableOptions, Table
@@ -41,13 +44,20 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
     if not isinstance(file_dialect, XlsxFileDialect | OdsFileDialect):
         raise Exception("Resource data is not compatible")
 
+    # With columnNames the tables carry those names, so each part's own header is compared
+    is_own_header = len(paths) > 1 and file_dialect.columnNames is not None
     tables: list[Table] = []
+    part_headers: list[list[str]] = []
     for path in paths:
         rows = read_sheet_rows(path, file_dialect)
         if rows is not None:
             tables.append(create_table_from_sheet_rows(rows, file_dialect))
+            if is_own_header:
+                part_headers.append(get_sheet_header(rows, file_dialect))
 
-    result = concat_part_tables(tables, file_dialect)
+    result = concat_part_tables(
+        tables, file_dialect, part_headers if is_own_header else None
+    )
 
     if not options.get("denormalized"):
         table_schema = resolve_table_schema(resource.tableSchema)

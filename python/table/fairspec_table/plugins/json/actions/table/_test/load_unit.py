@@ -4,8 +4,14 @@ import time
 from unittest.mock import patch
 
 import polars as pl
+import pytest
 from fairspec_dataset import write_temp_file
-from fairspec_metadata import JsonFileDialect, JsonlFileDialect, Resource
+from fairspec_metadata import (
+    FairspecException,
+    JsonFileDialect,
+    JsonlFileDialect,
+    Resource,
+)
 from fairspec_metadata.models.file_dialect.common import RowType
 
 from ..load import load_json_table
@@ -292,3 +298,49 @@ class TestLoadJsonTableJsonl:
 
         assert frame.columns == ["a"]
         assert time.perf_counter() - started < 5
+
+
+class TestLoadJsonTableDialectRows:
+    def test_should_skip_a_jsonl_line_of_only_whitespace(self):
+        path = write_temp_file('["a"]\n \t\r\n[1]\n', format="jsonl")
+        dialect = JsonlFileDialect(rowType=RowType.array)
+
+        table = load_json_table(Resource(data=path, fileDialect=dialect))
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"a": 1}]
+
+    def test_should_fail_on_an_array_row_longer_than_the_header(self):
+        path = write_temp_file('[["id"],[1,2]]', format="json")
+        dialect = JsonFileDialect(rowType=RowType.array)
+
+        with pytest.raises(Exception, match="found more fields than defined"):
+            load_json_table(Resource(data=path, fileDialect=dialect))
+
+
+class TestLoadJsonTableMultipart:
+    def test_should_fail_with_a_file_header_report_on_array_parts_whose_headers_differ(
+        self,
+    ):
+        path1 = write_temp_file('[["id"],[1]]', format="json")
+        path2 = write_temp_file('[["nr"],[2]]', format="json")
+        dialect = JsonFileDialect(rowType=RowType.array, columnNames=["id"])
+
+        with pytest.raises(FairspecException) as error:
+            load_json_table(Resource(data=[path1, path2], fileDialect=dialect))
+        assert error.value.report is not None
+        assert error.value.report.errors[0].partNumber == 2  # type: ignore[union-attr]
+        assert error.value.report.errors[0].columnNames == ["nr"]  # type: ignore[union-attr]
+
+    def test_should_not_compare_object_row_parts(self):
+        path1 = write_temp_file('{"id":1,"name":"a"}\n', format="jsonl")
+        path2 = write_temp_file('{"id":2}\n', format="jsonl")
+
+        table = load_json_table(
+            Resource(data=[path1, path2], fileDialect=JsonlFileDialect())
+        )
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1, "name": "a"}, {"id": 2, "name": None}]

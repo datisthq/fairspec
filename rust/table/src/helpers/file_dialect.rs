@@ -94,6 +94,14 @@ pub fn assert_unique_column_names(names: &[String]) -> Result<()> {
     Ok(())
 }
 
+/// The error of a row with more cells than the table has columns, worded as Polars
+/// words its own so that `get_is_long_row_error` tells both.
+pub fn create_long_row_error(cell_count: usize, column_count: usize) -> Error {
+    Error::Load(format!(
+        "A row has {cell_count} cells: found more fields than defined by {column_count} columns"
+    ))
+}
+
 /// Tells a row with more cells than the table has columns, which Polars raises while
 /// reading, so a validator reports the file as not loadable instead of failing.
 pub fn get_is_long_row_error(error: &Error) -> bool {

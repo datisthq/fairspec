@@ -566,5 +566,71 @@
         }
       }
     ]
+  },
+  {
+    "description": "json array rows longer than the header",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": { "format": "json", "rowType": "array" },
+    "tests": [
+      {
+        "description": "the load fails",
+        "data": [
+          ["id", "name"],
+          [1, "apple", "extra"]
+        ],
+        "throws": true
+      },
+      {
+        "description": "a row as long as the header loads",
+        "data": [
+          ["id", "name"],
+          [1, "apple"]
+        ],
+        "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
+      },
+      {
+        "description": "a shorter row is null in its missing columns",
+        "data": [["id", "name"], [1]],
+        "expected": { "columns": ["id", "name"], "rows": [[1, null]] }
+      }
+    ]
+  },
+  {
+    "description": "jsonl array rows longer than the header",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "array" },
+    "tests": [
+      {
+        "description": "the load fails",
+        "data": "[\"id\",\"name\"]\n[1,\"apple\",\"extra\"]\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "json array rows longer than the header without rowType",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": { "format": "json" },
+    "tests": [
+      { "description": "the load fails", "data": [["id"], [1, 2]], "throws": true }
+    ]
+  },
+  {
+    "description": "json array rows longer than columnNames",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#columnnames"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": false,
+      "columnNames": ["id"]
+    },
+    "tests": [{ "description": "the load fails", "data": [[1, "apple"]], "throws": true }]
   }
 ]

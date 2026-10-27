@@ -302,5 +302,95 @@
         ]
       }
     ]
+  },
+  {
+    "description": "headerRows out of order",
+    "comment": "Header rows are joined top to bottom; JSON Schema cannot express the order, so the check is the library's",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": { "format": "csv", "headerRows": [3, 1] }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the property",
+        "data": { "table.csv": "a,b\nc,d\ne,f\n1,2\n" },
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/0/fileDialect/headerRows" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "headerRows out of order after ascending rows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": { "format": "csv", "headerRows": [1, 3, 2] }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the property",
+        "data": { "table.csv": "a,b\nc,d\ne,f\n1,2\n" },
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/0/fileDialect/headerRows" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "headerRows in ascending order with a gap",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.csv",
+          "fileDialect": { "format": "csv", "headerRows": [1, 3] }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": { "table.csv": "a,b\nskipped,row\nc,d\n1,2\n" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "headerRows out of order on json array rows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "table.json",
+          "fileDialect": { "format": "json", "rowType": "array", "headerRows": [2, 1] }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the property",
+        "data": { "table.json": "[[\"a\"],[\"b\"],[1]]" },
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/0/fileDialect/headerRows" }
+        ]
+      }
+    ]
   }
 ]

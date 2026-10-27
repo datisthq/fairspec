@@ -74,23 +74,31 @@ function dropRows(table: Table, numbers: number[], offset: number) {
 
 /**
  * Concatenates the tables of a multipart resource's parts; under a dialect with header
- * rows every part's header gives the first part's column names, else a `file/header`
+ * rows every part's header gives the first part's column names, else a `file/header`.
+ * With `columnNames` the tables carry those names, so `partHeaders` gives each part's own
  */
 export function concatPartTables(
   tables: Table[],
   dialect?: FileDialectWithHeaderAndCommentRows,
+  partHeaders?: string[][],
 ) {
-  const firstNames = tables[0]?.columns ?? []
   if (getHeaderRows(dialect).length) {
-    tables.forEach((table, index) => {
-      const names = table.columns
-      const isSame =
-        names.length === firstNames.length &&
-        names.every((name, position) => name === firstNames[position])
-      if (!isSame) throw createPartHeaderException(index + 1, names)
-    })
+    assertPartHeaders(partHeaders ?? tables.map(table => table.columns))
   }
   return pl.concat(tables)
+}
+
+/**
+ * Throws a `file/header` error for the first part whose header differs from part 1's
+ */
+export function assertPartHeaders(partHeaders: string[][]) {
+  const firstNames = partHeaders[0] ?? []
+  partHeaders.forEach((names, index) => {
+    const isSame =
+      names.length === firstNames.length &&
+      names.every((name, position) => name === firstNames[position])
+    if (!isSame) throw createPartHeaderException(index + 1, names)
+  })
 }
 
 /**

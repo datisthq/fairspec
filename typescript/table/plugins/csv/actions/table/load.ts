@@ -7,6 +7,7 @@ import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import { stat } from "node:fs/promises"
 import {
+  assertPartHeaders,
   concatPartTables,
   createPartHeaderException,
   joinHeaderRows,
@@ -20,7 +21,10 @@ import { NUMBER_COLUMN_NAME } from "../../../../settings.ts"
 import { getSupportedFileDialect } from "@fairspec/metadata"
 import { restoreDelimiter, swapDelimiter } from "../../helpers/delimiter.ts"
 import { cleanCsvRows } from "../../helpers/rows.ts"
-import { assertUniqueColumnNames } from "../../../../helpers/fileDialect.ts"
+import {
+  assertUniqueColumnNames,
+  joinHeaderLabels,
+} from "../../../../helpers/fileDialect.ts"
 
 export async function loadCsvTable(resource: Resource, options?: LoadTableOptions) {
   const maxBytes = options?.previewBytes
@@ -64,12 +68,19 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   }
 
   const isMultiHeader = getHeaderRows(fileDialect).length > 1 && !fileDialect?.columnNames
+  const isOwnHeader = paths.length > 1 && !isHeaderless && !!fileDialect?.columnNames
 
   // Header and comment rows count the rows of each part, so each part reads its own
   const tables: Table[] = []
+  const partHeaders: string[][] = []
   for (const path of paths) {
     const partDialect = fileDialect && (await renumberPrefixedRows(path, fileDialect))
     const scanOptions = getScanOptions(partDialect)
+    // Compared before the part is read: joining its header rows reads it eagerly
+    if (isOwnHeader) {
+      partHeaders.push(await readOwnHeader(path, scanOptions, partDialect))
+      assertPartHeaders(partHeaders)
+    }
     if (isMultiHeader) {
       scanOptions.schema = getHeaderlessSchema(path, scanOptions, partDialect)
       // nodejs-polars refuses a first row shorter than a given schema unless it may
@@ -91,7 +102,7 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
     tables.push(table)
   }
 
-  let table = concatPartTables(tables, fileDialect)
+  let table = concatPartTables(tables, fileDialect, isOwnHeader ? partHeaders : undefined)
 
   // There is no way to specify column names in nodejs-polars by default
   // so we have to rename `column_*` to `column*` is table doesn't have header
@@ -157,6 +168,37 @@ async function readHeaderNames(path: string, options: Partial<pl.ScanCsvOptions>
     const cell: unknown = frame.getColumn(name).get(0)
     return typeof cell === "string" ? cell : ""
   })
+}
+
+// With columnNames the scan names the columns, so a part's own header rows are read
+// as data for the multipart check
+async function readOwnHeader(
+  path: string,
+  options: Partial<pl.ScanCsvOptions>,
+  fileDialect?: TsvFileDialect | CsvFileDialect,
+) {
+  const headerRows = getHeaderRows(fileDialect)
+  const firstRow = headerRows[0] ?? 1
+  const height = (headerRows.at(-1) ?? 1) - firstRow + 1
+  const headerOptions = {
+    ...options,
+    hasHeader: false,
+    schema: undefined,
+    missingColumns: undefined,
+    nullValues: undefined,
+    truncateRaggedLines: true,
+  }
+  // The widest header row sets the width, and every cell is read as text
+  const names = pl.scanCSV(path, { ...headerOptions, inferSchemaLength: height }).columns
+  const schema = Object.fromEntries(names.map(name => [name, pl.String]))
+  const frame = await pl
+    .scanCSV(path, { ...headerOptions, schema })
+    .head(height)
+    .collect()
+  const rows = frame.rows()
+  const header = headerRows.map(number => rows[number - firstRow] ?? [])
+  if (header.length > 1) return joinHeaderLabels(header, fileDialect?.headerJoin ?? " ")
+  return (header[0] ?? []).map(cell => (typeof cell === "string" ? cell : ""))
 }
 
 // Header rows are joined from the data, so every column is read as text and the

@@ -204,3 +204,62 @@ mod jsonl {
         );
     }
 }
+
+mod dialect_rows {
+    use super::*;
+
+    #[test]
+    fn test_should_skip_a_jsonl_line_of_only_whitespace() {
+        let records = load(
+            json!(write("[\"a\"]\n \t\r\n[1]\n")),
+            json!({"format": "jsonl", "rowType": "array"}),
+        );
+        assert_eq!(records, Some(json!([{"a": 1}])));
+    }
+
+    #[test]
+    fn test_should_fail_on_an_array_row_longer_than_the_header() {
+        let resource: Resource = serde_json::from_value(json!({
+            "data": write("[[\"id\"],[1,2]]"),
+            "fileDialect": {"format": "json", "rowType": "array"},
+        }))
+        .unwrap();
+        let error = load_json_table(&resource, &Default::default())
+            .err()
+            .unwrap();
+        assert!(error.to_string().contains("found more fields than defined"));
+    }
+}
+
+mod multipart {
+    use super::*;
+
+    #[test]
+    fn test_should_fail_with_a_file_header_report_on_array_parts_whose_headers_differ() {
+        let resource: Resource = serde_json::from_value(json!({
+            "data": [write("[[\"id\"],[1]]"), write("[[\"nr\"],[2]]")],
+            "fileDialect": {"format": "json", "rowType": "array", "columnNames": ["id"]},
+        }))
+        .unwrap();
+        let error = load_json_table(&resource, &Default::default())
+            .err()
+            .unwrap();
+        let report = serde_json::to_value(error.report().unwrap()).unwrap();
+        assert_eq!(
+            report["errors"],
+            json!([{"type": "file/header", "partNumber": 2, "columnNames": ["nr"]}])
+        );
+    }
+
+    #[test]
+    fn test_should_not_compare_object_row_parts() {
+        let records = load(
+            json!([write("{\"id\":1,\"name\":\"a\"}\n"), write("{\"id\":2}\n")]),
+            json!({"format": "jsonl"}),
+        );
+        assert_eq!(
+            records,
+            Some(json!([{"id": 1, "name": "a"}, {"id": 2, "name": null}]))
+        );
+    }
+}

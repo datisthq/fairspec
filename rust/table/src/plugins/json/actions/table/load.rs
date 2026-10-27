@@ -8,7 +8,8 @@ use fairspec_metadata::{
 use polars::prelude::*;
 use serde_json::Value;
 
-use crate::actions::data::file_dialect::get_records_from_rows;
+use crate::actions::data::file_dialect::{get_header_labels_from_rows, get_records_from_rows};
+use crate::actions::table::file_dialect::{assert_part_headers, concat_diagonal_tables};
 use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
@@ -54,6 +55,7 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
     let is_default = get_is_default_dialect(&file_dialect);
 
     let mut tables = Vec::new();
+    let mut part_headers: Vec<Option<Vec<String>>> = Vec::new();
     for path in &paths {
         // Polars reads no byte order mark, and orders the keys of uneven rows by its own rule
         let is_native = is_default && !get_has_byte_order_mark(path)?;
@@ -68,6 +70,7 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
                 .into_result()?;
             if let Some(table) = order_first_seen_columns(table, &keys)? {
                 tables.push(table);
+                part_headers.push(None);
                 continue;
             }
         }
@@ -79,18 +82,39 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
             && let Some(table) = order_first_seen_columns(frame.lazy(), &keys)?
         {
             tables.push(table);
+            part_headers.push(None);
             continue;
         }
         let document = decode_json_buffer(&buffer, is_lines)?;
-        let Some(records) = get_records_from_json(document, &file_dialect)? else {
+        let Some(items) = get_items_from_json(document, &file_dialect)? else {
             return Ok(None);
+        };
+
+        // Array rows compare their header rows across parts before any row is read;
+        // object rows have none
+        let header = match &items {
+            JsonItems::Rows(rows) if paths.len() > 1 => {
+                get_header_labels_from_rows(rows, Some(&file_dialect))?
+            }
+            _ => None,
+        };
+        let is_compared = header.is_some();
+        part_headers.push(header);
+        let headers: Vec<Vec<String>> = part_headers.iter().flatten().cloned().collect();
+        if is_compared && headers.len() == part_headers.len() {
+            assert_part_headers(&headers)?;
+        }
+
+        let records = match items {
+            JsonItems::Rows(rows) => get_records_from_rows(&rows, Some(&file_dialect))?,
+            JsonItems::Records(records) => records,
         };
         tables.push(create_table_from_records(records, &file_dialect)?);
     }
 
     let mut result = match tables.len() {
         1 => tables.into_iter().next().unwrap_or_default(),
-        _ => concat(tables, UnionArgs::default()).into_result()?,
+        _ => concat_diagonal_tables(tables)?,
     };
 
     if options.denormalized != Some(true) {
@@ -272,10 +296,14 @@ fn get_object_keys(text: &[u8]) -> Option<Vec<String>> {
     }
 }
 
-fn get_records_from_json(
-    document: Value,
-    file_dialect: &FileDialect,
-) -> Result<Option<Vec<DataRecord>>> {
+/// The items of a JSON document: array rows still to be read through the header, or
+/// object rows.
+enum JsonItems {
+    Rows(Vec<DataRow>),
+    Records(Vec<DataRecord>),
+}
+
+fn get_items_from_json(document: Value, file_dialect: &FileDialect) -> Result<Option<JsonItems>> {
     let (json_pointer, row_type, column_names) = match file_dialect {
         FileDialect::Json(dialect) => (
             dialect.json_pointer.clone(),
@@ -307,7 +335,7 @@ fn get_records_from_json(
                 _ => None,
             })
             .collect();
-        return Ok(Some(get_records_from_rows(&rows, Some(file_dialect))?));
+        return Ok(Some(JsonItems::Rows(rows)));
     }
 
     let records = data.into_iter().filter_map(|row| match row {
@@ -330,7 +358,7 @@ fn get_records_from_json(
             })
             .collect(),
     };
-    Ok(Some(records))
+    Ok(Some(JsonItems::Records(records)))
 }
 
 fn get_json_pointer_value(document: Value, pointer: &str) -> Result<Option<Value>> {

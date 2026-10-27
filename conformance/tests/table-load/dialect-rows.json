@@ -622,5 +622,68 @@
         }
       }
     ]
+  },
+  {
+    "description": "whitespace-only lines in jsonl",
+    "comment": "The default dialect reads objects through Polars, array rows through the decoder",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl" },
+    "tests": [
+      {
+        "description": "a line of spaces and tabs between objects is not a row",
+        "data": "{\"a\":1}\n  \t \n{\"a\":2}\n",
+        "expected": { "columns": ["a"], "rows": [[1], [2]] }
+      },
+      {
+        "description": "a whitespace line before the first object is not a row",
+        "data": "  \n{\"a\":1}\n",
+        "expected": { "columns": ["a"], "rows": [[1]] }
+      },
+      {
+        "description": "a whitespace line on crlf lines is not a row",
+        "data": "{\"a\":1}\r\n \r\n{\"a\":2}\r\n",
+        "expected": { "columns": ["a"], "rows": [[1], [2]] }
+      },
+      {
+        "description": "a whitespace line at the end is not a row",
+        "data": "{\"a\":1}\n \t\n",
+        "expected": { "columns": ["a"], "rows": [[1]] }
+      }
+    ]
+  },
+  {
+    "description": "whitespace-only lines in jsonl with array rows",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "array" },
+    "tests": [
+      {
+        "description": "a line of spaces and tabs is not a row",
+        "data": "[\"a\"]\n \t\n[1]\n",
+        "expected": { "columns": ["a"], "rows": [[1]] }
+      },
+      {
+        "description": "a line holding a no-break space is not blank",
+        "data": "[\"a\"]\n \n[1]\n",
+        "throws": true
+      }
+    ]
+  },
+  {
+    "description": "whitespace-only lines take no row number in jsonl",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#jsonl",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "array", "commentRows": [2] },
+    "tests": [
+      {
+        "description": "commentRows counts lines that are rows",
+        "data": "[\"a\"]\n   \n[1]\n[2]\n",
+        "expected": { "columns": ["a"], "rows": [[2]] }
+      }
+    ]
   }
 ]

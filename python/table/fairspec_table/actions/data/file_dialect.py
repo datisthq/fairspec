@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fairspec_table.helpers.file_dialect import (
     assert_unique_column_names,
+    create_long_row_error,
     get_header_rows,
     join_header_labels,
 )
@@ -32,10 +33,8 @@ def get_records_from_rows(
         if _get_is_commented_row(row, file_dialect):
             continue
 
-        if column_names is not None and len(row) > len(labels):
-            raise Exception(
-                f"A row has {len(row)} cells but columnNames has {len(labels)}"
-            )
+        if len(row) > len(labels):
+            raise create_long_row_error(len(row), len(labels))
 
         records.append(
             {
@@ -47,11 +46,33 @@ def get_records_from_rows(
     return records
 
 
+def get_header_labels_from_rows(
+    rows: list[DataRow],
+    file_dialect: FileDialectWithHeaderAndCommentRows | None = None,
+) -> list[str] | None:
+    """The column names the rows' own header rows give, whatever columnNames says, or
+    None without header rows, or none when the rows end before them; a multipart
+    resource compares them across parts"""
+    header_rows = get_header_rows(file_dialect)
+    if not header_rows:
+        return None
+    if len(rows) < max(header_rows):
+        return []
+    header = _get_header_from_rows(rows, file_dialect, is_own_header=True)
+    return _get_labels_from_header(header, file_dialect) or []
+
+
 def _get_header_from_rows(
     rows: list[DataRow],
     file_dialect: FileDialectWithHeaderAndCommentRows | None = None,
+    *,
+    is_own_header: bool = False,
 ) -> list[DataRow]:
-    if file_dialect is not None and file_dialect.columnNames is not None:
+    if (
+        file_dialect is not None
+        and file_dialect.columnNames is not None
+        and not is_own_header
+    ):
         return [list(file_dialect.columnNames)]
 
     header_rows = get_header_rows(file_dialect)

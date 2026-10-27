@@ -1,5 +1,6 @@
 import {
   assertUniqueColumnNames,
+  createLongRowError,
   getHeaderRows,
   joinHeaderLabels,
 } from "../../helpers/fileDialect.ts"
@@ -29,10 +30,8 @@ export function getRecordsFromRows(
       continue
     }
 
-    if (fileDialect?.columnNames && row.length > labels.length) {
-      throw new Error(
-        `A row has ${row.length} cells but columnNames has ${labels.length}`,
-      )
+    if (row.length > labels.length) {
+      throw createLongRowError(row.length, labels.length)
     }
 
     records.push(Object.fromEntries(labels.map((label, index) => [label, row[index]])))
@@ -41,11 +40,28 @@ export function getRecordsFromRows(
   return records
 }
 
-function getHeaderFromRows(
+/**
+ * The column names the rows' own header rows give, whatever `columnNames` says, or
+ * `undefined` without header rows, or none when the rows end before them; a multipart
+ * resource compares them across parts
+ */
+export function getHeaderLabelsFromRows(
   rows: DataRow[],
   fileDialect?: FileDialectWithHeaderAndCommentRows,
 ) {
-  if (fileDialect?.columnNames) {
+  const headerRows = getHeaderRows(fileDialect)
+  if (!headerRows.length) return undefined
+  if (rows.length < Math.max(...headerRows)) return []
+  const header = getHeaderFromRows(rows, fileDialect, { isOwnHeader: true })
+  return getLabelsFromHeader(header, fileDialect) ?? []
+}
+
+function getHeaderFromRows(
+  rows: DataRow[],
+  fileDialect?: FileDialectWithHeaderAndCommentRows,
+  options?: { isOwnHeader?: boolean },
+) {
+  if (fileDialect?.columnNames && !options?.isOwnHeader) {
     return [fileDialect.columnNames]
   }
 

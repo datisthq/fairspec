@@ -4,7 +4,9 @@ import pytest
 
 from fairspec_metadata import CsvFileDialect
 
-from ..file_dialect import get_records_from_rows
+from fairspec_table.helpers.file_dialect import get_is_long_row_error
+
+from ..file_dialect import get_header_labels_from_rows, get_records_from_rows
 
 
 class TestGetRecordsFromRows:
@@ -232,6 +234,13 @@ class TestGetRecordsFromRows:
             {"name": "Charlie", "age": None, "city": None, "country": None},
         ]
 
+    def test_row_longer_than_the_header_is_a_long_row_error(self):
+        rows: list[list[object]] = [["id", "name"], [1, "apple", "extra"]]
+
+        with pytest.raises(Exception) as error:
+            get_records_from_rows(rows)
+        assert get_is_long_row_error(error.value)
+
     def test_null_values(self):
         rows = [
             ["name", "age", "city"],
@@ -403,7 +412,7 @@ class TestGetRecordsFromRows:
             ["Bob", 25, "LA", "USA"],
         ]
 
-        with pytest.raises(Exception, match="columnNames"):
+        with pytest.raises(Exception, match="found more fields than defined"):
             get_records_from_rows(
                 rows,
                 CsvFileDialect(
@@ -429,3 +438,17 @@ class TestGetRecordsFromRows:
             {"name": "Alice", "age": 30, "city": None, "country": None},
             {"name": "Bob", "age": None, "city": None, "country": None},
         ]
+
+
+class TestGetHeaderLabelsFromRows:
+    def test_should_read_the_own_header_whatever_column_names_says(self):
+        rows: list[list[object]] = [["a", "b"], [1, 2]]
+        dialect = CsvFileDialect(columnNames=["id", "name"])
+        assert get_header_labels_from_rows(rows, dialect) == ["a", "b"]
+
+    def test_should_give_no_header_when_the_rows_end_before_the_header_rows(self):
+        assert get_header_labels_from_rows([], CsvFileDialect()) == []
+
+    def test_should_give_none_without_header_rows(self):
+        dialect = CsvFileDialect(headerRows=False)
+        assert get_header_labels_from_rows([[1]], dialect) is None

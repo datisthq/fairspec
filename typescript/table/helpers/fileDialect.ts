@@ -44,6 +44,16 @@ export function assertUniqueColumnNames(names: string[]) {
 }
 
 /**
+ * The error of a row with more cells than the table has columns, worded as Polars
+ * words its own so that `getIsLongRowError` tells both
+ */
+export function createLongRowError(cellCount: number, columnCount: number) {
+  return new Error(
+    `A row has ${cellCount} cells: found more fields than defined by ${columnCount} columns`,
+  )
+}
+
+/**
  * Tells a row with more cells than the table has columns, which Polars raises while
  * reading, so a validator reports the file as not loadable instead of throwing
  */

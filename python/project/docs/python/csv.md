@@ -55,7 +55,7 @@ table = load_csv_table(Resource(
 table = load_csv_table(Resource(data=["part1.csv", "part2.csv", "part3.csv"]))
 ```
 
-Every part carries its own header rows, and header and comment rows count the rows of each part. A part whose header gives other column names than part 1's, or a 0-byte part under a dialect with header rows, fails the load with a `FairspecException` whose report holds a `file/header` error naming the part; validation reports that error. A 0-byte part without header rows adds no rows.
+Every part carries its own header rows, and header and comment rows count the rows of each part. A part whose header gives other column names than part 1's, or a 0-byte part under a dialect with header rows, fails the load with a `FairspecException` whose report holds a `file/header` error naming the part; validation reports that error. With `columnNames` the names come from the dialect, but each part's own header is still compared. A 0-byte part without header rows adds no rows.
 
 ### Saving CSV Files
 

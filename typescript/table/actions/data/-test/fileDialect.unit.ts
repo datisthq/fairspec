@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
-import { getRecordsFromRows } from "../fileDialect.ts"
+import { getIsLongRowError } from "../../../helpers/fileDialect.ts"
+import { getHeaderLabelsFromRows, getRecordsFromRows } from "../fileDialect.ts"
 
 describe("getRecordsFromRows", () => {
   it("should convert rows to records with default header", () => {
@@ -257,6 +258,22 @@ describe("getRecordsFromRows", () => {
     ])
   })
 
+  it("should throw a long-row error on a row longer than the header", () => {
+    const rows = [
+      ["id", "name"],
+      [1, "apple", "extra"],
+    ]
+
+    let error: unknown
+    try {
+      getRecordsFromRows(rows)
+    } catch (caught) {
+      error = caught
+    }
+
+    expect(getIsLongRowError(error)).toBe(true)
+  })
+
   it("should handle null and undefined values", () => {
     const rows = [
       ["name", "age", "city"],
@@ -456,5 +473,28 @@ describe("getRecordsFromRows", () => {
     })
 
     expect(result).toEqual([{ name: "Alice", age: 30 }, { name: "Bob" }])
+  })
+})
+
+describe("getHeaderLabelsFromRows", () => {
+  it("should read the own header whatever columnNames says", () => {
+    const rows = [
+      ["a", "b"],
+      [1, 2],
+    ]
+
+    expect(
+      getHeaderLabelsFromRows(rows, { format: "json", columnNames: ["id", "name"] }),
+    ).toEqual(["a", "b"])
+  })
+
+  it("should give no header when the rows end before the header rows", () => {
+    expect(getHeaderLabelsFromRows([], { format: "json" })).toEqual([])
+  })
+
+  it("should give undefined without header rows", () => {
+    expect(
+      getHeaderLabelsFromRows([[1]], { format: "json", headerRows: false }),
+    ).toBeUndefined()
   })
 })

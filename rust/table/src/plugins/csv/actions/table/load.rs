@@ -9,13 +9,18 @@ use polars::prelude::*;
 use serde_json::Value;
 
 use crate::actions::table::file_dialect::{
-    concat_part_tables, create_part_header_error, join_header_rows, skip_comment_rows,
+    assert_part_headers, concat_part_tables, create_part_header_error, join_header_rows,
+    skip_comment_rows,
 };
 use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
-use crate::helpers::file_dialect::{assert_unique_column_names, get_comment_rows, get_header_rows};
+use crate::helpers::file_dialect::{
+    assert_unique_column_names, get_comment_rows, get_header_rows, join_header_labels,
+};
 use crate::helpers::table::LazyFrameExt;
+use crate::helpers::value::get_json_value;
+use crate::models::data::DataRow;
 use crate::models::table::{LoadTableOptions, Table};
 use crate::plugins::csv::actions::file_dialect::infer::infer_csv_file_dialect;
 use crate::plugins::csv::helpers::delimiter::{restore_delimiter, swap_delimiter};
@@ -82,13 +87,20 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
 
     let column_names = get_column_names(&file_dialect).cloned();
     let is_multi_header = get_header_rows(Some(&file_dialect)).len() > 1 && column_names.is_none();
+    let is_own_header = paths.len() > 1 && !is_headerless && column_names.is_some();
 
     // Header and comment rows count the rows of each part, so each part reads its own
     let mut tables = Vec::new();
+    let mut part_headers = Vec::new();
     for path in &paths {
         let part_dialect = renumber_prefixed_rows(path, file_dialect.clone())?;
         let scan = CsvScan::new(&part_dialect);
         let part_header_rows = get_header_rows(Some(&part_dialect));
+        // Compared before the part is read: joining its header rows reads it eagerly
+        if is_own_header {
+            part_headers.push(read_own_header(path, &scan, &part_dialect)?);
+            assert_part_headers(&part_headers)?;
+        }
         let mut schema = scan.schema.clone();
         if is_multi_header {
             schema = Some(get_headerless_schema(path, &scan, &part_header_rows)?);
@@ -122,7 +134,8 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         }
         tables.push(table);
     }
-    let mut result = concat_part_tables(tables, &file_dialect)?;
+    let part_headers = is_own_header.then_some(part_headers);
+    let mut result = concat_part_tables(tables, &file_dialect, part_headers)?;
 
     if is_headerless && column_names.is_none() {
         // By position, not from polars' own names: polars numbers them from column_1
@@ -396,6 +409,64 @@ fn get_headerless_schema(path: &str, scan: &CsvScan, header_rows: &[usize]) -> R
             .map(|name| Field::new(name.clone(), DataType::String))
             .collect::<Schema>(),
     ))
+}
+
+// With columnNames the scan names the columns, so a part's own header rows are read
+// as data for the multipart check
+fn read_own_header(path: &str, scan: &CsvScan, file_dialect: &FileDialect) -> Result<Vec<String>> {
+    let header_rows = get_header_rows(Some(file_dialect));
+    let first_row = header_rows.first().copied().unwrap_or(1);
+    let height = header_rows.last().copied().unwrap_or(1) - first_row + 1;
+    let reader = || {
+        // A first header row may be shorter than the rows below it
+        scan.create_reader(path, None, true)
+            .with_has_header(false)
+            .with_null_values(None)
+            .with_truncate_ragged_lines(true)
+    };
+    // The widest header row sets the width, and every cell is read as text
+    let names = reader()
+        .with_infer_schema_length(Some(height))
+        .finish()
+        .into_result()?
+        .collect_schema()
+        .into_result()?;
+    let schema: Schema = names
+        .iter_names()
+        .map(|name| Field::new(name.clone(), DataType::String))
+        .collect();
+    let frame = reader()
+        .with_schema(Some(Arc::new(schema)))
+        .finish()
+        .into_result()?
+        .limit(height as u32)
+        .collect()
+        .into_result()?;
+    let header: Vec<DataRow> = header_rows
+        .iter()
+        .map(|number| {
+            frame
+                .get_row(number - first_row)
+                .map(|row| row.0.iter().map(get_json_value).collect())
+                .unwrap_or_default()
+        })
+        .collect();
+    if header.len() > 1 {
+        let header_join = match file_dialect {
+            FileDialect::Csv(dialect) => dialect.header_join.as_deref(),
+            FileDialect::Tsv(dialect) => dialect.header_join.as_deref(),
+            _ => None,
+        };
+        return Ok(join_header_labels(&header, header_join.unwrap_or(" ")));
+    }
+    Ok(header
+        .first()
+        .map(|row| {
+            row.iter()
+                .map(|cell| cell.as_str().unwrap_or_default().to_string())
+                .collect()
+        })
+        .unwrap_or_default())
 }
 
 // Polars renames a repeated header name, so the names are read as a data row

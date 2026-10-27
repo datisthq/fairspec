@@ -68,17 +68,27 @@ def skip_comment_rows(
 def concat_part_tables(
     tables: list[Table],
     dialect: FileDialectWithHeaderAndCommentRows | None,
+    part_headers: list[list[str]] | None = None,
 ) -> Table:
     """Concatenate the tables of a multipart resource's parts; under a dialect with
     header rows every part's header gives the first part's column names, else a
-    `file/header` error is raised"""
+    `file/header` error is raised. With columnNames the tables carry those names, so
+    `part_headers` gives each part's own"""
     if get_header_rows(dialect):
-        first_names = tables[0].collect_schema().names() if tables else []
-        for index, table in enumerate(tables):
-            names = table.collect_schema().names()
-            if names != first_names:
-                raise create_part_header_exception(index + 1, names)
+        assert_part_headers(
+            part_headers
+            if part_headers is not None
+            else [table.collect_schema().names() for table in tables]
+        )
     return pl.concat(tables)
+
+
+def assert_part_headers(part_headers: list[list[str]]) -> None:
+    """Raise a `file/header` error for the first part whose header differs from part 1's"""
+    first_names = part_headers[0] if part_headers else []
+    for index, names in enumerate(part_headers):
+        if names != first_names:
+            raise create_part_header_exception(index + 1, names)
 
 
 def create_part_header_exception(

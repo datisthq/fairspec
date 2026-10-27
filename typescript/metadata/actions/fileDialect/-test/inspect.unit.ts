@@ -31,4 +31,22 @@ describe("inspectFileDialect", () => {
       inspectFileDialect({ format: "jsonl", rowType: "object", commentRows: [1] }),
     ).toEqual([])
   })
+
+  it("should report headerRows out of ascending order", () => {
+    const errors = inspectFileDialect(
+      { format: "csv", headerRows: [1, 3, 2] },
+      { rootJsonPointer: "/fileDialect" },
+    )
+
+    expect(errors).toEqual([
+      expect.objectContaining({
+        type: "metadata",
+        jsonPointer: "/fileDialect/headerRows",
+      }),
+    ])
+  })
+
+  it("should accept headerRows in ascending order with a gap", () => {
+    expect(inspectFileDialect({ format: "csv", headerRows: [1, 3] })).toEqual([])
+  })
 })

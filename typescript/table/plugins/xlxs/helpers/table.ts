@@ -63,6 +63,18 @@ export function createTableFromSheetRows(
 }
 
 /**
+ * The column names a sheet's own header rows give, whatever `columnNames` says
+ */
+export function getSheetHeader(
+  rows: SheetCell[][],
+  fileDialect: XlsxFileDialect | OdsFileDialect,
+) {
+  const headerRows = getHeaderRows(fileDialect)
+  const content = rows.slice(Math.max(0, ...headerRows))
+  return getSheetLabels(rows, content, headerRows, fileDialect)
+}
+
+/**
  * Formats a cell as the text a mixed-type column holds.
  */
 export function formatSheetCell(cell: SheetCell) {

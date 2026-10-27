@@ -106,5 +106,49 @@
         ]
       }
     ]
+  },
+  {
+    "description": "a json array row with more items than the header",
+    "comment": "A file that cannot be loaded is reported as unloadable data, as a long csv row is",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": { "format": "json", "rowType": "array" },
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": ["string", "null"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": [
+          ["id", "name"],
+          [1, "a"],
+          [2, "b", "extra"]
+        ],
+        "valid": false,
+        "errors": [{ "type": "resource/type", "expectedResourceType": "table" }]
+      },
+      {
+        "description": "a short row is valid",
+        "data": [["id", "name"], [1, "a"], [2]],
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a jsonl array row with more items than the header, without a table schema",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "jsonl",
+    "fileDialect": { "format": "jsonl", "rowType": "array" },
+    "tests": [
+      {
+        "description": "is a resource/type error",
+        "data": "[\"id\"]\n[1]\n[2,3]\n",
+        "valid": false,
+        "errors": [{ "type": "resource/type", "expectedResourceType": "table" }]
+      }
+    ]
   }
 ]

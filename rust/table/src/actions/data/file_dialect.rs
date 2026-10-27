@@ -2,7 +2,7 @@ use fairspec_metadata::{Error, FileDialect, Result};
 use serde_json::{Map, Value};
 
 use crate::helpers::file_dialect::{
-    assert_unique_column_names, get_header_rows, join_header_labels,
+    assert_unique_column_names, create_long_row_error, get_header_rows, join_header_labels,
 };
 use crate::helpers::general::format_python_float;
 use crate::models::data::{DataRecord, DataRow};
@@ -26,12 +26,8 @@ pub fn get_records_from_rows(
         .into_iter()
         .filter(|row| !get_is_commented_row(row, &options))
         .map(|row| {
-            if options.column_names.is_some() && row.len() > labels.len() {
-                return Err(Error::Load(format!(
-                    "A row has {} cells but columnNames has {}",
-                    row.len(),
-                    labels.len()
-                )));
+            if row.len() > labels.len() {
+                return Err(create_long_row_error(row.len(), labels.len()));
             }
             Ok(labels
                 .iter()
@@ -45,6 +41,30 @@ pub fn get_records_from_rows(
                 .collect::<Map<String, Value>>())
         })
         .collect()
+}
+
+/// The column names the rows' own header rows give, whatever `columnNames` says, or
+/// `None` without header rows, or none when the rows end before them; a multipart
+/// resource compares them across parts.
+pub fn get_header_labels_from_rows(
+    rows: &[DataRow],
+    file_dialect: Option<&FileDialect>,
+) -> Result<Option<Vec<String>>> {
+    let header_rows = get_header_rows(file_dialect);
+    let Some(last_row) = header_rows.iter().copied().max() else {
+        return Ok(None);
+    };
+    if rows.len() < last_row {
+        return Ok(Some(Vec::new()));
+    }
+    let options = DialectOptions {
+        column_names: None,
+        ..get_dialect_options(file_dialect)
+    };
+    let header = get_header_from_rows(rows, file_dialect, &options)?;
+    Ok(Some(
+        get_labels_from_header(&header, &options).unwrap_or_default(),
+    ))
 }
 
 /// The fields every dialect with header and comment rows shares, read off its descriptor.

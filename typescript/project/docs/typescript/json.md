@@ -124,6 +124,8 @@ const table = await loadJsonTable({
 })
 ```
 
+A row with more items than the header fails the load (validation reports the file as not loadable) instead of being cut to the header. In a multipart resource every part's header row must give part 1's column names, else a `file/header` error names the part; object rows have no header, so their parts are not compared and the columns are the union of their keys.
+
 ### Saving with JSON Pointer
 
 Wrap data in a nested structure when saving:
