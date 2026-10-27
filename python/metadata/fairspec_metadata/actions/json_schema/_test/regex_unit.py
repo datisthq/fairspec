@@ -18,6 +18,8 @@ class TestIsValidEcmaRegex:
             r"[\w.\-]+\@",
             r"😀",
             r"(?<x>a)|(?<x>b)",
+            "a{1," + "9" * 5000 + "}",
+            "a{" + "0" * 5000 + "1,2}",
         ],
     )
     def test_accepts(self, pattern: str):
@@ -40,6 +42,8 @@ class TestIsValidEcmaRegex:
             "(?<x>a)(?<x>b)",
             "[z-a]",
             r"\u{110000}",
+            "a{" + "9" * 5000 + ",1}",
+            "(a)\\" + "9" * 5000,
         ],
     )
     def test_rejects(self, pattern: str):

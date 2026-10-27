@@ -19,6 +19,9 @@ def is_valid_ecma_regex(pattern: str) -> bool:
     return True
 
 
+_U64_MAX = 2**64 - 1
+
+
 class _RegexSyntaxError(Exception):
     pass
 
@@ -106,7 +109,7 @@ class _Parser:
         lower = self.parse_decimal_digits()
         if self.eat(",") and self.peek() != "}":
             upper = self.parse_decimal_digits()
-            if int(lower) > int(upper):
+            if _compare_decimal(lower, upper) > 0:
                 raise _RegexSyntaxError
         self.expect("}")
 
@@ -205,7 +208,7 @@ class _Parser:
             self.referenced_names.append(self.parse_group_name())
         elif "1" <= c <= "9":
             self.position -= 1
-            number = int(self.parse_decimal_digits())
+            number = _parse_backreference_number(self.parse_decimal_digits())
             self.largest_backreference = max(self.largest_backreference, number)
         else:
             self.parse_character_escape(c)
@@ -314,6 +317,19 @@ class _Parser:
 
 def _is_ascii_digit(c: str | None) -> bool:
     return c is not None and "0" <= c <= "9"
+
+
+def _compare_decimal(left: str, right: str) -> int:
+    a = left.lstrip("0")
+    b = right.lstrip("0")
+    if len(a) != len(b):
+        return len(a) - len(b)
+    return (a > b) - (a < b)
+
+
+def _parse_backreference_number(digits: str) -> int:
+    # int() refuses strings past 4300 digits; saturate like the Rust twin's u64 parse
+    return min(int(digits), _U64_MAX) if len(digits) <= 20 else _U64_MAX
 
 
 def _is_alphabetic(c: str) -> bool:
