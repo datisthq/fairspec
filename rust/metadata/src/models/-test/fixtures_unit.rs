@@ -24,41 +24,70 @@ fn test_standard_examples_round_trip() {
 
 #[test]
 fn test_conformance_descriptors_round_trip() {
-    let mut counts = [0; 4];
+    let mut counts = [0usize; 4];
     for file in conformance_files() {
         let name = file.display().to_string();
         let content = read_json(&file);
-        let mut found = Vec::new();
-        collect_descriptors(&content, &mut found);
-        for (key, value) in found {
-            match key {
-                "tableSchema" => {
-                    assert_json_subset(&round_trip::<TableSchema>(value), value, &name);
-                    counts[0] += 1;
+        for group in content.as_array().into_iter().flatten() {
+            let mut found = Vec::new();
+            collect_descriptors(group, &mut found);
+            // A group that expects invalid input may hold a descriptor the model cannot parse
+            let is_refusable = get_expects_invalid(group);
+            for (key, value) in found {
+                if is_refusable && !get_is_parsed(key, value) {
+                    continue;
                 }
-                "dataset" => {
-                    assert_json_subset(&round_trip::<Dataset>(value), value, &name);
-                    counts[1] += 1;
-                }
-                "fileDialect" => {
-                    assert_json_subset(&round_trip::<FileDialect>(value), value, &name);
-                    counts[2] += 1;
-                }
-                _ => {
-                    // Expected errors in the suite may omit `message`, which the model requires
-                    match serde_json::from_value::<FairspecError>(value.clone()) {
-                        Ok(error) => {
-                            let output = serde_json::to_value(&error).unwrap();
-                            assert_json_eq(&output, value, &name);
-                            counts[3] += 1;
-                        }
-                        Err(_) => assert!(value.get("message").is_none(), "{name}: {value}"),
-                    }
-                }
+                check_descriptor(key, value, &name, &mut counts);
             }
         }
     }
     assert!(counts.iter().all(|count| *count > 0), "{counts:?}");
+}
+
+fn check_descriptor(key: &str, value: &Value, name: &str, counts: &mut [usize; 4]) {
+    match key {
+        "tableSchema" => {
+            assert_json_subset(&round_trip::<TableSchema>(value), value, name);
+            counts[0] += 1;
+        }
+        "dataset" => {
+            assert_json_subset(&round_trip::<Dataset>(value), value, name);
+            counts[1] += 1;
+        }
+        "fileDialect" => {
+            assert_json_subset(&round_trip::<FileDialect>(value), value, name);
+            counts[2] += 1;
+        }
+        _ => {
+            // Expected errors in the suite may omit `message`, which the model requires
+            match serde_json::from_value::<FairspecError>(value.clone()) {
+                Ok(error) => {
+                    let output = serde_json::to_value(&error).unwrap();
+                    assert_json_eq(&output, value, name);
+                    counts[3] += 1;
+                }
+                Err(_) => assert!(value.get("message").is_none(), "{name}: {value}"),
+            }
+        }
+    }
+}
+
+fn get_expects_invalid(group: &Value) -> bool {
+    group["tests"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .any(|test| test["valid"] == Value::Bool(false))
+}
+
+fn get_is_parsed(key: &str, value: &Value) -> bool {
+    let value = value.clone();
+    match key {
+        "tableSchema" => serde_json::from_value::<TableSchema>(value).is_ok(),
+        "dataset" => serde_json::from_value::<Dataset>(value).is_ok(),
+        "fileDialect" => serde_json::from_value::<FileDialect>(value).is_ok(),
+        _ => true,
+    }
 }
 
 fn collect_descriptors<'a>(value: &'a Value, found: &mut Vec<(&'static str, &'a Value)>) {
