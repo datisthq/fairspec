@@ -142,13 +142,14 @@ def _get_has_byte_order_mark(path: str) -> bool:
 
 
 def _read_first_line_keys(path: str) -> list[str] | None:
-    line = b""
+    chunks: list[bytes] = []
     with load_file_stream(path) as stream:
         while chunk := stream.read(65536):
-            line += chunk
-            if b"\n" in chunk:
+            end = chunk.find(b"\n")
+            chunks.append(chunk if end == -1 else chunk[:end])
+            if end != -1:
                 break
-    return _get_object_keys(line.split(b"\n", 1)[0])
+    return _get_object_keys(b"".join(chunks))
 
 
 def _read_first_object_keys(data: bytes) -> list[str] | None:

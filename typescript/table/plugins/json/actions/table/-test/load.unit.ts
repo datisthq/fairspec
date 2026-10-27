@@ -55,6 +55,18 @@ describe("loadJsonTable", () => {
       expect((await table?.collect())?.columns).toEqual(["b", "a"])
     })
 
+    it("should read a long first jsonl line in linear time", async () => {
+      const path = await writeTempFile(`{"a":"${"x".repeat(64 << 20)}"}\n{"a":"y"}\n`, {
+        format: "jsonl",
+      })
+
+      const started = performance.now()
+      const table = await loadJsonTable({ data: path }, { denormalized: true })
+
+      expect((await table?.collect())?.columns).toEqual(["a"])
+      expect(performance.now() - started).toBeLessThan(5000)
+    }, 30_000)
+
     it("should fall back when the native reader refuses the rows", async () => {
       const path = await writeTempFile('[{"id":1},5,{"id":2}]')
 

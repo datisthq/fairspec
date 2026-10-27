@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from unittest.mock import patch
 
 import polars as pl
@@ -279,3 +280,15 @@ class TestLoadJsonTableJsonl:
             {"id": 1, "name": "english"},
             {"id": 2, "name": "中文"},
         ]
+
+    def test_should_read_a_long_first_line_in_linear_time(self):
+        body = '{"a":"' + "x" * (64 << 20) + '"}\n{"a":"y"}\n'
+        path = write_temp_file(body, format="jsonl")
+
+        started = time.perf_counter()
+        table = load_json_table(Resource(data=path, fileDialect=JsonlFileDialect()))
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.columns == ["a"]
+        assert time.perf_counter() - started < 5

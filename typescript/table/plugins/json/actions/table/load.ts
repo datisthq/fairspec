@@ -140,21 +140,17 @@ async function getHasByteOrderMark(path: string) {
 
 async function readFirstLineKeys(path: string) {
   const stream = await loadFileStream(path)
-  let line = Buffer.alloc(0)
+  const chunks: Buffer[] = []
   try {
     for await (const chunk of stream) {
-      const data = Buffer.concat([line, chunk])
-      const end = data.indexOf(0x0a)
-      if (end !== -1) {
-        line = data.subarray(0, end)
-        break
-      }
-      line = data
+      const end = chunk.indexOf(0x0a)
+      chunks.push(end === -1 ? chunk : chunk.subarray(0, end))
+      if (end !== -1) break
     }
   } finally {
     stream.destroy()
   }
-  return getObjectKeys(line.toString("utf-8"))
+  return getObjectKeys(Buffer.concat(chunks).toString("utf-8"))
 }
 
 function readFirstObjectKeys(data: Buffer) {
