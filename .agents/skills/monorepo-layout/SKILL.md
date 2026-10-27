@@ -95,7 +95,7 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   points at whichever section released last, so pages link the filtered list
   (`releases?q=rust-v`), never a direct asset
 - `.livemark/public/install.sh` (served as `fairspec.org/install.sh`, ported from dpkit's)
-  asks CLI or Desktop on `/dev/tty`, or takes `sh -s -- cli|desktop`, then picks the newest
+  asks Terminal or Desktop on `/dev/tty`, or takes `sh -s -- terminal|desktop`, then picks the newest
   `rust-v`/`desktop-v` tag from the releases API and checks the `.sha256`. It builds asset
   names itself: rename an asset or add a platform there too. Test it with a stub `curl` on
   `PATH` serving fake releases, under `dash`

@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# Installs the Fairspec CLI or Fairspec Desktop from the GitHub releases
+# Installs Fairspec Terminal or Fairspec Desktop from the GitHub releases
 #
 #   curl -fsSL https://fairspec.org/install.sh | sh
-#   curl -fsSL https://fairspec.org/install.sh | sh -s -- cli
+#   curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal
 #   curl -fsSL https://fairspec.org/install.sh | sh -s -- desktop
 #
 # FAIRSPEC_PLATFORM overrides the detected platform (linux-x64, linux-arm64, macos-x64,
@@ -20,9 +20,9 @@ main() {
     product=$(ask_product)
   fi
   case "$product" in
-    cli) prefix="rust-v" ;;
+    terminal) prefix="rust-v" ;;
     desktop) prefix="desktop-v" ;;
-    *) fail "Unknown product \"$product\": expected cli or desktop" ;;
+    *) fail "Unknown product \"$product\": expected terminal or desktop" ;;
   esac
 
   platform=${FAIRSPEC_PLATFORM:-$(detect_platform)}
@@ -43,25 +43,25 @@ main() {
   download_asset "$prefix$version" "$asset" "$tmp"
 
   case "$product" in
-    cli) install_cli "$os" "$tmp/$asset" "$tmp" ;;
+    terminal) install_terminal "$os" "$tmp/$asset" "$tmp" ;;
     desktop) install_desktop "$os" "$tmp/$asset" "$tmp" ;;
   esac
 }
 
 ask_product() {
   if ! (: < /dev/tty) 2> /dev/null; then
-    fail "No terminal to ask on: pass the product, as in \"sh -s -- cli\" or \"sh -s -- desktop\""
+    fail "No terminal to ask on: pass the product, as in \"sh -s -- terminal\" or \"sh -s -- desktop\""
   fi
   {
     echo "What do you want to install?"
-    echo "  1) Fairspec CLI      the fairspec command, with its MCP server"
-    echo "  2) Fairspec Desktop  the desktop application"
+    echo "  1) Fairspec Terminal  the fairspec command, with its MCP server"
+    echo "  2) Fairspec Desktop   the desktop application"
   } >&2
   while :; do
     printf "Choose [1-2]: " >&2
     read -r answer < /dev/tty || fail "No answer"
     case "$answer" in
-      1 | cli) echo cli && return ;;
+      1 | terminal) echo terminal && return ;;
       2 | desktop) echo desktop && return ;;
     esac
   done
@@ -91,8 +91,8 @@ find_version() {
 
 name_asset() {
   case "$1-$2" in
-    cli-windows) echo "fairspec-terminal-$2-$3-$4.zip" ;;
-    cli-*) echo "fairspec-terminal-$2-$3-$4.tar.gz" ;;
+    terminal-windows) echo "fairspec-terminal-$2-$3-$4.zip" ;;
+    terminal-*) echo "fairspec-terminal-$2-$3-$4.tar.gz" ;;
     desktop-linux) echo "fairspec-desktop-linux-$(name_appimage_arch "$3")-$4.AppImage" ;;
     desktop-macos) echo "fairspec-desktop-macos-$3-$4.dmg" ;;
     desktop-windows) echo "fairspec-desktop-windows-$3-$4.exe" ;;
@@ -125,7 +125,7 @@ hash_file() {
   fi
 }
 
-install_cli() {
+install_terminal() {
   dir=${FAIRSPEC_INSTALL_DIR:-$HOME/.local/bin}
   case "$1" in
     windows)

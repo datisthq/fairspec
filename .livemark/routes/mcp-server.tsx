@@ -394,7 +394,7 @@ function Installation(props: { language: Language }) {
         {props.language === "rust" ? (
           <p className="mt-4 text-sm text-muted-foreground">
             Install the <code>fairspec</code> binary first:{" "}
-            <code>curl -fsSL https://fairspec.org/install.sh | sh -s -- cli</code>
+            <code>curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal</code>
           </p>
         ) : null}
       </div>

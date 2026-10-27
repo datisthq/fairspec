@@ -291,7 +291,7 @@ const installs: Record<Language, InstallMethod[]> = {
           , check its checksum, and put it in <code>~/.local/bin</code>.
         </>
       ),
-      command: "curl -fsSL https://fairspec.org/install.sh | sh -s -- cli",
+      command: "curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal",
     },
     {
       name: "cargo",
