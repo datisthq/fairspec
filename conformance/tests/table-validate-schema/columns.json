@@ -107,6 +107,24 @@
         "valid": true
       },
       {
+        "description": "required naming a column not in properties is invalid",
+        "data": {
+          "required": ["nope"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/required/0"
+          }
+        ]
+      },
+      {
         "description": "allRequired that is not a boolean is invalid",
         "data": {
           "allRequired": "true",
@@ -594,6 +612,54 @@
         "valid": true
       },
       {
+        "description": "a null const on a column without null is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "const": null
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/const"
+          }
+        ]
+      },
+      {
+        "description": "null in the enum of a column without null is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "enum": ["a", null]
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/x/enum/1"
+          }
+        ]
+      },
+      {
+        "description": "null in the enum of a nullable column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["string", "null"],
+              "enum": ["a", null]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
         "description": "a string default on an integer column is invalid",
         "data": {
           "properties": {
@@ -888,6 +954,84 @@
           }
         },
         "valid": false
+      }
+    ]
+  },
+  {
+    "description": "a pattern that is not a regular expression",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tests": [
+      {
+        "description": "is a metadata error at the pattern",
+        "data": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "[a-"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/code/pattern"
+          }
+        ]
+      },
+      {
+        "description": "an inline flag group, which ECMA-262 lacks, is a metadata error at the pattern",
+        "data": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "(?i)abc"
+            }
+          }
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/properties/code/pattern"
+          }
+        ]
+      },
+      {
+        "description": "a named group is valid",
+        "data": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^(?<year>\\d{4})$"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a unicode property escape is valid",
+        "data": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^\\p{L}+$"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a valid pattern is valid",
+        "data": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}-[0-9]{4}$"
+            }
+          }
+        },
+        "valid": true
       }
     ]
   }

@@ -13,7 +13,7 @@ from fairspec_metadata.models.profile import ProfileType
 from fairspec_metadata.models.report import Report
 from fairspec_metadata.models.table_schema import TableSchema
 
-from .inspect import inspect_table_schema
+from .inspect import inspect_table_schema, inspect_table_schema_nulls
 
 
 class TableSchemaValidationResult(Report):
@@ -54,7 +54,10 @@ def validate_table_schema(
             if table_schema
             else []
         )
-        report = create_report([*report.errors, *model_errors, *key_errors])
+        null_errors = inspect_table_schema_nulls(
+            descriptor, root_json_pointer=root_json_pointer
+        )
+        report = create_report([*report.errors, *model_errors, *key_errors, *null_errors])
         if not report.valid:
             table_schema = None
 

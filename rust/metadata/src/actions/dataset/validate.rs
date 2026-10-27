@@ -1,11 +1,13 @@
 use std::collections::HashSet;
 
+use serde_json::Value;
+
 use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
 use crate::actions::file_dialect::validate::validate_file_dialect;
 use crate::actions::resource::data::get_data_paths;
-use crate::actions::table_schema::inspect::inspect_table_schema;
+use crate::actions::table_schema::inspect::{inspect_table_schema, inspect_table_schema_nulls};
 use crate::actions::table_schema::validate::validate_table_schema;
 use crate::models::dataset::{Dataset, DatasetValidationResult};
 use crate::models::descriptor::Descriptor;
@@ -83,6 +85,10 @@ pub fn validate_dataset_descriptor(
                 report
                     .errors
                     .extend(inspect_table_schema(table_schema, Some(&pointer)));
+                report.errors.extend(inspect_table_schema_nulls(
+                    &get_table_schema_descriptor(&descriptor, index),
+                    Some(&pointer),
+                ));
             }
             None => {}
         }
@@ -94,4 +100,14 @@ pub fn validate_dataset_descriptor(
         errors: report.errors,
         dataset: valid.then_some(dataset),
     })
+}
+
+fn get_table_schema_descriptor(descriptor: &Descriptor, index: usize) -> Descriptor {
+    descriptor
+        .get("resources")
+        .and_then(|resources| resources.get(index))
+        .and_then(|resource| resource.get("tableSchema"))
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default()
 }

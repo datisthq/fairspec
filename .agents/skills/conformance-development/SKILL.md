@@ -80,6 +80,14 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   fix them in the same branch, leave the case out and record it for a follow-up fix
 - A fix that changes behaviour other unit tests asserted means updating those tests too. Check
   whether the other library's unit tests already encode the decision
+- A check on an explicit `null` (`const: null`, a `null` in `enum`) reads the raw descriptor, as
+  `inspect_table_schema_nulls` does: the Python and Rust models turn an explicit `null` into an
+  absent field. A numeric keyword is tested against absent, never for truthiness: `maxLength: 0`
+  is a constraint
+- A `pattern` is checked for ECMA-262 syntax by one recognizer in all three twins:
+  `jsonschema_regex::is_valid_ecma_regex` in Rust, its ports `isValidEcmaRegex` and
+  `is_valid_ecma_regex` in `jsonSchema/regex.ts` and `json_schema/regex.py`. Never `re` or native
+  `RegExp`: they disagree on `(?<name>…)`, `\p{L}`, `(?i)` and `\-`
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every

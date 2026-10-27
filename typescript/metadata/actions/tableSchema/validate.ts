@@ -3,7 +3,7 @@ import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { META_SCHEMA_URL } from "../../actions/jsonSchema/ajv.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
-import { inspectTableSchema } from "./inspect.ts"
+import { inspectTableSchema, inspectTableSchemaNulls } from "./inspect.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
 import { TableSchema } from "../../models/tableSchema.ts"
 
@@ -42,6 +42,11 @@ export async function validateTableSchema(
         ...inspectTableSchema(parsed.data, { rootJsonPointer: options?.rootJsonPointer }),
       )
     }
+    report.errors.push(
+      ...inspectTableSchemaNulls(descriptor, {
+        rootJsonPointer: options?.rootJsonPointer,
+      }),
+    )
     report.valid = report.errors.length === 0
     tableSchema = report.valid ? parsed.data : undefined
   }

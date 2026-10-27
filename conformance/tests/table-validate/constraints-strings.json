@@ -175,6 +175,20 @@
         "description": "a quoted empty string is valid",
         "data": "id,x\n1,\"\"\n",
         "valid": true
+      },
+      {
+        "description": "one character is a cell/maxLength error",
+        "data": "id,x\n1,\"\"\n2,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a",
+            "maxLength": 0
+          }
+        ]
       }
     ]
   },

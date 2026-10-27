@@ -79,3 +79,19 @@ class TestCheckCellMaxLength:
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 1
         assert errors["source"][0] == "christopher"
+
+    def test_max_length_zero_reports_any_character(self):
+        column = StringColumn(
+            name="code",
+            type="string",
+            property=StringColumnProperty(maxLength=0),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+        table = pl.DataFrame({"source": ["", "a"], "target": ["", "a"]}).lazy()
+
+        result = check_cell_max_length(column, mapping)
+
+        assert result is not None
+        assert result.error_template.maxLength == 0
+        errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert errors["source"].to_list() == ["a"]

@@ -52,4 +52,31 @@ describe("inspectTable (cell/maxLength)", () => {
       cell: "christopher",
     })
   })
+  it("should report an error for any character when maxLength is 0", async () => {
+    const table = pl
+      .DataFrame({
+        code: ["", "a"],
+      })
+      .lazy()
+
+    const tableSchema: TableSchema = {
+      properties: {
+        code: {
+          type: "string",
+          maxLength: 0,
+        },
+      },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/maxLength",
+        columnName: "code",
+        maxLength: 0,
+        rowNumber: 2,
+        cell: "a",
+      },
+    ])
+  })
 })

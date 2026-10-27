@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from fairspec_metadata.actions.json_schema.regex import is_valid_ecma_regex
+from fairspec_metadata.models.descriptor import Descriptor
 from fairspec_metadata.models.error.metadata import MetadataError
 from fairspec_metadata.models.table_schema import TableSchema
+
+NULLABLE_KEYWORDS = ("enum", "const", "default", "examples")
 
 
 def inspect_table_schema(
     table_schema: TableSchema, *, root_json_pointer: str | None = None
 ) -> list[MetadataError]:
-    """Check the key definitions of a table schema against its columns"""
+    """Check the required columns, patterns and key definitions of a table schema against its columns"""
     root = "" if root_json_pointer in (None, "/") else root_json_pointer
     names = set((table_schema.properties or {}).keys())
     errors: list[MetadataError] = []
@@ -23,6 +27,19 @@ def inspect_table_schema(
                     )
                 )
 
+    check_columns(table_schema.required or [], "/required")
+    for name, property in (table_schema.properties or {}).items():
+        pattern = getattr(property, "pattern", None)
+        if not isinstance(pattern, str):
+            continue
+        if not is_valid_ecma_regex(pattern):
+            errors.append(
+                MetadataError(
+                    type="metadata",
+                    message=f'pattern "{pattern}" is not a valid regular expression',
+                    jsonPointer=f"{root}/properties/{_escape_json_pointer(name)}/pattern",
+                )
+            )
     check_columns(table_schema.primaryKey or [], "/primaryKey")
     for index, unique_key in enumerate(table_schema.uniqueKeys or []):
         check_columns(unique_key, f"/uniqueKeys/{index}")
@@ -38,3 +55,56 @@ def inspect_table_schema(
             )
 
     return errors
+
+
+def inspect_table_schema_nulls(
+    descriptor: Descriptor, *, root_json_pointer: str | None = None
+) -> list[MetadataError]:
+    """Check that enum, const, default and examples hold null only where the column type allows it"""
+    root = "" if root_json_pointer in (None, "/") else root_json_pointer
+    errors: list[MetadataError] = []
+    properties = descriptor.get("properties")
+    if not isinstance(properties, dict):
+        return errors
+
+    for name, property in properties.items():
+        if not isinstance(property, dict) or property.get("type") is None:
+            continue
+        type = property["type"]
+        if isinstance(type, list) and "null" in type:
+            continue
+
+        pointer = f"{root}/properties/{_escape_json_pointer(name)}"
+        message = (
+            f'null is not allowed: the type of column "{name}" does not include "null"'
+        )
+        for keyword in NULLABLE_KEYWORDS:
+            if keyword not in property:
+                continue
+            value = property[keyword]
+            if keyword in ("enum", "examples"):
+                if not isinstance(value, list):
+                    continue
+                for index, item in enumerate(value):
+                    if item is None:
+                        errors.append(
+                            MetadataError(
+                                type="metadata",
+                                message=message,
+                                jsonPointer=f"{pointer}/{keyword}/{index}",
+                            )
+                        )
+            elif value is None:
+                errors.append(
+                    MetadataError(
+                        type="metadata",
+                        message=message,
+                        jsonPointer=f"{pointer}/{keyword}",
+                    )
+                )
+
+    return errors
+
+
+def _escape_json_pointer(key: str) -> str:
+    return key.replace("~", "~0").replace("/", "~1")

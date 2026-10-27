@@ -10,7 +10,10 @@ from fairspec_metadata.actions.file_dialect.validate import validate_file_dialec
 from fairspec_metadata.actions.profile.load import load_profile
 from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.actions.resource.data import get_data_paths
-from fairspec_metadata.actions.table_schema.inspect import inspect_table_schema
+from fairspec_metadata.actions.table_schema.inspect import (
+    inspect_table_schema,
+    inspect_table_schema_nulls,
+)
 from fairspec_metadata.actions.table_schema.validate import validate_table_schema
 from fairspec_metadata.models.dataset import Dataset
 from fairspec_metadata.models.descriptor import Descriptor
@@ -102,6 +105,12 @@ def validate_dataset_descriptor(
                         root_json_pointer=f"{root_json_pointer}/tableSchema",
                     )
                 )
+                report.errors.extend(
+                    inspect_table_schema_nulls(
+                        _get_table_schema_descriptor(descriptor, index),
+                        root_json_pointer=f"{root_json_pointer}/tableSchema",
+                    )
+                )
 
         if report.errors:
             normalized = None
@@ -112,3 +121,10 @@ def validate_dataset_descriptor(
         errors=report.errors,
         dataset=normalized,
     )
+
+
+def _get_table_schema_descriptor(descriptor: Descriptor, index: int) -> Descriptor:
+    resources = descriptor.get("resources")
+    resource = resources[index] if isinstance(resources, list) else None
+    table_schema = resource.get("tableSchema") if isinstance(resource, dict) else None
+    return table_schema if isinstance(table_schema, dict) else {}

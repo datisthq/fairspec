@@ -6,7 +6,7 @@ export function checkCellMaxLength(column: Column, mapping: CellMapping) {
   if (!("maxLength" in property)) return undefined
 
   const maxLength = property.maxLength
-  if (typeof maxLength !== "number" || !maxLength) return undefined
+  if (typeof maxLength !== "number") return undefined
 
   // For string-based columns we test against the source polars column
   const isErrorExpr = mapping.source.str.lengths().gt(maxLength)

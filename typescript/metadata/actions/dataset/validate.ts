@@ -5,7 +5,10 @@ import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { validateFileDialect } from "../../actions/fileDialect/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
 import { getDataPaths } from "../../actions/resource/data.ts"
-import { inspectTableSchema } from "../../actions/tableSchema/inspect.ts"
+import {
+  inspectTableSchema,
+  inspectTableSchemaNulls,
+} from "../../actions/tableSchema/inspect.ts"
 import { validateTableSchema } from "../../actions/tableSchema/validate.ts"
 import { Dataset } from "../../models/dataset.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
@@ -100,6 +103,9 @@ export async function validateDatasetDescriptor(
           ...inspectTableSchema(resource.tableSchema, {
             rootJsonPointer: `${rootJsonPointer}/tableSchema`,
           }),
+          ...inspectTableSchemaNulls(getTableSchemaDescriptor(descriptor, index), {
+            rootJsonPointer: `${rootJsonPointer}/tableSchema`,
+          }),
         )
       }
     }
@@ -111,4 +117,17 @@ export async function validateDatasetDescriptor(
   }
 
   return { ...report, dataset }
+}
+
+function getTableSchemaDescriptor(descriptor: Descriptor, index: number) {
+  const resources: unknown[] = Array.isArray(descriptor.resources)
+    ? descriptor.resources
+    : []
+  const resource = resources[index]
+  const tableSchema = isDescriptor(resource) ? resource.tableSchema : undefined
+  return isDescriptor(tableSchema) ? tableSchema : {}
+}
+
+function isDescriptor(value: unknown): value is Descriptor {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }

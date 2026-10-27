@@ -958,6 +958,7 @@ version = "0.0.0"
 dependencies = [
  "indexmap",
  "jsonschema 0.59.0",
+ "jsonschema-regex 0.59.0",
  "lru",
  "referencing 0.59.0",
  "regex",

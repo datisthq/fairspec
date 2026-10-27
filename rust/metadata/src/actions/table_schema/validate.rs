@@ -6,7 +6,7 @@ use crate::models::path::PathOr;
 use crate::models::profile::ProfileType;
 use crate::models::table_schema::{TableSchema, TableSchemaValidationResult};
 
-use super::inspect::inspect_table_schema;
+use super::inspect::{inspect_table_schema, inspect_table_schema_nulls};
 
 pub fn validate_table_schema(
     source: impl Into<PathOr<Descriptor>>,
@@ -25,6 +25,9 @@ pub fn validate_table_schema(
                     .errors
                     .extend(inspect_table_schema(table_schema, root_json_pointer));
             }
+            report
+                .errors
+                .extend(inspect_table_schema_nulls(&descriptor, root_json_pointer));
             report.valid = report.errors.is_empty();
             table_schema.filter(|_| report.valid)
         }

@@ -70,3 +70,22 @@ fn test_values_exceeding_max_length() {
     let sources = errors.column("source").unwrap().str().unwrap().clone();
     assert_eq!(sources.get(0), Some("christopher"));
 }
+
+#[test]
+fn test_max_length_zero_reports_any_character() {
+    let column = create_column("code", json!({"type": "string", "maxLength": 0}));
+    let table = df!(
+        "source" => ["", "a"],
+        "target" => ["", "a"],
+    )
+    .unwrap();
+
+    let result = check_cell_max_length(&column, &create_mapping()).unwrap();
+
+    let template = serde_json::to_value(&result.error_template).unwrap();
+    assert_eq!(template["maxLength"], 0);
+    let errors = table.lazy().filter(result.is_error_expr).collect().unwrap();
+    let sources = errors.column("source").unwrap().str().unwrap().clone();
+    assert_eq!(sources.len(), 1);
+    assert_eq!(sources.get(0), Some("a"));
+}

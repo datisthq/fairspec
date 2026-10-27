@@ -17,7 +17,7 @@ class ColumnCheck:
 
 def check_cell_max_length(column: Column, mapping: CellMapping) -> ColumnCheck | None:
     max_length = getattr(column.property, "maxLength", None)
-    if not max_length:
+    if max_length is None:
         return None
 
     is_error_expr = mapping.source.str.len_chars().gt(max_length)
