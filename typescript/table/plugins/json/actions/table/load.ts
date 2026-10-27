@@ -55,6 +55,12 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
     }
 
     const buffer = await loadFile(path)
+    const frame = !isLines && isDefault ? readObjectArray(buffer) : undefined
+    if (frame) {
+      tables.push(frame.lazy())
+      continue
+    }
+
     const records = getRecordsFromJson(decodeJsonBuffer(buffer, { isLines }), fileDialect)
     if (!records) return undefined
 
@@ -95,6 +101,25 @@ function getRecordsFromJson(
   return records.map(row =>
     Object.fromEntries(columnNames.map(name => [name, row[name]])),
   )
+}
+
+// A default dialect still admits a top-level object (not a table) or array rows,
+// so only a document opening with `[{` is read natively, and a refusal falls back
+function readObjectArray(buffer: Buffer) {
+  const start = skipJsonWhitespace(buffer, 0)
+  if (buffer[start] !== 0x5b) return undefined
+  if (buffer[skipJsonWhitespace(buffer, start + 1)] !== 0x7b) return undefined
+
+  try {
+    return pl.readJSON(buffer, { inferSchemaLength: null })
+  } catch {
+    return undefined
+  }
+}
+
+function skipJsonWhitespace(buffer: Buffer, index: number) {
+  while ([0x20, 0x09, 0x0a, 0x0d].includes(buffer[index] ?? -1)) index++
+  return index
 }
 
 function getJsonPointerValue(document: unknown, pointer: string) {

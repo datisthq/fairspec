@@ -23,6 +23,22 @@ describe("loadJsonTable", () => {
       ])
     })
 
+    it("should read an array of objects natively", async () => {
+      const path = await writeTempFile('[{"id":1},{"id":2}]', { format: "json" })
+
+      const table = await loadJsonTable({ data: path }, { denormalized: true })
+
+      expect((await table?.collect())?.getColumn("id").dtype).toEqual(pl.Int64)
+    })
+
+    it("should fall back when the native reader refuses the rows", async () => {
+      const path = await writeTempFile('[{"id":1},5,{"id":2}]')
+
+      const table = await loadJsonTable({ data: path, fileDialect: { format: "json" } })
+
+      expect((await table?.collect())?.toRecords()).toEqual([{ id: 1 }, { id: 2 }])
+    })
+
     it("should load local file (multipart)", async () => {
       const body = '[{"id":1,"name":"english"},{"id":2,"name":"中文"}]'
       const path1 = await writeTempFile(body)

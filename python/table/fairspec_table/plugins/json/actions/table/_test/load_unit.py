@@ -31,6 +31,24 @@ class TestLoadJsonTable:
             {"id": 2, "name": "中文"},
         ]
 
+    def test_should_read_an_array_of_objects_natively(self):
+        path = write_temp_file('[{"id":1},{"id":2}]', format="json")
+
+        with patch.object(pl, "read_json", wraps=pl.read_json) as read_json:
+            table = load_json_table(Resource(data=path), denormalized=True)
+            assert table is not None
+
+        read_json.assert_called_once()
+
+    def test_should_fall_back_when_the_native_reader_refuses_the_rows(self):
+        path = write_temp_file('[{"id":1},5,{"id":2}]')
+
+        table = load_json_table(Resource(data=path, fileDialect=JsonFileDialect()))
+        assert table is not None
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"id": 1}, {"id": 2}]
+
     def test_should_load_local_file_multipart(self):
         body = '[{"id":1,"name":"english"},{"id":2,"name":"中文"}]'
         path1 = write_temp_file(body)

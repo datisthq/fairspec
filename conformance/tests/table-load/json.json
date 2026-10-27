@@ -85,5 +85,111 @@
         }
       }
     ]
+  },
+  {
+    "description": "json array of objects, uneven rows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#json",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "json",
+    "tests": [
+      {
+        "description": "a key missing from a row is null",
+        "data": [
+          {
+            "id": 1,
+            "name": "alice"
+          },
+          {
+            "id": 2
+          }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, null]
+          ]
+        }
+      },
+      {
+        "description": "a key first seen on a later row is a column",
+        "data": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2,
+            "name": "bob"
+          }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "bob"]
+          ]
+        }
+      },
+      {
+        "description": "an explicit null is null",
+        "data": [
+          {
+            "id": 1,
+            "name": null
+          },
+          {
+            "id": 2,
+            "name": "bob"
+          }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, null],
+            [2, "bob"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json array of objects with a declared default dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#json"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json"
+    },
+    "tests": [
+      {
+        "description": "rows given as an array",
+        "data": [
+          {
+            "id": 1,
+            "name": "alice"
+          },
+          {
+            "id": 2,
+            "name": "bob"
+          }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "alice"],
+            [2, "bob"]
+          ]
+        }
+      },
+      {
+        "description": "whitespace before the first row",
+        "data": "\n  [\n  {\"id\":1},\n  {\"id\":2}\n]\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
   }
 ]

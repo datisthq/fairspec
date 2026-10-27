@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from typing import TYPE_CHECKING, Unpack, cast
 
 import polars as pl
@@ -65,6 +66,11 @@ def load_json_table(
             continue
 
         buffer = load_file(path)
+        frame = _read_object_array(buffer) if not is_lines and is_default else None
+        if frame is not None:
+            tables.append(frame.lazy())
+            continue
+
         records = _get_records_from_json(
             decode_json_buffer(buffer, is_lines=is_lines), file_dialect
         )
@@ -94,6 +100,28 @@ def _is_default_dialect(dialect: FileDialect) -> bool:
         if value is not None:
             return False
     return True
+
+
+# A default dialect still admits a top-level object (not a table) or array rows,
+# so only a document opening with `[{` is read natively, and a refusal falls back
+def _read_object_array(buffer: bytes) -> pl.DataFrame | None:
+    start = _skip_json_whitespace(buffer, 0)
+    if buffer[start : start + 1] != b"[":
+        return None
+    second = _skip_json_whitespace(buffer, start + 1)
+    if buffer[second : second + 1] != b"{":
+        return None
+
+    try:
+        return pl.read_json(io.BytesIO(buffer), infer_schema_length=None)
+    except pl.exceptions.PolarsError:
+        return None
+
+
+def _skip_json_whitespace(buffer: bytes, index: int) -> int:
+    while buffer[index : index + 1] in (b" ", b"\t", b"\n", b"\r"):
+        index += 1
+    return index
 
 
 def _get_records_from_json(

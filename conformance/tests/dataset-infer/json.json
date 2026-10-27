@@ -79,6 +79,41 @@
     ]
   },
   {
+    "description": "json object with a declared default dialect",
+    "comment": "A declared json dialect does not make a top-level object a table",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#json",
+      "https://fairspec.org/specs/dataset/#tableschema"
+    ],
+    "dataset": {
+      "resources": [{ "data": "config.json", "fileDialect": { "format": "json" } }]
+    },
+    "tests": [
+      {
+        "description": "gets a data schema and no table schema",
+        "data": { "config.json": "{\"id\": 1}" },
+        "expected": {
+          "resources": [
+            {
+              "data": "config.json",
+              "name": "config",
+              "textual": true,
+              "integrity": {
+                "type": "sha256",
+                "hash": "354aaef7a5f6ecbb2faee49fbe47a24e024cb62b3183b853a1ecc01e01920e49"
+              },
+              "fileDialect": { "format": "json" },
+              "dataSchema": {
+                "type": "object",
+                "properties": { "id": { "type": "integer" } }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "description": "inline data",
     "comment": "Inline data has no file, so it gets no dialect, textual flag or integrity. The spec does not say how an unnamed resource is named; the proposed answer is resource followed by its 1-based position, as dataset-list names it",
     "specification": [

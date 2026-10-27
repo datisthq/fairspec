@@ -63,7 +63,15 @@ pub fn load_json_table(resource: &Resource, options: &LoadTableOptions) -> Resul
             );
             continue;
         }
-        let document = decode_json_buffer(&load_file(path, None)?, is_lines)?;
+        let buffer = load_file(path, None)?;
+        if !is_lines
+            && is_default
+            && let Some(frame) = read_object_array(&buffer)
+        {
+            tables.push(frame.lazy());
+            continue;
+        }
+        let document = decode_json_buffer(&buffer, is_lines)?;
         let Some(records) = get_records_from_json(document, &file_dialect)? else {
             return Ok(None);
         };
@@ -98,6 +106,21 @@ fn get_is_default_dialect(file_dialect: &FileDialect) -> bool {
         "rowType" => value == "object",
         _ => false,
     })
+}
+
+/// A default dialect still admits a top-level object (not a table) or array rows,
+/// so only a document opening with `[{` is read natively, and a refusal falls back.
+fn read_object_array(buffer: &[u8]) -> Option<DataFrame> {
+    let mut bytes = buffer
+        .iter()
+        .filter(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'));
+    if bytes.next() != Some(&b'[') || bytes.next() != Some(&b'{') {
+        return None;
+    }
+    JsonReader::new(Cursor::new(buffer))
+        .infer_schema_len(None)
+        .finish()
+        .ok()
 }
 
 fn create_table_from_records(records: Vec<DataRecord>) -> Result<Table> {
