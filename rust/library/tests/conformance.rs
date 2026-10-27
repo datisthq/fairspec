@@ -37,7 +37,7 @@ fn test_conformance() {
         );
         let groups: Value = serde_json::from_str(&fs::read_to_string(&file).unwrap()).unwrap();
 
-        match inspect_json(&groups, get_suite_path("test-schema.json"), None) {
+        match inspect_json(&groups, get_suite_path("test-schema.json"), None, None) {
             Ok(issues) if issues.is_empty() => {}
             Ok(issues) => failures.push(format!("{id}: not a valid test file: {issues:?}")),
             Err(error) => failures.push(format!("{id}: cannot inspect: {error}")),

@@ -207,7 +207,12 @@ export {
 } from "./models/error/column.ts"
 export { DataError } from "./models/error/data.ts"
 export { FairspecError } from "./models/error/error.ts"
-export { FileError, IntegrityError, TextualError } from "./models/error/file.ts"
+export {
+  FileError,
+  HeaderError,
+  IntegrityError,
+  TextualError,
+} from "./models/error/file.ts"
 export { ForeignKeyError } from "./models/error/foreignKey.ts"
 export { MetadataError } from "./models/error/metadata.ts"
 export {

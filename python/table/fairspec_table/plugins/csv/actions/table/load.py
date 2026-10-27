@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Unpack, cast
 
 import polars as pl
@@ -8,6 +9,8 @@ from fairspec_dataset import prefetch_files
 from fairspec_metadata import Resource, get_supported_file_dialect, resolve_table_schema
 
 from fairspec_table.actions.table.file_dialect import (
+    concat_part_tables,
+    create_part_header_exception,
     join_header_rows,
     skip_comment_rows,
 )
@@ -47,6 +50,16 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
         )
         if inferred:
             file_dialect = inferred
+
+    is_headerless = not get_header_rows(file_dialect)  # type: ignore[arg-type]
+    part_sizes = [os.path.getsize(path) for path in paths] if len(paths) > 1 else []
+    empty_part = part_sizes.index(0) if 0 in part_sizes else -1
+    if empty_part != -1 and not is_headerless:
+        raise create_part_header_exception(empty_part + 1, [])
+    # A headerless part with no bytes adds no records, and Polars refuses an empty file
+    if empty_part != -1 and any(part_sizes):
+        paths = [path for path, size in zip(paths, part_sizes, strict=True) if size]
+
     swapped = swap_delimiter(paths, file_dialect, max_bytes=max_bytes)
     if swapped:
         paths = swapped.paths
@@ -59,22 +72,25 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
     if cleaned:
         paths = cleaned.paths
         file_dialect = cleaned.file_dialect
-    file_dialect = _renumber_prefixed_rows(paths[0], file_dialect)
 
-    scan_options = _get_scan_options(file_dialect)
     column_names: list[str] | None = getattr(file_dialect, "columnNames", None)
     header_rows = get_header_rows(file_dialect)  # type: ignore[arg-type]
     is_multi_header = len(header_rows) > 1 and not column_names
-    if is_multi_header:
-        scan_options["schema"] = _get_headerless_schema(
-            paths[0], scan_options, header_rows
-        )
-        # A first header row may be shorter than the schema
-        scan_options["missing_columns"] = "insert"
 
-    has_header = scan_options.get("has_header", True)
+    # Header and comment rows count the rows of each part, so each part reads its own
     tables: list[Table] = []
     for path in paths:
+        part_dialect = _renumber_prefixed_rows(path, file_dialect)
+        scan_options = _get_scan_options(part_dialect)
+        part_header_rows = get_header_rows(part_dialect)  # type: ignore[arg-type]
+        if is_multi_header:
+            scan_options["schema"] = _get_headerless_schema(
+                path, scan_options, part_header_rows
+            )
+            # A first header row may be shorter than the schema
+            scan_options["missing_columns"] = "insert"
+
+        has_header = scan_options.get("has_header", True)
         if has_header:
             names = _read_header_names(path, scan_options)
             if not column_names:
@@ -82,11 +98,17 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
         table = pl.scan_csv(path, **scan_options)  # type: ignore[arg-type]
         if has_header and column_names:
             table = _rename_header_columns(table, names, column_names)
+        if swapped:
+            table = restore_delimiter(table, swapped.swap)
+        if len(part_header_rows) > 1:
+            table = join_header_rows(table, part_dialect)  # type: ignore[arg-type]
+        if getattr(part_dialect, "commentRows", None):
+            table = skip_comment_rows(table, part_dialect)  # type: ignore[arg-type]
         tables.append(table)
 
-    result = pl.concat(tables)
+    result = concat_part_tables(tables, file_dialect)  # type: ignore[arg-type]
 
-    if not has_header and not column_names and not is_multi_header:
+    if is_headerless and not column_names:
         # By position, not from polars' own names: polars 2 numbers them from column_0
         result = result.rename(
             {
@@ -94,13 +116,6 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
                 for index, name in enumerate(result.collect_schema().names())
             }
         )
-    if swapped:
-        result = restore_delimiter(result, swapped.swap)
-
-    if len(header_rows) > 1:
-        result = join_header_rows(result, file_dialect)  # type: ignore[arg-type]
-    if getattr(file_dialect, "commentRows", None):
-        result = skip_comment_rows(result, file_dialect)  # type: ignore[arg-type]
 
     if not options.get("denormalized"):
         table_schema = resolve_table_schema(resource.tableSchema)

@@ -6,7 +6,7 @@ import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
 import type { Table } from "../../../../models/table.ts"
-import * as pl from "nodejs-polars"
+import { concatPartTables } from "../../../../actions/table/fileDialect.ts"
 import { readSheetRows } from "../../helpers/sheet.ts"
 import { createTableFromSheetRows } from "../../helpers/table.ts"
 import { inferXlsxFileDialect } from "../fileDialect/infer.ts"
@@ -37,7 +37,7 @@ export async function loadXlsxTable(resource: Resource, options?: LoadTableOptio
     }
   }
 
-  let table = pl.concat(tables)
+  let table = concatPartTables(tables, fileDialect)
 
   if (!options?.denormalized) {
     let tableSchema = await resolveTableSchema(resource.tableSchema)

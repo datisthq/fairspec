@@ -1,0 +1,64 @@
+[
+  {
+    "description": "a data schema with a remote reference",
+    "comment": "The data schema is checked before the data, and a remote reference is never fetched",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "$ref": "https://example.com/schema.json" } }
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at the $ref",
+        "data": "{\"a\": 1}",
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/dataSchema/properties/a/$ref" }]
+      }
+    ]
+  },
+  {
+    "description": "a data schema declaring draft-07",
+    "specification": ["https://fairspec.org/specs/data-schema/#profile"],
+    "format": "json",
+    "dataSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object"
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at $schema",
+        "data": "{}",
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/dataSchema/$schema" }]
+      }
+    ]
+  },
+  {
+    "description": "a data schema declaring a Fairspec Data Schema profile",
+    "comment": "The profile is the 2020-12 dialect, so its formats are asserted as without $schema",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#profile",
+      "https://fairspec.org/specs/data-schema/#jsonschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "$schema": "https://fairspec.org/profiles/latest/data-schema.json",
+      "type": "object",
+      "properties": { "d": { "type": "string", "format": "date" } }
+    },
+    "tests": [
+      {
+        "description": "a date is valid",
+        "data": "{\"d\": \"2020-02-29\"}",
+        "valid": true
+      },
+      {
+        "description": "a value that is not a date is a data error",
+        "data": "{\"d\": \"2021-02-29\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/d" }]
+      }
+    ]
+  }
+]

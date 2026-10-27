@@ -55,7 +55,8 @@ It is how a pair of twins proves it agrees: a behaviour both libraries share get
    keyword order of several failures on one cell), null foreign keys, typed key comparison, the
    number grammar and int64 range, RFC 3339 temporal defaults, the string formats, list splitting,
    CSV/TSV row structure, blank lines and the BOM, `headerRows`, `columnNames`, object-row key
-   order, invalid dialects and RFC 6901 pointers. When it is silent and the answer is
+   order, invalid dialects, RFC 6901 pointers, resource names, the hash shape, metadata errors
+   before data, multipart headers and a Data Schema's `$schema`, `$ref` and `format`. When it is silent and the answer is
    normative, ask, then write the decision into the spec as `fix(standard)`; when it is only
    library shape (inferred dialects, data-schema inference, error field rendering), follow
    TypeScript and say so in the group's `comment`
@@ -165,3 +166,24 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
 - A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every
   load path, so the Python runner's strict compare fails it. That is an open divergence, not
   a reason to drop the strict compare; until it is fixed, give `number` cases fractional values
+- A dataset with any metadata error checks no data, so a case can hold an external URL (`HTTPS://…`)
+  without fetching it: give another resource an invalid `name`, and expect only that error
+- `validateFile` (and twins) checks the hash's shape before hashing: an uppercase or wrong-length
+  hash is a `metadata` error at `/integrity/hash`. Ajv reports a failing `if` again at the parent,
+  so `inspectJson` drops the `if` keyword's errors; the other twins never report them
+- A Data Schema is checked by `inspectDataSchema` (and twins) before its profile: a `$schema`
+  other than 2020-12 or a Fairspec profile stops there, and every `$ref` and `$dynamicRef` must resolve in the
+  document (pointer, `$anchor`, or an embedded `$id`). `validateData` checks the schema first,
+  under `/dataSchema`, and asserts `DATA_SCHEMA_FORMATS` (`date`, `time`, `date-time`, `duration`,
+  `email`, `ipv4`, `uuid`; the email and duration grammars are the table's). Data validation never
+  fetches: a separate Ajv without `loadSchema`, an empty `referencing.Registry`, no retriever in
+  Rust, which also maps jsonschema's other built-in formats to an always-true check
+- TypeScript compiles a data schema under formats in its own Ajv per schema object: a shared
+  instance throws on a second object with the same `$id`, as a reloaded schema file is
+- Python's jsonschema drops the instance path of an error a `false` subschema raises under
+  `properties`, `patternProperties` or `prefixItems`: `inspect_json` rewrites those to `{"not": {}}`
+- The CSV/TSV loaders read every part of a multipart resource through its own header, comment and
+  delimiter pipeline, then `concatPartTables` (and twins; the sheet loaders too) compares each
+  part's column names with part 1's and raises a `FairspecException` holding a `file/header`
+  error (`partNumber`, `columnNames`), which `validateTable` reports. A 0-byte part is that error
+  under header rows and skipped without them. JSON parts are not compared yet

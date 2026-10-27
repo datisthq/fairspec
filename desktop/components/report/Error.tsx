@@ -52,6 +52,8 @@ export function Error(props: { error: fairspec.FairspecError }) {
       return <DataError error={error} />
     case "file/integrity":
       return <IntegrityError error={error} />
+    case "file/header":
+      return <HeaderError error={error} />
     case "file/textual":
       return <TextualError error={error} />
     case "foreignKey":
@@ -492,6 +494,31 @@ function TextualError(props: { error: fairspec.TextualError }) {
     <div>
       <Trans>File is expected to be textual with utf-8 encoding but it is</Trans>{" "}
       {actualEncoding}
+      {inResource}
+    </div>
+  )
+}
+
+function HeaderError(props: { error: fairspec.HeaderError }) {
+  const { error } = props
+
+  const partNumber = <Code>{error.partNumber}</Code>
+  const columnNames = <Code>{error.columnNames.join(", ")}</Code>
+  const inResource = <InResource resourceName={error.resourceName} />
+
+  if (!error.columnNames.length) {
+    return (
+      <div>
+        <Trans>File part</Trans> {partNumber} <Trans>has no header</Trans>
+        {inResource}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Trans>File part</Trans> {partNumber} <Trans>has header</Trans> {columnNames}
+      <Trans>, which differs from the header of part 1</Trans>
       {inResource}
     </div>
   )

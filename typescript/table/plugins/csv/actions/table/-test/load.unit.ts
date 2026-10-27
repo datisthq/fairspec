@@ -35,6 +35,61 @@ describe("loadCsvTable", () => {
     ])
   })
 
+  it("should fail with a file/header report on a part whose header differs", async () => {
+    const path1 = await writeTempFile("id,name\n1,english\n")
+    const path2 = await writeTempFile("id,nom\n2,german\n")
+
+    const load = async () =>
+      await loadCsvTable({ data: [path1, path2], fileDialect: { format: "csv" } })
+
+    await expect(load()).rejects.toMatchObject({
+      report: {
+        errors: [{ type: "file/header", partNumber: 2, columnNames: ["id", "nom"] }],
+      },
+    })
+  })
+
+  it("should fail with a file/header report on a 0-byte part under a header", async () => {
+    const path1 = await writeTempFile("id,name\n1,english\n")
+    const path2 = await writeTempFile("")
+
+    const load = async () =>
+      await loadCsvTable({ data: [path1, path2], fileDialect: { format: "csv" } })
+
+    await expect(load()).rejects.toMatchObject({
+      report: { errors: [{ type: "file/header", partNumber: 2, columnNames: [] }] },
+    })
+  })
+
+  it("should skip a 0-byte part without a header", async () => {
+    const path1 = await writeTempFile("1,english\n")
+    const path2 = await writeTempFile("")
+
+    const table = await loadCsvTable({
+      data: [path1, path2],
+      fileDialect: { format: "csv", headerRows: false },
+    })
+
+    expect((await table.collect()).toRecords()).toEqual([
+      { column1: 1, column2: "english" },
+    ])
+  })
+
+  it("should join the header rows of every part", async () => {
+    const path1 = await writeTempFile("a,b\nid,name\n1,english\n")
+    const path2 = await writeTempFile("a,b\nid,name\n2,german\n")
+
+    const table = await loadCsvTable({
+      data: [path1, path2],
+      fileDialect: { format: "csv", headerRows: [1, 2] },
+    })
+
+    expect((await table.collect()).toRecords()).toEqual([
+      { "a id": 1, "b name": "english" },
+      { "a id": 2, "b name": "german" },
+    ])
+  })
+
   it("should fail on a row longer than the header", async () => {
     const path = await writeTempFile("id,name\n1,a,extra\n")
     const load = async () =>

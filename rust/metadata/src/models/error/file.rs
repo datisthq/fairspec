@@ -7,6 +7,8 @@ pub enum FileError {
     Textual(TextualError),
     #[serde(rename = "file/integrity")]
     Integrity(IntegrityError),
+    #[serde(rename = "file/header")]
+    Header(HeaderError),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -26,4 +28,13 @@ pub struct IntegrityError {
     pub hash_type: String,
     pub expected_hash: String,
     pub actual_hash: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HeaderError {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_name: Option<String>,
+    pub part_number: usize,
+    pub column_names: Vec<String>,
 }

@@ -11,6 +11,6 @@ InternalPath = Annotated[
     ),
 ]
 
-ExternalPath = Annotated[str, Field(pattern=r"^https?://")]
+ExternalPath = Annotated[str, Field(pattern=r"^[Hh][Tt][Tt][Pp][Ss]?://")]
 
 Path = InternalPath | ExternalPath

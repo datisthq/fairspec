@@ -96,15 +96,44 @@ class TestValidateFile:
         report = validate_file(
             Resource(
                 data=path,
-                integrity=Integrity(type=IntegrityType.md5, hash="wronghash"),
+                integrity=Integrity(
+                    type=IntegrityType.md5, hash="00000000000000000000000000000000"
+                ),
             )
         )
         assert report.valid is False
         assert len(report.errors) == 1
         assert report.errors[0].type == "file/integrity"
         assert report.errors[0].hashType == "md5"  # type: ignore[union-attr]
-        assert report.errors[0].expectedHash == "wronghash"  # type: ignore[union-attr]
+        assert report.errors[0].expectedHash == "00000000000000000000000000000000"  # type: ignore[union-attr]
         assert report.errors[0].actualHash == actual_hash  # type: ignore[union-attr]
+
+    def test_reports_uppercase_hash_as_metadata_without_hashing(self):
+        path = write_temp_file("")
+        report = validate_file(
+            Resource(
+                data=path,
+                integrity=Integrity(
+                    type=IntegrityType.md5, hash="D41D8CD98F00B204E9800998ECF8427E"
+                ),
+            )
+        )
+        assert [error.model_dump(exclude={"message"}) for error in report.errors] == [
+            {"type": "metadata", "resourceName": None, "jsonPointer": "/integrity/hash"}
+        ]
+
+    def test_reports_hash_of_another_length_as_metadata(self):
+        path = write_temp_file("")
+        report = validate_file(
+            Resource(
+                data=path,
+                integrity=Integrity(
+                    type=IntegrityType.sha256, hash="d41d8cd98f00b204e9800998ecf8427e"
+                ),
+            )
+        )
+        assert [error.type for error in report.errors] == ["metadata"]
+        assert report.errors[0].jsonPointer == "/integrity/hash"  # type: ignore[union-attr]
 
     def test_validates_sha256_integrity(self):
         path = write_temp_file("Hello, World!")
@@ -161,7 +190,9 @@ class TestValidateFile:
             Resource(
                 data=path,
                 textual=True,
-                integrity=Integrity(type=IntegrityType.md5, hash="wronghash"),
+                integrity=Integrity(
+                    type=IntegrityType.md5, hash="00000000000000000000000000000000"
+                ),
             )
         )
         assert report.valid is False
@@ -189,7 +220,9 @@ class TestValidateFile:
             Resource(
                 data=path,
                 textual=True,
-                integrity=Integrity(type=IntegrityType.md5, hash="wronghash"),
+                integrity=Integrity(
+                    type=IntegrityType.md5, hash="00000000000000000000000000000000"
+                ),
             )
         )
         assert report.valid is False

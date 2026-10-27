@@ -935,6 +935,7 @@ dependencies = [
  "fairspec-metadata",
  "fairspec-table",
  "polars",
+ "regex",
  "serde",
  "serde_json",
  "tempfile",

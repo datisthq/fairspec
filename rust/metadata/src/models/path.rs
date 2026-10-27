@@ -5,7 +5,7 @@ pub type InternalPath = String;
 pub type ExternalPath = String;
 
 pub const INTERNAL_PATH_PATTERN: &str = r"^[^./~\\:][^./\\:]*(\.[^./\\:]+)*\.?(/([^./\\:]+(\.[^./\\:]+)*\.?|\.([^./\\:]+(\.[^./\\:]+)*\.?)?))*$";
-pub const EXTERNAL_PATH_PATTERN: &str = r"^https?://";
+pub const EXTERNAL_PATH_PATTERN: &str = r"^[Hh][Tt][Tt][Pp][Ss]?://";
 
 /// A value given either inline or as a path to a JSON file holding it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

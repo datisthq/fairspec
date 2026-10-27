@@ -2,12 +2,11 @@ use fairspec_dataset::prefetch_files;
 use fairspec_metadata::{
     Error, FileDialect, PathOr, Resource, Result, get_supported_file_dialect, resolve_table_schema,
 };
-use polars::prelude::*;
 use serde_json::Value;
 
+use crate::actions::table::file_dialect::concat_part_tables;
 use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
-use crate::helpers::error::PolarsResultExt;
 use crate::models::table::{LoadTableOptions, Table};
 use crate::plugins::xlsx::actions::file_dialect::infer::infer_xlsx_file_dialect;
 use crate::plugins::xlsx::helpers::sheet::read_sheet_rows;
@@ -50,7 +49,7 @@ pub fn load_xlsx_table(resource: &Resource, options: &LoadTableOptions) -> Resul
     let mut result = match tables.len() {
         0 => return Err(Error::Load("Resource data has no such sheet".to_string())),
         1 => tables.into_iter().next().unwrap_or_default(),
-        _ => concat(tables, UnionArgs::default()).into_result()?,
+        _ => concat_part_tables(tables, &file_dialect)?,
     };
 
     if options.denormalized != Some(true) {

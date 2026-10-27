@@ -8,7 +8,9 @@ use fairspec_metadata::{
 use polars::prelude::*;
 use serde_json::Value;
 
-use crate::actions::table::file_dialect::{join_header_rows, skip_comment_rows};
+use crate::actions::table::file_dialect::{
+    concat_part_tables, create_part_header_error, join_header_rows, skip_comment_rows,
+};
 use crate::actions::table::normalize::normalize_table;
 use crate::actions::table_schema::infer::infer_table_schema_from_table;
 use crate::helpers::error::PolarsResultExt;
@@ -44,6 +46,30 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
             file_dialect = inferred;
         }
     }
+    let is_headerless = get_header_rows(Some(&file_dialect)).is_empty();
+    let part_sizes = if paths.len() > 1 {
+        paths
+            .iter()
+            .map(|path| std::fs::metadata(path).map(|metadata| metadata.len()))
+            .collect::<std::io::Result<Vec<_>>>()?
+    } else {
+        Vec::new()
+    };
+    if let Some(empty_part) = part_sizes.iter().position(|size| *size == 0) {
+        if !is_headerless {
+            return Err(create_part_header_error(empty_part + 1, Vec::new()));
+        }
+        // A headerless part with no bytes adds no records, and Polars refuses an empty file
+        if part_sizes.iter().any(|size| *size > 0) {
+            paths = paths
+                .into_iter()
+                .zip(&part_sizes)
+                .filter(|(_, size)| **size > 0)
+                .map(|(path, _)| path)
+                .collect();
+        }
+    }
+
     let swapped = swap_delimiter(&paths, &file_dialect, options.preview_bytes)?;
     if let Some(swapped) = &swapped {
         paths = swapped.paths.clone();
@@ -53,21 +79,22 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         paths = cleaned.paths;
         file_dialect = cleaned.file_dialect;
     }
-    let first_path = &paths[0];
-    let file_dialect = renumber_prefixed_rows(first_path, file_dialect)?;
 
-    let scan = CsvScan::new(&file_dialect);
-    let header_rows = get_header_rows(Some(&file_dialect));
-    let column_names = get_column_names(&file_dialect);
-    let is_multi_header = header_rows.len() > 1 && column_names.is_none();
-    let mut schema = scan.schema.clone();
-    if is_multi_header {
-        schema = Some(get_headerless_schema(first_path, &scan, &header_rows)?);
-    }
+    let column_names = get_column_names(&file_dialect).cloned();
+    let is_multi_header = get_header_rows(Some(&file_dialect)).len() > 1 && column_names.is_none();
 
+    // Header and comment rows count the rows of each part, so each part reads its own
     let mut tables = Vec::new();
-    let mut header_width = 0;
     for path in &paths {
+        let part_dialect = renumber_prefixed_rows(path, file_dialect.clone())?;
+        let scan = CsvScan::new(&part_dialect);
+        let part_header_rows = get_header_rows(Some(&part_dialect));
+        let mut schema = scan.schema.clone();
+        if is_multi_header {
+            schema = Some(get_headerless_schema(path, &scan, &part_header_rows)?);
+        }
+
+        let mut header_width = 0;
         if scan.has_header {
             let names = read_header_names(path, &scan)?;
             if column_names.is_none() {
@@ -75,58 +102,40 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
             }
             header_width = names.len();
         }
-        tables.push(
-            scan.create_reader(path, schema.clone(), is_multi_header)
-                .finish()
-                .into_result()?,
-        );
+        let mut table = scan
+            .create_reader(path, schema, is_multi_header)
+            .finish()
+            .into_result()?;
+        if scan.has_header
+            && let Some(column_names) = &column_names
+        {
+            table = rename_header_columns(table, header_width, column_names)?;
+        }
+        if let Some(swapped) = &swapped {
+            table = restore_delimiter(table, &swapped.swap)?;
+        }
+        if part_header_rows.len() > 1 {
+            table = join_header_rows(table, &part_dialect)?;
+        }
+        if !get_comment_rows(&part_dialect).is_empty() {
+            table = skip_comment_rows(table, &part_dialect);
+        }
+        tables.push(table);
     }
-    let mut result = concat(tables, UnionArgs::default()).into_result()?;
+    let mut result = concat_part_tables(tables, &file_dialect)?;
 
-    let names: Vec<String> = result
-        .collect_schema()
-        .into_result()?
-        .iter_names()
-        .map(|name| name.to_string())
-        .collect();
-    if !scan.has_header && column_names.is_none() && !is_multi_header {
+    if is_headerless && column_names.is_none() {
         // By position, not from polars' own names: polars numbers them from column_1
+        let names: Vec<String> = result
+            .collect_schema()
+            .into_result()?
+            .iter_names()
+            .map(|name| name.to_string())
+            .collect();
         let new: Vec<String> = (1..=names.len())
             .map(|index| format!("column{index}"))
             .collect();
         result = result.rename(names, new, true);
-    } else if scan.has_header
-        && let Some(column_names) = column_names
-    {
-        // The n-th name names the n-th column; fewer names than columns is an error,
-        // and more names add columns that are null in every row
-        if header_width > column_names.len() {
-            return Err(Error::Load(format!(
-                "The file has {header_width} columns but columnNames has {}",
-                column_names.len()
-            )));
-        }
-        let mut exprs: Vec<Expr> = names
-            .iter()
-            .zip(column_names)
-            .map(|(name, new)| col(name.as_str()).alias(new.as_str()))
-            .collect();
-        exprs.extend(
-            column_names[names.len().min(column_names.len())..]
-                .iter()
-                .map(|name| lit(NULL).cast(DataType::String).alias(name.as_str())),
-        );
-        result = result.select(exprs);
-    }
-    if let Some(swapped) = &swapped {
-        result = restore_delimiter(result, &swapped.swap)?;
-    }
-
-    if header_rows.len() > 1 {
-        result = join_header_rows(result, &file_dialect)?;
-    }
-    if !get_comment_rows(&file_dialect).is_empty() {
-        result = skip_comment_rows(result, &file_dialect);
     }
 
     if options.denormalized != Some(true) {
@@ -140,6 +149,39 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
     }
 
     Ok(result)
+}
+
+// The n-th name names the n-th column; fewer names than columns is an error, and more
+// names add columns that are null in every row
+fn rename_header_columns(
+    table: LazyFrame,
+    header_width: usize,
+    column_names: &[String],
+) -> Result<LazyFrame> {
+    if header_width > column_names.len() {
+        return Err(Error::Load(format!(
+            "The file has {header_width} columns but columnNames has {}",
+            column_names.len()
+        )));
+    }
+    let mut table = table;
+    let names: Vec<String> = table
+        .collect_schema()
+        .into_result()?
+        .iter_names()
+        .map(|name| name.to_string())
+        .collect();
+    let mut exprs: Vec<Expr> = names
+        .iter()
+        .zip(column_names)
+        .map(|(name, new)| col(name.as_str()).alias(new.as_str()))
+        .collect();
+    exprs.extend(
+        column_names[names.len().min(column_names.len())..]
+            .iter()
+            .map(|name| lit(NULL).cast(DataType::String).alias(name.as_str())),
+    );
+    Ok(table.select(exprs))
 }
 
 struct CsvScan {

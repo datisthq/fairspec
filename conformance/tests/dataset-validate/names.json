@@ -76,5 +76,114 @@
     "tests": [
       { "description": "are valid", "data": { "a.csv": "id\n1\n" }, "valid": true }
     ]
+  },
+  {
+    "description": "a resource name starting with a digit",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "1st_run" }] },
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "a resource name of 300 characters",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid: the name has no length limit",
+        "data": {},
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a resource name of digits only",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "2024" }] },
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "an empty resource name",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a resource name with a hyphen",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "my-table" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a resource name with a dot",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "table.v2" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a resource name ending with a newline",
+    "comment": "A pattern's $ matches only at the end of the name, never before a final newline",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "table\n" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a resource name with a space",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "my table" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a resource name with a non-ASCII letter",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": "données" }] },
+    "tests": [
+      {
+        "description": "is a metadata error at the name: only ASCII letters count",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/name" }]
+      }
+    ]
   }
 ]

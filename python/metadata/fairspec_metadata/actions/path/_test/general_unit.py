@@ -16,6 +16,7 @@ class TestGetIsRemotePath:
         [
             ("http://example.com/path/to/file.txt", True),
             ("https://example.com/path/to/file.txt", True),
+            ("HTTPS://example.com/path/to/file.txt", True),
             ("ftp://example.com/path/to/file.txt", True),
             ("file:///path/to/file.txt", False),
             ("/path/to/file.txt", False),
@@ -28,6 +29,7 @@ class TestGetIsRemotePath:
         ids=[
             "http URL",
             "https URL",
+            "uppercase https URL",
             "ftp URL",
             "file URL",
             "absolute path",

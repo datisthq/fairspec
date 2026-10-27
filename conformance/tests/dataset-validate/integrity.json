@@ -10,7 +10,14 @@
         }
       ]
     },
-    "tests": [{ "description": "is invalid", "data": { "a.csv": "" }, "valid": false }]
+    "tests": [
+      {
+        "description": "is a metadata error at integrity/hash, and the content is not hashed",
+        "data": { "a.csv": "" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/integrity/hash" }]
+      }
+    ]
   },
   {
     "description": "a hash of the wrong length for its type",
@@ -23,7 +30,14 @@
         }
       ]
     },
-    "tests": [{ "description": "is invalid", "data": { "a.csv": "" }, "valid": false }]
+    "tests": [
+      {
+        "description": "is a metadata error at integrity/hash",
+        "data": { "a.csv": "" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/integrity/hash" }]
+      }
+    ]
   },
   {
     "description": "integrity on inline data",
@@ -290,5 +304,49 @@
       ]
     },
     "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "an uppercase hash of content that does not match either",
+    "comment": "The content is not hashed, so a wrong content adds no file/integrity error",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.txt",
+          "integrity": { "type": "md5", "hash": "D41D8CD98F00B204E9800998ECF8427E" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is only a metadata error at integrity/hash",
+        "data": { "a.txt": "x" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/integrity/hash" }]
+      }
+    ]
+  },
+  {
+    "description": "an sha256 hash with one uppercase digit",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.txt",
+          "integrity": {
+            "type": "sha256",
+            "hash": "E3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error at integrity/hash",
+        "data": { "a.txt": "" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/integrity/hash" }]
+      }
+    ]
   }
 ]

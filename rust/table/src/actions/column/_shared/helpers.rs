@@ -87,14 +87,14 @@ pub fn inspect_json_column(
         let target = serde_json::from_str::<Value>(&source).unwrap_or(Value::Null);
 
         if let Some(type_json_schema) = type_json_schema {
-            if !inspect_json(&target, type_json_schema.clone(), None)?.is_empty() {
+            if !inspect_json(&target, type_json_schema.clone(), None, None)?.is_empty() {
                 errors.push(create_type_error(column, &row, source));
             }
             continue;
         }
 
         if needs_validator {
-            for issue in inspect_json(&target, constraint_json_schema.clone(), None)? {
+            for issue in inspect_json(&target, constraint_json_schema.clone(), None, None)? {
                 errors.push(CellError::Json(CellJsonError {
                     resource_name: None,
                     column_name: column.name().to_string(),

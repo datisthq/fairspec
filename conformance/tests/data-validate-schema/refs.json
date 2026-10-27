@@ -1,0 +1,128 @@
+[
+  {
+    "description": "references within the document",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      {
+        "description": "a $ref to $defs is valid",
+        "data": {
+          "$defs": { "item": { "type": "string" } },
+          "type": "object",
+          "properties": { "a": { "$ref": "#/$defs/item" } }
+        },
+        "valid": true
+      },
+      {
+        "description": "a $ref to the root is valid",
+        "data": { "type": "object", "properties": { "child": { "$ref": "#" } } },
+        "valid": true
+      },
+      {
+        "description": "a $dynamicRef to a $dynamicAnchor is valid",
+        "data": {
+          "$dynamicAnchor": "node",
+          "type": "object",
+          "properties": { "child": { "$dynamicRef": "#node" } }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "references that do not resolve within the document",
+    "comment": "A remote reference is never fetched",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      {
+        "description": "a $ref to a missing definition is a metadata error at the $ref",
+        "data": {
+          "type": "object",
+          "properties": { "a": { "$ref": "#/$defs/missing" } }
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/properties/a/$ref" }]
+      },
+      {
+        "description": "a remote $ref is a metadata error at the $ref",
+        "data": {
+          "type": "object",
+          "properties": { "a": { "$ref": "https://example.com/schema.json" } }
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/properties/a/$ref" }]
+      },
+      {
+        "description": "a relative file $ref is a metadata error at the $ref",
+        "data": { "type": "object", "properties": { "a": { "$ref": "item.json" } } },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/properties/a/$ref" }]
+      },
+      {
+        "description": "a remote $ref with a fragment is a metadata error at the $ref",
+        "data": {
+          "type": "object",
+          "items": { "$ref": "https://example.com/schema.json#/$defs/item" }
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/items/$ref" }]
+      },
+      {
+        "description": "a remote $dynamicRef is a metadata error at the $dynamicRef",
+        "data": {
+          "type": "object",
+          "properties": { "a": { "$dynamicRef": "https://example.com/schema.json#item" } }
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/properties/a/$dynamicRef" }]
+      }
+    ]
+  },
+  {
+    "description": "references by anchor and by escaped pointer",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      {
+        "description": "a $ref to a declared $anchor is valid",
+        "data": {
+          "$defs": { "item": { "$anchor": "item", "type": "string" } },
+          "type": "array",
+          "items": { "$ref": "#item" }
+        },
+        "valid": true
+      },
+      {
+        "description": "a $ref to an anchor no schema declares is a metadata error at the $ref",
+        "data": { "type": "array", "items": { "$ref": "#item" } },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/items/$ref" }]
+      },
+      {
+        "description": "a percent-encoded pointer to a key with a space is valid",
+        "data": {
+          "$defs": { "a b": { "type": "string" } },
+          "type": "array",
+          "items": { "$ref": "#/$defs/a%20b" }
+        },
+        "valid": true
+      },
+      {
+        "description": "an escaped pointer to a key with a slash is valid",
+        "data": {
+          "$defs": { "a/b": { "type": "string" } },
+          "type": "array",
+          "items": { "$ref": "#/$defs/a~1b" }
+        },
+        "valid": true
+      },
+      {
+        "description": "a $ref to the $id of a subschema is valid",
+        "data": {
+          "$defs": { "item": { "$id": "https://example.com/item", "type": "string" } },
+          "type": "array",
+          "items": { "$ref": "https://example.com/item" }
+        },
+        "valid": true
+      }
+    ]
+  }
+]

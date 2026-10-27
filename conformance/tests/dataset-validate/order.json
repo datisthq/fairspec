@@ -111,5 +111,84 @@
         ]
       }
     ]
+  },
+  {
+    "description": "a cell error in one resource and an invalid name in another",
+    "comment": "A descriptor with metadata errors is not checked against its data",
+    "specification": ["https://fairspec.org/specs/dataset/#validation"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        },
+        { "name": "my-posts", "data": "posts.csv", "fileDialect": { "format": "csv" } }
+      ]
+    },
+    "tests": [
+      {
+        "description": "only the metadata error is reported",
+        "data": { "users.csv": "id\nx\n", "posts.csv": "id\n1\n" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/1/name" }]
+      }
+    ]
+  },
+  {
+    "description": "an uppercase hash on a resource with a bad cell",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#validation",
+      "https://fairspec.org/specs/dataset/#integrity"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } },
+          "integrity": { "type": "md5", "hash": "D41D8CD98F00B204E9800998ECF8427E" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "only the metadata error is reported",
+        "data": { "users.csv": "id\nx\n" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/0/integrity/hash" }]
+      }
+    ]
+  },
+  {
+    "description": "an invalid file dialect on one resource and a bad cell in another",
+    "specification": ["https://fairspec.org/specs/dataset/#validation"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv", "headerRows": [1], "commentRows": [1] }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "only the metadata error is reported",
+        "data": { "users.csv": "id\nx\n", "posts.csv": "id\n1\n" },
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/1/fileDialect/commentRows" }
+        ]
+      }
+    ]
   }
 ]

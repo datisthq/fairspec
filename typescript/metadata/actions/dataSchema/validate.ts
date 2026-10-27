@@ -1,8 +1,10 @@
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
 import { loadProfile } from "../../actions/profile/load.ts"
+import { createReport } from "../../actions/report/create.ts"
 import type { DataSchema } from "../../models/dataSchema.ts"
 import type { Descriptor } from "../../models/descriptor.ts"
+import { inspectDataSchema } from "./inspect.ts"
 
 export async function validateDataSchema(
   source: DataSchema | Descriptor | string,
@@ -13,6 +15,14 @@ export async function validateDataSchema(
   const descriptor =
     typeof source === "string" ? await loadDescriptor(source) : (source as Descriptor)
 
+  const schemaErrors = inspectDataSchema(descriptor, options).map(error => ({
+    type: "metadata" as const,
+    ...error,
+  }))
+  if (schemaErrors[0]?.jsonPointer.endsWith("/$schema")) {
+    return { ...createReport(schemaErrors), dataSchema: undefined }
+  }
+
   const $schema =
     typeof descriptor.$schema === "string"
       ? descriptor.$schema
@@ -22,10 +32,11 @@ export async function validateDataSchema(
     profileType: "data-schema",
   })
 
-  const report = await validateDescriptor(descriptor, {
+  const profileReport = await validateDescriptor(descriptor, {
     profile,
     rootJsonPointer: options?.rootJsonPointer,
   })
+  const report = createReport([...profileReport.errors, ...schemaErrors])
 
   let dataSchema: DataSchema | undefined
   if (report.valid) {

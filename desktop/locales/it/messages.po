@@ -17,6 +17,10 @@ msgstr ""
 msgid ", but it is"
 msgstr "ma è"
 
+#: components/report/Error.tsx
+msgid ", which differs from the header of part 1"
+msgstr ", che differisce dall'intestazione della parte 1"
+
 #: helpers/help.ts
 msgid "A dataset descriptor you can save and edit"
 msgstr "Un descrittore di dataset che puoi salvare e modificare"
@@ -316,6 +320,10 @@ msgstr "Hash del file"
 msgid "File is expected to be textual with utf-8 encoding but it is"
 msgstr "Il file deve essere testuale con codifica utf-8, ma è"
 
+#: components/report/Error.tsx
+msgid "File part"
+msgstr "Parte del file"
+
 #: helpers/help.ts
 msgid "Fix the reported paths or metadata and validate again"
 msgstr "Correggi i percorsi o i metadati segnalati e valida di nuovo"
@@ -325,12 +333,20 @@ msgid "Foreign key constraint violated as cells"
 msgstr "Vincolo di chiave esterna violato poiché le celle"
 
 #: components/report/Error.tsx
+msgid "has header"
+msgstr "ha l'intestazione"
+
+#: components/report/Error.tsx
 msgid "has less than"
 msgstr "ha meno di"
 
 #: components/report/Error.tsx
 msgid "has more than"
 msgstr "ha più di"
+
+#: components/report/Error.tsx
+msgid "has no header"
+msgstr "non ha intestazione"
 
 #: routes/file/validate.tsx
 msgid "Hash"

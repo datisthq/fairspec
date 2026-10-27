@@ -401,5 +401,211 @@
         "errors": [{ "type": "file/textual", "resourceName": "notes" }]
       }
     ]
+  },
+  {
+    "description": "multipart csv parts whose headers differ",
+    "comment": "The error names the part by its 1-based position in data and gives the column names its header has",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv", "headerRows": [1] },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a renamed column in the second part is an error",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,nom\n2,bob\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 2,
+            "columnNames": ["id", "nom"]
+          }
+        ]
+      },
+      {
+        "description": "reordered columns in the second part are an error",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "name,id\nbob,2\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 2,
+            "columnNames": ["name", "id"]
+          }
+        ]
+      },
+      {
+        "description": "an extra column in the second part is an error",
+        "data": {
+          "part1.csv": "id,name\n1,alice\n",
+          "part2.csv": "id,name,age\n2,bob,3\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 2,
+            "columnNames": ["id", "name", "age"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart csv with a 0-byte part",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv", "headerRows": [1] },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a 0-byte second part is an error",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 2,
+            "columnNames": []
+          }
+        ]
+      },
+      {
+        "description": "a 0-byte first part is an error",
+        "data": { "part1.csv": "", "part2.csv": "id,name\n1,alice\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 1,
+            "columnNames": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart csv without header rows",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": {
+            "format": "csv",
+            "headerRows": false,
+            "columnNames": ["id", "name"]
+          },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a 0-byte part is valid",
+        "data": { "part1.csv": "1,alice\n", "part2.csv": "" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "multipart csv parts with two header rows",
+    "comment": "Each part carries its own two header rows, joined into its column names; neither is a record",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv", "headerRows": [1, 2] },
+          "tableSchema": {
+            "properties": {
+              "person id": { "type": "integer" },
+              "person name": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "both parts with the same header rows are valid",
+        "data": {
+          "part1.csv": "person,person\nid,name\n1,alice\n",
+          "part2.csv": "person,person\nid,name\n2,bob\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a second part whose second header row differs is an error",
+        "data": {
+          "part1.csv": "person,person\nid,name\n1,alice\n",
+          "part2.csv": "person,person\nid,nom\n2,bob\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/header",
+            "resourceName": "people",
+            "partNumber": 2,
+            "columnNames": ["person id", "person nom"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart csv parts with comment rows",
+    "comment": "Comment rows count the rows of each part",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv", "headerRows": [1], "commentRows": [2] },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the second row of every part is skipped",
+        "data": { "part1.csv": "id\n# note\n1\n", "part2.csv": "id\n# note\n2\n" },
+        "valid": true
+      }
+    ]
   }
 ]

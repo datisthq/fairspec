@@ -12,8 +12,10 @@ from fairspec_metadata import (
     get_data_paths,
     inspect_json,
     resolve_data_schema,
+    validate_data_schema,
 )
 
+from .format import DATA_SCHEMA_FORMATS
 from .load import load_data
 
 if TYPE_CHECKING:
@@ -38,13 +40,17 @@ def validate_data(resource: Resource) -> Report:
             ]
         )
 
+    schema_report = validate_data_schema(data_schema, root_json_pointer="/dataSchema")
+    if not schema_report.valid:
+        return create_report(list(schema_report.errors))
+
     data = load_data(resource)
     if data is None:
         return create_report(
             [ResourceTypeError(type="resource/type", expectedResourceType="data")]
         )
 
-    notes = inspect_json(data, json_schema=data_schema)
+    notes = inspect_json(data, json_schema=data_schema, formats=DATA_SCHEMA_FORMATS)
     for note in notes:
         errors.append(
             DataError(

@@ -1,4 +1,6 @@
-use fairspec_metadata::{Error, FileDialect, Result};
+use fairspec_metadata::{
+    Error, FairspecError, FileDialect, FileError, HeaderError, Result, create_report,
+};
 use polars::prelude::*;
 
 use crate::helpers::error::PolarsResultExt;
@@ -11,6 +13,61 @@ use crate::models::data::DataRow;
 use crate::models::file_dialect::FileDialectWithHeaderAndCommentRows;
 use crate::models::table::Table;
 use crate::settings::NUMBER_COLUMN_NAME;
+
+/// Concatenates the tables of a multipart resource's parts; under a dialect with header
+/// rows every part's header gives the first part's column names, else a `file/header`.
+pub fn concat_part_tables(
+    tables: Vec<Table>,
+    dialect: &FileDialectWithHeaderAndCommentRows,
+) -> Result<Table> {
+    if !get_header_rows(Some(dialect)).is_empty() {
+        let mut first_names: Option<Vec<String>> = None;
+        for (index, table) in tables.iter().enumerate() {
+            let names: Vec<String> = table
+                .clone()
+                .collect_schema()
+                .into_result()?
+                .iter_names()
+                .map(|name| name.to_string())
+                .collect();
+            match &first_names {
+                None => first_names = Some(names),
+                Some(first) if *first != names => {
+                    return Err(create_part_header_error(index + 1, names));
+                }
+                Some(_) => {}
+            }
+        }
+    }
+    concat(tables, UnionArgs::default()).into_result()
+}
+
+/// The error of a part whose header differs from the first part's, or that has none.
+pub fn create_part_header_error(part_number: usize, column_names: Vec<String>) -> Error {
+    let error = HeaderError {
+        resource_name: None,
+        part_number,
+        column_names,
+    };
+    Error::Invalid {
+        message: format!("Part {part_number} has another header than part 1"),
+        report: Some(create_report(
+            vec![FairspecError::File(FileError::Header(error))],
+            None,
+        )),
+    }
+}
+
+/// Tells the error of a part whose header differs, which a validator reports.
+pub fn get_is_part_header_error(error: &Error) -> bool {
+    error.report().is_some_and(|report| {
+        !report.errors.is_empty()
+            && report
+                .errors
+                .iter()
+                .all(|item| matches!(item, FairspecError::File(FileError::Header(_))))
+    })
+}
 
 /// Joins several header rows into column names. The table is read without a header,
 /// so its header rows are still data rows; with `columnNames` the first header row

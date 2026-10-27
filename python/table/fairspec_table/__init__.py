@@ -8,6 +8,7 @@ from .actions.table_schema.infer import (
     infer_table_schema_from_table,
 )
 from .actions.table_schema.pattern import inspect_table_schema_patterns
+from .actions.table.file_dialect import get_is_part_header_exception
 from .helpers.file_dialect import get_is_long_row_error
 from .models.check import SqlTableCheck, TableCheck
 from .models.column import ColumnMapping, DenormalizeColumnOptions, PolarsColumn
@@ -43,8 +44,11 @@ from .plugins.xlsx import (
     load_xlsx_table,
     save_xlsx_table,
 )
+from .settings import DURATION_REGEX, EMAIL_REGEX
 
 __all__ = [
+    "DURATION_REGEX",
+    "EMAIL_REGEX",
     "ArrowPlugin",
     "CsvPlugin",
     "ColumnMapping",
@@ -72,6 +76,7 @@ __all__ = [
     "infer_table_schema_from_table",
     "inspect_table_schema_patterns",
     "get_is_long_row_error",
+    "get_is_part_header_exception",
     "infer_json_file_dialect",
     "inspect_table",
     "inspect_table_checks",

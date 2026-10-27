@@ -1,0 +1,23 @@
+[
+  {
+    "description": "boolean subschemas",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      {
+        "description": "true and false property schemas are valid",
+        "data": { "type": "object", "properties": { "a": true, "b": false } },
+        "valid": true
+      },
+      {
+        "description": "items false is valid",
+        "data": { "type": "array", "items": false },
+        "valid": true
+      },
+      {
+        "description": "additionalProperties false is valid",
+        "data": { "type": "object", "additionalProperties": false },
+        "valid": true
+      }
+    ]
+  }
+]

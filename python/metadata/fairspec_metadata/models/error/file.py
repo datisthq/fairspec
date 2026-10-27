@@ -22,7 +22,17 @@ class IntegrityError(BaseError):
     actualHash: str = Field(description="The actual hash value found")
 
 
+class HeaderError(BaseError):
+    type: Literal["file/header"] = Field(description="Error type identifier")
+    partNumber: int = Field(
+        description="The 1-based position of the part among the paths of the resource"
+    )
+    columnNames: list[str] = Field(
+        description="The column names the part's header gives, empty when it has none"
+    )
+
+
 FileError = Annotated[
-    Union[TextualError, IntegrityError],
+    Union[TextualError, IntegrityError, HeaderError],
     Field(discriminator="type"),
 ]

@@ -1,3 +1,5 @@
+import type { HeaderError } from "@fairspec/metadata"
+import { createReport, FairspecException } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import {
   assertUniqueColumnNames,
@@ -68,4 +70,46 @@ function dropRows(table: Table, numbers: number[], offset: number) {
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
     .filter(pl.col(NUMBER_COLUMN_NAME).add(offset).isIn(numbers).not())
     .drop(NUMBER_COLUMN_NAME)
+}
+
+/**
+ * Concatenates the tables of a multipart resource's parts; under a dialect with header
+ * rows every part's header gives the first part's column names, else a `file/header`
+ */
+export function concatPartTables(
+  tables: Table[],
+  dialect?: FileDialectWithHeaderAndCommentRows,
+) {
+  const firstNames = tables[0]?.columns ?? []
+  if (getHeaderRows(dialect).length) {
+    tables.forEach((table, index) => {
+      const names = table.columns
+      const isSame =
+        names.length === firstNames.length &&
+        names.every((name, position) => name === firstNames[position])
+      if (!isSame) throw createPartHeaderException(index + 1, names)
+    })
+  }
+  return pl.concat(tables)
+}
+
+/**
+ * The error of a part whose header differs from the first part's, or that has none
+ */
+export function createPartHeaderException(partNumber: number, columnNames: string[]) {
+  const error: HeaderError = { type: "file/header", partNumber, columnNames }
+  return new FairspecException(`Part ${partNumber} has another header than part 1`, {
+    report: createReport([error]),
+  })
+}
+
+/**
+ * Tells the error of a part whose header differs, which a validator reports
+ */
+export function getIsPartHeaderException(error: unknown) {
+  return (
+    error instanceof FairspecException &&
+    !!error.report?.errors.length &&
+    error.report.errors.every(item => item.type === "file/header")
+  )
 }

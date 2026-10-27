@@ -38,6 +38,7 @@ pub use actions::table_schema::pattern::inspect_table_schema_patterns;
 pub use helpers::file_dialect::get_is_long_row_error;
 
 // plugins
+pub use actions::table::file_dialect::get_is_part_header_error;
 pub use plugins::arrow::actions::table::load::load_arrow_table;
 pub use plugins::arrow::actions::table::save::save_arrow_table;
 pub use plugins::arrow::plugin::ArrowPlugin;
@@ -61,4 +62,4 @@ pub use plugins::xlsx::actions::file_dialect::infer::infer_xlsx_file_dialect;
 pub use plugins::xlsx::actions::table::load::load_xlsx_table;
 pub use plugins::xlsx::actions::table::save::save_xlsx_table;
 pub use plugins::xlsx::plugin::XlsxPlugin;
-pub use settings::QUERY_ENGINE;
+pub use settings::{DURATION_REGEX, EMAIL_REGEX, QUERY_ENGINE};

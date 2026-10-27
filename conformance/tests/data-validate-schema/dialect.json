@@ -34,5 +34,36 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "a data schema declaring another JSON Schema dialect",
+    "comment": "Every Data Schema is the 2020-12 dialect",
+    "specification": ["https://fairspec.org/specs/data-schema/#profile"],
+    "tests": [
+      {
+        "description": "draft-07 is a metadata error at $schema",
+        "data": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object"
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/$schema" }]
+      },
+      {
+        "description": "2019-09 is a metadata error at $schema",
+        "data": {
+          "$schema": "https://json-schema.org/draft/2019-09/schema",
+          "type": "object"
+        },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/$schema" }]
+      },
+      {
+        "description": "a made-up dialect is a metadata error at $schema",
+        "data": { "$schema": "https://example.com/my-dialect", "type": "object" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/$schema" }]
+      }
+    ]
   }
 ]

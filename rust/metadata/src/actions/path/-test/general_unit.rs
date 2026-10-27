@@ -7,6 +7,7 @@ fn test_get_is_remote_path() {
     let cases = [
         ("http://example.com/path/to/file.txt", true),
         ("https://example.com/path/to/file.txt", true),
+        ("HTTPS://example.com/path/to/file.txt", true),
         ("ftp://example.com/path/to/file.txt", true),
         ("file:///path/to/file.txt", false),
         ("/path/to/file.txt", false),

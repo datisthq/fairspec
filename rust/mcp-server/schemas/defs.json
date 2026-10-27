@@ -4778,6 +4778,46 @@
     "title": "GeojsonColumnProperty",
     "type": "object"
   },
+  "HeaderError": {
+    "additionalProperties": true,
+    "properties": {
+      "type": {
+        "const": "file/header",
+        "description": "Error type identifier",
+        "title": "Type",
+        "type": "string"
+      },
+      "resourceName": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Name of the resource if available",
+        "title": "Resourcename"
+      },
+      "partNumber": {
+        "description": "The 1-based position of the part among the paths of the resource",
+        "title": "Partnumber",
+        "type": "integer"
+      },
+      "columnNames": {
+        "description": "The column names the part's header gives, empty when it has none",
+        "items": {
+          "type": "string"
+        },
+        "title": "Columnnames",
+        "type": "array"
+      }
+    },
+    "required": ["type", "partNumber", "columnNames"],
+    "title": "HeaderError",
+    "type": "object"
+  },
   "HexColumnProperty": {
     "additionalProperties": true,
     "properties": {
@@ -8318,6 +8358,7 @@
             {
               "discriminator": {
                 "mapping": {
+                  "file/header": "#/$defs/HeaderError",
                   "file/integrity": "#/$defs/IntegrityError",
                   "file/textual": "#/$defs/TextualError"
                 },
@@ -8329,6 +8370,9 @@
                 },
                 {
                   "$ref": "#/$defs/IntegrityError"
+                },
+                {
+                  "$ref": "#/$defs/HeaderError"
                 }
               ]
             }
@@ -8754,7 +8798,7 @@
             "type": "string"
           },
           {
-            "pattern": "^https?://",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
             "type": "string"
           },
           {
@@ -8820,7 +8864,7 @@
             "type": "string"
           },
           {
-            "pattern": "^https?://",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
             "type": "string"
           },
           {
@@ -8842,7 +8886,7 @@
             "type": "string"
           },
           {
-            "pattern": "^https?://",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
             "type": "string"
           },
           {

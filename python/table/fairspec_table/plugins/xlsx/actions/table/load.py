@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Unpack
 
-import polars as pl
-
 from fairspec_dataset import prefetch_files
 from fairspec_metadata import (
     OdsFileDialect,
@@ -13,6 +11,7 @@ from fairspec_metadata import (
     resolve_table_schema,
 )
 
+from fairspec_table.actions.table.file_dialect import concat_part_tables
 from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.plugins.xlsx.actions.file_dialect.infer import (
@@ -48,7 +47,7 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
         if rows is not None:
             tables.append(create_table_from_sheet_rows(rows, file_dialect))
 
-    result = pl.concat(tables)
+    result = concat_part_tables(tables, file_dialect)
 
     if not options.get("denormalized"):
         table_schema = resolve_table_schema(resource.tableSchema)

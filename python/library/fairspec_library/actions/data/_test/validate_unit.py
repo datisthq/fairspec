@@ -57,3 +57,34 @@ class TestValidateData:
         report = validate_data(resource)
         assert report.valid is False
         assert len(report.errors) == 1
+
+    def test_should_assert_a_format_it_knows(self):
+        report = validate_data(
+            Resource(
+                data={"day": "2023-02-29"},
+                dataSchema={"properties": {"day": {"type": "string", "format": "date"}}},
+            )
+        )
+        assert [error.type for error in report.errors] == ["data"]
+        assert report.errors[0].jsonPointer == "/day"  # type: ignore[union-attr]
+
+    def test_should_leave_an_unknown_format_an_annotation(self):
+        report = validate_data(
+            Resource(
+                data={"site": "not a uri"},
+                dataSchema={"properties": {"site": {"type": "string", "format": "uri"}}},
+            )
+        )
+        assert report.valid is True
+
+    def test_should_report_a_remote_ref_as_metadata_without_fetching_it(self):
+        report = validate_data(
+            Resource(
+                data={"a": 1},
+                dataSchema={
+                    "properties": {"a": {"$ref": "https://example.com/schema.json"}}
+                },
+            )
+        )
+        assert [error.type for error in report.errors] == ["metadata"]
+        assert report.errors[0].jsonPointer == "/dataSchema/properties/a/$ref"  # type: ignore[union-attr]

@@ -1,7 +1,8 @@
 import type { FairspecError, Resource } from "@fairspec/metadata"
-import { createReport, resolveTableSchema } from "@fairspec/metadata"
+import { createReport, FairspecException, resolveTableSchema } from "@fairspec/metadata"
 import {
   getIsLongRowError,
+  getIsPartHeaderException,
   inspectTable,
   inspectTableSchemaPatterns,
 } from "@fairspec/table"
@@ -13,6 +14,9 @@ export async function validateTable(resource: Resource, options?: ValidateTableO
   try {
     return await validateLoadableTable(resource, options)
   } catch (error) {
+    if (getIsPartHeaderException(error) && error instanceof FairspecException) {
+      return createReport(error.report?.errors)
+    }
     if (!getIsLongRowError(error)) throw error
     const errors: FairspecError[] = [
       { type: "resource/type", expectedResourceType: "table" },

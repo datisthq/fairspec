@@ -3,7 +3,8 @@ use fairspec_metadata::{
     ResourceTypeError, Result, create_report, resolve_table_schema,
 };
 use fairspec_table::{
-    LoadTableOptions, get_is_long_row_error, inspect_table, inspect_table_schema_patterns,
+    LoadTableOptions, get_is_long_row_error, get_is_part_header_error, inspect_table,
+    inspect_table_schema_patterns,
 };
 
 use super::load::load_table;
@@ -13,6 +14,13 @@ use crate::models::table::ValidateTableOptions;
 
 pub fn validate_table(resource: &Resource, options: &ValidateTableOptions) -> Result<Report> {
     match validate_loadable_table(resource, options) {
+        Err(error) if get_is_part_header_error(&error) => Ok(create_report(
+            error
+                .report()
+                .map(|report| report.errors.clone())
+                .unwrap_or_default(),
+            None,
+        )),
         Err(error) if get_is_long_row_error(&error) => {
             Ok(create_report(vec![create_table_type_error()], None))
         }

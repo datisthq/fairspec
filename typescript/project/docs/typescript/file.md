@@ -89,6 +89,8 @@ Supported `hashType` values are `md5`, `sha1`, `sha256` (default), and `sha512`.
 - `textual` — verifies the file is well-formed UTF-8 (ASCII included)
 - `integrity` — recomputes the hash and compares to the declared value
 
+A declared hash that is not lowercase hexadecimal of its type's length (32 for md5, 40 for sha1, 64 for sha256, 128 for sha512) is a `metadata` error at `/integrity/hash`, and the file is not hashed.
+
 ```ts
 import { validateFile } from "fairspec"
 

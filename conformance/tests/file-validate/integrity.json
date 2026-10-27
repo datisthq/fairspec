@@ -83,5 +83,19 @@
         ]
       }
     ]
+  },
+  {
+    "description": "an uppercase md5 hash",
+    "comment": "The hash is checked as metadata and the content is never hashed",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": { "type": "md5", "hash": "D41D8CD98F00B204E9800998ECF8427E" },
+    "tests": [
+      {
+        "description": "is a metadata error at integrity/hash",
+        "data": "",
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/integrity/hash" }]
+      }
+    ]
   }
 ]

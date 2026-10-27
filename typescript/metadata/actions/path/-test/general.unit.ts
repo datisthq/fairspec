@@ -19,6 +19,11 @@ describe("getIsRemotePath", () => {
       isRemote: true,
     },
     {
+      description: "uppercase https URL",
+      path: "HTTPS://example.com/path/to/file.txt",
+      isRemote: true,
+    },
+    {
       description: "ftp URL",
       path: "ftp://example.com/path/to/file.txt",
       isRemote: true,

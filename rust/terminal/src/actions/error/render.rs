@@ -151,6 +151,14 @@ pub fn render_error(error: &FairspecError) -> String {
             b("expectedHash"),
             b("actualHash")
         ),
+        "file/header" => match field("columnNames") {
+            Value::Array(names) if !names.is_empty() => format!(
+                "File part {} has header {}, which differs from the header of part 1{in_resource}",
+                b("partNumber"),
+                list("columnNames")
+            ),
+            _ => format!("File part {} has no header{in_resource}", b("partNumber")),
+        },
         "foreignKey" => format!(
             "Foreign key constraint violated as cells {} do not reference existing values{in_resource}",
             list("cells")

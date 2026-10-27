@@ -4,7 +4,9 @@ import {
   getDataPaths,
   inspectJson,
   resolveDataSchema,
+  validateDataSchema,
 } from "@fairspec/metadata"
+import { DATA_SCHEMA_FORMATS } from "./format.ts"
 import { loadData } from "./load.ts"
 
 export async function validateData(resource: Resource) {
@@ -19,10 +21,20 @@ export async function validateData(resource: Resource) {
       jsonPointer: "/dataSchema",
     })
   } else if (dataSchema) {
+    const schemaReport = await validateDataSchema(dataSchema, {
+      rootJsonPointer: "/dataSchema",
+    })
+    if (!schemaReport.valid) {
+      return createReport(schemaReport.errors)
+    }
+
     const data = await loadData(resource)
 
     if (data !== undefined) {
-      const dataErrors = await inspectJson(data, { jsonSchema: dataSchema })
+      const dataErrors = await inspectJson(data, {
+        jsonSchema: dataSchema,
+        formats: DATA_SCHEMA_FORMATS,
+      })
       errors.push(
         ...dataErrors.map(error => ({
           type: "data" as const,

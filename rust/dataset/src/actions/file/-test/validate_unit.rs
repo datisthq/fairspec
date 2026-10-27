@@ -94,7 +94,7 @@ fn test_validates_integrity_md5() {
 fn test_returns_error_when_integrity_mismatch() {
     let path = write("Hello, World!");
     let actual_hash = get_hash(&path, IntegrityType::Md5);
-    let integrity = create_integrity(IntegrityType::Md5, "wronghash");
+    let integrity = create_integrity(IntegrityType::Md5, "00000000000000000000000000000000");
     let report = validate_file(&create_resource(&path, None, integrity), None).unwrap();
     assert!(!report.valid);
     assert_eq!(get_error_types(&report), ["file/integrity"]);
@@ -102,7 +102,7 @@ fn test_returns_error_when_integrity_mismatch() {
         panic!("expected an integrity error");
     };
     assert_eq!(error.hash_type, "md5");
-    assert_eq!(error.expected_hash, "wronghash");
+    assert_eq!(error.expected_hash, "00000000000000000000000000000000");
     assert_eq!(error.actual_hash, actual_hash);
 }
 
@@ -142,7 +142,7 @@ fn test_validates_both_textual_and_integrity() {
 #[test]
 fn test_returns_multiple_errors() {
     let path = write([0xFF, 0xD8, 0xFF, 0xE0, 0x00]);
-    let integrity = create_integrity(IntegrityType::Md5, "wronghash");
+    let integrity = create_integrity(IntegrityType::Md5, "00000000000000000000000000000000");
     let report = validate_file(&create_resource(&path, Some(true), integrity), None).unwrap();
     assert!(!report.valid);
     assert_eq!(get_error_types(&report), ["file/textual", "file/integrity"]);
@@ -161,7 +161,7 @@ fn test_returns_error_only_textual_mismatch() {
 #[test]
 fn test_returns_error_only_integrity_mismatch() {
     let path = write("Hello, World!");
-    let integrity = create_integrity(IntegrityType::Md5, "wronghash");
+    let integrity = create_integrity(IntegrityType::Md5, "00000000000000000000000000000000");
     let report = validate_file(&create_resource(&path, Some(true), integrity), None).unwrap();
     assert!(!report.valid);
     assert_eq!(get_error_types(&report), ["file/integrity"]);
@@ -179,4 +179,24 @@ fn test_handles_empty_file() {
 fn test_validates_textual_with_special_characters() {
     let path = write("Special: é, ñ, ü, ö, à");
     assert_valid(&validate_file(&create_resource(&path, Some(true), None), None).unwrap());
+}
+
+#[test]
+fn test_reports_uppercase_hash_as_metadata_without_hashing() {
+    let path = write("");
+    let integrity = create_integrity(IntegrityType::Md5, "D41D8CD98F00B204E9800998ECF8427E");
+    let report = validate_file(&create_resource(&path, None, integrity), None).unwrap();
+    assert_eq!(get_error_types(&report), ["metadata"]);
+    let FairspecError::Metadata(error) = &report.errors[0] else {
+        panic!("expected a metadata error");
+    };
+    assert_eq!(error.json_pointer, "/integrity/hash");
+}
+
+#[test]
+fn test_reports_hash_of_another_length_as_metadata() {
+    let path = write("");
+    let integrity = create_integrity(IntegrityType::Sha256, "d41d8cd98f00b204e9800998ecf8427e");
+    let report = validate_file(&create_resource(&path, None, integrity), None).unwrap();
+    assert_eq!(get_error_types(&report), ["metadata"]);
 }

@@ -142,4 +142,45 @@ describe("inspectJson", () => {
     expect(errorPointers).toContain("/version")
     expect(errorPointers).toContain("/description")
   })
+
+  it("reports an if/then failure once, at the failing then", async () => {
+    const jsonSchema = {
+      if: { properties: { kind: { const: "a" } }, required: ["kind"] },
+      then: { properties: { value: { type: "string" } } },
+    }
+
+    const errors = await inspectJson({ kind: "a", value: 1 }, { jsonSchema })
+
+    expect(errors.map(error => error.jsonPointer)).toEqual(["/value"])
+  })
+
+  it("asserts only the given formats", async () => {
+    const jsonSchema = {
+      properties: {
+        a: { type: "string", format: "even" },
+        b: { type: "string", format: "uri" },
+      },
+    }
+    const formats = { even: (value: string) => value.length % 2 === 0 }
+
+    const errors = await inspectJson({ a: "odd", b: "x" }, { jsonSchema, formats })
+
+    expect(errors.map(error => error.jsonPointer)).toEqual(["/a"])
+  })
+
+  it("checks two schema objects with the same $id under formats", async () => {
+    const createSchema = () => ({
+      $id: "https://example.com/schema.json",
+      properties: { a: { type: "string", format: "even" } },
+    })
+    const formats = { even: (value: string) => value.length % 2 === 0 }
+
+    await inspectJson({ a: "ab" }, { jsonSchema: createSchema(), formats })
+    const errors = await inspectJson(
+      { a: "odd" },
+      { jsonSchema: createSchema(), formats },
+    )
+
+    expect(errors.map(error => error.jsonPointer)).toEqual(["/a"])
+  })
 })

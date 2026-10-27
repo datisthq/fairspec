@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import polars as pl
+from fairspec_metadata import FairspecException, HeaderError, create_report
 
 from fairspec_table.helpers.file_dialect import (
     assert_unique_column_names,
@@ -62,6 +63,45 @@ def skip_comment_rows(
         return table
 
     return _drop_rows(table, dialect.commentRows, comment_offset)
+
+
+def concat_part_tables(
+    tables: list[Table],
+    dialect: FileDialectWithHeaderAndCommentRows | None,
+) -> Table:
+    """Concatenate the tables of a multipart resource's parts; under a dialect with
+    header rows every part's header gives the first part's column names, else a
+    `file/header` error is raised"""
+    if get_header_rows(dialect):
+        first_names = tables[0].collect_schema().names() if tables else []
+        for index, table in enumerate(tables):
+            names = table.collect_schema().names()
+            if names != first_names:
+                raise create_part_header_exception(index + 1, names)
+    return pl.concat(tables)
+
+
+def create_part_header_exception(
+    part_number: int, column_names: list[str]
+) -> FairspecException:
+    """The error of a part whose header differs from the first part's, or that has none"""
+    error = HeaderError(
+        type="file/header", partNumber=part_number, columnNames=column_names
+    )
+    return FairspecException(
+        f"Part {part_number} has another header than part 1",
+        report=create_report([error]),
+    )
+
+
+def get_is_part_header_exception(error: BaseException) -> bool:
+    """Tell the error of a part whose header differs, which a validator reports"""
+    return (
+        isinstance(error, FairspecException)
+        and error.report is not None
+        and bool(error.report.errors)
+        and all(item.type == "file/header" for item in error.report.errors)
+    )
 
 
 def _drop_first_rows(table: Table, count: int) -> Table:

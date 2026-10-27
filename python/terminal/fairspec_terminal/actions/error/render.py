@@ -56,6 +56,8 @@ def render_error(error: FairspecError) -> str:
             return _render_textual_error(error)
         case "file/integrity":
             return _render_integrity_error(error)
+        case "file/header":
+            return _render_header_error(error)
         case "foreignKey":
             return _render_foreign_key_error(error)
         case "metadata":
@@ -186,6 +188,15 @@ def _render_textual_error(error: object) -> str:
 
 def _render_integrity_error(error: object) -> str:
     return f"File hash {_b(error.hashType)} is expected to be {_b(error.expectedHash)}, but it is {_b(error.actualHash)}){_in_resource(error.resourceName)}"  # type: ignore[union-attr]
+
+
+def _render_header_error(error: object) -> str:
+    part_number = _b(error.partNumber)  # type: ignore[union-attr]
+    in_resource = _in_resource(error.resourceName)  # type: ignore[union-attr]
+    if not error.columnNames:  # type: ignore[union-attr]
+        return f"File part {part_number} has no header{in_resource}"
+    column_names = ", ".join(_b(name) for name in error.columnNames)  # type: ignore[union-attr]
+    return f"File part {part_number} has header {column_names}, which differs from the header of part 1{in_resource}"
 
 
 def _render_foreign_key_error(error: object) -> str:

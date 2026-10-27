@@ -99,6 +99,8 @@ The returned `Report` carries integrity and textual errors. Example error, seria
 }
 ```
 
+A declared hash that is not lowercase hexadecimal of its type's length (32 for md5, 40 for sha1, 64 for sha256, 128 for sha512) is a `metadata` error at `/integrity/hash`, and the file is not hashed.
+
 ## Inferring a File Dialect
 
 Detect the dialect (CSV delimiter, JSON pointer, Excel sheet, etc.) of a file without loading the table:

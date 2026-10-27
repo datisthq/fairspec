@@ -92,6 +92,8 @@ const report = await validateData({ data: "user.json", dataSchema })
 
 If the resource has no `dataSchema`, the report is empty (no schema, no errors).
 
+The Data Schema is checked first: a `$schema` other than a Fairspec Data Schema profile or `https://json-schema.org/draft/2020-12/schema`, and a `$ref` or `$dynamicRef` that does not resolve within the schema, are `metadata` errors under `/dataSchema`, and no data is checked. A remote reference is never fetched. `format` is asserted for `date`, `time`, `date-time`, `duration`, `email`, `ipv4` and `uuid`; any other format is an annotation.
+
 ## Inferring a Data Schema
 
 `inferDataSchema(resource)` returns a JSON Schema generated from the resource's actual data — useful for bootstrapping a schema you can hand-edit.

@@ -234,7 +234,7 @@ from .models.error.column import (
 )
 from .models.error.data import DataError
 from .models.error.error import FairspecError
-from .models.error.file import FileError, IntegrityError, TextualError
+from .models.error.file import FileError, HeaderError, IntegrityError, TextualError
 from .models.error.foreign_key import ForeignKeyError
 from .models.error.metadata import MetadataError
 from .models.error.resource import (
@@ -495,6 +495,7 @@ __all__ = [
     "IntegerCategoryItem",
     "IntegerColumn",
     "IntegerColumnProperty",
+    "HeaderError",
     "IntegrityError",
     "IntegrityType",
     "InternalPath",

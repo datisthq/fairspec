@@ -57,6 +57,8 @@ const table = await loadCsvTable({
 })
 ```
 
+Every part carries its own header rows, and header and comment rows count the rows of each part. A part whose header gives other column names than part 1's, or a 0-byte part under a dialect with header rows, fails the load with a `FairspecException` whose report holds a `file/header` error naming the part; validation reports that error. A 0-byte part without header rows adds no rows.
+
 ### Saving CSV Files
 
 ```typescript

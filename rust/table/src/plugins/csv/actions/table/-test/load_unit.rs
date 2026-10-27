@@ -379,3 +379,61 @@ mod rows {
         );
     }
 }
+
+fn load_error(data: Value, dialect: Value) -> fairspec_metadata::Error {
+    let resource: Resource =
+        serde_json::from_value(json!({"data": data, "fileDialect": dialect})).unwrap();
+    load_csv_table(&resource, &Default::default())
+        .err()
+        .unwrap()
+}
+
+#[test]
+fn test_should_fail_with_a_file_header_report_on_a_part_whose_header_differs() {
+    let error = load_error(
+        json!([write("id,name\n1,english\n"), write("id,nom\n2,german\n")]),
+        csv(json!({})),
+    );
+    let report = serde_json::to_value(error.report().unwrap()).unwrap();
+    assert_eq!(
+        report["errors"],
+        json!([{"type": "file/header", "partNumber": 2, "columnNames": ["id", "nom"]}])
+    );
+}
+
+#[test]
+fn test_should_fail_with_a_file_header_report_on_an_empty_part_under_a_header() {
+    let error = load_error(
+        json!([write("id,name\n1,english\n"), write("")]),
+        csv(json!({})),
+    );
+    let report = serde_json::to_value(error.report().unwrap()).unwrap();
+    assert_eq!(
+        report["errors"],
+        json!([{"type": "file/header", "partNumber": 2, "columnNames": []}])
+    );
+}
+
+#[test]
+fn test_should_skip_an_empty_part_without_a_header() {
+    let records = load(
+        json!([write("1,english\n"), write("")]),
+        csv(json!({"headerRows": false})),
+    );
+    assert_eq!(records, json!([{"column1": 1, "column2": "english"}]));
+}
+
+#[test]
+fn test_should_join_the_header_rows_of_every_part() {
+    let records = load(
+        json!([
+            write("a,b\nid,name\n1,english\n"),
+            write("a,b\nid,name\n2,german\n")
+        ]),
+        csv(json!({"headerRows": [1, 2]})),
+    );
+    assert_eq!(
+        records,
+        json!([{"a id": 1, "b name": "english"}, {"a id": 2, "b name": "german"}])
+    );
+}

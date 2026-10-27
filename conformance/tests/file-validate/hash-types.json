@@ -79,8 +79,8 @@
     ]
   },
   {
-    "description": "a hash of another type does not match",
-    "comment": "the sha256 hash of Hello declared as md5: the type selects the algorithm, so the md5 of the content is compared",
+    "description": "a hash of another type's length",
+    "comment": "the sha256 hash of Hello declared as md5: a hash of the wrong length is a metadata error, and the content is not hashed",
     "specification": ["https://fairspec.org/specs/dataset/#integrity"],
     "integrity": {
       "type": "md5",
@@ -88,17 +88,10 @@
     },
     "tests": [
       {
-        "description": "is a file/integrity error",
+        "description": "is a metadata error at integrity/hash",
         "data": "Hello",
         "valid": false,
-        "errors": [
-          {
-            "type": "file/integrity",
-            "hashType": "md5",
-            "expectedHash": "185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
-            "actualHash": "8b1a9953c4611296a827abf8c47804d7"
-          }
-        ]
+        "errors": [{ "type": "metadata", "jsonPointer": "/integrity/hash" }]
       }
     ]
   }

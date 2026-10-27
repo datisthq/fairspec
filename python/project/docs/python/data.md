@@ -65,7 +65,7 @@ if not report.valid:
         print(error.message)
 ```
 
-The returned `Report` has `valid: bool` and `errors: list[FairspecError]`. Errors carry context including `instancePath` (JSON Pointer to the failing value) and `keyword` (the failing schema keyword such as `format` or `minimum`).
+The returned `Report` has `valid: bool` and `errors: list[FairspecError]`. A data error carries a `message` and a `jsonPointer` to the failing value.
 
 Example error output:
 
@@ -74,13 +74,13 @@ Example error output:
 # errors=[
 #   DataError(
 #     type='data',
-#     instancePath='/users/0/email',
-#     schemaPath='#/properties/users/items/properties/email/format',
-#     keyword='format',
-#     message='must match format "email"',
+#     jsonPointer='/users/0/email',
+#     message="'joe' is not a 'email'",
 #   )
 # ]
 ```
+
+The Data Schema is checked first: a `$schema` other than a Fairspec Data Schema profile or `https://json-schema.org/draft/2020-12/schema`, and a `$ref` or `$dynamicRef` that does not resolve within the schema, are `metadata` errors under `/dataSchema`, and no data is checked. A remote reference is never fetched. `format` is asserted for `date`, `time`, `date-time`, `duration`, `email`, `ipv4` and `uuid`; any other format is an annotation.
 
 ## Inferring a Data Schema
 

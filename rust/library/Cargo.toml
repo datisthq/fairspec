@@ -19,6 +19,7 @@ polars = { version = "0.55", default-features = false, features = [
   "lazy",
   "semi_anti_join",
 ] }
+regex = "1.13"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 

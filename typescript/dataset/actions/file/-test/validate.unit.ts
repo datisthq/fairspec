@@ -88,7 +88,7 @@ describe("validateFile", () => {
       data: tempFilePath,
       integrity: {
         type: "md5",
-        hash: "wronghash",
+        hash: "00000000000000000000000000000000",
       },
     })
 
@@ -97,9 +97,35 @@ describe("validateFile", () => {
     expect(report.errors[0]).toEqual({
       type: "file/integrity",
       hashType: "md5",
-      expectedHash: "wronghash",
+      expectedHash: "00000000000000000000000000000000",
       actualHash,
     })
+  })
+
+  it("should report an uppercase hash as metadata without hashing", async () => {
+    const tempFilePath = await writeTempFile("")
+
+    const report = await validateFile({
+      data: tempFilePath,
+      integrity: { type: "md5", hash: "D41D8CD98F00B204E9800998ECF8427E" },
+    })
+
+    expect(report.errors).toEqual([
+      { type: "metadata", message: expect.any(String), jsonPointer: "/integrity/hash" },
+    ])
+  })
+
+  it("should report a hash of another length as metadata", async () => {
+    const tempFilePath = await writeTempFile("")
+
+    const report = await validateFile({
+      data: tempFilePath,
+      integrity: { type: "sha256", hash: "d41d8cd98f00b204e9800998ecf8427e" },
+    })
+
+    expect(report.errors).toEqual([
+      { type: "metadata", message: expect.any(String), jsonPointer: "/integrity/hash" },
+    ])
   })
 
   it("should validate sha256 integrity", async () => {
@@ -178,7 +204,7 @@ describe("validateFile", () => {
       textual: true,
       integrity: {
         type: "md5",
-        hash: "wronghash",
+        hash: "00000000000000000000000000000000",
       },
     })
 
@@ -187,7 +213,7 @@ describe("validateFile", () => {
     expect(report.errors[0]?.type).toBe("file/textual")
     expect.assert(report.errors[1]?.type === "file/integrity")
     expect(report.errors[1]?.hashType).toBe("md5")
-    expect(report.errors[1]?.expectedHash).toBe("wronghash")
+    expect(report.errors[1]?.expectedHash).toBe("00000000000000000000000000000000")
     expect(report.errors[1]?.actualHash).toBe(actualHash)
   })
 
@@ -219,7 +245,7 @@ describe("validateFile", () => {
       textual: true,
       integrity: {
         type: "md5",
-        hash: "wronghash",
+        hash: "00000000000000000000000000000000",
       },
     })
 

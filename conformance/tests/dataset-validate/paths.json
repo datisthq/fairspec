@@ -284,5 +284,104 @@
     "tests": [
       { "description": "is valid", "data": { "1.csv": "id\n1\n" }, "valid": true }
     ]
+  },
+  {
+    "description": "an internal path with a percent escape",
+    "comment": "An internal path is a file path, not a URL: %20 names the three characters, not a space",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a%20b.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } },
+          "name": "ab"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "reads the file whose name holds %20",
+        "data": { "a%20b.csv": "id\n1\n", "a b.csv": "id\nx\n" },
+        "valid": true
+      },
+      {
+        "description": "reads the literal file, not the decoded one",
+        "data": { "a%20b.csv": "id\nx\n", "a b.csv": "id\n1\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "ab",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an internal path with a lone percent sign",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": {
+      "resources": [{ "data": "100%.csv", "fileDialect": { "format": "csv" } }]
+    },
+    "tests": [
+      {
+        "description": "is a valid path to that file",
+        "data": { "100%.csv": "id\n1\n" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an external path with an uppercase scheme",
+    "comment": "The scheme is case-insensitive; the invalid name keeps the validator from fetching the URL, so only its metadata error is reported",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#external-path",
+      "https://fairspec.org/specs/dataset/#validation"
+    ],
+    "dataset": {
+      "resources": [
+        { "name": "remote", "data": "HTTPS://example.com/data.csv" },
+        { "name": "bad-name" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a valid path",
+        "data": {},
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/1/name" }]
+      }
+    ]
+  },
+  {
+    "description": "a data schema path with a mixed-case scheme",
+    "comment": "The invalid name keeps the validator from fetching the URL",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#external-path",
+      "https://fairspec.org/specs/dataset/#validation"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "remote",
+          "data": "a.json",
+          "dataSchema": "HtTp://example.com/schema.json"
+        },
+        { "name": "bad-name" }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a valid path",
+        "data": { "a.json": "{}" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/resources/1/name" }]
+      }
+    ]
   }
 ]

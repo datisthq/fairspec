@@ -23,6 +23,7 @@ pub fn validate_descriptor(
         &Value::Object(descriptor.clone()),
         PathOr::Value(profile.clone()),
         root_json_pointer,
+        None,
     )?;
     let errors = issues
         .into_iter()

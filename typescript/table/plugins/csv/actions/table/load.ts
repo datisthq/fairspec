@@ -5,7 +5,12 @@ import { resolveTableSchema } from "@fairspec/metadata"
 import { prefetchFiles } from "@fairspec/dataset"
 import type { LoadTableOptions } from "../../../../models/table.ts"
 import { inferTableSchemaFromTable } from "../../../../actions/tableSchema/infer.ts"
-import { joinHeaderRows } from "../../../../actions/table/fileDialect.ts"
+import { stat } from "node:fs/promises"
+import {
+  concatPartTables,
+  createPartHeaderException,
+  joinHeaderRows,
+} from "../../../../actions/table/fileDialect.ts"
 import { normalizeTable } from "../../../../actions/table/normalize.ts"
 import { skipCommentRows } from "../../../../actions/table/fileDialect.ts"
 import type { Table } from "../../../../models/table.ts"
@@ -33,6 +38,20 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   if (!resource.fileDialect) {
     fileDialect = await inferCsvFileDialect({ ...resource, data: paths[0] }, options)
   }
+  const isHeaderless = !getHeaderRows(fileDialect).length
+  const partSizes =
+    paths.length > 1
+      ? await Promise.all(paths.map(async path => (await stat(path)).size))
+      : []
+  const emptyPart = partSizes.indexOf(0)
+  if (emptyPart !== -1 && !isHeaderless) {
+    throw createPartHeaderException(emptyPart + 1, [])
+  }
+  // A headerless part with no bytes adds no records, and Polars refuses an empty file
+  if (emptyPart !== -1 && partSizes.some(size => size > 0)) {
+    paths = paths.filter((_, index) => partSizes[index] !== 0)
+  }
+
   const swapped = fileDialect && (await swapDelimiter(paths, fileDialect, { maxBytes }))
   if (swapped) {
     paths = swapped.paths
@@ -43,45 +62,45 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
     paths = cleaned.paths
     fileDialect = cleaned.fileDialect
   }
-  if (fileDialect) {
-    fileDialect = await renumberPrefixedRows(paths[0], fileDialect)
-  }
 
-  const scanOptions = getScanOptions(fileDialect)
   const isMultiHeader = getHeaderRows(fileDialect).length > 1 && !fileDialect?.columnNames
-  if (isMultiHeader) {
-    scanOptions.schema = getHeaderlessSchema(paths[0], scanOptions, fileDialect)
-    // nodejs-polars refuses a first row shorter than a given schema unless it may
-    // truncate; cleanCsvRows has already failed on a long row
-    scanOptions.truncateRaggedLines = true
-  }
 
+  // Header and comment rows count the rows of each part, so each part reads its own
   const tables: Table[] = []
   for (const path of paths) {
-    if (scanOptions.hasHeader && !fileDialect?.columnNames) {
+    const partDialect = fileDialect && (await renumberPrefixedRows(path, fileDialect))
+    const scanOptions = getScanOptions(partDialect)
+    if (isMultiHeader) {
+      scanOptions.schema = getHeaderlessSchema(path, scanOptions, partDialect)
+      // nodejs-polars refuses a first row shorter than a given schema unless it may
+      // truncate; cleanCsvRows has already failed on a long row
+      scanOptions.truncateRaggedLines = true
+    }
+
+    if (scanOptions.hasHeader && !partDialect?.columnNames) {
       assertUniqueColumnNames(await readHeaderNames(path, scanOptions))
     }
-    const table = pl.scanCSV(path, scanOptions)
+    let table = pl.scanCSV(path, scanOptions)
+    if (swapped) {
+      table = restoreDelimiter(table, swapped.swap)
+    }
+    if (partDialect) {
+      table = await joinHeaderRows(table, partDialect)
+      table = skipCommentRows(table, partDialect)
+    }
     tables.push(table)
   }
 
+  let table = concatPartTables(tables, fileDialect)
+
   // There is no way to specify column names in nodejs-polars by default
   // so we have to rename `column_*` to `column*` is table doesn't have header
-  let table = pl.concat(tables)
-  if (!scanOptions.hasHeader && !fileDialect?.columnNames && !isMultiHeader) {
+  if (isHeaderless && !fileDialect?.columnNames) {
     table = table.rename(
       Object.fromEntries(
         table.columns.map(name => [name, name.replace("column_", "column")]),
       ),
     )
-  }
-  if (swapped) {
-    table = restoreDelimiter(table, swapped.swap)
-  }
-
-  if (fileDialect) {
-    table = await joinHeaderRows(table, fileDialect)
-    table = skipCommentRows(table, fileDialect)
   }
 
   if (!options?.denormalized) {

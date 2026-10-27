@@ -57,3 +57,33 @@ class TestInspectJson:
             json_schema=SCHEMA,
         )
         assert len(errors) == 2
+
+    def test_reports_an_if_then_failure_once_at_the_failing_then(self):
+        errors = inspect_json(
+            {"kind": "a", "value": 1},
+            json_schema={
+                "if": {"properties": {"kind": {"const": "a"}}, "required": ["kind"]},
+                "then": {"properties": {"value": {"type": "string"}}},
+            },
+        )
+        assert [error["jsonPointer"] for error in errors] == ["/value"]
+
+    def test_points_a_false_property_schema_at_the_property(self):
+        errors = inspect_json(
+            {"a": 1, "b": 2},
+            json_schema={"properties": {"a": True, "b": False}},
+        )
+        assert [error["jsonPointer"] for error in errors] == ["/b"]
+
+    def test_asserts_only_the_given_formats(self):
+        errors = inspect_json(
+            {"a": "odd", "b": "x"},
+            json_schema={
+                "properties": {
+                    "a": {"type": "string", "format": "even"},
+                    "b": {"type": "string", "format": "uri"},
+                }
+            },
+            formats={"even": lambda value: len(value) % 2 == 0},
+        )
+        assert [error["jsonPointer"] for error in errors] == ["/a"]

@@ -59,3 +59,40 @@ fn test_should_validate_empty_inline_object() {
     assert!(!report.valid);
     assert_eq!(report.errors.len(), 1);
 }
+
+#[test]
+fn test_should_assert_a_format_it_knows() {
+    let resource = create_resource(json!({
+        "data": {"day": "2023-02-29"},
+        "dataSchema": {"properties": {"day": {"type": "string", "format": "date"}}},
+    }));
+    let report = validate_data(&resource).unwrap();
+    let FairspecError::Data(error) = &report.errors[0] else {
+        panic!("expected a data error");
+    };
+    assert_eq!(report.errors.len(), 1);
+    assert_eq!(error.json_pointer, "/day");
+}
+
+#[test]
+fn test_should_leave_an_unknown_format_an_annotation() {
+    let resource = create_resource(json!({
+        "data": {"site": "not a uri"},
+        "dataSchema": {"properties": {"site": {"type": "string", "format": "uri"}}},
+    }));
+    assert!(validate_data(&resource).unwrap().valid);
+}
+
+#[test]
+fn test_should_report_a_remote_ref_as_metadata_without_fetching_it() {
+    let resource = create_resource(json!({
+        "data": {"a": 1},
+        "dataSchema": {"properties": {"a": {"$ref": "https://example.com/schema.json"}}},
+    }));
+    let report = validate_data(&resource).unwrap();
+    let FairspecError::Metadata(error) = &report.errors[0] else {
+        panic!("expected a metadata error");
+    };
+    assert_eq!(report.errors.len(), 1);
+    assert_eq!(error.json_pointer, "/dataSchema/properties/a/$ref");
+}

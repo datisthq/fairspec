@@ -1,8 +1,10 @@
 use fairspec_metadata::{
     DataError, ExpectedResourceType, FairspecError, MetadataError, Report, Resource, ResourceError,
     ResourceTypeError, Result, create_report, get_data_paths, inspect_json, resolve_data_schema,
+    validate_data_schema,
 };
 
+use super::format::DATA_SCHEMA_FORMATS;
 use super::load::load_data;
 
 pub fn validate_data(resource: &Resource) -> Result<Report> {
@@ -19,6 +21,11 @@ pub fn validate_data(resource: &Resource) -> Result<Report> {
         return Ok(create_report(vec![FairspecError::Metadata(error)], None));
     }
 
+    let schema_report = validate_data_schema(data_schema.clone(), Some("/dataSchema"))?;
+    if !schema_report.valid {
+        return Ok(create_report(schema_report.errors, None));
+    }
+
     let Some(data) = load_data(resource)? else {
         let error = ResourceTypeError {
             resource_name: None,
@@ -31,7 +38,7 @@ pub fn validate_data(resource: &Resource) -> Result<Report> {
         ));
     };
 
-    let errors = inspect_json(&data, data_schema, None)?
+    let errors = inspect_json(&data, data_schema, None, Some(&DATA_SCHEMA_FORMATS))?
         .into_iter()
         .map(|note| {
             FairspecError::Data(DataError {

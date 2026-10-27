@@ -61,4 +61,39 @@ describe("validateData", () => {
       expectedResourceType: "data",
     })
   })
+
+  it("should assert a format it knows", async () => {
+    const report = await validateData({
+      data: { day: "2023-02-29" },
+      dataSchema: { properties: { day: { type: "string", format: "date" } } },
+    })
+
+    expect(report.errors).toEqual([
+      { type: "data", message: expect.any(String), jsonPointer: "/day" },
+    ])
+  })
+
+  it("should leave an unknown format an annotation", async () => {
+    const report = await validateData({
+      data: { site: "not a uri" },
+      dataSchema: { properties: { site: { type: "string", format: "uri" } } },
+    })
+
+    expect(report).toEqual({ valid: true, errors: [] })
+  })
+
+  it("should report a remote $ref as metadata without fetching it", async () => {
+    const report = await validateData({
+      data: { a: 1 },
+      dataSchema: { properties: { a: { $ref: "https://example.com/schema.json" } } },
+    })
+
+    expect(report.errors).toEqual([
+      {
+        type: "metadata",
+        message: expect.any(String),
+        jsonPointer: "/dataSchema/properties/a/$ref",
+      },
+    ])
+  })
 })

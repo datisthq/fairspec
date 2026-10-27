@@ -1,0 +1,162 @@
+[
+  {
+    "description": "format email",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "email" } }
+    },
+    "tests": [
+      {
+        "description": "an address is valid",
+        "data": "{\"a\": \"joe@example.com\"}",
+        "valid": true
+      },
+      {
+        "description": "a word is a data error at the value",
+        "data": "{\"a\": \"joe\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ],
+    "comment": "format is asserted, as with the Format-Assertion vocabulary enabled"
+  },
+  {
+    "description": "format date",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "date" } }
+    },
+    "tests": [
+      {
+        "description": "a full date is valid",
+        "data": "{\"a\": \"2024-01-31\"}",
+        "valid": true
+      },
+      {
+        "description": "month 13 is a data error",
+        "data": "{\"a\": \"2024-13-01\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ]
+  },
+  {
+    "description": "format date-time",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "date-time" } }
+    },
+    "tests": [
+      {
+        "description": "a date-time with an offset is valid",
+        "data": "{\"a\": \"2024-01-31T10:00:00Z\"}",
+        "valid": true
+      },
+      {
+        "description": "a date alone is a data error",
+        "data": "{\"a\": \"2024-01-31\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ]
+  },
+  {
+    "description": "format ipv4",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "ipv4" } }
+    },
+    "tests": [
+      {
+        "description": "a dotted quad is valid",
+        "data": "{\"a\": \"192.168.0.1\"}",
+        "valid": true
+      },
+      {
+        "description": "an octet above 255 is a data error",
+        "data": "{\"a\": \"256.1.1.1\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ]
+  },
+  {
+    "description": "format uuid",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "uuid" } }
+    },
+    "tests": [
+      {
+        "description": "a uuid is valid",
+        "data": "{\"a\": \"123e4567-e89b-12d3-a456-426614174000\"}",
+        "valid": true
+      },
+      {
+        "description": "a word is a data error",
+        "data": "{\"a\": \"xyz\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ]
+  },
+  {
+    "description": "a format on a non-string value",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": { "type": "object", "properties": { "a": { "format": "email" } } },
+    "tests": [
+      {
+        "description": "a number is valid: string formats apply to strings only",
+        "data": "{\"a\": 5}",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an unknown format",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "string", "format": "my-format" } }
+    },
+    "tests": [
+      {
+        "description": "any string is valid",
+        "data": "{\"a\": \"anything\"}",
+        "valid": true
+      }
+    ],
+    "comment": "Only a format the implementation knows is asserted"
+  },
+  {
+    "description": "boolean subschemas",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "format": "json",
+    "dataSchema": { "type": "object", "properties": { "a": true, "b": false } },
+    "tests": [
+      {
+        "description": "any value under a true schema is valid",
+        "data": "{\"a\": [1, \"x\"]}",
+        "valid": true
+      },
+      {
+        "description": "any value under a false schema is a data error",
+        "data": "{\"b\": 1}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/b" }]
+      }
+    ]
+  }
+]

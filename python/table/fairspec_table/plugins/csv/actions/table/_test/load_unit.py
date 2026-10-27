@@ -5,6 +5,7 @@ import pytest
 from fairspec_dataset import write_temp_file
 from fairspec_metadata import (
     CsvFileDialect,
+    FairspecException,
     IntegerColumnProperty,
     Resource,
     StringColumnProperty,
@@ -25,6 +26,59 @@ class TestLoadCsvTable:
         assert frame.to_dicts() == [
             {"id": 1, "name": "english"},
             {"id": 2, "name": "中文"},
+        ]
+
+    def test_should_fail_with_a_file_header_report_on_a_part_whose_header_differs(self):
+        path1 = write_temp_file("id,name\n1,english\n")
+        path2 = write_temp_file("id,nom\n2,german\n")
+
+        with pytest.raises(FairspecException) as error:
+            load_csv_table(Resource(data=[path1, path2], fileDialect=CsvFileDialect()))
+        assert error.value.report is not None
+        assert [item.model_dump() for item in error.value.report.errors] == [
+            {
+                "type": "file/header",
+                "resourceName": None,
+                "partNumber": 2,
+                "columnNames": ["id", "nom"],
+            }
+        ]
+
+    def test_should_fail_with_a_file_header_report_on_an_empty_part_under_a_header(
+        self,
+    ):
+        path1 = write_temp_file("id,name\n1,english\n")
+        path2 = write_temp_file("")
+
+        with pytest.raises(FairspecException) as error:
+            load_csv_table(Resource(data=[path1, path2], fileDialect=CsvFileDialect()))
+        assert error.value.report is not None
+        assert error.value.report.errors[0].partNumber == 2  # type: ignore[union-attr]
+        assert error.value.report.errors[0].columnNames == []  # type: ignore[union-attr]
+
+    def test_should_skip_an_empty_part_without_a_header(self):
+        path1 = write_temp_file("1,english\n")
+        path2 = write_temp_file("")
+
+        table = load_csv_table(
+            Resource(data=[path1, path2], fileDialect=CsvFileDialect(headerRows=False))
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [{"column1": 1, "column2": "english"}]
+
+    def test_should_join_the_header_rows_of_every_part(self):
+        path1 = write_temp_file("a,b\nid,name\n1,english\n")
+        path2 = write_temp_file("a,b\nid,name\n2,german\n")
+
+        table = load_csv_table(
+            Resource(data=[path1, path2], fileDialect=CsvFileDialect(headerRows=[1, 2]))
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [
+            {"a id": 1, "b name": "english"},
+            {"a id": 2, "b name": "german"},
         ]
 
     def test_should_load_local_file_multipart(self):

@@ -23,6 +23,7 @@ import type {
   DataError,
   FairspecError,
   ForeignKeyError,
+  HeaderError,
   IntegrityError,
   MetadataError,
   ResourceMissingError,
@@ -85,6 +86,8 @@ export function renderError(error: FairspecError) {
       return renderTextualError(error)
     case "file/integrity":
       return renderIntegrityError(error)
+    case "file/header":
+      return renderHeaderError(error)
     case "foreignKey":
       return renderForeignKeyError(error)
     case "metadata":
@@ -333,6 +336,17 @@ export function renderIntegrityError(error: IntegrityError) {
   const inResource = renderInResource(error.resourceName)
 
   return `File hash ${hashType} is expected to be ${expectedHash}, but it is ${actualHash})${inResource}`
+}
+
+export function renderHeaderError(error: HeaderError) {
+  const partNumber = pc.bold(error.partNumber)
+  const inResource = renderInResource(error.resourceName)
+
+  if (!error.columnNames.length) {
+    return `File part ${partNumber} has no header${inResource}`
+  }
+  const columnNames = error.columnNames.map(name => pc.bold(name)).join(", ")
+  return `File part ${partNumber} has header ${columnNames}, which differs from the header of part 1${inResource}`
 }
 
 // Foreign Key

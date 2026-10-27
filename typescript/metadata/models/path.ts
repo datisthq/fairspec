@@ -6,7 +6,7 @@ export const InternalPath = z
     /^(?:[^\/\\.~A-Za-z][^\/\\]*|[A-Za-z][^\/\\:]*|\.[^\/\\.][^\/\\]*|\.\.[^\/\\]+|\.)(?:\/(?:[^\/\\.][^\/\\]*|\.[^\/\\.][^\/\\]*|\.\.[^\/\\]+|\.))*$/,
   )
 
-export const ExternalPath = z.string().regex(/^https?:\/\//)
+export const ExternalPath = z.string().regex(/^[Hh][Tt][Tt][Pp][Ss]?:\/\//)
 
 export const Path = z.union([InternalPath, ExternalPath])
 

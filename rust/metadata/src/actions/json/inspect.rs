@@ -17,17 +17,23 @@ pub struct JsonIssue {
     pub json_pointer: String,
 }
 
+/// A `format` name and the check a string under it must pass.
+pub type FormatCheck = (&'static str, fn(&str) -> bool);
+
+/// With `formats`, asserts those formats only, every other format stays an annotation,
+/// and no reference is fetched.
 pub fn inspect_json(
     value: &Value,
     json_schema: impl Into<PathOr<JsonSchema>>,
     root_json_pointer: Option<&str>,
+    formats: Option<&'static [FormatCheck]>,
 ) -> Result<Vec<JsonIssue>> {
     let json_schema = match json_schema.into() {
         PathOr::Path(path) => load_json_schema(&path, false)?,
         PathOr::Value(json_schema) => json_schema,
     };
 
-    let validator = get_validator(json_schema)?;
+    let validator = get_validator(json_schema, formats)?;
 
     Ok(validator
         .iter_errors(value)
@@ -45,9 +51,28 @@ pub fn inspect_json(
 static VALIDATORS: LazyLock<Mutex<HashMap<String, Arc<Validator>>>> =
     LazyLock::new(Default::default);
 
-fn get_validator(json_schema: JsonSchema) -> Result<Arc<Validator>> {
+// The built-in formats jsonschema asserts once formats are on, which no twin knows
+const UNKNOWN_FORMATS: [&str; 12] = [
+    "hostname",
+    "idn-email",
+    "idn-hostname",
+    "ipv6",
+    "iri",
+    "iri-reference",
+    "json-pointer",
+    "regex",
+    "relative-json-pointer",
+    "uri",
+    "uri-reference",
+    "uri-template",
+];
+
+fn get_validator(
+    json_schema: JsonSchema,
+    formats: Option<&'static [FormatCheck]>,
+) -> Result<Arc<Validator>> {
     let json_schema = Value::Object(json_schema);
-    let key = json_schema.to_string();
+    let key = format!("{}{json_schema}", if formats.is_some() { "f" } else { "" });
     if let Some(validator) = VALIDATORS
         .lock()
         .ok()
@@ -56,11 +81,24 @@ fn get_validator(json_schema: JsonSchema) -> Result<Arc<Validator>> {
         return Ok(validator);
     }
 
-    let validator = Arc::new(
-        jsonschema::options()
-            .with_draft(Draft::Draft202012)
+    let mut options = jsonschema::options().with_draft(Draft::Draft202012);
+    options = match formats {
+        Some(formats) => {
+            options = options.should_validate_formats(true);
+            for name in UNKNOWN_FORMATS {
+                options = options.with_format(name, |_: &str| true);
+            }
+            for (name, check) in formats {
+                options = options.with_format(*name, *check);
+            }
+            options
+        }
+        None => options
             .should_validate_formats(false)
-            .with_retriever(RemoteRetriever)
+            .with_retriever(RemoteRetriever),
+    };
+    let validator = Arc::new(
+        options
             .build(&json_schema)
             .map_err(|error| Error::Invalid {
                 message: format!("JsonSchema is not valid: {error}"),

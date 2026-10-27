@@ -112,7 +112,7 @@ pub use models::error::column::{
 };
 pub use models::error::data::{DataError, DataErrorType};
 pub use models::error::error::FairspecError;
-pub use models::error::file::{FileError, IntegrityError, TextualError};
+pub use models::error::file::{FileError, HeaderError, IntegrityError, TextualError};
 pub use models::error::foreign_key::{ForeignKeyError, ForeignKeyErrorType};
 pub use models::error::metadata::{MetadataError, MetadataErrorType};
 pub use models::error::resource::{
@@ -204,7 +204,7 @@ pub use actions::frictionless::mapping::{
 };
 pub use actions::host::address::get_is_public_address;
 pub use actions::host::policy::{get_host_policy, set_host_policy};
-pub use actions::json::inspect::{JsonIssue, inspect_json};
+pub use actions::json::inspect::{FormatCheck, JsonIssue, inspect_json};
 pub use actions::json_schema::assert::assert_json_schema;
 pub use actions::json_schema::inspect::inspect_json_schema;
 pub use actions::json_schema::load::load_json_schema;

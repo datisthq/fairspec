@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Unpack
 
 from fairspec_metadata import (
+    FairspecException,
     Report,
     ResourceTypeError,
     create_report,
@@ -10,6 +11,7 @@ from fairspec_metadata import (
 )
 from fairspec_table import (
     get_is_long_row_error,
+    get_is_part_header_exception,
     inspect_table,
     inspect_table_schema_patterns,
 )
@@ -27,6 +29,8 @@ def validate_table(resource: Resource, **options: Unpack[ValidateTableOptions]) 
     try:
         return _validate_loadable_table(resource, **options)
     except Exception as error:
+        if get_is_part_header_exception(error) and isinstance(error, FairspecException):
+            return create_report(list(error.report.errors) if error.report else [])
         if not get_is_long_row_error(error):
             raise
         return create_report(
