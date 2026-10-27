@@ -26,7 +26,8 @@ pub fn normalize_path(path: &str, basepath: Option<&str>) -> Result<String> {
         get_joined_path(basepath, path)
     };
     let relative = get_relative_path(&get_absolute_path(&joined), &get_absolute_path(basepath));
-    if relative.is_none_or(|relative| relative.starts_with("..")) {
+    // A name such as "..notes.csv" stays inside; only a ".." component leaves
+    if relative.is_none_or(|relative| relative.split('/').next() == Some("..")) {
         return Err(create_error(path, Some(basepath)));
     }
 

@@ -359,10 +359,9 @@ Internal path `MUST` point to a file in the same directory as the descriptor fil
 The path `MUST NOT` contain any of the following:
 
 - Absolute path indicators (starting with `/` or `~`)
-- Directory traversal sequences (`..`)
+- A `..` component, which leaves the directory; a name that merely starts with two dots, such as `..notes.csv`, is allowed
 - Windows-style backslashes (`\`) - only forward slashes (`/`) are allowed as separators
-- Windows drive letters (`C:`, `D:`, etc.)
-- URI schemes (`://`)
+- A colon (`:`) in a first component that starts with a letter, which would read as a Windows drive (`C:`) or a URI scheme (`http:`, `file:`); a colon elsewhere, as in `10:30.csv`, is allowed
 
 The path `MAY` contain unicode characters, spaces, and special characters in file and directory names.
 

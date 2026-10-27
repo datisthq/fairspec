@@ -133,6 +133,12 @@ describe("dataset resources", () => {
     { valid: false, data: "a//b.csv" },
     { valid: true, data: "./data.csv" },
     { valid: false, data: "a\\data.csv" },
+    { valid: true, data: "..notes.csv" },
+    { valid: true, data: "10:30.csv" },
+    { valid: true, data: "times/a:b.csv" },
+    { valid: false, data: "http:/example.com/a.csv" },
+    { valid: false, data: "file:/etc/passwd" },
+    { valid: false, data: "data:text/csv,a" },
   ])("validates data $data as $valid", ({ data, valid }) => {
     expect(getValidator("dataset.json")({ resources: [{ data }] })).toBe(valid)
   })

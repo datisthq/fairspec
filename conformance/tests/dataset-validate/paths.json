@@ -1,0 +1,34 @@
+[
+  {
+    "description": "a file name that starts with two dots",
+    "comment": "Only a .. component leaves the dataset folder; a name such as ..notes.csv is an ordinary file",
+    "specification": ["https://fairspec.org/specs/dataset/#path"],
+    "dataset": {
+      "resources": [
+        { "name": "notes", "data": "..notes.csv", "fileDialect": { "format": "csv" } }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a valid internal path",
+        "data": { "..notes.csv": "id\n1\n" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an internal path that starts with a URL scheme",
+    "comment": "A scheme would turn the internal path into a remote one, which is an external path's job",
+    "specification": ["https://fairspec.org/specs/dataset/#path"],
+    "dataset": {
+      "resources": [{ "name": "remote", "data": "http:/example.com/a.csv" }]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": {},
+        "valid": false
+      }
+    ]
+  }
+]

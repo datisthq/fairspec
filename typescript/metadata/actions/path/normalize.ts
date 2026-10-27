@@ -27,7 +27,11 @@ export function normalizePath(path: string, options: { basepath?: string }) {
 
   const relativePath = node.path.relative(options.basepath ?? "", normalizedPath)
 
-  if (relativePath.startsWith("..")) {
+  // A name such as "..notes.csv" stays inside; only a ".." component leaves
+  if (
+    relativePath.split(node.path.sep)[0] === ".." ||
+    node.path.isAbsolute(relativePath)
+  ) {
     throw new Error(`Path ${path} is not a subpath of ${options.basepath}`)
   }
 

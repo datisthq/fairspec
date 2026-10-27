@@ -44,7 +44,8 @@ def normalize_path(path: str, *, basepath: str | None = None) -> str:
 
     normalized_path = os.path.join(basepath, path) if basepath else path
     relative_path = os.path.relpath(normalized_path, basepath or "")
-    if relative_path.startswith(".."):
+    # A name such as "..notes.csv" stays inside; only a ".." component leaves
+    if relative_path.split(os.sep)[0] == os.pardir or os.path.isabs(relative_path):
         raise Error(path, basepath)
 
     return safe_relpath(os.path.abspath(normalized_path))
