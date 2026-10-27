@@ -4,12 +4,16 @@ import polars as pl
 
 from fairspec_metadata import ListColumn
 
+from .date import parse_date_text
+from .date_time import parse_date_time_text
 from .integer import parse_integer_text
+from .local_date_time import parse_local_date_time_text
+from .local_time import parse_local_time_text
 from .number import parse_number_text
+from .time import parse_time_text
 
 TRUE_VALUES = ["true", "True", "TRUE", "1"]
 FALSE_VALUES = ["false", "False", "FALSE", "0"]
-DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
 
 
 def parse_list_column(column: ListColumn, column_expr: pl.Expr) -> pl.Expr:
@@ -57,30 +61,15 @@ def _cast_item(item_type: str, item_expr: pl.Expr) -> pl.Expr:
                 .otherwise(pl.lit(None, dtype=pl.Boolean))
             )
         case "date-time":
-            return item_expr.str.to_datetime(
-                "%Y-%m-%dT%H:%M:%S%.f%#z", time_unit="us", time_zone="UTC", strict=False
-            )
+            return parse_date_time_text(item_expr)
         case "local-date-time":
-            return item_expr.str.to_datetime(
-                "%Y-%m-%dT%H:%M:%S%.f", time_unit="us", strict=False
-            )
+            return parse_local_date_time_text(item_expr)
         case "date":
-            return item_expr.str.extract(DATE_PATTERN, 0).str.to_date(
-                "%Y-%m-%d", strict=False
-            )
+            return parse_date_text(item_expr)
         case "time":
-            return (
-                pl.concat_str([pl.lit("1970-01-01T"), item_expr])
-                .str.to_datetime(
-                    "%Y-%m-%dT%H:%M:%S%.f%#z",
-                    time_unit="us",
-                    time_zone="UTC",
-                    strict=False,
-                )
-                .cast(pl.Time)
-            )
+            return parse_time_text(item_expr)
         case "local-time":
-            return item_expr.str.to_time("%H:%M:%S%.f", strict=False)
+            return parse_local_time_text(item_expr)
         case _:
             return item_expr
 

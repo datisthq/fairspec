@@ -16,6 +16,8 @@ class TestParseLocalTimeColumn:
         [
             ("06:00:00", datetime.time(6, 0, 0)),
             ("06:00:00.5", datetime.time(6, 0, 0, 500000)),
+            ("23:59:60", datetime.time(23, 59, 59)),
+            ("12:30:60", None),
             ("06:00:00Z", None),
             ("06:00:00+02:00", None),
             ("09:00", None),

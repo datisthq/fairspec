@@ -9,12 +9,12 @@ import { parseNumberText } from "./number.ts"
 
 const TRUE_VALUES = ["true", "True", "TRUE", "1"]
 const FALSE_VALUES = ["false", "False", "FALSE", "0"]
-const DATE_TIME_PATTERN = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+const DATE_TIME_PATTERN = "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
 const DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
-const TIME_PATTERN = "\\d{2}:\\d{2}:\\d{2}"
+const TIME_PATTERN = "[0-9]{2}:[0-9]{2}:[0-9]{2}"
 const TIME_FORMAT = "%H:%M:%S"
 const DATE_PREFIX = "1970-01-01T"
-const DATE_PATTERN = "^\\d{4}-\\d{2}-\\d{2}$"
+const DATE_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
 
 export function parseListColumn(column: ListColumn, columnExpr: pl.Expr) {
   const delimiter = column.property.delimiter ?? ","

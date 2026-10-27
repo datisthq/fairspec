@@ -9,6 +9,7 @@ import { getPolarsSchema } from "../../helpers/schema.ts"
 import { getTypeTimeZone } from "../../helpers/type.ts"
 import type { InferTableSchemaOptions } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
+import { DURATION_REGEX, EMAIL_REGEX, URL_REGEX } from "../../settings.ts"
 
 const DEFAULT_MISSING_VALUES = ["", "NA", "N/A", "null", "-"]
 
@@ -490,12 +491,12 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
       property: { type: "string", format: "list", itemType: "number" },
     },
 
-    "^https?://\\S+$": {
+    [URL_REGEX]: {
       type: "url",
       property: { type: "string", format: "url" },
     },
 
-    "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$": {
+    [EMAIL_REGEX]: {
       type: "email",
       property: { type: "string", format: "email" },
     },
@@ -506,7 +507,7 @@ function createRegexMapping(options?: InferTableSchemaOptions) {
         property: { type: "string", format: "wkt" },
       },
 
-    "^P(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+(\\.\\d+)?S)?)?$": {
+    [DURATION_REGEX]: {
       type: "duration",
       property: { type: "string", format: "duration" },
     },

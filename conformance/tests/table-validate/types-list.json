@@ -1159,5 +1159,225 @@
         ]
       }
     ]
+  },
+  {
+    "description": "list column of date-times: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "date-time",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "lowercase t and z, a leap second and the year 0000 are valid",
+        "data": "id,x\n1,\"2024-01-15t12:00:00z;2016-12-31T23:59:60Z;0000-01-01T00:00:00Z\"\n",
+        "valid": true
+      },
+      {
+        "description": "an offset without a colon is a cell/type error",
+        "data": "id,x\n1,2024-01-15t12:00:00z\n2,\"2024-01-15T12:00:00Z;2024-01-15T12:00:00+0200\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00Z;2024-01-15T12:00:00+0200"
+          }
+        ]
+      },
+      {
+        "description": "a space separator is a cell/type error",
+        "data": "id,x\n1,2024-01-15t12:00:00z\n2,\"2024-01-15T12:00:00Z;2024-01-15 12:00:00Z\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00Z;2024-01-15 12:00:00Z"
+          }
+        ]
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,2024-01-15t12:00:00z\n2,\"2024-01-15T12:00:00Z;2016-12-31T12:30:60Z\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00Z;2016-12-31T12:30:60Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of times: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "time",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a lowercase z and a leap second are valid",
+        "data": "id,x\n1,\"12:00:00z;23:59:60Z;15:59:60-08:00\"\n",
+        "valid": true
+      },
+      {
+        "description": "an offset of hours only is a cell/type error",
+        "data": "id,x\n1,12:00:00z\n2,\"12:00:00Z;12:00:00+02\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "12:00:00Z;12:00:00+02"
+          }
+        ]
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,12:00:00z\n2,\"12:00:00Z;12:30:60Z\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "12:00:00Z;12:30:60Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of local times: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "local-time",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a leap second at 23:59:60 is valid",
+        "data": "id,x\n1,\"12:00:00;23:59:60\"\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,12:00:00\n2,\"12:00:00;12:30:60\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "12:00:00;12:30:60"
+          }
+        ]
+      },
+      {
+        "description": "hour 24 is a cell/type error",
+        "data": "id,x\n1,12:00:00\n2,\"12:00:00;24:00:00\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "12:00:00;24:00:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of local date-times: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "local-date-time",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a lowercase t and a leap second are valid",
+        "data": "id,x\n1,\"2024-01-15t12:00:00;2016-12-31T23:59:60\"\n",
+        "valid": true
+      },
+      {
+        "description": "a space separator is a cell/type error",
+        "data": "id,x\n1,2024-01-15t12:00:00\n2,\"2024-01-15T12:00:00;2024-01-15 12:00:00\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00;2024-01-15 12:00:00"
+          }
+        ]
+      }
+    ]
   }
 ]

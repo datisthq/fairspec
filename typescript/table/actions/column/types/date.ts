@@ -3,7 +3,7 @@ import * as pl from "nodejs-polars"
 import { keepExactTemporal, parseLocalTemporal } from "./-shared/temporal.ts"
 
 const DEFAULT_FORMAT = "%Y-%m-%d"
-const DEFAULT_PATTERN = "^\\d{4}-\\d{2}-\\d{2}$"
+const DEFAULT_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
 const TIME_SPECIFIERS = ["%H", "%I", "%M", "%S", "%p", "%.f"]
 
 export function parseDateColumn(column: DateColumn, columnExpr: pl.Expr) {

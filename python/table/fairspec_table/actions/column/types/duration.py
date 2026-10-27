@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-import isodate
+import re
 
 from fairspec_metadata import CellError, DurationColumn
 
 from fairspec_table.models import ColumnMapping
 from fairspec_table.models.table import Table
+from fairspec_table.settings import DURATION_REGEX
 
 from .._shared.helpers import inspect_text_column
+
+DURATION_PATTERN = re.compile(DURATION_REGEX)
 
 
 def inspect_duration_column(
@@ -17,8 +20,5 @@ def inspect_duration_column(
 
 
 def _parse_duration(text: str) -> object:
-    # isodate reads `PT` and `P1DT`, though ISO 8601 needs a component after the `T`
-    if text.removesuffix("\n").endswith("T"):
-        raise ValueError(f"A time designator without components: {text}")
-
-    return isodate.parse_duration(text)
+    # `fullmatch`, since `$` also matches before a final newline
+    return text if DURATION_PATTERN.fullmatch(text) else None

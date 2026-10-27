@@ -1,13 +1,16 @@
 use fairspec_metadata::{ListColumn, ListItemType};
 use polars::prelude::*;
 
+use super::date::parse_date_text;
+use super::date_time::parse_date_time_text;
 use super::integer::parse_integer_text;
+use super::local_date_time::parse_local_date_time_text;
+use super::local_time::parse_local_time_text;
 use super::number::parse_number_text;
-use super::temporal::{create_strptime_options, get_utc_datetime_type};
+use super::time::parse_time_text;
 
 const TRUE_VALUES: [&str; 4] = ["true", "True", "TRUE", "1"];
 const FALSE_VALUES: [&str; 4] = ["false", "False", "FALSE", "0"];
-const DATE_PATTERN: &str = r"^\d{4}-\d{2}-\d{2}$";
 
 pub fn parse_list_column(column: &ListColumn, column_expr: Expr) -> Expr {
     let delimiter = get_delimiter(column);
@@ -61,38 +64,11 @@ fn cast_item(item_type: ListItemType, item_expr: Expr) -> Expr {
         ))
         .then(lit(false))
         .otherwise(lit(NULL).cast(DataType::Boolean)),
-        ListItemType::DateTime => item_expr.str().strptime(
-            get_utc_datetime_type(),
-            create_strptime_options("%Y-%m-%dT%H:%M:%S%.f%#z"),
-            lit("raise"),
-        ),
-        ListItemType::LocalDateTime => item_expr.str().strptime(
-            DataType::Datetime(TimeUnit::Microseconds, None),
-            create_strptime_options("%Y-%m-%dT%H:%M:%S%.f"),
-            lit("raise"),
-        ),
-        ListItemType::Date => item_expr
-            .str()
-            .extract(lit(DATE_PATTERN), 0)
-            .str()
-            .strptime(
-                DataType::Date,
-                create_strptime_options("%Y-%m-%d"),
-                lit("raise"),
-            ),
-        ListItemType::Time => concat_str([lit("1970-01-01T"), item_expr], "", false)
-            .str()
-            .strptime(
-                get_utc_datetime_type(),
-                create_strptime_options("%Y-%m-%dT%H:%M:%S%.f%#z"),
-                lit("raise"),
-            )
-            .cast(DataType::Time),
-        ListItemType::LocalTime => item_expr.str().strptime(
-            DataType::Time,
-            create_strptime_options("%H:%M:%S%.f"),
-            lit("raise"),
-        ),
+        ListItemType::DateTime => parse_date_time_text(item_expr),
+        ListItemType::LocalDateTime => parse_local_date_time_text(item_expr),
+        ListItemType::Date => parse_date_text(item_expr),
+        ListItemType::Time => parse_time_text(item_expr),
+        ListItemType::LocalTime => parse_local_time_text(item_expr),
         ListItemType::String => item_expr,
     }
 }

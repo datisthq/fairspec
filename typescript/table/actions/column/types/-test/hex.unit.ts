@@ -8,6 +8,7 @@ describe("parseHexColumn", () => {
     ["0123456789abcdef", "0123456789abcdef"],
     ["ABCDEF", "ABCDEF"],
     ["deadbeef", "deadbeef"],
+    ["abc", null],
     // ["", null],
     ["ghijkl", null],
     ["0x1234", null],

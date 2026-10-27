@@ -25,6 +25,7 @@ fn test_parse() {
         ("0123456789abcdef", Some("0123456789abcdef")),
         ("ABCDEF", Some("ABCDEF")),
         ("deadbeef", Some("deadbeef")),
+        ("abc", None),
         ("ghijkl", None),
         ("0x1234", None),
         ("hello world", None),

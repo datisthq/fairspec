@@ -18,6 +18,11 @@ describe("parseDurationColumn", () => {
     ["PT", false],
     ["P1DT", false],
     ["p1dt", false],
+    ["p1dt2h", true],
+    ["-P1D", false],
+    ["P1W2D", false],
+    ["PT1.5S", false],
+    ["P1Y1D", false],
   ])("%s -> %s", async (cell, valid) => {
     const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
     const tableSchema: TableSchema = {

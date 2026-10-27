@@ -22,6 +22,9 @@ class TestParseLocalDateTimeColumn:
                 datetime.datetime(2014, 1, 1, 6, 0, 0),
             ),
             ("2014-01-01T06:00:00Z", None),
+            ("2014-01-01t06:00:00", datetime.datetime(2014, 1, 1, 6)),
+            ("2016-12-31T23:59:60", datetime.datetime(2016, 12, 31, 23, 59, 59)),
+            ("2016-12-31T12:30:60", None),
             (
                 "2014-01-01T06:00:00.25",
                 datetime.datetime(2014, 1, 1, 6, 0, 0, 250000),

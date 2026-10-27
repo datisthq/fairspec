@@ -1,11 +1,13 @@
 use fairspec_metadata::DateTimeColumn;
 use polars::prelude::*;
 
-use super::temporal::{create_strptime_options, get_utc_datetime_type, reject_leap_second};
+use super::temporal::{
+    create_strptime_options, get_utc_datetime_type, parse_default_temporal, reject_leap_second,
+};
 
 const DEFAULT_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.fZ";
 const DEFAULT_PARSE_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.f%#z";
-const DEFAULT_PATTERN: &str = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$";
+const DEFAULT_PATTERN: &str = r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$";
 
 pub fn parse_date_time_column(column: &DateTimeColumn, column_expr: Expr) -> Expr {
     if let Some(format) = &column.property.temporal_format {
@@ -17,12 +19,16 @@ pub fn parse_date_time_column(column: &DateTimeColumn, column_expr: Expr) -> Exp
         return reject_leap_second(column_expr, value_expr, format);
     }
 
-    // %#z also reads `+02` and `+0200`, which the default form does not allow
-    let text_expr = column_expr.str().extract(lit(DEFAULT_PATTERN), 0);
-    text_expr.str().strptime(
+    parse_date_time_text(column_expr).alias(column.name.as_str())
+}
+
+pub fn parse_date_time_text(text_expr: Expr) -> Expr {
+    parse_default_temporal(
+        text_expr,
+        DEFAULT_PATTERN,
+        DEFAULT_PARSE_FORMAT,
         get_utc_datetime_type(),
-        create_strptime_options(DEFAULT_PARSE_FORMAT),
-        lit("raise"),
+        "",
     )
 }
 

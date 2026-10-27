@@ -15,6 +15,47 @@ pub fn get_utc_datetime_type() -> DataType {
     DataType::Datetime(TimeUnit::Microseconds, Some(TimeZone::UTC))
 }
 
+const LEAP_SECOND_PATTERN: &str = "([0-9]{2}:[0-9]{2}:)60";
+
+/// Reads an RFC 3339 default form: `T` and `Z` in any case, and a second `60` only at
+/// 23:59 in UTC, read as 23:59:59.
+pub fn parse_default_temporal(
+    text_expr: Expr,
+    pattern: &str,
+    format: &str,
+    data_type: DataType,
+    prefix: &str,
+) -> Expr {
+    let matched_expr = text_expr
+        .str()
+        .to_uppercase()
+        .str()
+        .extract(lit(pattern), 0);
+    let value_expr = concat_str(
+        [
+            lit(prefix),
+            matched_expr
+                .clone()
+                .str()
+                .replace(lit(LEAP_SECOND_PATTERN), lit("${1}59"), false),
+        ],
+        "",
+        false,
+    )
+    .str()
+    .strptime(data_type, create_strptime_options(format), lit("raise"));
+    let is_leap_second_expr = matched_expr.str().contains(lit(LEAP_SECOND_PATTERN), true);
+    let is_last_minute_expr = value_expr
+        .clone()
+        .dt()
+        .hour()
+        .eq(lit(23))
+        .and(value_expr.clone().dt().minute().eq(lit(59)));
+    when(is_leap_second_expr.not().or(is_last_minute_expr))
+        .then(value_expr)
+        .otherwise(lit(NULL))
+}
+
 /// Nulls a value whose `%S` reads `60`, which Polars parses as a leap second.
 pub fn reject_leap_second(text_expr: Expr, value_expr: Expr, format: &str) -> Expr {
     let Some(pattern) = create_seconds_pattern(format) else {

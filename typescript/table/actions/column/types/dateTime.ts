@@ -7,7 +7,7 @@ import {
 } from "./-shared/temporal.ts"
 
 const DEFAULT_FORMAT = "%Y-%m-%dT%H:%M:%S"
-const DEFAULT_PATTERN = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+const DEFAULT_PATTERN = "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
 
 export function parseDateTimeColumn(column: DateTimeColumn, columnExpr: pl.Expr) {
   const format = column.property.temporalFormat

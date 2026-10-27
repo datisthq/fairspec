@@ -3,7 +3,7 @@ import * as pl from "nodejs-polars"
 import { parseDefaultLocalTemporal, parseLocalTemporal } from "./-shared/temporal.ts"
 
 const DEFAULT_FORMAT = "%H:%M:%S"
-const DEFAULT_PATTERN = "\\d{2}:\\d{2}:\\d{2}"
+const DEFAULT_PATTERN = "[0-9]{2}:[0-9]{2}:[0-9]{2}"
 const DATE_PREFIX = "1970-01-01T"
 
 export function parseLocalTimeColumn(column: LocalTimeColumn, columnExpr: pl.Expr) {

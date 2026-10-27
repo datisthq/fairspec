@@ -13,6 +13,7 @@ use crate::models::column::PolarsColumn;
 use crate::models::frame::Frame;
 use crate::models::schema::InferTableSchemaOptions;
 use crate::models::table::Table;
+use crate::settings::{DURATION_REGEX, EMAIL_REGEX, URL_REGEX};
 
 const DEFAULT_MISSING_VALUES: [&str; 5] = ["", "NA", "N/A", "null", "-"];
 
@@ -430,9 +431,9 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
             format!(r"^(?:0|[1-9]\d*)(?:\.\d+)?{list_escaped}(?:0|[1-9]\d*)(?:\.\d+)?$"),
             entry("list", json!({"type": "string", "format": "list", "itemType": "number"})),
         ),
-        (r"^https?://\S+$".into(), entry("url", json!({"type": "string", "format": "url"}))),
+        (URL_REGEX.to_string(), entry("url", json!({"type": "string", "format": "url"}))),
         (
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$".into(),
+            EMAIL_REGEX.to_string(),
             entry("email", json!({"type": "string", "format": "email"})),
         ),
         (
@@ -440,7 +441,7 @@ fn create_regex_mapping(options: &InferTableSchemaOptions) -> Vec<(String, Descr
             entry("wkt", json!({"type": "string", "format": "wkt"})),
         ),
         (
-            r"^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$".into(),
+            DURATION_REGEX.to_string(),
             entry("duration", json!({"type": "string", "format": "duration"})),
         ),
         (r"^([0-9a-fA-F]{2}){8,}$".into(), entry("hex", json!({"type": "string", "format": "hex"}))),

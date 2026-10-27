@@ -1854,5 +1854,618 @@
         ]
       }
     ]
+  },
+  {
+    "description": "date column: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the year 0000 is valid",
+        "data": "id,x\n1,0000-01-01\n2,9999-12-31\n",
+        "valid": true
+      },
+      {
+        "description": "February 29 of the year 0000 is valid",
+        "data": "id,x\n1,0000-02-29\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "time column: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a lowercase z is valid",
+        "data": "id,x\n1,14:30:00z\n2,14:30:00.5z\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at 23:59:60 UTC is valid",
+        "data": "id,x\n1,23:59:60Z\n2,23:59:60.5Z\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at 23:59:60 UTC once the offset is applied is valid",
+        "data": "id,x\n1,15:59:60-08:00\n2,00:29:60+00:30\n",
+        "valid": true
+      },
+      {
+        "description": "offsets up to 23:59 either way are valid",
+        "data": "id,x\n1,12:00:00+23:59\n2,12:00:00-23:59\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,12:00:00Z\n2,12:30:60Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "12:30:60Z"
+          }
+        ]
+      },
+      {
+        "description": "a leap second at 23:59:60 before the offset is applied is a cell/type error",
+        "data": "id,x\n1,12:00:00Z\n2,23:59:60+01:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "23:59:60+01:00"
+          }
+        ]
+      },
+      {
+        "description": "second 61 is a cell/type error",
+        "data": "id,x\n1,12:00:00Z\n2,23:59:61Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "23:59:61Z"
+          }
+        ]
+      },
+      {
+        "description": "offset -24:00 is a cell/type error",
+        "data": "id,x\n1,12:00:00Z\n2,12:00:00-24:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "12:00:00-24:00"
+          }
+        ]
+      },
+      {
+        "description": "a lowercase letter other than z is a cell/type error",
+        "data": "id,x\n1,12:00:00Z\n2,12:00:00x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "12:00:00x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "local-time column: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#localtime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a leap second at 23:59:60 is valid",
+        "data": "id,x\n1,23:59:60\n2,23:59:60.25\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,12:00:00\n2,12:30:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "12:30:60"
+          }
+        ]
+      },
+      {
+        "description": "a leap second at 23:58 is a cell/type error",
+        "data": "id,x\n1,12:00:00\n2,23:58:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "23:58:60"
+          }
+        ]
+      },
+      {
+        "description": "a lowercase z is a cell/type error",
+        "data": "id,x\n1,12:00:00\n2,12:00:00z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "12:00:00z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "date-time column: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a lowercase t and z are valid",
+        "data": "id,x\n1,2024-01-15t12:00:00z\n2,2024-01-15t12:00:00+02:00\n3,2024-01-15T12:00:00z\n",
+        "valid": true
+      },
+      {
+        "description": "the year 0000 is valid",
+        "data": "id,x\n1,0000-01-01T00:00:00Z\n2,0000-02-29T12:00:00Z\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at 23:59:60 UTC is valid",
+        "data": "id,x\n1,2016-12-31T23:59:60Z\n2,2016-12-31t23:59:60.5z\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at 23:59:60 UTC once the offset is applied is valid",
+        "data": "id,x\n1,2016-12-31T15:59:60-08:00\n",
+        "valid": true
+      },
+      {
+        "description": "offsets up to 23:59 either way are valid",
+        "data": "id,x\n1,2024-01-15T12:00:00+23:59\n2,2024-01-15T12:00:00-23:59\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2016-12-31T12:30:60Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2016-12-31T12:30:60Z"
+          }
+        ]
+      },
+      {
+        "description": "a leap second at 23:59:60 before the offset is applied is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2016-12-31T23:59:60+01:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2016-12-31T23:59:60+01:00"
+          }
+        ]
+      },
+      {
+        "description": "an underscore separator is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2024-01-15_12:00:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15_12:00:00Z"
+          }
+        ]
+      },
+      {
+        "description": "a lowercase letter other than t is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2024-01-15x12:00:00Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15x12:00:00Z"
+          }
+        ]
+      },
+      {
+        "description": "an offset of hours only is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2024-01-15T12:00:00+02\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00+02"
+          }
+        ]
+      },
+      {
+        "description": "offset minute 60 is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2024-01-15T12:00:00+05:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00+05:60"
+          }
+        ]
+      },
+      {
+        "description": "offset -24:00 is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00Z\n2,2024-01-15T12:00:00-24:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00-24:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "local-date-time column: RFC 3339 defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#localdatetime",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-date-time"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a lowercase t is valid",
+        "data": "id,x\n1,2024-01-15t12:00:00\n2,2024-01-15t12:00:00.5\n",
+        "valid": true
+      },
+      {
+        "description": "the year 0000 is valid",
+        "data": "id,x\n1,0000-01-01T00:00:00\n2,0000-02-29T12:00:00\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at 23:59:60 is valid",
+        "data": "id,x\n1,2016-12-31T23:59:60\n2,2016-12-31T23:59:60.5\n",
+        "valid": true
+      },
+      {
+        "description": "a leap second at another minute is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00\n2,2016-12-31T12:30:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2016-12-31T12:30:60"
+          }
+        ]
+      },
+      {
+        "description": "hour 24 at midnight is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00\n2,2024-01-15T24:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T24:00:00"
+          }
+        ]
+      },
+      {
+        "description": "a lowercase z is a cell/type error",
+        "data": "id,x\n1,2024-01-15T12:00:00\n2,2024-01-15T12:00:00z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-15T12:00:00z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "duration column: RFC 3339 Appendix A",
+    "specification": ["https://fairspec.org/specs/table-schema/#duration"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "duration"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "letters in any case are valid",
+        "data": "id,x\n1,p1d\n2,pt1h30m\n3,P1y2m3dT4h5m6s\n4,p2w\n",
+        "valid": true
+      },
+      {
+        "description": "a run of adjacent components is valid",
+        "data": "id,x\n1,P1Y2M\n2,P2M3D\n3,PT1H2M\n4,PT2M3S\n5,P1DT2M\n",
+        "valid": true
+      },
+      {
+        "description": "large numbers are valid",
+        "data": "id,x\n1,P99999999999999999999D\n2,PT00001S\n",
+        "valid": true
+      },
+      {
+        "description": "a negative duration is a cell/type error",
+        "data": "id,x\n1,P1D\n2,-P1D\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "-P1D"
+          }
+        ]
+      },
+      {
+        "description": "a positive sign is a cell/type error",
+        "data": "id,x\n1,P1D\n2,+P1D\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "+P1D"
+          }
+        ]
+      },
+      {
+        "description": "weeks with days are a cell/type error",
+        "data": "id,x\n1,P1D\n2,P1W2D\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P1W2D"
+          }
+        ]
+      },
+      {
+        "description": "weeks with a time are a cell/type error",
+        "data": "id,x\n1,P1D\n2,P1WT1H\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P1WT1H"
+          }
+        ]
+      },
+      {
+        "description": "fractional seconds are a cell/type error",
+        "data": "id,x\n1,P1D\n2,PT1.5S\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "PT1.5S"
+          }
+        ]
+      },
+      {
+        "description": "a decimal comma is a cell/type error",
+        "data": "id,x\n1,P1D\n2,\"PT1,5S\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "PT1,5S"
+          }
+        ]
+      },
+      {
+        "description": "fractional hours are a cell/type error",
+        "data": "id,x\n1,P1D\n2,PT0.5H\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "PT0.5H"
+          }
+        ]
+      },
+      {
+        "description": "years and days without months are a cell/type error",
+        "data": "id,x\n1,P1D\n2,P1Y1D\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P1Y1D"
+          }
+        ]
+      },
+      {
+        "description": "hours and seconds without minutes are a cell/type error",
+        "data": "id,x\n1,P1D\n2,PT1H1S\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "PT1H1S"
+          }
+        ]
+      },
+      {
+        "description": "a bare P is a cell/type error",
+        "data": "id,x\n1,P1D\n2,p\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "p"
+          }
+        ]
+      },
+      {
+        "description": "a space is a cell/type error",
+        "data": "id,x\n1,P1D\n2,P1D T1H\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P1D T1H"
+          }
+        ]
+      }
+    ]
   }
 ]

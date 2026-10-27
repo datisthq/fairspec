@@ -12,6 +12,7 @@ from fairspec_metadata import TableSchema
 from fairspec_table.helpers.schema import get_polars_schema
 from fairspec_table.models.column import PolarsColumn
 from fairspec_table.models.schema import InferTableSchemaOptions
+from fairspec_table.settings import DURATION_REGEX, EMAIL_REGEX, URL_REGEX
 
 if TYPE_CHECKING:
     from fairspec_metadata import Column
@@ -481,11 +482,11 @@ def _create_regex_mapping(
             "type": "list",
             "property": {"type": "string", "format": "list", "itemType": "number"},
         },
-        "^https?://\\S+$": {
+        URL_REGEX: {
             "type": "url",
             "property": {"type": "string", "format": "url"},
         },
-        "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$": {
+        EMAIL_REGEX: {
             "type": "email",
             "property": {"type": "string", "format": "email"},
         },
@@ -493,7 +494,7 @@ def _create_regex_mapping(
             "type": "wkt",
             "property": {"type": "string", "format": "wkt"},
         },
-        "^P(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+(\\.\\d+)?S)?)?$": {
+        DURATION_REGEX: {
             "type": "duration",
             "property": {"type": "string", "format": "duration"},
         },

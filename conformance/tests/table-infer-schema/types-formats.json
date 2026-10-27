@@ -98,6 +98,62 @@
             }
           }
         }
+      },
+      {
+        "description": "durations outside the RFC 3339 grammar stay strings",
+        "data": "id,d\n1,PT1.5S\n2,P1W2D\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "d": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "bare duration designators stay strings",
+        "data": "id,d\n1,P\n2,PT\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "d": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "URLs with a non-ASCII character stay strings",
+        "data": "id,u\n1,https://exämple.com\n2,https://example.com/café\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "u": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "email addresses outside the RFC 5321 grammar stay strings",
+        "data": "id,e\n1,alice..bob@example.com\n2,.alice@example.com\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "e": {
+              "type": "string"
+            }
+          }
+        }
       }
     ]
   }

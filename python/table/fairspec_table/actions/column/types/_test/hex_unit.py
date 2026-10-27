@@ -22,6 +22,7 @@ class TestParseHexColumn:
             ("0123456789abcdef", "0123456789abcdef"),
             ("ABCDEF", "ABCDEF"),
             ("deadbeef", "deadbeef"),
+            ("abc", None),
             ("ghijkl", None),
             ("0x1234", None),
             ("hello world", None),

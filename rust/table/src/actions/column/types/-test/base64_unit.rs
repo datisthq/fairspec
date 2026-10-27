@@ -24,6 +24,8 @@ fn test_parse() {
     let cases = [
         ("SGVsbG8gV29ybGQ=", Some("SGVsbG8gV29ybGQ=")),
         ("YWJjZGVm", Some("YWJjZGVm")),
+        ("YWJjZA", None),
+        ("-_-_", None),
         ("!!!invalid!!!", None),
         ("not base64", None),
     ];

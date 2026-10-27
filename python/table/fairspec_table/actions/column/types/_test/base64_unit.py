@@ -21,6 +21,8 @@ class TestParseBase64Column:
         [
             ("SGVsbG8gV29ybGQ=", "SGVsbG8gV29ybGQ="),
             ("YWJjZGVm", "YWJjZGVm"),
+            ("YWJjZA", None),
+            ("-_-_", None),
             ("!!!invalid!!!", None),
             ("not base64", None),
         ],

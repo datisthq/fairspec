@@ -87,9 +87,11 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   absent field. A numeric keyword is tested against absent, never for truthiness: `maxLength: 0`
   is a constraint
 - Polars' `strptime` (chrono) is looser than the spec in all three twins: it reads unpadded,
-  signed and short years under `%Y-%m-%d` and `%S` 60 as a leap second. A default form is
-  matched against its anchored pattern first, list items too, and a `temporalFormat` value goes
-  through `reject_leap_second` (Python, Rust; TypeScript's `keepExactTemporal` round-trip catches it).
+  signed and short years under `%Y-%m-%d` and `%S` 60 as a leap second anywhere. A default form
+  is uppercased and matched against its anchored pattern first, list items too, through one
+  function per type (`parse_default_temporal` and its twins): its second `60` is read as `59`
+  and kept only at 23:59 in UTC. A `temporalFormat` value goes through `reject_leap_second`
+  (Python, Rust; TypeScript's `keepExactTemporal` round-trip catches it).
   Its pattern splits fields as chrono does: an unsigned `%Y` takes at most 4 digits, the rest 2.
   A Date pattern with time fields round-trips through a Datetime in TypeScript: a Date cannot
   print `%H`
@@ -97,6 +99,10 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `jsonschema_regex::is_valid_ecma_regex` in Rust, its ports `isValidEcmaRegex` and
   `is_valid_ecma_regex` in `jsonSchema/regex.ts` and `json_schema/regex.py`. Never `re` or native
   `RegExp`: they disagree on `(?<name>…)`, `\p{L}`, `(?i)` and `\-`
+- The URL, email, duration, hex and base64 grammars are one regex each in every twin's
+  `settings` (`URL_REGEX` and its kin), byte-identical and spelled in ASCII classes: `\d` and
+  `(?i)` match non-ASCII in Polars' engine. Inference reuses them, so an inferred format accepts
+  its data
 - WKT and WKB cells follow GEOS (shapely in Python): TypeScript's `wkt.ts`/`wkb.ts` and Rust's
   `wkt.rs`/`wkb.rs` are one hand-written reader, so a fix lands in both; GEOS itself takes any
   WKB byte order but 0 as little-endian, which Python's `_skip_wkb_geometry` refuses, and a WKT

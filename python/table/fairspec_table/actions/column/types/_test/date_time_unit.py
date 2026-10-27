@@ -19,6 +19,13 @@ class TestParseDateTimeColumn:
             ("2014-01-01T06:00:00Z", datetime.datetime(2014, 1, 1, 6, tzinfo=UTC)),
             ("2014-01-01T06:00:00+00:00", datetime.datetime(2014, 1, 1, 6, tzinfo=UTC)),
             ("2014-01-01T06:00:00-05:00", datetime.datetime(2014, 1, 1, 11, tzinfo=UTC)),
+            ("2014-01-01t06:00:00z", datetime.datetime(2014, 1, 1, 6, tzinfo=UTC)),
+            (
+                "2016-12-31T23:59:60Z",
+                datetime.datetime(2016, 12, 31, 23, 59, 59, tzinfo=UTC),
+            ),
+            ("2016-12-31T12:30:60Z", None),
+            ("2014-01-01 06:00:00Z", None),
             (
                 "2014-01-01T06:00:00.25+02:00",
                 datetime.datetime(2014, 1, 1, 4, 0, 0, 250000, tzinfo=UTC),

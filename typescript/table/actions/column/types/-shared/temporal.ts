@@ -1,7 +1,8 @@
 import * as pl from "nodejs-polars"
 
 const CANONICAL_FORMAT = "%Y-%m-%dT%H:%M:%S%.f"
-const OFFSET_PATTERN = "Z|[+-]\\d{2}:\\d{2}"
+const OFFSET_PATTERN = "Z|[+-][0-9]{2}:[0-9]{2}"
+const LEAP_SECOND_PATTERN = "([0-9]{2}:[0-9]{2}:)60"
 const OFFSET_SPECIFIERS = ["%z", "%:z"]
 
 /**
@@ -36,28 +37,37 @@ export function parseOffsetTemporal(columnExpr: pl.Expr, format: string, prefix 
   return applyOffset(localExpr, columnExpr.str.extract(pattern, 2))
 }
 
-/** Parses an ISO 8601 date-time or time with fractional seconds and a `Z` or `±HH:MM` offset */
+/**
+ * Parses an RFC 3339 date-time or time with fractional seconds and a `Z` or `±HH:MM`
+ * offset, `T` and `Z` in any case
+ */
 export function parseDefaultOffsetTemporal(
   columnExpr: pl.Expr,
   textPattern: string,
   format: string,
   prefix = "",
 ) {
-  const pattern = `^(${textPattern})(\\.\\d+)?(${OFFSET_PATTERN})$`
-  const localExpr = parseDefaultTemporal(columnExpr, pattern, format, prefix)
+  const textExpr = columnExpr.str.toUpperCase()
+  const pattern = `^(${textPattern})(\\.[0-9]+)?(${OFFSET_PATTERN})$`
+  const localExpr = parseDefaultTemporal(textExpr, pattern, format, prefix)
 
-  return applyOffset(localExpr, columnExpr.str.extract(pattern, 3))
+  return keepLeapSecond(
+    textExpr,
+    applyOffset(localExpr, textExpr.str.extract(pattern, 3)),
+  )
 }
 
-/** Parses an ISO 8601 date-time or time with fractional seconds and no offset */
+/** Parses an RFC 3339 date-time or time with fractional seconds and no offset */
 export function parseDefaultLocalTemporal(
   columnExpr: pl.Expr,
   textPattern: string,
   format: string,
   prefix = "",
 ) {
-  const pattern = `^(${textPattern})(\\.\\d+)?$`
-  return parseDefaultTemporal(columnExpr, pattern, format, prefix)
+  const textExpr = columnExpr.str.toUpperCase()
+  const pattern = `^(${textPattern})(\\.[0-9]+)?$`
+
+  return keepLeapSecond(textExpr, parseDefaultTemporal(textExpr, pattern, format, prefix))
 }
 
 /** Parses a value written in a custom `temporalFormat` without an offset */
@@ -94,7 +104,10 @@ function parseDefaultTemporal(
   prefix: string,
 ) {
   const textExpr = pl.pl.concatString(
-    [pl.pl.lit(prefix), columnExpr.str.extract(pattern, 1)],
+    [
+      pl.pl.lit(prefix),
+      columnExpr.str.extract(pattern, 1).str.replace(LEAP_SECOND_PATTERN, "${1}59"),
+    ],
     "",
   )
   const fractionExpr = columnExpr.str.extract(pattern, 2).fillNull("")
@@ -107,10 +120,23 @@ function parseDefaultTemporal(
     .str.strptime(pl.Datetime, `${fullFormat}%.f`, { exact: true })
 }
 
+// A second `60` reads as 23:59:59, and only where the value is 23:59 in UTC
+function keepLeapSecond(textExpr: pl.Expr, valueExpr: pl.Expr) {
+  return pl
+    .when(
+      textExpr.str
+        .contains(LEAP_SECOND_PATTERN)
+        .not()
+        .or(valueExpr.dt.hour().eq(23).and(valueExpr.dt.minute().eq(59))),
+    )
+    .then(valueExpr)
+    .otherwise(pl.lit(null))
+}
+
 function applyOffset(localExpr: pl.Expr, offsetExpr: pl.Expr) {
   const normalizedOffsetExpr = offsetExpr.str
     .replace("^[Zz]$", "+00:00")
-    .str.replace("^([+-]\\d{2}):?(\\d{2})$", "${1}:${2}")
+    .str.replace("^([+-][0-9]{2}):?([0-9]{2})$", "${1}:${2}")
 
   return pl.pl
     .concatString([localExpr.dt.strftime(CANONICAL_FORMAT), normalizedOffsetExpr], "")
