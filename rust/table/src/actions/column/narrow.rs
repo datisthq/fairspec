@@ -1,4 +1,6 @@
-use fairspec_metadata::Column;
+use std::collections::HashSet;
+
+use fairspec_metadata::{CategoricalColumn, CategoricalColumnProperty, Column};
 use polars::prelude::*;
 
 use super::_shared::missing::create_series;
@@ -32,16 +34,33 @@ pub fn narrow_column(mapping: &ColumnMapping, column_expr: Expr) -> Expr {
     {
         let (values, labels) = get_categorical_values_and_labels(column);
         if !values.is_empty() {
+            let dtype = get_categorical_dtype(column, &labels);
             return column_expr.replace_strict(
                 lit(create_series(&values)),
                 lit(Series::new("".into(), labels)),
                 Some(lit(NULL)),
-                Some(DataType::from_categories(Categories::global())),
+                Some(dtype),
             );
         }
     }
 
     column_expr
+}
+
+// An Enum sorts, compares and takes MIN/MAX by category position
+fn get_categorical_dtype(column: &CategoricalColumn, labels: &[String]) -> DataType {
+    let with_order = match &column.property {
+        CategoricalColumnProperty::String(property) => property.with_order,
+        CategoricalColumnProperty::Integer(property) => property.with_order,
+    };
+    if with_order == Some(true) {
+        let mut seen = HashSet::new();
+        let unique = labels.iter().filter(|label| seen.insert(label.as_str()));
+        if let Ok(categories) = FrozenCategories::new(unique.map(String::as_str)) {
+            return DataType::from_frozen_categories(categories);
+        }
+    }
+    DataType::from_categories(Categories::global())
 }
 
 pub(crate) fn get_is_integer_variant(variant: &DataType) -> bool {
@@ -58,5 +77,8 @@ pub(crate) fn get_is_number_variant(variant: &DataType) -> bool {
 pub(crate) fn get_is_alphanumeric_variant(variant: &DataType) -> bool {
     get_is_integer_variant(variant)
         || get_is_number_variant(variant)
-        || matches!(variant, DataType::String | DataType::Categorical(_, _))
+        || matches!(
+            variant,
+            DataType::String | DataType::Categorical(_, _) | DataType::Enum(_, _)
+        )
 }

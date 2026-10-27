@@ -67,3 +67,41 @@ fn test_integer_categorical() {
         );
     }
 }
+
+#[test]
+fn test_integer_categorical_with_order() {
+    let target = json!({
+        "name": "name",
+        "type": "categorical",
+        "property": {
+            "type": "integer",
+            "format": "categorical",
+            "categories": [{"value": 2, "label": "High"}, {"value": 1, "label": "Low"}],
+            "withOrder": true,
+        },
+    });
+    let categories = FrozenCategories::new(["High", "Low"]).unwrap();
+    let enumeration = DataType::from_frozen_categories(categories);
+    let series = Series::new("name".into(), ["High", "Low"])
+        .cast(&enumeration)
+        .unwrap();
+    let mapping = ColumnMapping {
+        source: PolarsColumn {
+            name: "name".to_string(),
+            r#type: enumeration,
+            time_zone: None,
+        },
+        target: serde_json::from_value::<Column>(target).unwrap(),
+    };
+    let frame = DataFrame::new(2, vec![series.into()])
+        .unwrap()
+        .lazy()
+        .select([denarrow_column(&mapping, col("name"))])
+        .collect()
+        .unwrap();
+    let column = &frame.columns()[0];
+    let values: Vec<Value> = (0..frame.height())
+        .map(|index| get_json_value(&column.get(index).unwrap()))
+        .collect();
+    assert_eq!(values, [json!(2), json!(1)]);
+}

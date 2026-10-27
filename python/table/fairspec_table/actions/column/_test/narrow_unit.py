@@ -117,3 +117,49 @@ class TestNarrowToCategorical:
 
         frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert frame.to_dicts() == [{"name": expected}]
+
+    def test_string_categorical_with_order_sorts_by_category_order(self):
+        table = pl.DataFrame(
+            [pl.Series("name", ["low", None, "high", "medium"], pl.String)]
+        ).lazy()
+        mapping = ColumnMapping(
+            source=PolarsColumn(name="name", type=pl.String),
+            target=CategoricalColumn(
+                name="name",
+                type="categorical",
+                property=StringCategoricalColumnProperty(
+                    type="string",
+                    format="categorical",
+                    categories=["low", "medium", "high"],
+                    withOrder=True,
+                ),
+            ),
+        )
+
+        result = table.select(narrow_column(mapping, pl.col("name"))).sort(
+            "name", nulls_last=True
+        )
+
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert frame.get_column("name").to_list() == ["low", "medium", "high", None]
+
+    def test_integer_categorical_with_order_sorts_by_category_order(self):
+        table = pl.DataFrame([pl.Series("name", [1, 10, 2], pl.Int64)]).lazy()
+        mapping = ColumnMapping(
+            source=PolarsColumn(name="name", type=pl.Int64),
+            target=CategoricalColumn(
+                name="name",
+                type="categorical",
+                property=IntegerCategoricalColumnProperty(
+                    type="integer",
+                    format="categorical",
+                    categories=[10, 2, 1],
+                    withOrder=True,
+                ),
+            ),
+        )
+
+        result = table.select(narrow_column(mapping, pl.col("name"))).sort("name")
+
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert frame.get_column("name").to_list() == ["10", "2", "1"]

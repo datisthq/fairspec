@@ -42,6 +42,18 @@ import {
 const SUITE = resolve(import.meta.dirname, "..", "..", "..", "conformance")
 const TEST_SCHEMA = join(SUITE, "test-schema.json")
 
+// "<operation>/<file>#<group>" to the open issue whose fix unblocks it; nothing else skips
+const KNOWN_DIVERGENCES: Record<string, string> = {
+  "table-query/order-sorting#a string categorical column with withOrder in ascending order":
+    "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#a string categorical column with withOrder in descending order":
+    "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#an integer categorical column with withOrder in ascending order":
+    "https://github.com/datisthq/fairspec/issues/76",
+  "table-query/order-sorting#an integer categorical column with withOrder in descending order":
+    "https://github.com/datisthq/fairspec/issues/76",
+}
+
 const UNSPECIFIED_MESSAGE_ERRORS = ["data", "metadata", "cell/json"]
 const TEMPORAL_FORMATS: Record<string, string> = {
   Date: "%Y-%m-%d",
@@ -191,9 +203,17 @@ for (const operation of readdirSync(join(SUITE, "tests")).sort()) {
         })
 
         for (const group of groups) {
+          const issue =
+            KNOWN_DIVERGENCES[
+              `${operation}/${basename(file, ".json")}#${group.description}`
+            ]
+
+          const runTest = issue ? it.skip : it
+
           describe(group.description, () => {
             for (const test of group.tests) {
-              it(test.description, async () => {
+              const name = issue ? `${test.description} (${issue})` : test.description
+              runTest(name, async () => {
                 if (!run) return
 
                 if (test.throws) {

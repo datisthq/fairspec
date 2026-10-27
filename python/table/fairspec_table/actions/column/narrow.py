@@ -9,7 +9,7 @@ from fairspec_table.models import ColumnMapping
 
 INTEGER_VARIANTS = {pl.Int8, pl.Int16, pl.Int32, pl.Int64}
 NUMBER_VARIANTS = {pl.Float32, pl.Float64}
-STRING_VARIANTS = {pl.String, pl.Categorical}
+STRING_VARIANTS = {pl.String, pl.Categorical, pl.Enum}
 ALPHANUMERIC_VARIANTS = INTEGER_VARIANTS | NUMBER_VARIANTS | STRING_VARIANTS
 
 
@@ -39,8 +39,14 @@ def narrow_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
             values, labels = get_categorical_values_and_labels(mapping.target)
 
             if values:
+                # An Enum sorts, compares and takes MIN/MAX by category position
+                return_dtype = (
+                    pl.Enum(list(dict.fromkeys(labels)))
+                    if mapping.target.property.withOrder
+                    else pl.Categorical
+                )
                 return column_expr.replace_strict(
-                    values, labels, default=None, return_dtype=pl.Categorical
+                    values, labels, default=None, return_dtype=return_dtype
                 )
 
     return column_expr

@@ -11,7 +11,7 @@ from fairspec_table.models import ColumnMapping
 
 INTEGER_VARIANTS = {pl.Int8, pl.Int16, pl.Int32, pl.Int64}
 NUMBER_VARIANTS = {pl.Float32, pl.Float64}
-STRING_VARIANTS = {pl.String, pl.Categorical}
+STRING_VARIANTS = {pl.String, pl.Categorical, pl.Enum}
 ALPHANUMERIC_VARIANTS = INTEGER_VARIANTS | NUMBER_VARIANTS | STRING_VARIANTS
 
 

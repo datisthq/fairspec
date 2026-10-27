@@ -101,14 +101,16 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   Keys compare typed values, so each key column goes through `normalizeColumn` (`keyExprs`):
   `1.0` and `1` are one number key, and a `missingValues` marker is null, or two `NA` cells
   conflict. nodejs-polars has no `Enum` dtype (casting to one throws, reading one fails
-  `dtypes`), so a `withOrder` Categorical cannot sort by category order here.
+  `dtypes`), so a `withOrder` Categorical cannot sort by category order here: its conformance
+  cases are `KNOWN_DIVERGENCES` skips until https://github.com/datisthq/fairspec/issues/76.
   Its window functions also ignore `NULLS LAST` in `OVER (ORDER BY …)` (`ROW_NUMBER` ranks a
   null first in descending order), unlike Python and Rust; `ORDER BY` and `ARRAY_AGG` honour it.
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.
   The Python twin hashes keys inside the cell checks' read instead of probing; nodejs-polars has
-  no lazy batch function to do the same, so this probe's second read stays
+  no lazy batch function to do the same, so this probe keeps its separate read until
+  nodejs-polars has one, tracked in https://github.com/datisthq/fairspec/issues/77
 - **nodejs-polars is patched** (`.patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every

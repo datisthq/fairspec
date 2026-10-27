@@ -100,3 +100,62 @@ fn test_integer_categorical() {
         assert_eq!(rows, [json!({"name": expected})], "{cell}");
     }
 }
+
+fn get_sorted_values(series: Series, target: Value) -> Vec<Value> {
+    let mapping = create_mapping(&series, target);
+    let frame = DataFrame::new(series.len(), vec![series.into()])
+        .unwrap()
+        .lazy()
+        .select([narrow_column(&mapping, col("name"))])
+        .sort(
+            ["name"],
+            SortMultipleOptions::default().with_nulls_last(true),
+        )
+        .collect()
+        .unwrap();
+    let column = &frame.columns()[0];
+    (0..frame.height())
+        .map(|index| get_json_value(&column.get(index).unwrap()))
+        .collect()
+}
+
+#[test]
+fn test_string_categorical_with_order_sorts_by_category_order() {
+    let series = Series::new(
+        "name".into(),
+        [Some("low"), None, Some("high"), Some("medium")],
+    );
+    let target = json!({
+        "name": "name",
+        "type": "categorical",
+        "property": {
+            "type": "string",
+            "format": "categorical",
+            "categories": ["low", "medium", "high"],
+            "withOrder": true,
+        },
+    });
+    assert_eq!(
+        get_sorted_values(series, target),
+        [json!("low"), json!("medium"), json!("high"), Value::Null]
+    );
+}
+
+#[test]
+fn test_integer_categorical_with_order_sorts_by_category_order() {
+    let series = Series::new("name".into(), [1i64, 10, 2]);
+    let target = json!({
+        "name": "name",
+        "type": "categorical",
+        "property": {
+            "type": "integer",
+            "format": "categorical",
+            "categories": [10, 2, 1],
+            "withOrder": true,
+        },
+    });
+    assert_eq!(
+        get_sorted_values(series, target),
+        [json!("10"), json!("2"), json!("1")]
+    );
+}

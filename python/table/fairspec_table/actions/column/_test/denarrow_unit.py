@@ -72,3 +72,29 @@ class TestDenarrowCategorical:
 
         frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert frame.to_dicts() == [{"name": expected}]
+
+    def test_integer_categorical_with_order(self):
+        table = pl.DataFrame(
+            [pl.Series("name", ["High", "Low"], pl.Enum(["High", "Low"]))]
+        ).lazy()
+        mapping = ColumnMapping(
+            source=PolarsColumn(name="name", type=pl.Enum),
+            target=CategoricalColumn(
+                name="name",
+                type="categorical",
+                property=IntegerCategoricalColumnProperty(
+                    type="integer",
+                    format="categorical",
+                    categories=[
+                        IntegerCategoryItem(value=2, label="High"),
+                        IntegerCategoryItem(value=1, label="Low"),
+                    ],
+                    withOrder=True,
+                ),
+            ),
+        )
+
+        result = table.select(denarrow_column(mapping, pl.col("name")))
+
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert frame.to_dicts() == [{"name": 2}, {"name": 1}]

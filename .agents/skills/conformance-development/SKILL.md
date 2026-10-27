@@ -77,6 +77,12 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
 - **Never loosen a runner** to get a test passing: no sorting, no number coercion, no subset
   matching. The runners only serialise to JSON. The Python runner also compares
   `json.dumps(..., sort_keys=True)`, because `1 == 1.0 == True` in Python
+- **The only escape hatch is `KNOWN_DIVERGENCES`** in the TypeScript runner: a map from
+  `<operation>/<file>#<group description>` to an open issue URL, whose cases run as `it.skip`
+  with the URL in the test name. A skip must name an open issue, and the issue must say what
+  unblocks it (a dependency release, an upstream API); drop the entry in the fix that closes it.
+  It is for a twin that cannot implement a decided behaviour yet, never for one that has not
+  tried. The Python and Rust runners have none
 - Fix the library that disagrees with the spec, in its own `fix(typescript)` / `fix(python)`
   commit together with the test. The suite itself is `chore`
 - Three runners agreeing is not the spec agreeing: a spec-decided case that every library fails
@@ -148,8 +154,11 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   short-circuit, every failing constraint after them is reported. Keep the three lists equal
 - `table-query` passes every query through `setNullsLast` and its twins, a token scanner (not
   a parser) that appends `NULLS LAST` to each ORDER BY item without a null order, since Polars
-  sorts nulls first in descending order. Sorting a `withOrder` Categorical by category order
-  is not implemented in any twin: it needs a polars `Enum`, which nodejs-polars lacks
+  sorts nulls first in descending order. A `withOrder` Categorical sorts by category order
+  because `narrow_column` (Python, Rust) loads it as a polars `Enum` of its labels in category
+  order, so `ORDER BY`, `MIN`/`MAX` and comparisons follow that order; `denarrow_column` takes an
+  `Enum` source back to values. nodejs-polars has no `Enum`, so TypeScript skips those cases
+  (`KNOWN_DIVERGENCES`, #76)
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - Number and integer text passes the JSON number regex before any cast (`parseNumberText`,
