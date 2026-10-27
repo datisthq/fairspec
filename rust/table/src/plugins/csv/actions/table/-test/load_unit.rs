@@ -105,6 +105,17 @@ mod csv {
     }
 
     #[test]
+    fn test_should_split_cells_on_a_multi_byte_delimiter() {
+        assert_eq!(
+            load(
+                json!(write("id¦name\n1¦\"alice¦smith\"\n2¦bob\n")),
+                csv(json!({"delimiter": "¦"}))
+            ),
+            json!([{"id": 1, "name": "alice¦smith"}, {"id": 2, "name": "bob"}])
+        );
+    }
+
+    #[test]
     fn test_should_handle_files_without_header() {
         assert_eq!(
             load(

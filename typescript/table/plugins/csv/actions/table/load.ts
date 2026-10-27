@@ -13,10 +13,11 @@ import * as pl from "nodejs-polars"
 import { inferCsvFileDialect } from "../../actions/fileDialect/infer.ts"
 import { NUMBER_COLUMN_NAME } from "../../../../settings.ts"
 import { getSupportedFileDialect } from "@fairspec/metadata"
+import { restoreDelimiter, swapDelimiter } from "../../helpers/delimiter.ts"
 
 export async function loadCsvTable(resource: Resource, options?: LoadTableOptions) {
   const maxBytes = options?.previewBytes
-  const paths = await prefetchFiles(resource, { maxBytes })
+  let paths = await prefetchFiles(resource, { maxBytes })
   if (!paths.length) {
     throw new Error("Resource path is not defined")
   }
@@ -29,6 +30,11 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
   // A declared dialect is binding: its absent properties take their defaults
   if (!resource.fileDialect) {
     fileDialect = await inferCsvFileDialect({ ...resource, data: paths[0] }, options)
+  }
+  const swapped = fileDialect && (await swapDelimiter(paths, fileDialect, { maxBytes }))
+  if (swapped) {
+    paths = swapped.paths
+    fileDialect = swapped.fileDialect
   }
   if (fileDialect) {
     fileDialect = await renumberPrefixedRows(paths[0], fileDialect)
@@ -55,6 +61,9 @@ export async function loadCsvTable(resource: Resource, options?: LoadTableOption
         table.columns.map(name => [name, name.replace("column_", "column")]),
       ),
     )
+  }
+  if (swapped) {
+    table = restoreDelimiter(table, swapped.swap)
   }
 
   if (fileDialect) {

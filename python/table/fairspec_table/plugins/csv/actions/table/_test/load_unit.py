@@ -62,6 +62,19 @@ class TestLoadCsvTable:
             {"id": 2, "name": "bob"},
         ]
 
+    def test_should_split_cells_on_a_multi_byte_delimiter(self):
+        path = write_temp_file('id¦name\n1¦"alice¦smith"\n2¦bob\n')
+
+        table = load_csv_table(
+            Resource(data=path, fileDialect=CsvFileDialect(delimiter="¦"))
+        )
+        frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
+
+        assert frame.to_dicts() == [
+            {"id": 1, "name": "alice¦smith"},
+            {"id": 2, "name": "bob"},
+        ]
+
     def test_should_handle_files_without_header(self):
         path = write_temp_file("1,alice\n2,bob")
 

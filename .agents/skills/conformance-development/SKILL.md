@@ -104,6 +104,11 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `headerRows` and `commentRows` count every row of the file: the CSV loaders renumber both past
   the prefixed rows above them before scanning (`renumberPrefixedRows` and its twins). Polars' native JSONL scan reads only
   object lines, so a default dialect peeks at the first item and takes array rows when it is one
+- Polars splits CSV cells on one byte, while a `delimiter` is one Unicode character: the CSV
+  loaders' `swapDelimiter` (and its twins) copies the files with a multi-byte delimiter swapped
+  for a control byte none of them holds, then swaps it back in every cell and name. The
+  single-byte path never reaches it, a preview copies only its `previewBytes`; keep the
+  candidate bytes and their order equal
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every

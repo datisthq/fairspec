@@ -15,6 +15,7 @@ from fairspec_table.actions.table.normalize import normalize_table
 from fairspec_table.actions.table_schema.infer import infer_table_schema_from_table
 from fairspec_table.helpers.file_dialect import get_header_rows
 from fairspec_table.plugins.csv.actions.file_dialect.infer import infer_csv_file_dialect
+from fairspec_table.plugins.csv.helpers.delimiter import restore_delimiter, swap_delimiter
 from fairspec_table.settings import NUMBER_COLUMN_NAME, QUERY_ENGINE
 
 if TYPE_CHECKING:
@@ -42,6 +43,10 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
         )
         if inferred:
             file_dialect = inferred
+    swapped = swap_delimiter(paths, file_dialect, max_bytes=max_bytes)
+    if swapped:
+        paths = swapped.paths
+        file_dialect = swapped.file_dialect
     file_dialect = _renumber_prefixed_rows(paths[0], file_dialect)
 
     scan_options = _get_scan_options(file_dialect)
@@ -70,6 +75,8 @@ def load_csv_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> T
                 for index, name in enumerate(result.collect_schema().names())
             }
         )
+    if swapped:
+        result = restore_delimiter(result, swapped.swap)
 
     if len(header_rows) > 1:
         result = join_header_rows(result, file_dialect)  # type: ignore[arg-type]

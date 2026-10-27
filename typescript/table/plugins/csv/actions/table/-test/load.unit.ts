@@ -99,6 +99,19 @@ describe("loadCsvTable", () => {
     ])
   })
 
+  it("should split cells on a multi-byte delimiter", async () => {
+    const path = await writeTempFile('id¦name\n1¦"alice¦smith"\n2¦bob\n')
+    const table = await loadCsvTable({
+      data: path,
+      fileDialect: { format: "csv", delimiter: "¦" },
+    })
+
+    expect((await table.collect()).toRecords()).toEqual([
+      { id: 1, name: "alice¦smith" },
+      { id: 2, name: "bob" },
+    ])
+  })
+
   it("should handle files without header", async () => {
     const path = await writeTempFile("1,alice\n2,bob")
     const table = await loadCsvTable({

@@ -16,6 +16,7 @@ use crate::helpers::file_dialect::{get_comment_rows, get_header_rows};
 use crate::helpers::table::LazyFrameExt;
 use crate::models::table::{LoadTableOptions, Table};
 use crate::plugins::csv::actions::file_dialect::infer::infer_csv_file_dialect;
+use crate::plugins::csv::helpers::delimiter::{restore_delimiter, swap_delimiter};
 use crate::settings::NUMBER_COLUMN_NAME;
 
 pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result<Table> {
@@ -23,7 +24,7 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         return Err(Error::Load("Resource data is not compatible".to_string()));
     };
 
-    let paths = prefetch_files(
+    let mut paths = prefetch_files(
         resource,
         options.preview_bytes,
         options.infer_table_schema_options.concurrency,
@@ -42,6 +43,12 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
             file_dialect = inferred;
         }
     }
+    let swapped = swap_delimiter(&paths, &file_dialect, options.preview_bytes)?;
+    if let Some(swapped) = &swapped {
+        paths = swapped.paths.clone();
+        file_dialect = swapped.file_dialect.clone();
+    }
+    let first_path = &paths[0];
     let file_dialect = renumber_prefixed_rows(first_path, file_dialect)?;
 
     let scan = CsvScan::new(&file_dialect);
@@ -81,6 +88,9 @@ pub fn load_csv_table(resource: &Resource, options: &LoadTableOptions) -> Result
         // Names that replace a header go in by position, as polars' new_columns does
         let count = column_names.len().min(names.len());
         result = result.rename(&names[..count], &column_names[..count], true);
+    }
+    if let Some(swapped) = &swapped {
+        result = restore_delimiter(result, &swapped.swap)?;
     }
 
     if header_rows.len() > 1 {

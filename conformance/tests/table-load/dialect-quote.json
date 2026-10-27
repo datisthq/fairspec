@@ -66,6 +66,27 @@
     ]
   },
   {
+    "description": "delimiter a multi-byte character",
+    "comment": "¦ is one character, two bytes in UTF-8",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#delimiter",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": { "format": "csv", "delimiter": "¦" },
+    "tests": [
+      {
+        "description": "cells are split on the character",
+        "data": "id¦name\na¦b\n",
+        "expected": { "columns": ["id", "name"], "rows": [["a", "b"]] }
+      },
+      {
+        "description": "a quoted cell keeps the character",
+        "data": "id¦name\na¦\"b¦c\"\n",
+        "expected": { "columns": ["id", "name"], "rows": [["a", "b¦c"]] }
+      }
+    ]
+  },
+  {
     "description": "delimiter tab in csv",
     "specification": ["https://fairspec.org/specs/file-dialect/#delimiter"],
     "fileDialect": {
