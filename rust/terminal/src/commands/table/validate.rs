@@ -28,7 +28,7 @@ pub struct ValidateTableInput {
     pub dialect: DialectParams,
     #[fireargs(flatten)]
     pub table_schema_params: TableSchemaParams,
-    /// path to a Table Schema descriptor
+    /// path to a Table Schema descriptor, Fairspec or Frictionless
     #[fireargs(help_group = "Table Schema")]
     pub schema: Option<String>,
     /// a named SQL condition every row must satisfy, as name=condition (repeatable)

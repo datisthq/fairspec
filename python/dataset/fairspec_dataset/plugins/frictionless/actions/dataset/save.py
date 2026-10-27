@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fairspec_metadata import (
+    convert_dataset_to_frictionless,
     denormalize_resource,
     get_basepath,
     resolve_file_dialect,
@@ -11,7 +12,6 @@ from fairspec_metadata import (
 )
 
 from fairspec_dataset.models.dataset import SaveDatasetResult
-from .to_frictionless import convert_dataset_to_frictionless
 
 if TYPE_CHECKING:
     from fairspec_metadata import Dataset

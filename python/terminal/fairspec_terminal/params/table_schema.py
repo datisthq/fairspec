@@ -12,7 +12,7 @@ TableSchemaPath = Annotated[
         name="schema",
         alias="schema",
         help_group="Table Schema",
-        description="path to a Table Schema descriptor",
+        description="path to a Table Schema descriptor, Fairspec or Frictionless",
     ),
 ]
 

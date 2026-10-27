@@ -1,5 +1,8 @@
 use crate::actions::descriptor::inspect::inspect_model;
+use crate::actions::descriptor::load::load_descriptor_source;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
+use crate::actions::frictionless::convert::{FrictionlessKind, prepare_frictionless_descriptor};
+use crate::actions::frictionless::mapping::map_frictionless_errors;
 use crate::models::descriptor::Descriptor;
 use crate::models::exception::Result;
 use crate::models::path::PathOr;
@@ -12,8 +15,19 @@ pub fn validate_table_schema(
     source: impl Into<PathOr<Descriptor>>,
     root_json_pointer: Option<&str>,
 ) -> Result<TableSchemaValidationResult> {
+    let loaded = load_descriptor_source(source)?;
+    let (prepared, mapping, errors) =
+        prepare_frictionless_descriptor(loaded, FrictionlessKind::TableSchema, root_json_pointer);
+    let Some(prepared) = prepared else {
+        return Ok(TableSchemaValidationResult {
+            valid: false,
+            errors,
+            table_schema: None,
+        });
+    };
+
     let (descriptor, mut report) =
-        validate_profiled_descriptor(source, ProfileType::TableSchema, root_json_pointer)?;
+        validate_profiled_descriptor(prepared, ProfileType::TableSchema, root_json_pointer)?;
 
     let table_schema = match report.valid {
         true => {
@@ -33,6 +47,10 @@ pub fn validate_table_schema(
         }
         false => None,
     };
+
+    if let Some(mapping) = &mapping {
+        report.errors = map_frictionless_errors(report.errors, mapping);
+    }
 
     Ok(TableSchemaValidationResult {
         valid: report.valid,

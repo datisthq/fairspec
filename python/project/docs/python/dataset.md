@@ -58,7 +58,7 @@ descriptor = load_dataset("dataset.json")
 descriptor = load_dataset("https://example.com/dataset.json")
 ```
 
-`load_dataset` dispatches to the appropriate plugin based on the source (folder, zip, GitHub, Zenodo, CKAN, a Frictionless `datapackage.json`, …) and returns a `Descriptor` (a dict-like JSON object) or `None` if no plugin recognises the source.
+`load_dataset` dispatches to the appropriate plugin based on the source (folder, zip, GitHub, Zenodo, CKAN, a Frictionless Data Package, …) and returns a `Descriptor` (a dict-like JSON object) or `None` if no plugin recognises the source.
 
 To get a typed `Dataset` model, validate the descriptor:
 
@@ -78,12 +78,16 @@ For format-specific loaders, use:
 - `load_dataset_from_ckan(url)`
 - `load_dataset_from_frictionless(path)`
 
-A source named `datapackage.json` is read as a [Frictionless Data Package](https://datapackage.org) (v1 or v2) and converted to a Fairspec dataset, so it validates, infers and queries like any other. Fields allow null unless `constraints.required` is set, schema and dialect paths are loaded relative to the package, and a resource name outside `[a-zA-Z0-9_]` has its other characters replaced by `_`.
+A [Frictionless](https://datapackage.org) (v1 or v2) Data Package, Table Schema or Table Dialect is recognised by its content, whatever the file is called, and converted to its Fairspec counterpart wherever Fairspec reads one: a dataset source, a resource's `tableSchema` or `fileDialect`, or the CLI's `--schema` and `--dialect`. A package has resources with `path`, `schema` or `dialect` (or a v1 `profile`), a schema has `fields` and no `properties`, and a dialect has Frictionless keys and no `format`; a descriptor with a Fairspec `$schema` is never converted. Fields allow null unless `constraints.required` is set, schema and dialect paths are loaded relative to the package, and a resource name outside `[a-zA-Z0-9_]` has its other characters replaced by `_`. Errors point back at what the Frictionless descriptor says: its field and key (`/resources/0/schema/fields/2/format`) and its resource names. `load_dataset_from_frictionless` converts a descriptor whatever its content looks like.
 
 ```python
-from fairspec import validate_dataset
+from fairspec import Resource, validate_dataset, validate_table
 
 report = validate_dataset("datapackage.json")
+
+table_report = validate_table(
+    Resource(data="orders.csv", tableSchema="frictionless-schema.json")
+)
 ```
 
 ## Inferring a Dataset

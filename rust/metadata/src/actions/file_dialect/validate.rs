@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::actions::descriptor::inspect::inspect_model;
+use crate::actions::descriptor::load::load_descriptor_source;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
+use crate::actions::frictionless::convert::{FrictionlessKind, prepare_frictionless_descriptor};
+use crate::actions::frictionless::mapping::map_frictionless_errors;
 use crate::models::descriptor::Descriptor;
 use crate::models::error::error::FairspecError;
 use crate::models::exception::Result;
@@ -21,8 +24,19 @@ pub fn validate_file_dialect(
     source: impl Into<PathOr<Descriptor>>,
     root_json_pointer: Option<&str>,
 ) -> Result<FileDialectValidationResult> {
+    let loaded = load_descriptor_source(source)?;
+    let (prepared, mapping, errors) =
+        prepare_frictionless_descriptor(loaded, FrictionlessKind::FileDialect, root_json_pointer);
+    let Some(prepared) = prepared else {
+        return Ok(FileDialectValidationResult {
+            valid: false,
+            errors,
+            file_dialect: None,
+        });
+    };
+
     let (descriptor, mut report) =
-        validate_profiled_descriptor(source, ProfileType::FileDialect, root_json_pointer)?;
+        validate_profiled_descriptor(prepared, ProfileType::FileDialect, root_json_pointer)?;
 
     let file_dialect = match report.valid {
         true => {
@@ -33,6 +47,10 @@ pub fn validate_file_dialect(
         }
         false => None,
     };
+
+    if let Some(mapping) = &mapping {
+        report.errors = map_frictionless_errors(report.errors, mapping);
+    }
 
     Ok(FileDialectValidationResult {
         valid: report.valid,

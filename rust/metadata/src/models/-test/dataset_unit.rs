@@ -54,3 +54,24 @@ fn test_unknown_fields_are_kept() {
     let input = json!({"extra": 1, "resources": [{"data": "a.csv", "extra": 2}]});
     assert_eq!(round_trip::<Dataset>(&input), input);
 }
+
+#[test]
+fn test_resource_converts_inline_frictionless_schema_and_dialect() {
+    let resource: Resource = serde_json::from_value(json!({
+        "data": "table.csv",
+        "tableSchema": {"fields": [{"name": "id", "type": "integer"}], "primaryKey": "id"},
+        "fileDialect": {"delimiter": ";"},
+    }))
+    .unwrap();
+    assert_eq!(
+        serde_json::to_value(resource).unwrap(),
+        json!({
+            "data": "table.csv",
+            "fileDialect": {"format": "csv", "delimiter": ";"},
+            "tableSchema": {
+                "properties": {"id": {"type": ["integer", "null"]}},
+                "primaryKey": ["id"],
+            },
+        })
+    );
+}

@@ -113,3 +113,30 @@ fn test_should_assign_resource_names_before_validating() {
         .collect();
     assert_eq!(names, [json!("resource1"), json!("resource3")]);
 }
+
+#[test]
+fn test_should_validate_frictionless_descriptor_with_package_names() {
+    let descriptor = create_descriptor(json!({
+        "resources": [{
+            "name": "fruit-list",
+            "data": [["id"], ["x"]],
+            "schema": {"fields": [{"name": "id", "type": "integer"}]},
+        }],
+    }));
+    let report = validate_dataset(descriptor, &Default::default()).unwrap();
+    assert!(!report.valid);
+    let errors = serde_json::to_value(report.errors).unwrap();
+    assert_eq!(errors[0]["type"], "cell/type");
+    assert_eq!(errors[0]["resourceName"], "fruit-list");
+}
+
+#[test]
+fn test_should_point_frictionless_descriptor_errors_at_package() {
+    let descriptor = create_descriptor(json!({
+        "profile": "data-package",
+        "resources": [{"name": "a-b", "data": []}, {"name": "a_b", "data": []}],
+    }));
+    let report = validate_dataset(descriptor, &Default::default()).unwrap();
+    let errors = serde_json::to_value(report.errors).unwrap();
+    assert_eq!(errors[0]["jsonPointer"], "/resources/1/name");
+}

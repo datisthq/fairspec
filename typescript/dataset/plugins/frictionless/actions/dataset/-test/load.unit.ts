@@ -1,6 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { FairspecException } from "@fairspec/metadata"
+import {
+  FairspecException,
+  resolveFileDialect,
+  resolveTableSchema,
+} from "@fairspec/metadata"
 import { describe, expect, it } from "vite-plus/test"
 import { getTempFolderPath } from "../../../../../actions/folder/temp.ts"
 import { loadDatasetFromFrictionless } from "../load.ts"
@@ -26,8 +30,11 @@ describe("loadDatasetFromFrictionless", () => {
     const resource = dataset.resources?.[0]
 
     expect(resource?.name).toBe("my_items")
-    expect(resource?.fileDialect).toEqual({ format: "csv", delimiter: ";" })
-    expect(resource?.tableSchema).toEqual({
+    expect(await resolveFileDialect(resource?.fileDialect)).toEqual({
+      format: "csv",
+      delimiter: ";",
+    })
+    expect(await resolveTableSchema(resource?.tableSchema)).toEqual({
       properties: { id: { type: ["integer", "null"] } },
     })
   })

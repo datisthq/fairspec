@@ -1,0 +1,85 @@
+[
+  {
+    "description": "a frictionless table schema",
+    "comment": "The Frictionless mapping follows the TypeScript library: a table schema with fields and no properties is a Frictionless one, converted before validation",
+    "tableSchema": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "constraints": {
+            "required": true
+          }
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "decimalChar": ","
+        }
+      ],
+      "primaryKey": "id"
+    },
+    "tests": [
+      {
+        "description": "valid data passes",
+        "data": "id,price\n1,\"1,5\"\n2,\n",
+        "valid": true
+      },
+      {
+        "description": "errors are reported",
+        "data": "id,price\n1,x\n1,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "price",
+            "columnType": "number",
+            "rowNumber": 1,
+            "cell": "x"
+          },
+          {
+            "type": "row/primaryKey",
+            "columnNames": ["id"],
+            "rowNumber": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a frictionless file dialect",
+    "comment": "The Frictionless mapping follows the TypeScript library: a dialect without a format is a Frictionless one; without other hints it is CSV",
+    "fileDialect": {
+      "delimiter": ";",
+      "commentChar": "#"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "parses the file",
+        "data": "#note\nid\n1\n",
+        "valid": true
+      },
+      {
+        "description": "reports a bad cell",
+        "data": "id\nx\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  }
+]

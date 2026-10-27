@@ -4,7 +4,12 @@ import os
 import pytest
 
 from fairspec_dataset import get_temp_folder_path
-from fairspec_metadata import FairspecException
+from fairspec_metadata import (
+    FairspecException,
+    Resource,
+    resolve_file_dialect,
+    resolve_table_schema,
+)
 
 from ..load import load_dataset_from_frictionless
 
@@ -28,12 +33,19 @@ class TestLoadDatasetFromFrictionless:
             }
         )
 
-        dataset = json.loads(json.dumps(load_dataset_from_frictionless(path)))
-        resource = dataset["resources"][0]
+        dataset = load_dataset_from_frictionless(path)
+        resource = Resource.model_construct(**dataset["resources"][0])
 
-        assert resource["name"] == "my_items"
-        assert resource["fileDialect"] == {"format": "csv", "delimiter": ";"}
-        assert resource["tableSchema"] == {
+        assert resource.name == "my_items"
+        file_dialect = resolve_file_dialect(resource.fileDialect)
+        table_schema = resolve_table_schema(resource.tableSchema)
+        assert file_dialect is not None
+        assert table_schema is not None
+        assert file_dialect.model_dump(exclude_none=True) == {
+            "format": "csv",
+            "delimiter": ";",
+        }
+        assert json.loads(table_schema.model_dump_json(exclude_none=True)) == {
             "properties": {"id": {"type": ["integer", "null"]}}
         }
 

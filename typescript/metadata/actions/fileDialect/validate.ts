@@ -1,3 +1,5 @@
+import { prepareFrictionlessDescriptor } from "../../actions/frictionless/convert.ts"
+import { mapFrictionlessErrors } from "../../actions/frictionless/mapping.ts"
 import { loadDescriptor } from "../../actions/descriptor/load.ts"
 import { inspectModel } from "../../actions/descriptor/inspect.ts"
 import { validateDescriptor } from "../../actions/descriptor/validate.ts"
@@ -11,8 +13,17 @@ export async function validateFileDialect(
     rootJsonPointer?: string
   },
 ) {
-  const descriptor =
+  const loaded =
     typeof source === "string" ? await loadDescriptor(source) : (source as Descriptor)
+
+  const prepared = prepareFrictionlessDescriptor(loaded, {
+    kind: "fileDialect",
+    rootJsonPointer: options?.rootJsonPointer,
+  })
+  if (!prepared.descriptor) {
+    return { valid: false, errors: prepared.errors, fileDialect: undefined }
+  }
+  const descriptor = prepared.descriptor
 
   const $schema =
     typeof descriptor.$schema === "string"
@@ -37,6 +48,10 @@ export async function validateFileDialect(
     fileDialect = parsed.data
     report.errors.push(...parsed.errors)
     report.valid = report.errors.length === 0
+  }
+
+  if (prepared.mapping) {
+    report.errors = mapFrictionlessErrors(report.errors, prepared.mapping)
   }
 
   return { ...report, fileDialect }

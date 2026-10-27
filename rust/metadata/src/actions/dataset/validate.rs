@@ -4,8 +4,11 @@ use serde_json::Value;
 
 use crate::actions::data_schema::validate::validate_data_schema;
 use crate::actions::descriptor::inspect::inspect_model;
+use crate::actions::descriptor::load::load_descriptor_source;
 use crate::actions::descriptor::validate::validate_profiled_descriptor;
 use crate::actions::file_dialect::validate::validate_file_dialect;
+use crate::actions::frictionless::convert::{FrictionlessKind, prepare_frictionless_descriptor};
+use crate::actions::frictionless::mapping::{FrictionlessMapping, map_frictionless_errors};
 use crate::actions::resource::data::get_data_paths;
 use crate::actions::table_schema::inspect::{inspect_table_schema, inspect_table_schema_nulls};
 use crate::actions::table_schema::validate::validate_table_schema;
@@ -23,13 +26,24 @@ pub fn validate_dataset_descriptor(
     source: impl Into<PathOr<Descriptor>>,
     basepath: Option<&str>,
 ) -> Result<DatasetValidationResult> {
+    let loaded = load_descriptor_source(source)?;
+    let (prepared, mapping, errors) =
+        prepare_frictionless_descriptor(loaded, FrictionlessKind::Dataset, None);
+    let Some(prepared) = prepared else {
+        return Ok(DatasetValidationResult {
+            valid: false,
+            errors,
+            dataset: None,
+        });
+    };
+
     let (descriptor, mut report) =
-        validate_profiled_descriptor(source, ProfileType::Dataset, None)?;
+        validate_profiled_descriptor(prepared, ProfileType::Dataset, None)?;
 
     if !report.valid {
         return Ok(DatasetValidationResult {
             valid: report.valid,
-            errors: report.errors,
+            errors: map_errors(report.errors, mapping.as_ref()),
             dataset: None,
         });
     }
@@ -38,7 +52,7 @@ pub fn validate_dataset_descriptor(
     let Some(dataset) = dataset else {
         return Ok(DatasetValidationResult {
             valid: false,
-            errors: [report.errors, errors].concat(),
+            errors: map_errors([report.errors, errors].concat(), mapping.as_ref()),
             dataset: None,
         });
     };
@@ -97,9 +111,19 @@ pub fn validate_dataset_descriptor(
     let valid = report.errors.is_empty();
     Ok(DatasetValidationResult {
         valid,
-        errors: report.errors,
+        errors: map_errors(report.errors, mapping.as_ref()),
         dataset: valid.then_some(dataset),
     })
+}
+
+fn map_errors(
+    errors: Vec<FairspecError>,
+    mapping: Option<&FrictionlessMapping>,
+) -> Vec<FairspecError> {
+    match mapping {
+        Some(mapping) => map_frictionless_errors(errors, mapping),
+        None => errors,
+    }
 }
 
 fn get_table_schema_descriptor(descriptor: &Descriptor, index: usize) -> Descriptor {

@@ -3,7 +3,7 @@ use super::common::parse_list;
 #[fireargs::input]
 #[derive(Debug, Clone, Default)]
 pub struct DialectParams {
-    /// path to a Dialect descriptor
+    /// path to a Dialect descriptor, Fairspec or Frictionless
     #[fireargs(help_group = "Dialect")]
     pub dialect: Option<String>,
     /// format type (csv, json, xlsx, etc)

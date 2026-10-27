@@ -1,6 +1,5 @@
-use fairspec_metadata::{Dataset, Descriptor, Result, get_file_name, get_is_remote_path};
+use fairspec_metadata::{Dataset, Result, get_file_name, get_is_remote_path};
 
-use super::actions::dataset::load::load_dataset_from_frictionless;
 use super::actions::dataset::save::save_dataset_to_frictionless;
 use crate::models::dataset::{SaveDatasetOptions, SaveDatasetResult};
 use crate::plugin::{DatasetPlugin, MetadataPlugin};
@@ -11,13 +10,6 @@ pub struct FrictionlessPlugin;
 impl MetadataPlugin for FrictionlessPlugin {}
 
 impl DatasetPlugin for FrictionlessPlugin {
-    fn load_dataset(&self, source: &str) -> Result<Option<Descriptor>> {
-        if !get_is_datapackage(source) {
-            return Ok(None);
-        }
-        load_dataset_from_frictionless(source).map(Some)
-    }
-
     fn save_dataset(
         &self,
         dataset: &Dataset,

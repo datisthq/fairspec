@@ -1,8 +1,8 @@
 use fairspec_metadata::{
     ConvertDatasetFromOptions, ConvertDatasetToOptions, ConvertTableSchemaFromOptions,
     ConvertTableSchemaToOptions, DataSchema, Dataset, Descriptor, FileDialect,
-    RenderDataSchemaOptions, RenderDatasetOptions, RenderTableSchemaOptions, Resource, Result,
-    TableSchema,
+    RenderDataSchemaOptions, RenderDatasetOptions, RenderTableSchemaOptions, Report, Resource,
+    Result, TableSchema,
 };
 
 use crate::models::dataset::{SaveDatasetOptions, SaveDatasetResult};
@@ -69,6 +69,16 @@ pub trait MetadataPlugin: Send + Sync {
 
 pub trait DatasetPlugin: MetadataPlugin {
     fn load_dataset(&self, _source: &str) -> Result<Option<Descriptor>> {
+        Ok(None)
+    }
+
+    /// Validate a dataset source this plugin owns, reporting in the terms of its own format;
+    /// `validate_dataset` checks the loaded dataset's resources and foreign keys
+    fn validate_dataset(
+        &self,
+        _source: &str,
+        _validate_dataset: &dyn Fn(&Dataset) -> Result<Report>,
+    ) -> Result<Option<Report>> {
         Ok(None)
     }
 

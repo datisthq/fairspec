@@ -1,6 +1,9 @@
 use fairspec_metadata::{
-    Dataset, Descriptor, Error, Result, get_file_extension, get_is_remote_path,
-    load_dataset_descriptor, save_dataset_descriptor,
+    Dataset, Descriptor, Error, FrictionlessKind, Report, Result,
+    convert_descriptor_from_frictionless, create_report, get_file_extension,
+    get_is_frictionless_descriptor, get_is_remote_path, load_dataset_descriptor, load_descriptor,
+    map_frictionless_errors, resolve_basepath, save_dataset_descriptor,
+    validate_dataset_descriptor,
 };
 use serde_json::Value;
 
@@ -19,6 +22,34 @@ impl DatasetPlugin for DescriptorPlugin {
         }
         let dataset = load_dataset_descriptor(source)?;
         to_descriptor(&dataset).map(Some)
+    }
+
+    fn validate_dataset(
+        &self,
+        source: &str,
+        validate_dataset: &dyn Fn(&Dataset) -> Result<Report>,
+    ) -> Result<Option<Report>> {
+        if !get_is_json(source) {
+            return Ok(None);
+        }
+
+        let basepath = resolve_basepath(source)?;
+        let descriptor = load_descriptor(source, false)?;
+
+        let result = validate_dataset_descriptor(descriptor.clone(), Some(&basepath))?;
+        let Some(dataset) = result.dataset else {
+            return Ok(Some(create_report(result.errors, None)));
+        };
+
+        let report = validate_dataset(&dataset)?;
+        if !get_is_frictionless_descriptor(&descriptor, FrictionlessKind::Dataset) {
+            return Ok(Some(report));
+        }
+
+        let (_, mapping, _) =
+            convert_descriptor_from_frictionless(&descriptor, FrictionlessKind::Dataset, None);
+        let errors = map_frictionless_errors(report.errors, &mapping);
+        Ok(Some(create_report(errors, None)))
     }
 
     fn save_dataset(

@@ -15,9 +15,11 @@ from .actions.data_schema.validate import (
 )
 from .actions.dataset.assert_ import assert_dataset
 from .actions.dataset.denormalize import denormalize_dataset
+from .actions.dataset.from_frictionless import convert_dataset_from_frictionless
 from .actions.dataset.load import load_dataset_descriptor
 from .actions.dataset.normalize import normalize_dataset
 from .actions.dataset.save import save_dataset_descriptor
+from .actions.dataset.to_frictionless import convert_dataset_to_frictionless
 from .actions.dataset.validate import (
     DatasetValidationResult,
     validate_dataset_descriptor,
@@ -30,15 +32,25 @@ from .actions.descriptor.save import save_descriptor
 from .actions.descriptor.stringify import stringify_descriptor
 from .actions.descriptor.validate import validate_descriptor
 from .actions.file_dialect.assert_ import assert_file_dialect
+from .actions.file_dialect.from_frictionless import (
+    convert_file_dialect_from_frictionless,
+)
 from .actions.file_dialect.infer import infer_file_dialect_format
 from .actions.file_dialect.load import load_file_dialect
 from .actions.file_dialect.resolve import resolve_file_dialect
 from .actions.file_dialect.save import save_file_dialect
 from .actions.file_dialect.support import get_supported_file_dialect
+from .actions.file_dialect.to_frictionless import convert_file_dialect_to_frictionless
 from .actions.file_dialect.validate import (
     FileDialectValidationResult,
     validate_file_dialect,
 )
+from .actions.frictionless.convert import (
+    FrictionlessKind,
+    convert_descriptor_from_frictionless,
+    get_is_frictionless_descriptor,
+)
+from .actions.frictionless.mapping import FrictionlessMapping, map_frictionless_errors
 from .actions.host.address import get_is_public_address
 from .actions.host.policy import get_host_policy, set_host_policy
 from .actions.json.inspect import inspect_json
@@ -76,10 +88,14 @@ from .actions.resource.infer import infer_resource_name
 from .actions.resource.normalize import normalize_resource
 from .actions.table_schema.assert_ import assert_table_schema
 from .actions.table_schema.column import get_columns
+from .actions.table_schema.from_frictionless import (
+    convert_table_schema_from_frictionless,
+)
 from .actions.table_schema.inspect import inspect_table_schema
 from .actions.table_schema.load import load_table_schema
 from .actions.table_schema.resolve import resolve_table_schema
 from .actions.table_schema.save import save_table_schema
+from .actions.table_schema.to_frictionless import convert_table_schema_to_frictionless
 from .actions.table_schema.validate import (
     TableSchemaValidationResult,
     validate_table_schema,
@@ -247,6 +263,12 @@ from .models.file_dialect.sqlite import SqliteFileDialect
 from .models.file_dialect.tsv import TsvFileDialect
 from .models.file_dialect.xlsx import XlsxFileDialect
 from .models.foreign_key import ForeignKey, ForeignKeyReference
+from .models.frictionless.dialect import FrictionlessDialect
+from .models.frictionless.field import FrictionlessField
+from .models.frictionless.license import FrictionlessLicense
+from .models.frictionless.package import FrictionlessPackage
+from .models.frictionless.resource import FrictionlessResource
+from .models.frictionless.schema import FrictionlessSchema
 from .models.integrity import Integrity, IntegrityType
 from .models.host import HostPolicy
 from .models.json_schema import JsonSchema
@@ -274,6 +296,13 @@ __all__ = [
     "assert_json_schema",
     "assert_profile",
     "assert_table_schema",
+    "convert_dataset_from_frictionless",
+    "convert_dataset_to_frictionless",
+    "convert_descriptor_from_frictionless",
+    "convert_file_dialect_from_frictionless",
+    "convert_file_dialect_to_frictionless",
+    "convert_table_schema_from_frictionless",
+    "convert_table_schema_to_frictionless",
     "copy_descriptor",
     "create_column_from_property",
     "create_report",
@@ -284,6 +313,14 @@ __all__ = [
     "denormalize_resource",
     "fetch_remote",
     "FileDialectValidationResult",
+    "FrictionlessDialect",
+    "FrictionlessField",
+    "FrictionlessKind",
+    "FrictionlessLicense",
+    "FrictionlessMapping",
+    "FrictionlessPackage",
+    "FrictionlessResource",
+    "FrictionlessSchema",
     "get_base_property_type",
     "get_basepath",
     "get_column_properties",
@@ -300,6 +337,7 @@ __all__ = [
     "get_file_protocol",
     "get_host_policy",
     "get_is_descriptor",
+    "get_is_frictionless_descriptor",
     "get_is_nullable_property_type",
     "get_is_public_address",
     "get_is_remote_path",
@@ -317,6 +355,7 @@ __all__ = [
     "load_json_schema",
     "load_profile",
     "load_table_schema",
+    "map_frictionless_errors",
     "normalize_dataset",
     "normalize_path",
     "normalize_resource",

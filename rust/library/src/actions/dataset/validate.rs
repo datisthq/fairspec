@@ -1,6 +1,7 @@
 use fairspec_metadata::{
-    Dataset, Error, FairspecError, Report, Result, assert_dataset, create_report,
-    infer_resource_name,
+    Dataset, Descriptor, Error, FairspecError, FrictionlessKind, Report, Result, assert_dataset,
+    convert_descriptor_from_frictionless, create_report, get_is_frictionless_descriptor,
+    infer_resource_name, map_frictionless_errors, validate_dataset_descriptor,
 };
 use serde_json::Value;
 
@@ -10,17 +11,33 @@ use crate::actions::resource::validate::validate_resource;
 use crate::helpers::concurrency::run_concurrent_tasks;
 use crate::models::dataset::DatasetSource;
 use crate::models::table::ValidateTableOptions;
+use crate::system::get_system;
 
 pub fn validate_dataset(
     source: impl Into<DatasetSource>,
     options: &ValidateTableOptions,
 ) -> Result<Report> {
     let loaded = match source.into() {
-        DatasetSource::Path(path) => load_dataset_from_plugins(&path),
+        DatasetSource::Path(path) => {
+            let validate = |dataset: &Dataset| validate_loaded_dataset(dataset.clone(), options);
+            for plugin in &get_system().plugins {
+                if let Some(plugin) = plugin.get_dataset_plugin()
+                    && let Some(report) = plugin.validate_dataset(&path, &validate)?
+                {
+                    return Ok(report);
+                }
+            }
+            load_dataset_from_plugins(&path)
+        }
+        DatasetSource::Descriptor(descriptor)
+            if get_is_frictionless_descriptor(&descriptor, FrictionlessKind::Dataset) =>
+        {
+            return validate_frictionless_dataset(&descriptor, options);
+        }
         DatasetSource::Descriptor(descriptor) => assert_dataset(&descriptor, None),
         DatasetSource::Dataset(dataset) => Ok(*dataset),
     };
-    let mut dataset = match loaded {
+    let dataset = match loaded {
         Ok(dataset) => dataset,
         Err(Error::Invalid { report, .. }) => {
             return Ok(report.unwrap_or_else(|| create_report(Vec::new(), None)));
@@ -28,6 +45,28 @@ pub fn validate_dataset(
         Err(error) => return Err(error),
     };
 
+    validate_loaded_dataset(dataset, options)
+}
+
+fn validate_frictionless_dataset(
+    descriptor: &Descriptor,
+    options: &ValidateTableOptions,
+) -> Result<Report> {
+    let result = validate_dataset_descriptor(descriptor.clone(), None)?;
+    let Some(dataset) = result.dataset else {
+        return Ok(create_report(result.errors, None));
+    };
+
+    let report = validate_loaded_dataset(dataset, options)?;
+    let (_, mapping, _) =
+        convert_descriptor_from_frictionless(descriptor, FrictionlessKind::Dataset, None);
+    Ok(create_report(
+        map_frictionless_errors(report.errors, &mapping),
+        None,
+    ))
+}
+
+fn validate_loaded_dataset(mut dataset: Dataset, options: &ValidateTableOptions) -> Result<Report> {
     let mut errors = validate_dataset_resources(&mut dataset, options)?;
     let fk_report = validate_dataset_foreign_keys(&dataset, options)?;
     errors.extend(fk_report.errors);

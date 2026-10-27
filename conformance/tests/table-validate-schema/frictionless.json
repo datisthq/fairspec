@@ -1,0 +1,101 @@
+[
+  {
+    "description": "a frictionless table schema",
+    "comment": "The Frictionless mapping follows the TypeScript library: a schema with fields and no properties is converted, and errors point at the field it came from",
+    "tests": [
+      {
+        "description": "a valid schema",
+        "data": {
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer"
+            }
+          ],
+          "primaryKey": ["id"]
+        },
+        "valid": true
+      },
+      {
+        "description": "an invalid temporal format points at the field format",
+        "data": {
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer"
+            },
+            {
+              "name": "day",
+              "type": "date",
+              "format": "%Q"
+            }
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "a field the Frictionless model cannot read",
+        "data": {
+          "fields": [
+            {
+              "name": "id",
+              "constraints": {
+                "required": "yes"
+              }
+            }
+          ]
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/fields/0/constraints/required"
+          }
+        ]
+      },
+      {
+        "description": "a primary key on a missing field points at the key",
+        "data": {
+          "fields": [
+            {
+              "name": "id"
+            }
+          ],
+          "primaryKey": ["code"]
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/primaryKey"
+          }
+        ]
+      },
+      {
+        "description": "a foreign key on a missing field points at its fields",
+        "data": {
+          "fields": [
+            {
+              "name": "id"
+            }
+          ],
+          "foreignKeys": [
+            {
+              "fields": "code",
+              "reference": {
+                "fields": "id"
+              }
+            }
+          ]
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/foreignKeys/0/fields"
+          }
+        ]
+      }
+    ]
+  }
+]

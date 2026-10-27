@@ -1,0 +1,150 @@
+[
+  {
+    "description": "a frictionless package under another name",
+    "comment": "The Frictionless mapping follows the TypeScript library: a package is recognised by its content, resources with path, schema or dialect, whatever the file is called, and errors point at what the package says",
+    "dataset": {
+      "resources": [
+        {
+          "name": "fruit-list",
+          "path": "fruit.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer",
+                "constraints": {
+                  "required": true
+                }
+              },
+              {
+                "name": "day",
+                "type": "date",
+                "format": "%d/%m/%Y"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "valid data passes",
+        "data": {
+          "fruit.csv": "id,day\n1,05/01/2024\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "cell errors name the resource as the package does",
+        "data": {
+          "fruit.csv": "id,day\nx,32/01/2024\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x",
+            "resourceName": "fruit-list"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "day",
+            "columnType": "date",
+            "rowNumber": 1,
+            "cell": "32/01/2024",
+            "resourceName": "fruit-list"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "fairspec errors about a frictionless package",
+    "comment": "The Frictionless mapping follows the TypeScript library: an error about the converted dataset points at what the package wrote, so a foreign key on a missing field points at its fields and two names that convert to one point at the second",
+    "dataset": {
+      "resources": [
+        {
+          "name": "a-b",
+          "path": "one.csv",
+          "schema": {
+            "fields": [
+              {
+                "name": "id",
+                "type": "integer"
+              }
+            ],
+            "foreignKeys": [
+              {
+                "fields": "code",
+                "reference": {
+                  "resource": "",
+                  "fields": "id"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "a_b",
+          "path": "two.csv"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "point at the package",
+        "data": {
+          "one.csv": "id\n1\n",
+          "two.csv": "id\n1\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/0/schema/foreignKeys/0/fields"
+          },
+          {
+            "type": "metadata",
+            "jsonPointer": "/resources/1/name"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a frictionless schema file",
+    "comment": "The Frictionless mapping follows the TypeScript library: a schema path in the package names a Frictionless schema, converted when it is loaded",
+    "dataset": {
+      "resources": [
+        {
+          "name": "items",
+          "path": "items.csv",
+          "schema": "schema.json"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is converted",
+        "data": {
+          "items.csv": "id\n1\nx\n",
+          "schema.json": "{\"fields\": [{\"name\": \"id\", \"type\": \"integer\"}]}"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x",
+            "resourceName": "items"
+          }
+        ]
+      }
+    ]
+  }
+]

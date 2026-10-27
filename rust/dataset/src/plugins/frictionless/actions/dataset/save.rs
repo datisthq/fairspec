@@ -1,10 +1,9 @@
 use fairspec_metadata::{
-    Dataset, PathOr, Result, denormalize_resource, get_basepath, resolve_file_dialect,
-    resolve_table_schema, save_descriptor,
+    Dataset, PathOr, Result, convert_dataset_to_frictionless, denormalize_resource, get_basepath,
+    resolve_file_dialect, resolve_table_schema, save_descriptor,
 };
 use serde_json::Value;
 
-use super::to_frictionless::convert_dataset_to_frictionless;
 use crate::models::dataset::SaveDatasetResult;
 use crate::plugins::descriptor::plugin::to_descriptor;
 

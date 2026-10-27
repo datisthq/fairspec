@@ -7,6 +7,8 @@ from fairspec_metadata.actions.descriptor.load import load_descriptor
 from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.file_dialect.validate import validate_file_dialect
+from fairspec_metadata.actions.frictionless.convert import prepare_frictionless_descriptor
+from fairspec_metadata.actions.frictionless.mapping import map_frictionless_errors
 from fairspec_metadata.actions.profile.load import load_profile
 from fairspec_metadata.actions.report.create import create_report
 from fairspec_metadata.actions.resource.data import get_data_paths
@@ -33,7 +35,12 @@ def validate_dataset_descriptor(
     *,
     basepath: str | None = None,
 ) -> DatasetValidationResult:
-    descriptor = load_descriptor(source) if isinstance(source, str) else source
+    loaded = load_descriptor(source) if isinstance(source, str) else source
+
+    prepared = prepare_frictionless_descriptor(loaded, kind="dataset")
+    if prepared.descriptor is None:
+        return DatasetValidationResult(valid=False, errors=list(prepared.errors))
+    descriptor = prepared.descriptor
 
     schema = descriptor.get("$schema")
     schema_url = (
@@ -116,9 +123,13 @@ def validate_dataset_descriptor(
             normalized = None
             report.valid = False
 
+    errors = report.errors
+    if prepared.mapping is not None:
+        errors = map_frictionless_errors(errors, prepared.mapping)
+
     return DatasetValidationResult(
         valid=report.valid,
-        errors=report.errors,
+        errors=errors,
         dataset=normalized,
     )
 

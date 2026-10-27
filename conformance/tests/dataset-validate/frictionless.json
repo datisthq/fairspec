@@ -162,7 +162,7 @@
   },
   {
     "description": "frictionless keys across renamed resources",
-    "comment": "The Frictionless mapping follows the TypeScript library: a primaryKey string is a one-column key, a reference resource \"\" is the table itself, and a dashed name becomes underscored on both ends of a reference",
+    "comment": "The Frictionless mapping follows the TypeScript library: a primaryKey string is a one-column key, a reference resource \"\" is the table itself, and a dashed name becomes underscored on both ends of a reference, and errors name the resource as the package does",
     "datapackage": {
       "resources": [
         {
@@ -238,7 +238,7 @@
             "type": "row/primaryKey",
             "columnNames": ["kind"],
             "rowNumber": 2,
-            "resourceName": "fruit_kinds"
+            "resourceName": "fruit-kinds"
           },
           {
             "type": "foreignKey",
@@ -249,19 +249,19 @@
               }
             },
             "cells": ["3"],
-            "resourceName": "fruit_list"
+            "resourceName": "fruit-list"
           },
           {
             "type": "foreignKey",
             "foreignKey": {
               "columns": ["kind"],
               "reference": {
-                "resource": "fruit_kinds",
+                "resource": "fruit-kinds",
                 "columns": ["kind"]
               }
             },
             "cells": ["plum"],
-            "resourceName": "fruit_list"
+            "resourceName": "fruit-list"
           }
         ]
       }
@@ -385,8 +385,9 @@
   },
   {
     "description": "a frictionless package without resources",
-    "comment": "The Frictionless mapping follows the TypeScript library",
+    "comment": "The Frictionless mapping follows the TypeScript library: a v1 profile marks the package as Frictionless",
     "datapackage": {
+      "profile": "data-package",
       "name": "empty"
     },
     "tests": [

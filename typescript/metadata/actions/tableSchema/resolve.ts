@@ -1,4 +1,6 @@
+import { getIsFrictionlessDescriptor } from "../../actions/frictionless/convert.ts"
 import type { TableSchema } from "../../models/tableSchema.ts"
+import { assertTableSchema } from "./assert.ts"
 import { loadTableSchema } from "./load.ts"
 
 export async function resolveTableSchema(tableSchema?: TableSchema | string) {
@@ -7,7 +9,10 @@ export async function resolveTableSchema(tableSchema?: TableSchema | string) {
   }
 
   if (typeof tableSchema !== "string") {
-    return tableSchema
+    const isFrictionless = getIsFrictionlessDescriptor(tableSchema, {
+      kind: "tableSchema",
+    })
+    return isFrictionless ? await assertTableSchema(tableSchema) : tableSchema
   }
 
   return await loadTableSchema(tableSchema)

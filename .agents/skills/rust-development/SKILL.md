@@ -111,9 +111,12 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
   Python star-imports them, then lists its own names one per line
 - A `Dataset | Descriptor | str` source is `impl Into<DatasetSource>`; Python's `ValueError` is
   `Error::Invalid` with no report
-- `validate_dataset` loads a path through the plugins (`load_dataset`), never
-  `load_dataset_descriptor`, or a `datapackage.json` skips the frictionless plugin
-- The frictionless models (`rust/dataset/src/plugins/frictionless/models/`) are `Shape`
+- `validate_dataset` asks the plugins' `validate_dataset` hook first for a path (`DescriptorPlugin`
+  maps a Frictionless package's errors back), then loads through the plugins, never
+  `load_dataset_descriptor`; only a `Descriptor` source is sniffed as Frictionless, never a typed `Dataset`
+- An inline Frictionless `tableSchema`/`fileDialect` converts while a `Resource` deserializes
+  (`deserialize_with` in `models/resource.rs`), since the typed models reject it; `resolve_*` stay plain
+- The frictionless models (`rust/metadata/src/models/frictionless/`) are `Shape`
   constants, not serde structs: serde stops at the first error, while the report must list
   every mismatch at its pointer, as zod does
 - The render actions only ask the plugins, as in Python, and no plugin renders yet, so they

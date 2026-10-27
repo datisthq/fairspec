@@ -7,7 +7,7 @@ const option = f.option({ helpGroup: "Table Schema:" })
 
 export const tableSchema = option
   .schema(z.string().optional())
-  .describe("path to a Table Schema descriptor")
+  .describe("path to a Table Schema descriptor, Fairspec or Frictionless")
 
 export const tableSchemaParams = {
   columnTypes: f

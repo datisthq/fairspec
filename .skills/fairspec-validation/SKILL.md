@@ -27,7 +27,9 @@ with the same commands and flags. `fairspec mcp` starts the MCP server on stdio.
 A resource is `{ data, tableSchema?, fileDialect?, dataSchema?, integrity? }`. In TypeScript pass a
 plain object. In Python build `fairspec.Resource(data=..., tableSchema=...)`, since a dict is
 rejected. A table inside a dataset is selected with `-d dataset.json -r <name>` in place of a path.
-A Frictionless `datapackage.json` validates the same way: `fairspec dataset validate datapackage.json`.
+A Frictionless Data Package, Table Schema or Table Dialect is recognised by its content and validates the
+same way (`fairspec dataset validate package.json`, `--schema schema.json`, `--dialect dialect.json`);
+errors point at the Frictionless field, key and resource name.
 
 ```ts
 import { validateTable } from "fairspec"

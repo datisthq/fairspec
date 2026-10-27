@@ -1,3 +1,4 @@
+import { basename } from "node:path"
 import { writeTempFile } from "@fairspec/library"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { validateDatasetCommand } from "../validate.ts"
@@ -19,7 +20,7 @@ describe("dataset validate", () => {
     const descriptor = {
       resources: [
         {
-          path: csvPath,
+          data: basename(csvPath),
           schema: {
             properties: {
               id: { type: "integer" },
@@ -57,7 +58,7 @@ describe("dataset validate", () => {
     const descriptor = {
       resources: [
         {
-          path: csvPath,
+          data: basename(csvPath),
           schema: {
             properties: {
               id: { type: "integer" },
@@ -96,7 +97,7 @@ describe("dataset validate", () => {
     const descriptor = {
       resources: [
         {
-          path: csv1Path,
+          data: basename(csv1Path),
           schema: {
             properties: {
               id: { type: "integer" },
@@ -105,7 +106,7 @@ describe("dataset validate", () => {
           },
         },
         {
-          path: csv2Path,
+          data: basename(csv2Path),
           schema: {
             properties: {
               id: { type: "integer" },

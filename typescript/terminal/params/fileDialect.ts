@@ -4,7 +4,9 @@ import { z } from "zod"
 const option = f.option({ helpGroup: "Dialect:" })
 
 export const dialectParams = {
-  dialect: option.schema(z.string().optional()).describe("path to a Dialect descriptor"),
+  dialect: option
+    .schema(z.string().optional())
+    .describe("path to a Dialect descriptor, Fairspec or Frictionless"),
   format: option
     .schema(z.string().optional())
     .describe("format type (csv, json, xlsx, etc)"),

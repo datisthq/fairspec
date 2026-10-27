@@ -4,6 +4,8 @@ from jsonschema import Draft202012Validator
 from pydantic import TypeAdapter
 
 from fairspec_metadata.actions.descriptor.load import load_descriptor
+from fairspec_metadata.actions.frictionless.convert import prepare_frictionless_descriptor
+from fairspec_metadata.actions.frictionless.mapping import map_frictionless_errors
 from fairspec_metadata.actions.descriptor.inspect import inspect_model
 from fairspec_metadata.actions.descriptor.validate import validate_descriptor
 from fairspec_metadata.actions.profile.load import load_profile
@@ -25,7 +27,16 @@ def validate_table_schema(
     *,
     root_json_pointer: str | None = None,
 ) -> TableSchemaValidationResult:
-    descriptor = load_descriptor(source) if isinstance(source, str) else source
+    loaded = load_descriptor(source) if isinstance(source, str) else source
+
+    prepared = prepare_frictionless_descriptor(
+        loaded, kind="tableSchema", root_json_pointer=root_json_pointer
+    )
+    if prepared.descriptor is None:
+        return TableSchemaValidationResult(
+            valid=False, errors=list(prepared.errors), table_schema=None
+        )
+    descriptor = prepared.descriptor
 
     schema = descriptor.get("$schema")
     schema_url = (
@@ -61,8 +72,12 @@ def validate_table_schema(
         if not report.valid:
             table_schema = None
 
+    errors = report.errors
+    if prepared.mapping is not None:
+        errors = map_frictionless_errors(errors, prepared.mapping)
+
     return TableSchemaValidationResult(
         valid=report.valid,
-        errors=report.errors,
+        errors=errors,
         table_schema=table_schema,
     )

@@ -5,22 +5,15 @@ from typing import TYPE_CHECKING, Unpack
 from fairspec_metadata import get_file_name, get_is_remote_path
 
 from fairspec_dataset.plugin import DatasetPlugin
-from .actions.dataset.load import load_dataset_from_frictionless
 from .actions.dataset.save import save_dataset_to_frictionless
 
 if TYPE_CHECKING:
     from fairspec_metadata import Dataset
-    from fairspec_metadata import Descriptor
 
     from fairspec_dataset.models.dataset import SaveDatasetOptions, SaveDatasetResult
 
 
 class FrictionlessPlugin(DatasetPlugin):
-    def load_dataset(self, source: str) -> Descriptor | None:
-        if not _get_is_datapackage(source):
-            return None
-        return load_dataset_from_frictionless(source)
-
     def save_dataset(
         self, dataset: Dataset, **options: Unpack[SaveDatasetOptions]
     ) -> SaveDatasetResult | None:

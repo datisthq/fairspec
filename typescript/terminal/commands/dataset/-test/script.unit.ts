@@ -1,3 +1,4 @@
+import { basename } from "node:path"
 import { writeTempFile } from "@fairspec/library"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
@@ -34,7 +35,7 @@ describe.skip("dataset script", () => {
       format: "csv",
     })
     const descriptor = {
-      resources: [{ path: csvPath }],
+      resources: [{ data: basename(csvPath) }],
     }
     const descriptorPath = await writeTempFile(JSON.stringify(descriptor), {
       format: "json",
@@ -54,7 +55,7 @@ describe.skip("dataset script", () => {
       format: "csv",
     })
     const descriptor = {
-      resources: [{ name: "data", path: csvPath }],
+      resources: [{ name: "data", data: basename(csvPath) }],
     }
     const descriptorPath = await writeTempFile(JSON.stringify(descriptor), {
       format: "json",
@@ -76,8 +77,8 @@ describe.skip("dataset script", () => {
     const csv2Path = await writeTempFile("id,age\n1,25", { format: "csv" })
     const descriptor = {
       resources: [
-        { name: "users", path: csv1Path },
-        { name: "ages", path: csv2Path },
+        { name: "users", data: basename(csv1Path) },
+        { name: "ages", data: basename(csv2Path) },
       ],
     }
     const descriptorPath = await writeTempFile(JSON.stringify(descriptor), {

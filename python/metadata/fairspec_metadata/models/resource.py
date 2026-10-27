@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Union
 
-from pydantic import Field
+from pydantic import Field, ValidationInfo, field_validator
 
 from .data import Data
 from .data_schema import DataSchema
 from .datacite.datacite import Datacite
+from .descriptor import Descriptor
 from .file_dialect.file_dialect import FileDialect
 from .integrity import Integrity
 from .path import Path
@@ -47,3 +48,24 @@ class Resource(Datacite):
         default=None,
         description="Custom properties for extending resources",
     )
+
+    # TypeScript converts an inline Frictionless object when it resolves one; a model
+    # here could not hold it, as neither a Fairspec dialect nor schema reads its keys
+    @field_validator("fileDialect", "tableSchema", mode="before")
+    @classmethod
+    def convert_frictionless_descriptor(
+        cls, value: object, info: ValidationInfo
+    ) -> object:
+        from fairspec_metadata.actions.frictionless.convert import (
+            convert_descriptor_from_frictionless,
+            get_is_frictionless_descriptor,
+        )
+
+        if not isinstance(value, dict):
+            return value
+        descriptor: Descriptor = {str(key): item for key, item in value.items()}
+        kind = "fileDialect" if info.field_name == "fileDialect" else "tableSchema"
+        if not get_is_frictionless_descriptor(descriptor, kind=kind):
+            return value
+        conversion = convert_descriptor_from_frictionless(descriptor, kind=kind)
+        return value if conversion.descriptor is None else conversion.descriptor

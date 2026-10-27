@@ -16,7 +16,10 @@ def parse_row_numbers(value: str) -> list[int]:
 class DialectParams(CommandInput):
     dialect: Annotated[
         str | None,
-        Option(help_group="Dialect", description="path to a Dialect descriptor"),
+        Option(
+            help_group="Dialect",
+            description="path to a Dialect descriptor, Fairspec or Frictionless",
+        ),
     ] = None
     format: Annotated[
         str | None,

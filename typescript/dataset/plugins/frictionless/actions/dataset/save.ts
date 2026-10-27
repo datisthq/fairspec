@@ -1,12 +1,12 @@
 import type { Dataset } from "@fairspec/metadata"
 import {
+  convertDatasetToFrictionless,
   denormalizeResource,
   getBasepath,
   resolveFileDialect,
   resolveTableSchema,
   saveDescriptor,
 } from "@fairspec/metadata"
-import { convertDatasetToFrictionless } from "./toFrictionless.ts"
 
 /**
  * Save a Dataset as a Frictionless Data Package (v2) descriptor
