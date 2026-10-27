@@ -357,7 +357,7 @@ Format properties:
 
 - [`tableName`](#tablename)
 
-#### Unknown
+#### Custom
 
 A format for custom data. It `MUST` have [`format`](#format) not supported by the formats above.
 
