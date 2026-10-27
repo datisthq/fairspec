@@ -15,6 +15,10 @@ class TestParseDateColumn:
         "cell, expected",
         [
             ("2019-01-01", datetime.date(2019, 1, 1)),
+            ("2019-1-5", None),
+            ("-0001-01-01", None),
+            ("19-01-01", None),
+            (" 2019-01-01", None),
             ("10th Jan 1969", None),
             ("invalid", None),
             ("", None),

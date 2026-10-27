@@ -105,6 +105,33 @@ fn test_parse_temporal_format() {
 }
 
 #[test]
+fn test_parse_temporal_format_seconds() {
+    let cases = [
+        (
+            "%Y-%m-%d %H:%M:%S",
+            "2024-01-01 00:00:59",
+            Some("2024-01-01T00:00:59.000000"),
+        ),
+        (
+            "%Y-%m-%d %H:%M:%S",
+            "2024-1-1 0:0:5",
+            Some("2024-01-01T00:00:05.000000"),
+        ),
+        ("%Y-%m-%d %H:%M:%S", "2024-01-01 00:00:60", None),
+        ("%Y-%m-%d %H:%M:%S", "2024-01-01 23:59:60", None),
+        (
+            "%Y%m%d%H%M%S",
+            "20240101000059",
+            Some("2024-01-01T00:00:59.000000"),
+        ),
+        ("%Y%m%d%H%M%S", "20240101000060", None),
+    ];
+    for (format, cell, expected) in cases {
+        assert_eq!(parse(Some(format), cell).as_deref(), expected, "{cell:?}");
+    }
+}
+
+#[test]
 fn test_parse_invalid_temporal_format() {
     assert_eq!(parse(Some("invalid"), "21/11/06 16:30"), None);
 }

@@ -82,6 +82,40 @@ class TestParseLocalDateTimeColumn:
         assert frame.to_dicts() == [{"name": expected}]
 
     @pytest.mark.parametrize(
+        "fmt, cell, expected",
+        [
+            (
+                "%Y-%m-%d %H:%M:%S",
+                "2024-01-01 00:00:59",
+                datetime.datetime(2024, 1, 1, 0, 0, 59),
+            ),
+            (
+                "%Y-%m-%d %H:%M:%S",
+                "2024-1-1 0:0:5",
+                datetime.datetime(2024, 1, 1, 0, 0, 5),
+            ),
+            ("%Y-%m-%d %H:%M:%S", "2024-01-01 00:00:60", None),
+            ("%Y-%m-%d %H:%M:%S", "2024-01-01 23:59:60", None),
+            ("%Y%m%d%H%M%S", "20240101000059", datetime.datetime(2024, 1, 1, 0, 0, 59)),
+            ("%Y%m%d%H%M%S", "20240101000060", None),
+        ],
+    )
+    def test_temporal_format_seconds(
+        self, fmt: str, cell: str, expected: datetime.datetime | None
+    ):
+        table = pl.DataFrame({"name": [cell]}).lazy()
+        column = LocalDateTimeColumn(
+            name="name",
+            type="local-date-time",
+            property=LocalDateTimeColumnProperty(temporalFormat=fmt),
+        )
+
+        result = table.select(parse_local_date_time_column(column, pl.col("name")))
+
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert frame.to_dicts() == [{"name": expected}]
+
+    @pytest.mark.parametrize(
         "cell, expected",
         [
             ("21/11/06 16:30", None),

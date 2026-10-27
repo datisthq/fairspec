@@ -28,18 +28,22 @@ fn test_inspect() {
         ("ghijkl", false),
         ("0x1234", false),
         ("hello world", false),
+        ("PT", false),
+        ("P1DT", false),
+        ("P1DT\n", false),
     ];
     for (cell, valid) in cases {
         assert_eq!(get_is_valid(cell), valid, "{cell}");
     }
 }
 
-// Expected verdicts are isodate 0.7's `parse_duration` raising or not
+// Expected verdicts are isodate 0.7's `parse_duration` raising or not, except a trailing
+// `T`, which the duration column rejects before isodate reads it
 #[test]
 fn test_inspect_matches_isodate() {
     let cases = [
         ("P", false),
-        ("PT", true),
+        ("PT", false),
         ("-P1D", true),
         ("+P1D", true),
         ("-P", false),
@@ -51,7 +55,7 @@ fn test_inspect_matches_isodate() {
         ("P1.D", false),
         ("PT1.5S", true),
         ("P1M1Y", false),
-        ("P1DT", true),
+        ("P1DT", false),
         ("PT1D", false),
         ("P1Y1W", true),
         ("P999999999D", true),

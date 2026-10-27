@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 import polars as pl
 import pytest
 
@@ -104,6 +106,28 @@ class TestParseListColumn:
             name="name",
             type="list",
             property=ListColumnProperty(delimiter=";"),
+        )
+
+        result = table.select(parse_list_column(column, pl.col("name")).alias("name"))
+        frame: pl.DataFrame = result.collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        actual = frame.to_dicts()[0]["name"]
+
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        "cell, expected",
+        [
+            ("2024-01-15,2024-02-29", [date(2024, 1, 15), date(2024, 2, 29)]),
+            ("2024-01-15,2024-1-5", None),
+            ("2024-01-15, 2024-01-16", None),
+        ],
+    )
+    def test_items_date(self, cell: str, expected: list[date] | None):
+        table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+        column = ListColumn(
+            name="name",
+            type="list",
+            property=ListColumnProperty(itemType="date"),  # ty: ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2403
         )
 
         result = table.select(parse_list_column(column, pl.col("name")).alias("name"))

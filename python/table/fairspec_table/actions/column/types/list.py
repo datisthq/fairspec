@@ -6,6 +6,7 @@ from fairspec_metadata import ListColumn
 
 TRUE_VALUES = ["true", "True", "TRUE", "1"]
 FALSE_VALUES = ["false", "False", "FALSE", "0"]
+DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
 
 
 def parse_list_column(column: ListColumn, column_expr: pl.Expr) -> pl.Expr:
@@ -67,7 +68,9 @@ def _cast_item(item_type: str, item_expr: pl.Expr) -> pl.Expr:
                 "%Y-%m-%dT%H:%M:%S%.f", time_unit="us", strict=False
             )
         case "date":
-            return item_expr.str.to_date("%Y-%m-%d", strict=False)
+            return item_expr.str.extract(DATE_PATTERN, 0).str.to_date(
+                "%Y-%m-%d", strict=False
+            )
         case "time":
             return (
                 pl.concat_str([pl.lit("1970-01-01T"), item_expr])

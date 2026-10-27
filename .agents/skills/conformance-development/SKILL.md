@@ -84,6 +84,13 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `inspect_table_schema_nulls` does: the Python and Rust models turn an explicit `null` into an
   absent field. A numeric keyword is tested against absent, never for truthiness: `maxLength: 0`
   is a constraint
+- Polars' `strptime` (chrono) is looser than the spec in all three twins: it reads unpadded,
+  signed and short years under `%Y-%m-%d` and `%S` 60 as a leap second. A default form is
+  matched against its anchored pattern first, list items too, and a `temporalFormat` value goes
+  through `reject_leap_second` (Python, Rust; TypeScript's `keepExactTemporal` round-trip catches it).
+  Its pattern splits fields as chrono does: an unsigned `%Y` takes at most 4 digits, the rest 2.
+  A Date pattern with time fields round-trips through a Datetime in TypeScript: a Date cannot
+  print `%H`
 - A `pattern` is checked for ECMA-262 syntax by one recognizer in all three twins:
   `jsonschema_regex::is_valid_ecma_regex` in Rust, its ports `isValidEcmaRegex` and
   `is_valid_ecma_regex` in `jsonSchema/regex.ts` and `json_schema/regex.py`. Never `re` or native

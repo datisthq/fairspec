@@ -131,6 +131,20 @@ fn test_parse_items_number() {
 }
 
 #[test]
+fn test_parse_items_date() {
+    let cases = [
+        ("2024-01-15,2024-02-29", true),
+        ("2024-01-15,2024-1-5", false),
+        ("2024-01-15, 2024-01-16", false),
+    ];
+    for (cell, valid) in cases {
+        let column = parse(json!({"itemType": "date"}), cell);
+        assert_eq!(column.dtype(), &DataType::List(Box::new(DataType::Date)));
+        assert_eq!(get_items(&column).is_some(), valid, "{cell:?}");
+    }
+}
+
+#[test]
 fn test_parse_delimiter_semicolon() {
     let cases: [(&str, &[Option<&str>]); 4] = [
         ("a;b;c", &[Some("a"), Some("b"), Some("c")]),

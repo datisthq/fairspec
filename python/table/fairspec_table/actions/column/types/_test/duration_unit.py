@@ -29,6 +29,9 @@ class TestInspectDurationColumn:
             ("ghijkl", False),
             ("0x1234", False),
             ("hello world", False),
+            ("PT", False),
+            ("P1DT", False),
+            ("P1DT\n", False),
         ],
     )
     def test_inspect(self, cell: str, valid: bool):

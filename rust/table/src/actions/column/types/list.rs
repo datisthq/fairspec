@@ -5,6 +5,7 @@ use super::temporal::{create_strptime_options, get_utc_datetime_type};
 
 const TRUE_VALUES: [&str; 4] = ["true", "True", "TRUE", "1"];
 const FALSE_VALUES: [&str; 4] = ["false", "False", "FALSE", "0"];
+const DATE_PATTERN: &str = r"^\d{4}-\d{2}-\d{2}$";
 
 pub fn parse_list_column(column: &ListColumn, column_expr: Expr) -> Expr {
     let delimiter = get_delimiter(column);
@@ -76,11 +77,15 @@ fn cast_item(item_type: ListItemType, item_expr: Expr) -> Expr {
             create_strptime_options("%Y-%m-%dT%H:%M:%S%.f"),
             lit("raise"),
         ),
-        ListItemType::Date => item_expr.str().strptime(
-            DataType::Date,
-            create_strptime_options("%Y-%m-%d"),
-            lit("raise"),
-        ),
+        ListItemType::Date => item_expr
+            .str()
+            .extract(lit(DATE_PATTERN), 0)
+            .str()
+            .strptime(
+                DataType::Date,
+                create_strptime_options("%Y-%m-%d"),
+                lit("raise"),
+            ),
         ListItemType::Time => concat_str([lit("1970-01-01T"), item_expr], "", false)
             .str()
             .strptime(

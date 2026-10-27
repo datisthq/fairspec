@@ -52,6 +52,29 @@ describe("parseDateColumn", () => {
   })
 
   it.each([
+    ["2006-11-21 23:59:59", new Date(Date.UTC(2006, 10, 21))],
+    ["2006-11-21 23:59:60", null],
+    ["2006-11-21", null],
+  ])("temporalFormat %%Y-%%m-%%d %%H:%%M:%%S: %s -> %s", async (cell, expected) => {
+    const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        name: {
+          type: "string",
+          format: "date",
+          temporalFormat: "%Y-%m-%d %H:%M:%S",
+        },
+      },
+    }
+
+    const result = await normalizeTable(table, tableSchema)
+    const frame = await result.collect()
+
+    const actual = frame.toRecords()[0]?.name
+    expect(actual).toEqual(expected)
+  })
+
+  it.each([
     ["21/11/06", new Date(Date.UTC(2006, 10, 21))],
     ["21/11/06 16:30", null],
     ["invalid", null],

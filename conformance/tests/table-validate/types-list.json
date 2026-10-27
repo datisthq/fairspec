@@ -451,6 +451,20 @@
             "cell": "2024-01-15,2024-02-30"
           }
         ]
+      },
+      {
+        "description": "an unpadded date is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,\"2024-01-15,2024-1-5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15,2024-1-5"
+          }
+        ]
       }
     ]
   },

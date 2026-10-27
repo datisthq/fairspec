@@ -75,6 +75,10 @@ static TIME_REGEXES: LazyLock<Vec<Regex>> = LazyLock::new(|| {
 fn parse_duration(text: &str) -> bool {
     // Python's `$` also matches before a final newline
     let period = text.strip_suffix('\n').unwrap_or(text);
+    // isodate reads `PT` and `P1DT`, though ISO 8601 needs a component after the `T`
+    if period.ends_with('T') {
+        return false;
+    }
     if let Some(captures) = PERIOD_REGEX.captures(period) {
         // isodate's `P(?!\b)` needs a word character right after the `P`
         let designator = captures.name("sign").map_or(0, |sign| sign.len());

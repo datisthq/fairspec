@@ -57,6 +57,10 @@ fn date(year: i32, month: u32, day: u32) -> NaiveDate {
 fn test_parse_default() {
     let cases = [
         ("2019-01-01", Some("2019-01-01")),
+        ("2019-1-5", None),
+        ("-0001-01-01", None),
+        ("19-01-01", None),
+        (" 2019-01-01", None),
         ("10th Jan 1969", None),
         ("invalid", None),
         ("", None),

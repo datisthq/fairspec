@@ -12,6 +12,15 @@ export async function inspectDurationColumn(
   return inspectTextColumn(column, table, {
     mapping,
     // TODO: Fix this hack
-    parse: source => Temporal.Duration.from(source),
+    parse: parseDuration,
   })
+}
+
+function parseDuration(source: string) {
+  // Temporal reads `P1DT`, though ISO 8601 needs a component after the `T`
+  if (/t$/i.test(source)) {
+    throw new Error(`A time designator without components: ${source}`)
+  }
+
+  return Temporal.Duration.from(source)
 }

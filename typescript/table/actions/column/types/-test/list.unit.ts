@@ -109,6 +109,29 @@ describe("parseListColumn", () => {
     const actual = frame.toRecords()[0]?.name
     expect(actual).toEqual(expected)
   })
+
+  it.each([
+    ["2024-01-15,2024-02-29", true],
+    ["2024-01-15,2024-1-5", false],
+    ["2024-01-15, 2024-01-16", false],
+  ])("items date: %s -> %s", async (cell, valid) => {
+    const table = pl.DataFrame([pl.Series("name", [cell], pl.String)]).lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        name: {
+          type: "string",
+          format: "list",
+          itemType: "date",
+        },
+      },
+    }
+
+    const result = await normalizeTable(table, tableSchema)
+    const frame = await result.collect()
+
+    const actual = frame.toRecords()[0]?.name
+    expect(actual !== null).toEqual(valid)
+  })
 })
 
 describe("stringifyListColumn", () => {

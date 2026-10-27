@@ -566,6 +566,20 @@
             "cell": "2023-02-29 00:00:00"
           }
         ]
+      },
+      {
+        "description": "second 60 is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-01-01 00:00:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-01 00:00:60"
+          }
+        ]
       }
     ]
   },
@@ -834,6 +848,85 @@
         "description": "an unpadded month and day are valid with the pattern",
         "data": "id,x\n1,2024-1-5\n2,2024-01-05\n",
         "valid": true
+      }
+    ]
+  },
+  {
+    "description": "fields written without separators",
+    "comment": "%S is 00–59 also when no separator marks where the seconds start",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "local-date-time",
+          "temporalFormat": "%Y%m%d%H%M%S"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a compact value is valid",
+        "data": "id,x\n1,20240115103000\n",
+        "valid": true
+      },
+      {
+        "description": "second 60 is a cell/type error",
+        "data": "id,x\n1,20240101000000\n2,20240101000060\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "20240101000060"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "time fields in a date pattern",
+    "comment": "A Date pattern may hold time fields; the value must still match the whole pattern",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#temporalformat",
+      "https://fairspec.org/specs/table-schema/#date"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%Y-%m-%d %H:%M:%S"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a date with a time is valid",
+        "data": "id,x\n1,2024-01-15 23:59:59\n",
+        "valid": true
+      },
+      {
+        "description": "second 60 is a cell/type error",
+        "data": "id,x\n1,2024-01-15 00:00:00\n2,2024-01-15 23:59:60\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-01-15 23:59:60"
+          }
+        ]
       }
     ]
   }

@@ -12,6 +12,7 @@ const DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 const TIME_PATTERN = "\\d{2}:\\d{2}:\\d{2}"
 const TIME_FORMAT = "%H:%M:%S"
 const DATE_PREFIX = "1970-01-01T"
+const DATE_PATTERN = "^\\d{4}-\\d{2}-\\d{2}$"
 
 export function parseListColumn(column: ListColumn, columnExpr: pl.Expr) {
   const delimiter = column.property.delimiter ?? ","
@@ -67,7 +68,9 @@ function castItem(itemType: ListColumn["property"]["itemType"], itemExpr: pl.Exp
     case "local-date-time":
       return parseDefaultLocalTemporal(itemExpr, DATE_TIME_PATTERN, DATE_TIME_FORMAT)
     case "date":
-      return itemExpr.cast(pl.Date)
+      return itemExpr.str
+        .extract(DATE_PATTERN, 0)
+        .str.strptime(pl.Date, "%Y-%m-%d", { exact: true })
     case "time":
       return parseDefaultOffsetTemporal(
         itemExpr,

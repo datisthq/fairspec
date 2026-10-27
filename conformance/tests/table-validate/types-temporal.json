@@ -1107,6 +1107,62 @@
             "cell": "2024-W03-1"
           }
         ]
+      },
+      {
+        "description": "an unpadded month and day are a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,2024-1-5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-1-5"
+          }
+        ]
+      },
+      {
+        "description": "a negative year is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,-0001-01-01\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "-0001-01-01"
+          }
+        ]
+      },
+      {
+        "description": "a two-digit year is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,24-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "24-01-15"
+          }
+        ]
+      },
+      {
+        "description": "a leading space is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2, 2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": " 2024-01-15"
+          }
+        ]
       }
     ]
   },
@@ -1766,6 +1822,34 @@
             "columnType": "duration",
             "rowNumber": 2,
             "cell": "PYD"
+          }
+        ]
+      },
+      {
+        "description": "a time designator without components is a cell/type error",
+        "data": "id,x\n1,P1D\n2,PT\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "PT"
+          }
+        ]
+      },
+      {
+        "description": "a trailing time designator is a cell/type error",
+        "data": "id,x\n1,P1D\n2,P1DT\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "duration",
+            "rowNumber": 2,
+            "cell": "P1DT"
           }
         ]
       }
