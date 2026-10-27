@@ -70,7 +70,7 @@ positional parameters (`Option` where optional). Fallible actions return the cra
 - Sync API: streams are `FileStream = Box<dyn Read + Send>`; Python's thread pool is `helpers/concurrency.rs` (scoped threads per chunk, nested calls run inline)
 - All dataset HTTP goes through `dataset/src/helpers/http.rs` (`send_http_request`, `load_remote_stream`), which builds its agents with metadata's `create_http_agent`; under `cfg(test)` it refuses every host but 127.0.0.1, so remote tests use `helpers/test_server.rs` or a replayed cassette
 - Temp files and folders are deleted at exit through `libc::atexit` (`helpers/cleanup.rs`), Python's `atexit`, unless `persist`. Every `tempfile::Builder` takes `.prefix("tmp")` like Python's `mkstemp`: the default `.tmp` makes a dot-leading file name that fails the dataset profile's path pattern
-- `infer_textual` is "no control bytes and valid UTF-8": Python's charset-normalizer fallback can never answer `utf-8`/`ascii` for non-UTF-8 bytes (it names codecs `utf_8`), so no detector is needed
+- `infer_textual` is "no control bytes (0-7, 14-31) and strict UTF-8" in all three twins, no charset detector. It reads `sample_bytes + 1` so only a sample cut short may end inside a character; a whole file ending inside one is not textual
 - Plugins implement `MetadataPlugin` (every hook defaults to `Ok(None)`) and `DatasetPlugin`
 
 ## Table

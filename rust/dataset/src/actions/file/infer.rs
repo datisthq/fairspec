@@ -84,14 +84,17 @@ pub fn infer_bytes(resource: &Resource, concurrency: Option<usize>) -> Result<u6
 // hyphenated "utf-8"/"ascii" while the detector names codecs "utf_8"/"ascii", which
 // non-UTF-8 bytes can never be: so the answer is exactly "valid UTF-8"
 fn get_is_textual(path: &str, sample_bytes: usize) -> Result<bool> {
-    let buffer = load_file(path, Some(sample_bytes))?;
-    if buffer.is_empty() {
-        return Ok(true);
-    }
-    if get_is_binary(&buffer) {
+    let buffer = load_file(path, Some(sample_bytes.saturating_add(1)))?;
+    let is_cut = buffer.len() > sample_bytes;
+    let sample = &buffer[..buffer.len().min(sample_bytes)];
+    if get_is_binary(sample) {
         return Ok(false);
     }
-    Ok(std::str::from_utf8(&buffer).is_ok())
+    // only a sample cut short may end inside a character; a whole file may not
+    Ok(match std::str::from_utf8(sample) {
+        Ok(_) => true,
+        Err(error) => is_cut && error.error_len().is_none(),
+    })
 }
 
 pub(crate) fn get_is_binary(data: &[u8]) -> bool {

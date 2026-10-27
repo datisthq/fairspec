@@ -247,6 +247,9 @@ name, not by path:
   `.livemark/routes/mcp-server.tsx`, and a row in the `.skills/fairspec-*` skill that covers the task
 - A behaviour both share gets a `conformance/` case, which compares both outputs exactly
   (**`conformance-development`**)
+- `inferTextual` is "no control bytes (0-7, 14-31) and a fatal `TextDecoder` decode", as in its
+  twins: never a charset sniffer (it names overlong forms `UTF-8`) nor `isBinaryFile` (it calls a
+  sample cut inside a character binary). `stream: true` only when the sample was cut short
 
 ## Specs
 

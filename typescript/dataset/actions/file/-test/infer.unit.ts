@@ -160,17 +160,34 @@ describe("inferTextual", () => {
     expect(result).toBe(true)
   })
 
-  it("should use custom confidence threshold", async () => {
-    const tempFilePath = await writeTempFile("Sample text content")
+  it("should return false for an overlong encoding", async () => {
+    const tempFilePath = await writeTempFile(Buffer.from([0x61, 0xc0, 0xaf, 0x62]))
 
-    const result = await inferTextual(
-      { data: tempFilePath },
-      {
-        confidencePercent: 50,
-      },
+    const result = await inferTextual({ data: tempFilePath })
+    expect(result).toBe(false)
+  })
+
+  it("should return false for an encoded surrogate", async () => {
+    const tempFilePath = await writeTempFile(Buffer.from([0x61, 0xed, 0xa0, 0x80, 0x62]))
+
+    const result = await inferTextual({ data: tempFilePath })
+    expect(result).toBe(false)
+  })
+
+  it("should return true for a sample cut inside a character", async () => {
+    const tempFilePath = await writeTempFile("abc中")
+
+    const result = await inferTextual({ data: tempFilePath }, { sampleBytes: 4 })
+    expect(result).toBe(true)
+  })
+
+  it("should return false for a file ending inside a character", async () => {
+    const tempFilePath = await writeTempFile(
+      Buffer.concat([Buffer.from("the quick brown fox"), Buffer.from([0xe4, 0xb8])]),
     )
 
-    expect(result).toBe(true)
+    const result = await inferTextual({ data: tempFilePath })
+    expect(result).toBe(false)
   })
 
   it("should handle large text files", async () => {
@@ -191,19 +208,6 @@ describe("inferTextual", () => {
     const tempFilePath = await writeTempFile("Special: é, ñ, ü, ö, à")
 
     const result = await inferTextual({ data: tempFilePath })
-    expect(result).toBe(true)
-  })
-
-  it("should return true with low confidence threshold", async () => {
-    const tempFilePath = await writeTempFile("Simple text")
-
-    const result = await inferTextual(
-      { data: tempFilePath },
-      {
-        confidencePercent: 30,
-      },
-    )
-
     expect(result).toBe(true)
   })
 

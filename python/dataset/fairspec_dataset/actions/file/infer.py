@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import codecs
 import hashlib
 import os
 from typing import TYPE_CHECKING
-
-from charset_normalizer import from_bytes
 
 from fairspec_metadata import Integrity, get_data_paths
 from fairspec_metadata import IntegrityType
@@ -75,27 +74,19 @@ def infer_bytes(resource: Resource, *, concurrency: int | None = None) -> int:
 
 
 def _get_is_textual(path: str, *, sample_bytes: int) -> bool:
-    buffer = load_file(path, max_bytes=sample_bytes)
+    buffer = load_file(path, max_bytes=sample_bytes + 1)
+    is_cut = len(buffer) > sample_bytes
+    sample = buffer[:sample_bytes]
 
-    if len(buffer) == 0:
-        return True
-
-    if _is_binary(buffer):
+    if _is_binary(sample):
         return False
 
+    # only a sample cut short may end inside a character; a whole file may not
     try:
-        buffer.decode("utf-8")
+        codecs.getincrementaldecoder("utf-8")().decode(sample, final=not is_cut)
         return True
     except UnicodeDecodeError:
-        pass
-
-    results = from_bytes(buffer)
-    best = results.best()
-    if best is not None:
-        encoding = best.encoding.lower()
-        return encoding in ("utf-8", "ascii")
-
-    return False
+        return False
 
 
 def _is_binary(data: bytes) -> bool:

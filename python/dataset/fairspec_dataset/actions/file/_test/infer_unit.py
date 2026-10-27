@@ -72,6 +72,22 @@ class TestInferTextual:
         path = write_temp_file("Hello World! " * 1000)
         assert infer_textual(Resource(data=path)) is True
 
+    def test_returns_true_for_sample_cut_inside_character(self):
+        path = write_temp_file("abc中")
+        assert infer_textual(Resource(data=path), sample_bytes=4) is True
+
+    def test_returns_false_for_file_ending_inside_character(self):
+        path = write_temp_file(b"the quick brown fox\xe4\xb8")
+        assert infer_textual(Resource(data=path)) is False
+
+    def test_returns_false_for_overlong_encoding(self):
+        path = write_temp_file(bytes([0x61, 0xC0, 0xAF, 0x62]))
+        assert infer_textual(Resource(data=path)) is False
+
+    def test_returns_false_for_encoded_surrogate(self):
+        path = write_temp_file(bytes([0x61, 0xED, 0xA0, 0x80, 0x62]))
+        assert infer_textual(Resource(data=path)) is False
+
     def test_handles_empty_files(self):
         path = write_temp_file("")
         assert infer_textual(Resource(data=path)) is True

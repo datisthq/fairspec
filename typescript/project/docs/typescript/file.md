@@ -86,7 +86,7 @@ Supported `hashType` values are `md5`, `sha1`, `sha256` (default), and `sha512`.
 
 `validateFile(resource)` checks two declared properties on a resource:
 
-- `textual` — verifies the file is valid UTF-8 / ASCII
+- `textual` — verifies the file is well-formed UTF-8 (ASCII included)
 - `integrity` — recomputes the hash and compares to the declared value
 
 ```ts
@@ -158,7 +158,7 @@ const textual = await inferTextual({ data: "data.csv" })
 const integrity = await inferIntegrity({ data: "data.csv" }, { hashType: "sha256" })
 ```
 
-`inferTextual` samples the first 10 KB by default and uses encoding detection; pass `sampleBytes` and `confidencePercent` to tune sensitivity.
+`inferTextual` samples the first 10 KB by default and reports `true` only for well-formed UTF-8 with no control bytes; pass `sampleBytes` to change the sample.
 
 ## Common Workflows
 

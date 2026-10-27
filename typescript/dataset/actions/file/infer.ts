@@ -1,9 +1,7 @@
 import { stat } from "node:fs/promises"
 import type { Resource } from "@fairspec/metadata"
 import { getDataPaths } from "@fairspec/metadata"
-import chardet from "chardet"
 import * as hasha from "hasha"
-import { isBinaryFile } from "isbinaryfile"
 import pMap from "p-map"
 import { loadFile } from "../../actions/file/load.ts"
 import { concatFileStreams } from "../../actions/stream/concat.ts"
@@ -14,10 +12,9 @@ export type HashType = NonNullable<Resource["integrity"]>["type"]
 
 export async function inferTextual(
   resource: Resource,
-  options?: { sampleBytes?: number; confidencePercent?: number },
+  options?: { sampleBytes?: number },
 ) {
   const maxBytes = options?.sampleBytes ?? 10_000
-  const confidencePercent = options?.confidencePercent ?? 80
 
   const paths = getDataPaths(resource)
   if (!paths.length) {
@@ -25,7 +22,7 @@ export async function inferTextual(
   }
 
   for (const path of paths) {
-    const isTextual = await getIsTextual(path, { maxBytes, confidencePercent })
+    const isTextual = await getIsTextual(path, { maxBytes })
     if (!isTextual) {
       return false
     }
@@ -75,29 +72,24 @@ export async function inferBytes(resource: Resource) {
   return bytes
 }
 
-async function getIsTextual(
-  path: string,
-  options: { maxBytes: number; confidencePercent: number },
-) {
-  const buffer = await loadFile(path, { maxBytes: options.maxBytes })
-  const isBinary = await isBinaryFile(buffer)
-  if (isBinary) {
+async function getIsTextual(path: string, options: { maxBytes: number }) {
+  const buffer = await loadFile(path, { maxBytes: options.maxBytes + 1 })
+  const isCut = buffer.length > options.maxBytes
+  const sample = isCut ? buffer.subarray(0, options.maxBytes) : buffer
+
+  if (getIsBinary(sample)) {
     return false
   }
 
-  // chardet labels short ascii as latin-1; textual means utf-8, so decode first
+  // only a sample cut short may end inside a character; a whole file may not
   try {
-    new TextDecoder("utf-8", { fatal: true }).decode(buffer, { stream: true })
+    new TextDecoder("utf-8", { fatal: true }).decode(sample, { stream: isCut })
     return true
-  } catch {}
-
-  const matches = chardet.analyse(buffer)
-  for (const match of matches) {
-    if (match.confidence >= options.confidencePercent) {
-      const encoding = match.name.toLowerCase()
-      return ["utf-8", "ascii"].includes(encoding)
-    }
+  } catch {
+    return false
   }
+}
 
-  return false
+function getIsBinary(data: Uint8Array) {
+  return data.some(byte => byte <= 7 || (byte >= 14 && byte <= 31))
 }

@@ -25,7 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["fairspec-metadata", "charset-normalizer>=3.0"]
+dependencies = ["fairspec-metadata"]
 
 [[project.authors]]
 name = "Evgeny Karev"

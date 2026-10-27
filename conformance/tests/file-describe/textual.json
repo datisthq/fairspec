@@ -67,7 +67,7 @@
   },
   {
     "description": "textual detection of malformed utf-8",
-    "comment": "textual true promises utf-8, so a file that is not well-formed utf-8 is described as not textual. Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi'; abc then the first two bytes of 中 (e4 b8); a, a lone continuation byte 80, b",
+    "comment": "textual true promises utf-8, so a file that is not well-formed utf-8 is described as not textual. Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi'; abc then the first two bytes of 中 (e4 b8); 'the quick brown fox' then e4 b8; a, the overlong c0 af, b; a, the encoded surrogate ed a0 80, b; a, a lone continuation byte 80, b",
     "specification": ["https://fairspec.org/specs/dataset/#textual"],
     "tests": [
       {
@@ -91,6 +91,42 @@
           "integrity": {
             "type": "sha256",
             "hash": "afe239961d4f332c9b2e3efb5a0b6e679b344a587532562cc87a410c718b7526"
+          }
+        }
+      },
+      {
+        "description": "a longer text whose last character is truncated is not textual",
+        "data": { "base64": "dGhlIHF1aWNrIGJyb3duIGZveOS4" },
+        "expected": {
+          "bytes": 21,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "b3c401c080c8a8ad55ec743c26633555fd8245e20fdd8814af068273b4dcded6"
+          }
+        }
+      },
+      {
+        "description": "an overlong encoding is not textual",
+        "data": { "base64": "YcCvYg==" },
+        "expected": {
+          "bytes": 4,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "d9c35e1540cbff380a112c2862b8875ba5411289fd804ad22ad95c72563314b9"
+          }
+        }
+      },
+      {
+        "description": "an encoded surrogate is not textual",
+        "data": { "base64": "Ye2ggGI=" },
+        "expected": {
+          "bytes": 5,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "45e334b6c74ca5db8d8f8fcd1157fb31a2ebc9953e0d8d182e37b6b67e6a1705"
           }
         }
       },

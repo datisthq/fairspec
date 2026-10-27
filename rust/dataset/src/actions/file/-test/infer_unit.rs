@@ -116,6 +116,28 @@ fn test_handles_large_text_files() {
 }
 
 #[test]
+fn test_returns_true_for_sample_cut_inside_character() {
+    assert!(infer_textual(&create_resource("abc中"), Some(4)).unwrap());
+}
+
+#[test]
+fn test_returns_false_for_file_ending_inside_character() {
+    let resource = create_resource(b"the quick brown fox\xe4\xb8");
+    assert!(!infer_textual(&resource, None).unwrap());
+}
+
+#[test]
+fn test_returns_false_for_overlong_encoding() {
+    assert!(!infer_textual(&create_resource([0x61, 0xC0, 0xAF, 0x62]), None).unwrap());
+}
+
+#[test]
+fn test_returns_false_for_encoded_surrogate() {
+    let resource = create_resource([0x61, 0xED, 0xA0, 0x80, 0x62]);
+    assert!(!infer_textual(&resource, None).unwrap());
+}
+
+#[test]
 fn test_infer_textual_handles_empty_files() {
     assert!(infer_textual(&create_resource(""), None).unwrap());
 }

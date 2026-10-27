@@ -77,7 +77,7 @@
   },
   {
     "description": "textual true with encodings other than utf-8",
-    "comment": "Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi' (ff fe 68 00 69 00); abc then the first two bytes of 中 (e4 b8); a, a lone continuation byte (80), b",
+    "comment": "Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi' (ff fe 68 00 69 00); abc then the first two bytes of 中 (e4 b8); 'the quick brown fox' then e4 b8; a, the overlong encoding of / (c0 af), b; a, the CESU-8 form of a surrogate (ed a0 80), b; a, a lone continuation byte (80), b",
     "specification": ["https://fairspec.org/specs/dataset/#textual"],
     "textual": true,
     "tests": [
@@ -90,6 +90,24 @@
       {
         "description": "a multi-byte character truncated at the end is a file/textual error",
         "data": { "base64": "YWJj5Lg=" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "a longer text whose last character is truncated is a file/textual error",
+        "data": { "base64": "dGhlIHF1aWNrIGJyb3duIGZveOS4" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "an overlong encoding is a file/textual error",
+        "data": { "base64": "YcCvYg==" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "an encoded surrogate is a file/textual error",
+        "data": { "base64": "Ye2ggGI=" },
         "valid": false,
         "errors": [{ "type": "file/textual" }]
       },
