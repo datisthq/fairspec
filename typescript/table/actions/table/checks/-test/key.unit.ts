@@ -195,6 +195,18 @@ describe("inspectTable (row/unique)", () => {
     expect(await inspectTable(table, { tableSchema })).toEqual([])
   })
 
+  it("should skip unique keys with a missing value part", async () => {
+    const table = pl.DataFrame({ code: ["NA", "a", "NA"] }).lazy()
+    const tableSchema: TableSchema = {
+      missingValues: ["NA"],
+      properties: { code: { type: ["string", "null"] } },
+      uniqueKeys: [["code"]],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([])
+  })
+
   it("should report null primary key parts as missing cells", async () => {
     const table = pl.DataFrame({ a: [null, null, 1], b: [null, null, "z"] }).lazy()
     const tableSchema: TableSchema = {

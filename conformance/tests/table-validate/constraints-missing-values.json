@@ -555,5 +555,66 @@
         ]
       }
     ]
+  },
+  {
+    "description": "missing values in a unique key column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#uniquekeys"
+    ],
+    "tableSchema": {
+      "missingValues": ["NA"],
+      "uniqueKeys": [["code"]],
+      "properties": {
+        "code": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are null and never conflict",
+        "data": "code\nNA\na\nNA\n",
+        "valid": true
+      },
+      {
+        "description": "a repeated present value is a row/uniqueKey error",
+        "data": "code\nNA\na\na\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/uniqueKey",
+            "rowNumber": 3,
+            "columnNames": ["code"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "column-level missing values in a composite unique key",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#column-missingvalues",
+      "https://fairspec.org/specs/table-schema/#uniquekeys"
+    ],
+    "tableSchema": {
+      "uniqueKeys": [["a", "b"]],
+      "properties": {
+        "a": {
+          "type": ["string", "null"],
+          "missingValues": ["-"]
+        },
+        "b": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a key with a missing part never conflicts",
+        "data": "a,b\n-,1\n-,1\nx,1\n",
+        "valid": true
+      }
+    ]
   }
 ]

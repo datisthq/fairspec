@@ -212,6 +212,16 @@ class TestInspectTableRowUnique:
 
         assert inspect_table(table, table_schema=table_schema) == []
 
+    def test_should_skip_unique_keys_with_a_missing_value_part(self):
+        table = pl.DataFrame({"code": ["NA", "a", "NA"]}).lazy()
+        table_schema = TableSchema(
+            missingValues=["NA"],
+            properties={"code": StringColumnProperty(type=("string", "null"))},
+            uniqueKeys=[["code"]],
+        )
+
+        assert inspect_table(table, table_schema=table_schema) == []
+
     def test_should_report_null_primary_key_parts_as_missing_cells(self):
         table = pl.DataFrame(
             {"a": [None, None, 1], "b": [None, None, "z"]},

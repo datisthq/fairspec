@@ -1,14 +1,21 @@
 use std::sync::{Arc, Mutex, PoisonError};
 
-use fairspec_metadata::{Error, Result, RowError, RowPrimaryKeyError, RowUniqueKeyError};
+use fairspec_metadata::{
+    Error, Result, RowError, RowPrimaryKeyError, RowUniqueKeyError, get_columns,
+};
 use polars::prelude::*;
 
+use crate::actions::column::substitute::substitute_column;
+use crate::actions::table::_shared::helpers::merge_missing_values;
+use crate::actions::table::normalize::get_schema_descriptor;
 use crate::helpers::error::PolarsResultExt;
+use crate::models::column::ColumnMapping;
 use crate::models::schema::SchemaMapping;
 
 #[derive(Debug, Clone)]
 pub struct RowKeyCheck {
     pub key_columns: Vec<String>,
+    pub key_exprs: Vec<Expr>,
     pub is_error_expr: Expr,
     pub error_template: RowError,
 }
@@ -32,7 +39,11 @@ pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>
         .filter(|k| !k.is_empty())
         .filter(is_present)
     {
-        checks.push(create_row_key_check(primary_key, KeyType::Primary)?);
+        checks.push(create_row_key_check(
+            mapping,
+            primary_key,
+            KeyType::Primary,
+        )?);
     }
 
     for key in mapping
@@ -42,7 +53,7 @@ pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>
         .flatten()
         .filter(is_present)
     {
-        checks.push(create_row_key_check(key, KeyType::Unique)?);
+        checks.push(create_row_key_check(mapping, key, KeyType::Unique)?);
     }
 
     Ok(checks)
@@ -74,7 +85,7 @@ impl KeyHashProbe {
 
 pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     let hashes: Arc<Mutex<Vec<Series>>> = Arc::default();
-    let keys = &check.key_columns;
+    let keys = &check.key_exprs;
 
     // Polars calls this per batch; it returns all-false, so the flag joins the reading
     // query's filter without changing its rows
@@ -89,9 +100,9 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     };
 
     let key_expr = if keys.len() == 1 {
-        col(keys[0].as_str())
+        keys[0].clone()
     } else {
-        as_struct(keys.iter().map(|name| col(name.as_str())).collect())
+        as_struct(keys.clone())
     };
     // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
     let flag_expr = when(create_key_presence_expr(keys))
@@ -105,10 +116,10 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
 }
 
 /// A key with any null value is never a duplicate.
-pub fn create_key_presence_expr(key_columns: &[String]) -> Expr {
-    let exprs: Vec<Expr> = key_columns
+pub fn create_key_presence_expr(key_exprs: &[Expr]) -> Expr {
+    let exprs: Vec<Expr> = key_exprs
         .iter()
-        .map(|name| col(name.as_str()).is_not_null())
+        .map(|expr| expr.clone().is_not_null())
         .collect();
     exprs
         .into_iter()
@@ -132,21 +143,28 @@ enum KeyType {
     Unique,
 }
 
-fn create_row_key_check(key_columns: &[String], key_type: KeyType) -> Result<RowKeyCheck> {
+fn create_row_key_check(
+    mapping: &SchemaMapping,
+    key_columns: &[String],
+    key_type: KeyType,
+) -> Result<RowKeyCheck> {
     let Some(first_column) = key_columns.first() else {
         return Err(Error::Load(
             "A key must name at least one column".to_string(),
         ));
     };
+    let key_exprs = key_columns
+        .iter()
+        .map(|name| create_key_column_expr(mapping, name))
+        .collect::<Result<Vec<Expr>>>()?;
     // The running count of each key's rows, which polars has without is_first_distinct
-    let partition: Vec<Expr> = key_columns.iter().map(|name| col(name.as_str())).collect();
     let is_error_expr = col(first_column.as_str())
         .is_null()
         .cum_count(false)
-        .over(partition)
+        .over(key_exprs.clone())
         .into_result()?
         .gt(lit(1))
-        .and(create_key_presence_expr(key_columns));
+        .and(create_key_presence_expr(&key_exprs));
 
     let column_names = key_columns.to_vec();
     let error_template = match key_type {
@@ -162,7 +180,29 @@ fn create_row_key_check(key_columns: &[String], key_type: KeyType) -> Result<Row
 
     Ok(RowKeyCheck {
         key_columns: key_columns.to_vec(),
+        key_exprs,
         is_error_expr,
         error_template,
     })
+}
+
+// Keys compare the raw cells, so a missing value must become null here as in the cells
+fn create_key_column_expr(mapping: &SchemaMapping, name: &str) -> Result<Expr> {
+    let source = mapping
+        .source
+        .columns
+        .iter()
+        .find(|column| column.name == name);
+    let columns = get_columns(&get_schema_descriptor(&mapping.target))?;
+    let column = columns.iter().find(|column| column.name() == name);
+    let (Some(source), Some(column)) = (source, column) else {
+        return Ok(col(name));
+    };
+
+    let target = merge_missing_values(column, &mapping.target);
+    let column_mapping = ColumnMapping {
+        source: source.clone(),
+        target,
+    };
+    Ok(substitute_column(&column_mapping, col(name)))
 }

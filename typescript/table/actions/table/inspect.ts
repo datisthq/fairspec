@@ -171,8 +171,8 @@ type RowKeyCheck = ReturnType<typeof createRowKeyChecks>[number]
 // costs a fraction of the locating query, which runs only once a duplicate is known
 async function getHasDuplicateKey(table: Table, check: RowKeyCheck) {
   const probe = await table
-    .select(check.keyColumns)
-    .filter(createKeyPresenceExpr(check.keyColumns))
+    .select(check.keyExprs)
+    .filter(createKeyPresenceExpr(check.keyColumns.map(name => pl.col(name))))
     // maintainOrder: nodejs-polars defaults it to true, an ordered aggregate for no reader
     .groupBy(check.keyColumns, false)
     .len(COUNT_COLUMN_NAME)

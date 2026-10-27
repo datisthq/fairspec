@@ -98,6 +98,8 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
   while key checks skip any key with a null cell (`createKeyPresenceExpr`; a null primary key
   cell is `cell/missing` instead), and a key whose columns are not all in the data is skipped.
+  Keys read the raw cells, so each key column goes through `substituteColumn` first (`keyExprs`):
+  a `missingValues` marker is null there too, or two `NA` cells conflict.
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.

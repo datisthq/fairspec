@@ -196,6 +196,18 @@ fn test_should_skip_unique_keys_with_any_null_part() {
 }
 
 #[test]
+fn test_should_skip_unique_keys_with_a_missing_value_part() {
+    let table = df!("code" => ["NA", "a", "NA"]).unwrap().lazy();
+    let schema = create_schema(json!({
+        "missingValues": ["NA"],
+        "properties": {"code": {"type": ["string", "null"]}},
+        "uniqueKeys": [["code"]],
+    }));
+
+    assert!(inspect(table, &schema, None).is_empty());
+}
+
+#[test]
 fn test_should_report_null_primary_key_parts_as_missing_cells() {
     let table = df!(
         "a" => [None, None, Some(1i64)],

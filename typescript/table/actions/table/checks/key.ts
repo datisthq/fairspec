@@ -1,6 +1,9 @@
 import type { RowPrimaryKeyError, RowUniqueKeyError } from "@fairspec/metadata"
+import { getColumns } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import type { SchemaMapping } from "../../../models/schema.ts"
+import { substituteColumn } from "../../column/substitute.ts"
+import { mergeMissingValues } from "../-shared/helpers.ts"
 
 type KeyCheckType = "primary" | "unique"
 
@@ -12,21 +15,30 @@ export function createRowKeyChecks(mapping: SchemaMapping) {
 
   const checks = [
     ...(primaryKey && isPresent(primaryKey)
-      ? [createRowKeyCheck(primaryKey, { keyType: "primary" })]
+      ? [createRowKeyCheck(mapping, primaryKey, { keyType: "primary" })]
       : []),
-    ...uniqueKeys.map(key => createRowKeyCheck(key, { keyType: "unique" })),
+    ...uniqueKeys.map(key => createRowKeyCheck(mapping, key, { keyType: "unique" })),
   ]
 
   return checks
 }
 
-function createRowKeyCheck(keyColumns: string[], options: { keyType: KeyCheckType }) {
-  // pl.struct takes plain strings as literals, not column names
+/** A key with any null value is never a duplicate. */
+export function createKeyPresenceExpr(keyExprs: pl.Expr[]) {
+  return pl.allHorizontal(keyExprs.map(expr => expr.isNotNull()))
+}
+
+function createRowKeyCheck(
+  mapping: SchemaMapping,
+  keyColumns: string[],
+  options: { keyType: KeyCheckType },
+) {
+  const keyExprs = keyColumns.map(name => createKeyColumnExpr(mapping, name))
   const isErrorExpr = pl
-    .struct(keyColumns.map(name => pl.col(name)))
+    .struct(keyExprs)
     .isFirstDistinct()
     .not()
-    .and(createKeyPresenceExpr(keyColumns))
+    .and(createKeyPresenceExpr(keyExprs))
 
   const errorTemplate: RowPrimaryKeyError | RowUniqueKeyError = {
     type: options.keyType === "primary" ? "row/primaryKey" : "row/uniqueKey",
@@ -34,10 +46,15 @@ function createRowKeyCheck(keyColumns: string[], options: { keyType: KeyCheckTyp
     rowNumber: 0,
   }
 
-  return { keyColumns, isErrorExpr, errorTemplate }
+  return { keyColumns, keyExprs, isErrorExpr, errorTemplate }
 }
 
-/** A key with any null value is never a duplicate. */
-export function createKeyPresenceExpr(keyColumns: string[]) {
-  return pl.allHorizontal(keyColumns.map(name => pl.col(name).isNotNull()))
+// Keys compare the raw cells, so a missing value must become null here as in the cells
+function createKeyColumnExpr(mapping: SchemaMapping, name: string) {
+  const source = mapping.source.columns.find(column => column.name === name)
+  const column = getColumns(mapping.target).find(column => column.name === name)
+  if (!source || !column) return pl.col(name)
+
+  const target = mergeMissingValues(column, mapping.target)
+  return substituteColumn({ source, target }, pl.col(name))
 }

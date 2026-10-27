@@ -4,7 +4,12 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
 import polars as pl
-from fairspec_metadata import RowPrimaryKeyError, RowUniqueKeyError
+from fairspec_metadata import RowPrimaryKeyError, RowUniqueKeyError, get_columns
+
+from fairspec_table.actions.column.substitute import substitute_column
+from fairspec_table.models import ColumnMapping
+
+from .._shared.helpers import merge_missing_values
 
 if TYPE_CHECKING:
     from fairspec_table.models import SchemaMapping
@@ -13,6 +18,7 @@ if TYPE_CHECKING:
 @dataclass
 class RowKeyCheck:
     key_columns: list[str]
+    key_exprs: list[pl.Expr]
     is_error_expr: pl.Expr
     error_template: str
 
@@ -27,10 +33,10 @@ def create_row_key_checks(mapping: SchemaMapping) -> list[RowKeyCheck]:
     checks: list[RowKeyCheck] = []
 
     if primary_key and all(name in names for name in primary_key):
-        checks.append(_create_row_key_check(primary_key, key_type="primary"))
+        checks.append(_create_row_key_check(mapping, primary_key, key_type="primary"))
 
     for key in unique_keys:
-        checks.append(_create_row_key_check(key, key_type="unique"))
+        checks.append(_create_row_key_check(mapping, key, key_type="unique"))
 
     return checks
 
@@ -52,7 +58,7 @@ class KeyHashProbe:
 def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
     hashes: list[pl.Series] = []
     falses: dict[int, pl.Series] = {}
-    keys = check.key_columns
+    keys = check.key_exprs
 
     # Called per batch on polars worker threads; the GIL makes the append safe, and polars
     # hashes before the call, so the Python side only keeps the batch. It returns
@@ -66,7 +72,7 @@ def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
             result = falses[size] = pl.repeat(False, size, dtype=pl.Boolean, eager=True)
         return result
 
-    key_expr = pl.col(keys[0]) if len(keys) == 1 else pl.struct(keys)
+    key_expr = keys[0] if len(keys) == 1 else pl.struct(keys)
     flag_expr = (
         pl.when(create_key_presence_expr(keys))
         .then(key_expr.hash())
@@ -75,19 +81,21 @@ def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
     return KeyHashProbe(flag_expr=flag_expr, hashes=hashes)
 
 
-def create_key_presence_expr(key_columns: list[str]) -> pl.Expr:
+def create_key_presence_expr(key_exprs: list[pl.Expr]) -> pl.Expr:
     """A key with any null value is never a duplicate."""
-    return pl.all_horizontal([pl.col(name).is_not_null() for name in key_columns])
+    return pl.all_horizontal([expr.is_not_null() for expr in key_exprs])
 
 
 def _create_row_key_check(
+    mapping: SchemaMapping,
     key_columns: list[str],
     *,
     key_type: Literal["primary", "unique"],
 ) -> RowKeyCheck:
+    key_exprs = [_create_key_column_expr(mapping, name) for name in key_columns]
     is_error_expr = pl.struct(
-        key_columns
-    ).is_first_distinct().not_() & create_key_presence_expr(key_columns)
+        key_exprs
+    ).is_first_distinct().not_() & create_key_presence_expr(key_exprs)
 
     error_model: RowPrimaryKeyError | RowUniqueKeyError
     if key_type == "primary":
@@ -101,6 +109,19 @@ def _create_row_key_check(
 
     return RowKeyCheck(
         key_columns=key_columns,
+        key_exprs=key_exprs,
         is_error_expr=is_error_expr,
         error_template=error_model.model_dump_json(),
     )
+
+
+# Keys compare the raw cells, so a missing value must become null here as in the cells
+def _create_key_column_expr(mapping: SchemaMapping, name: str) -> pl.Expr:
+    source = next((c for c in mapping.source.columns if c.name == name), None)
+    columns = get_columns(mapping.target.model_dump())
+    column = next((c for c in columns if c.name == name), None)
+    if not source or not column:
+        return pl.col(name)
+
+    target = merge_missing_values(column, mapping.target)
+    return substitute_column(ColumnMapping(source=source, target=target), pl.col(name))
