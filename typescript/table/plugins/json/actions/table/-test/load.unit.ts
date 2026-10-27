@@ -1,3 +1,4 @@
+import * as pl from "nodejs-polars"
 import { writeTempFile } from "@fairspec/dataset"
 import { describe, expect, it } from "vite-plus/test"
 import { useRecording } from "@fairspec/metadata/testing"
@@ -186,6 +187,17 @@ describe("loadJsonTable (format=jsonl)", () => {
         { id: 1, name: "english" },
         { id: 2, name: "中文" },
       ])
+    })
+
+    it("should scan a default dialect natively", async () => {
+      const path = await writeTempFile('{"id":1}\n{"id":2}')
+
+      const table = await loadJsonTable(
+        { data: path, fileDialect: { format: "jsonl" } },
+        { denormalized: true },
+      )
+
+      expect((await table?.collect())?.getColumn("id").dtype).toEqual(pl.Int64)
     })
 
     it("should load local file (multipart)", async () => {

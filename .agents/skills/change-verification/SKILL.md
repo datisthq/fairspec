@@ -115,3 +115,6 @@ never reaches them. When the diff touches a trigger, add the check by hand:
   rung; do not narrow the slice until it passes.
 - **Stale `build/`.** A TypeScript type error in a package you did not touch usually means a
   sibling's `build/` predates your change. Rebuild before you chase it.
+- **A failure that may predate your diff.** Compare against `HEAD` in a scratch worktree
+  (`git worktree add <tmp> HEAD`), never with `git stash` in the root: the stash takes every
+  other session's uncommitted work with it, and the pop leaves their index rearranged.

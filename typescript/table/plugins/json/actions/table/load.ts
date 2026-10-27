@@ -39,10 +39,10 @@ export async function loadJsonTable(resource: Resource, options?: LoadTableOptio
   }
 
   const isLines = fileDialect.format === "jsonl"
-  const isDefault =
-    Object.keys(fileDialect).filter(
-      key => !["type", "title", "description"].includes(key),
-    ).length === 0
+  const isDefault = Object.entries(fileDialect).every(
+    ([key, value]) =>
+      ["format", "type", "title", "description"].includes(key) || value === undefined,
+  )
 
   const tables: Table[] = []
   for (const path of paths) {
