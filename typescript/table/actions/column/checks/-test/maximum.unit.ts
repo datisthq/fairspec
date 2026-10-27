@@ -350,4 +350,22 @@ describe("inspectTable (cell/maximum)", () => {
     const errors = await inspectTable(table, { tableSchema })
     expect(errors).toEqual([])
   })
+
+  it("should compare integers past 2^53 exactly", async () => {
+    const table = pl.DataFrame({ id: ["9007199254740992", "9007199254740993"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "integer", maximum: 9007199254740992 } },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/maximum",
+        columnName: "id",
+        maximum: "9007199254740992",
+        rowNumber: 2,
+        cell: "9007199254740993",
+      },
+    ])
+  })
 })

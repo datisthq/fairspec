@@ -209,7 +209,11 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   rest, then applies the offset; a naive Datetime dtype has `timeZone: ""`, not undefined
   (`getTypeTimeZone`); `scanCSV` takes a one-character
   `eolChar`; an eager `pl.DataFrame(rows)` ignores `schemaOverrides`, and JS numbers load as
-  Float64
+  Float64. A JS number literal is a Float64, so an Int64 compared with it rounds past 2^53; a
+  `BigInt` literal is UInt64 and drops a negative sign, so an exact integer goes in as text cast
+  to Int64. Decimal has no `modulo`: exact `multipleOf` divides Decimal(38, 0) integers and
+  multiplies back, as all three twins do; the quotient rounds half-even, so values stop at 37
+  digits or the product overflows and aborts the query
 - nodejs-polars has no `sqlExpr`: a SQL condition joins a frame as
   `SQLContext({ self }).execute("SELECT *, (…) AS … FROM self")`, and `execute` returns a frame
   wrapping a SQL error in `_ldf` instead of throwing it — check `result._ldf instanceof Error`

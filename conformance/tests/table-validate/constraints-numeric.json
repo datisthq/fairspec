@@ -506,6 +506,20 @@
         "description": "the bound itself is valid",
         "data": "id,x\n1,9007199254740992\n",
         "valid": true
+      },
+      {
+        "description": "one above the bound is a cell/maximum error",
+        "data": "id,x\n1,1\n2,9007199254740993\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "9007199254740993",
+            "maximum": "9007199254740992"
+          }
+        ]
       }
     ]
   },
@@ -705,7 +719,7 @@
   },
   {
     "description": "minimum on an integer categorical column",
-    "comment": "An integer categorical column supports the integer type properties",
+    "comment": "Categorical is its own column type, not Integer, so the bound MUST be ignored",
     "specification": [
       "https://fairspec.org/specs/table-schema/#categorical",
       "https://fairspec.org/specs/table-schema/#minimum"
@@ -725,6 +739,11 @@
       {
         "description": "listed categories above the minimum are valid",
         "data": "id,x\n1,2\n2,3\n",
+        "valid": true
+      },
+      {
+        "description": "a listed category below the minimum is valid",
+        "data": "id,x\n1,1\n2,3\n",
         "valid": true
       }
     ]
@@ -769,6 +788,20 @@
             "columnName": "x",
             "rowNumber": 2,
             "cell": "-0.35",
+            "multipleOf": 0.1
+          }
+        ]
+      },
+      {
+        "description": "a digit beyond double precision is a cell/multipleOf error",
+        "data": "id,x\n1,0.3\n2,0.30000000000000001\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.30000000000000001",
             "multipleOf": 0.1
           }
         ]
@@ -820,6 +853,61 @@
         "description": "a large multiple written exactly is valid",
         "data": "id,x\n1,123456789012345678901.5\n",
         "valid": true
+      },
+      {
+        "description": "a large non-multiple is a cell/multipleOf error",
+        "data": "id,x\n1,1\n2,123456789012345678901.25\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "123456789012345678901.25",
+            "multipleOf": 0.5
+          }
+        ]
+      },
+      {
+        "description": "a large non-multiple within the multipleOf scale is a cell/multipleOf error",
+        "data": "id,x\n1,1\n2,123456789012345678901.3\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "123456789012345678901.3",
+            "multipleOf": 0.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 2.5 on a number column with 38 digits",
+    "comment": "38 digits fill a 128-bit decimal; the check must not abort there",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "multipleOf": 2.5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a non-multiple is a cell/multipleOf error",
+        "data": "id,x\n1,5\n2,9999999999999999999999999999999999998.8\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "9999999999999999999999999999999999998.8",
+            "multipleOf": 2.5
+          }
+        ]
       }
     ]
   },
@@ -900,6 +988,20 @@
             "columnName": "x",
             "rowNumber": 2,
             "cell": "0.305",
+            "multipleOf": 0.01
+          }
+        ]
+      },
+      {
+        "description": "a digit beyond double precision is a cell/multipleOf error",
+        "data": "id,x\n1,0.3\n2,12345678901234567.805\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "12345678901234567.805",
             "multipleOf": 0.01
           }
         ]

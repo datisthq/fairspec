@@ -4,12 +4,25 @@ import re
 
 import polars as pl
 
-from fairspec_metadata import DecimalColumn
+from fairspec_metadata import DecimalColumn, NumberColumn
 
 from .._shared.text import strip_number_text
 
 
 def parse_decimal_column(column: DecimalColumn, column_expr: pl.Expr) -> pl.Expr:
+    column_expr = normalize_number_text(column, column_expr)
+    column_expr = column_expr.cast(pl.Decimal(scale=18), strict=False)
+    return column_expr
+
+
+def stringify_decimal_column(_column: DecimalColumn, column_expr: pl.Expr) -> pl.Expr:
+    column_expr = column_expr.cast(pl.String)
+    return column_expr
+
+
+def normalize_number_text(
+    column: DecimalColumn | NumberColumn, column_expr: pl.Expr
+) -> pl.Expr:
     decimal_char = column.property.decimalChar or "."
     group_char = column.property.groupChar or ""
     with_text = column.property.withText
@@ -29,10 +42,4 @@ def parse_decimal_column(column: DecimalColumn, column_expr: pl.Expr) -> pl.Expr
         if decimal_char and decimal_char != ".":
             column_expr = column_expr.str.replace_all(re.escape(decimal_char), ".")
 
-    column_expr = column_expr.cast(pl.Decimal(scale=18), strict=False)
-    return column_expr
-
-
-def stringify_decimal_column(_column: DecimalColumn, column_expr: pl.Expr) -> pl.Expr:
-    column_expr = column_expr.cast(pl.String)
     return column_expr

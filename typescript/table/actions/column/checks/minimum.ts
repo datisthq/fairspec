@@ -4,6 +4,7 @@ import type {
   Column,
 } from "@fairspec/metadata"
 import type { CellMapping } from "../../../models/cell.ts"
+import { createBoundExpr } from "./maximum.ts"
 
 const NUMERIC_COLUMN_TYPES: Column["type"][] = ["integer", "number", "decimal"]
 
@@ -15,11 +16,12 @@ export function createCheckCellMinimum(options?: { isExclusive?: boolean }) {
     if (!("minimum" in property) && !("exclusiveMinimum" in property)) return undefined
 
     const minimum = options?.isExclusive ? property.exclusiveMinimum : property.minimum
-    if (minimum === undefined) return undefined
+    if (typeof minimum !== "number") return undefined
 
+    const minimumExpr = createBoundExpr(minimum)
     const isErrorExpr = options?.isExclusive
-      ? mapping.target.ltEq(minimum)
-      : mapping.target.lt(minimum)
+      ? mapping.target.ltEq(minimumExpr)
+      : mapping.target.lt(minimumExpr)
 
     const errorTemplate: CellMinimumError | CellExclusiveMinimumError = {
       type: options?.isExclusive ? "cell/exclusiveMinimum" : "cell/minimum",

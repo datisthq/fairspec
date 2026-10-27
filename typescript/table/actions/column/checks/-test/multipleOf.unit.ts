@@ -413,4 +413,37 @@ describe("inspectTable (cell/multipleOf)", () => {
       },
     ])
   })
+
+  it("should check multipleOf on digits past double precision", async () => {
+    const table = pl
+      .DataFrame({
+        price: ["0.3", "0.30000000000000001", "123456789012345678901.5"],
+        amount: ["0.3", "12345678901234567.805", "12345678901234567.80"],
+      })
+      .lazy()
+    const tableSchema: TableSchema = {
+      properties: {
+        price: { type: "number", multipleOf: 0.1 },
+        amount: { type: "string", format: "decimal", multipleOf: 0.01 },
+      },
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(errors).toEqual([
+      {
+        type: "cell/multipleOf",
+        columnName: "price",
+        multipleOf: 0.1,
+        rowNumber: 2,
+        cell: "0.30000000000000001",
+      },
+      {
+        type: "cell/multipleOf",
+        columnName: "amount",
+        multipleOf: 0.01,
+        rowNumber: 2,
+        cell: "12345678901234567.805",
+      },
+    ])
+  })
 })

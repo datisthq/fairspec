@@ -1,38 +1,9 @@
 import type { NumberColumn } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
-import { stripNumberText } from "./-shared/text.ts"
+import { normalizeNumberText } from "./decimal.ts"
 
 export function parseNumberColumn(column: NumberColumn, columnExpr: pl.Expr) {
-  // Extract the decimal and group characters
-  const decimalChar = column.property.decimalChar ?? "."
-  const groupChar = column.property.groupChar ?? ""
-  const withText = column.property.withText
-
-  if (withText) {
-    columnExpr = stripNumberText(columnExpr, { decimalChar })
-  }
-
-  // Special case handling for European number format where "." is group and "," is decimal
-  if (groupChar === "." && decimalChar === ",") {
-    // First temporarily replace the decimal comma with a placeholder
-    columnExpr = columnExpr.str.replaceAll(",", "###DECIMAL###")
-    // Remove the group dots
-    columnExpr = columnExpr.str.replaceAll("\\.", "")
-    // Replace the placeholder with an actual decimal point
-    columnExpr = columnExpr.str.replaceAll("###DECIMAL###", ".")
-  } else {
-    // Standard case: first remove group characters
-    if (groupChar) {
-      // Escape special characters for regex
-      const escapedGroupChar = groupChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-      columnExpr = columnExpr.str.replaceAll(escapedGroupChar, "")
-    }
-
-    // Then handle decimal character
-    if (decimalChar && decimalChar !== ".") {
-      columnExpr = columnExpr.str.replaceAll(decimalChar, ".")
-    }
-  }
+  columnExpr = normalizeNumberText(column, columnExpr)
 
   // Cast to float64
   columnExpr = columnExpr.cast(pl.Float64)

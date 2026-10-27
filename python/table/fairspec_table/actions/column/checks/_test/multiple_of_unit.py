@@ -142,3 +142,21 @@ class TestCheckCellMultipleOf:
         assert result is not None
         errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         assert len(errors) == 0
+
+    def test_digits_past_double_precision(self):
+        column = NumberColumn(
+            name="price",
+            type="number",
+            property=NumberColumnProperty(multipleOf=0.1),
+        )
+        mapping = CellMapping(source=pl.col("source"), target=pl.col("target"))
+        source = ["0.3", "0.30000000000000001", "123456789012345678901.5"]
+        table = pl.DataFrame(
+            {"source": source, "target": [float(value) for value in source]}
+        ).lazy()
+
+        result = check_cell_multiple_of(column, mapping)
+
+        assert result is not None
+        errors: pl.DataFrame = table.filter(result.is_error_expr).collect()  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
+        assert errors["source"].to_list() == ["0.30000000000000001"]

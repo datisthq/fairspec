@@ -3,11 +3,13 @@ use polars::prelude::*;
 use serde_json::Value;
 
 use super::check::ColumnCheck;
+use crate::actions::column::types::decimal::normalize_number_text;
 use crate::helpers::general::format_python_float;
 use crate::models::cell::CellMapping;
 
-const DECIMAL: DataType = DataType::Decimal(38, 18);
-const MAX_DECIMAL_QUOTIENT: f64 = 1e18;
+const MAX_DECIMAL_DIGITS: usize = 38;
+const INTEGER_DECIMAL: DataType = DataType::Decimal(MAX_DECIMAL_DIGITS, 0);
+const MAX_VALUE_DIGITS: usize = MAX_DECIMAL_DIGITS - 1;
 
 pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<ColumnCheck> {
     let property = serde_json::to_value(column.property()).ok()?;
@@ -24,38 +26,123 @@ pub fn check_cell_multiple_of(column: &Column, mapping: &CellMapping) -> Option<
     });
 
     let divisor_number = multiple_of.as_f64().unwrap_or_default();
-    let float_expr = mapping.target.clone().cast(DataType::Float64);
-    let is_float_error_expr = (float_expr.clone() % lit(divisor_number)).eq(lit(0)).not();
-    if divisor_number < 1.0 / MAX_DECIMAL_QUOTIENT || divisor_number >= MAX_DECIMAL_QUOTIENT {
+    let is_float_error_expr = (mapping.target.clone().cast(DataType::Float64)
+        % lit(divisor_number))
+    .eq(lit(0))
+    .not();
+
+    let divisor_text = match multiple_of.as_i64() {
+        Some(integer) => integer.to_string(),
+        None => expand_exponent(&format_python_float(divisor_number)),
+    };
+    let (integer_digits, fraction_digits) =
+        divisor_text.split_once('.').unwrap_or((&divisor_text, ""));
+    let scale = fraction_digits.len();
+    let divisor = format!("{integer_digits}{fraction_digits}")
+        .trim_start_matches('0')
+        .to_string();
+    if divisor.is_empty() || divisor.len() > MAX_DECIMAL_DIGITS || scale >= MAX_VALUE_DIGITS {
         return Some(ColumnCheck {
             is_error_expr: is_float_error_expr,
             error_template,
         });
     }
 
-    // Binary floats make 99.99 % 0.01 non-zero, so the shortest text of the value is
-    // divided as a decimal; a quotient past the decimal range would abort the query
-    let is_decimal_expr = (float_expr / lit(divisor_number))
-        .abs()
-        .lt(lit(MAX_DECIMAL_QUOTIENT));
-    let value_expr = when(is_decimal_expr.clone())
-        .then(mapping.target.clone().cast(DataType::String))
-        .otherwise(lit("0"))
-        .cast(DECIMAL);
+    // The value scaled by 10^scale must be an integer of at most 37 digits: the quotient rounds,
+    // so multiplied back it can pass 38 and abort the query; anything else is checked as a float
+    let text_expr = select_value_text(column, mapping);
+    let is_exact_expr = text_expr
+        .clone()
+        .str()
+        .contains(
+            lit(format!(
+                r"^[+-]?0*[0-9]{{0,{}}}(?:\.[0-9]*)?$",
+                MAX_VALUE_DIGITS - scale
+            )),
+            false,
+        )
+        .and(text_expr.clone().str().contains(lit("[0-9]"), false));
 
-    let divisor = match multiple_of.as_i64() {
-        Some(integer) => integer.to_string(),
-        None => expand_exponent(&format_python_float(divisor_number)),
-    };
-    let quotient_expr = value_expr / lit(divisor).cast(DECIMAL);
-    let is_error_expr = when(is_decimal_expr)
-        .then(quotient_expr.clone().neq(quotient_expr.floor()))
+    let has_excess_digits_expr = text_expr
+        .clone()
+        .str()
+        .contains(lit(format!(r"\.[0-9]{{{scale}}}[0-9]*[1-9]")), false);
+    let integer_expr = text_expr
+        .clone()
+        .str()
+        .replace(lit(r"\..*$"), lit(""), false)
+        .str()
+        .replace(lit("^([+-]?)"), lit("${1}0"), false);
+    let fraction_expr = concat_str(
+        [
+            text_expr
+                .str()
+                .extract(lit(r"\.([0-9]*)"), 1)
+                .fill_null(lit("")),
+            lit("0".repeat(scale)),
+        ],
+        "",
+        false,
+    )
+    .str()
+    .slice(lit(0), lit(scale as u64));
+
+    let scaled_expr = when(is_exact_expr.clone())
+        .then(concat_str([integer_expr, fraction_expr], "", false))
+        .otherwise(lit("0"))
+        .cast(INTEGER_DECIMAL);
+
+    let divisor_expr = lit(divisor).cast(INTEGER_DECIMAL);
+    let is_exact_error_expr = has_excess_digits_expr
+        .or((scaled_expr.clone() / divisor_expr.clone() * divisor_expr).neq(scaled_expr));
+
+    let is_error_expr = when(is_exact_expr)
+        .then(is_exact_error_expr)
         .otherwise(is_float_error_expr);
 
     Some(ColumnCheck {
         is_error_expr,
         error_template,
     })
+}
+
+// A float target keeps no digit past double precision, so the text as written is used
+fn select_value_text(column: &Column, mapping: &CellMapping) -> Expr {
+    let target_text_expr = mapping.target.clone().cast(DataType::String);
+    let (decimal_char, group_char, with_text) = match column {
+        Column::Number(column) => {
+            let property = &column.property.base;
+            (
+                &property.decimal_char,
+                &property.group_char,
+                property.with_text,
+            )
+        }
+        Column::Decimal(column) => {
+            let property = &column.property;
+            (
+                &property.decimal_char,
+                &property.group_char,
+                property.with_text,
+            )
+        }
+        _ => return target_text_expr,
+    };
+
+    let source_text_expr = normalize_number_text(
+        mapping.source.clone().cast(DataType::String),
+        decimal_char.as_deref(),
+        group_char.as_deref(),
+        with_text == Some(true),
+    );
+    when(
+        source_text_expr
+            .clone()
+            .cast(DataType::Float64)
+            .eq(mapping.target.clone().cast(DataType::Float64)),
+    )
+    .then(source_text_expr)
+    .otherwise(target_text_expr)
 }
 
 /// Python's `format(Decimal(text), "f")`: `1e-05` becomes `0.00001`.

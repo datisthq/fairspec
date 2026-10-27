@@ -101,3 +101,23 @@ fn test_multiple_of_one() {
 
     assert_eq!(count_errors(table, result.is_error_expr), 0);
 }
+
+#[test]
+fn test_digits_past_double_precision() {
+    let column = create_column("price", json!({"type": "number", "multipleOf": 0.1}));
+    let source = ["0.3", "0.30000000000000001", "123456789012345678901.5"];
+    let target: Vec<f64> = source.iter().map(|text| text.parse().unwrap()).collect();
+    let table = df!("source" => source, "target" => target).unwrap();
+
+    let result = check_cell_multiple_of(&column, &create_mapping()).unwrap();
+
+    let errors = table.lazy().filter(result.is_error_expr).collect().unwrap();
+    let sources: Vec<Option<&str>> = errors
+        .column("source")
+        .unwrap()
+        .str()
+        .unwrap()
+        .iter()
+        .collect();
+    assert_eq!(sources, vec![Some("0.30000000000000001")]);
+}
