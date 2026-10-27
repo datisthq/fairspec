@@ -1,0 +1,131 @@
+[
+  {
+    "description": "properties the specification does not define",
+    "comment": "An implementation must ignore them, so a schema written for a later version stays readable",
+    "specification": ["https://fairspec.org/specs/data-schema/#extension"],
+    "tests": [
+      {
+        "description": "an unknown keyword with a scalar value is valid",
+        "data": { "type": "object", "futureKeyword": 1 },
+        "valid": true
+      },
+      {
+        "description": "an unknown keyword with an object value is valid",
+        "data": { "type": "object", "futureKeyword": { "type": 1 } },
+        "valid": true
+      },
+      {
+        "description": "an unknown keyword inside a property schema is valid",
+        "data": {
+          "type": "object",
+          "properties": { "a": { "type": "string", "futureKeyword": [] } }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "keyword values the JSON Schema meta-schema rejects",
+    "comment": "Data Schema supports every JSON Schema 2020-12 property, with the values its meta-schema allows",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      {
+        "description": "required as a string is a metadata error",
+        "data": { "type": "object", "required": "name" },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/required" }]
+      },
+      {
+        "description": "a required item that is not a string points at the item",
+        "data": { "type": "object", "required": ["a", 1] },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/required/1" }]
+      },
+      {
+        "description": "minLength below zero is a metadata error",
+        "data": { "type": "string", "minLength": -1 },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/minLength" }]
+      },
+      {
+        "description": "minLength with a fraction is a metadata error",
+        "data": { "type": "string", "minLength": 1.5 },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/minLength" }]
+      },
+      {
+        "description": "pattern as a number is a metadata error",
+        "data": { "type": "string", "pattern": 1 },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/pattern" }]
+      },
+      {
+        "description": "properties as a number is a metadata error",
+        "data": { "type": "object", "properties": 1 },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/properties" }]
+      },
+      {
+        "description": "$defs as an array is a metadata error",
+        "data": { "$defs": [] },
+        "valid": false,
+        "errors": [{ "type": "metadata", "jsonPointer": "/$defs" }]
+      },
+      {
+        "description": "an unknown type name is invalid",
+        "data": { "type": "strng" },
+        "valid": false
+      },
+      {
+        "description": "a type that is a number is invalid",
+        "data": { "type": 1 },
+        "valid": false
+      },
+      {
+        "description": "an unknown type name in a property schema is invalid",
+        "data": { "type": "object", "properties": { "a": { "type": "strng" } } },
+        "valid": false
+      },
+      {
+        "description": "a property schema that is a number is invalid",
+        "data": { "type": "object", "properties": { "a": 1 } },
+        "valid": false
+      },
+      {
+        "description": "items as an array is invalid",
+        "data": { "type": "array", "items": [{ "type": "string" }] },
+        "valid": false
+      },
+      {
+        "description": "a dependentRequired entry that is not an array is invalid",
+        "data": { "type": "object", "dependentRequired": { "a": "b" } },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "keyword values the JSON Schema meta-schema allows",
+    "specification": ["https://fairspec.org/specs/data-schema/#jsonschema"],
+    "tests": [
+      { "description": "an empty enum is valid", "data": { "enum": [] }, "valid": true },
+      {
+        "description": "a type list is valid",
+        "data": { "type": ["string", "null"] },
+        "valid": true
+      },
+      {
+        "description": "$defs with a recursive $ref is valid",
+        "data": {
+          "$defs": {
+            "node": {
+              "type": "object",
+              "properties": { "next": { "$ref": "#/$defs/node" } }
+            }
+          },
+          "$ref": "#/$defs/node"
+        },
+        "valid": true
+      }
+    ]
+  }
+]

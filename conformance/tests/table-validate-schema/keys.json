@@ -124,5 +124,98 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "empty keys",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#primarykey",
+      "https://fairspec.org/specs/table-schema/#uniquekeys",
+      "https://fairspec.org/specs/table-schema/#foreignkeys"
+    ],
+    "tests": [
+      {
+        "description": "an empty primaryKey is invalid",
+        "data": {
+          "primaryKey": [],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an empty unique key is invalid",
+        "data": {
+          "uniqueKeys": [[]],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an empty unique key after a valid one is invalid",
+        "data": {
+          "uniqueKeys": [["email"], []],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an empty uniqueKeys list is invalid",
+        "data": {
+          "uniqueKeys": [],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a foreign key with empty reference columns is invalid",
+        "data": {
+          "foreignKeys": [
+            {
+              "columns": ["id"],
+              "reference": {
+                "resource": "r",
+                "columns": []
+              }
+            }
+          ],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
   }
 ]

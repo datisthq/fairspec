@@ -425,5 +425,470 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "array column: JSON forms",
+    "specification": ["https://fairspec.org/specs/table-schema/#array"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "array" } }
+    },
+    "tests": [
+      {
+        "description": "nested and mixed arrays are valid",
+        "data": "id,x\n1,\"[[1, 2], [3]]\"\n2,\"[1, \"\"a\"\", null, true, {}]\"\n",
+        "valid": true
+      },
+      {
+        "description": "whitespace inside and around the JSON is valid",
+        "data": "id,x\n1,[ ]\n2,\" [1, 2] \"\n",
+        "valid": true
+      },
+      {
+        "description": "JSON null is a cell/type error",
+        "data": "id,x\n1,[]\n2,null\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "null"
+          }
+        ]
+      },
+      {
+        "description": "a JSON number is a cell/type error",
+        "data": "id,x\n1,[]\n2,1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "1"
+          }
+        ]
+      },
+      {
+        "description": "a JSON string is a cell/type error",
+        "data": "id,x\n1,[]\n2,\"\"\"a\"\"\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "\"a\""
+          }
+        ]
+      },
+      {
+        "description": "a trailing comma is a cell/type error",
+        "data": "id,x\n1,[]\n2,\"[1, 2,]\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "[1, 2,]"
+          }
+        ]
+      },
+      {
+        "description": "single quotes are a cell/type error",
+        "data": "id,x\n1,[]\n2,['a']\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "['a']"
+          }
+        ]
+      },
+      {
+        "description": "two arrays are a cell/type error",
+        "data": "id,x\n1,[]\n2,[1] [2]\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "array",
+            "rowNumber": 2,
+            "cell": "[1] [2]"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "object column: JSON forms",
+    "specification": ["https://fairspec.org/specs/table-schema/#object"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "object" } }
+    },
+    "tests": [
+      {
+        "description": "nested objects are valid",
+        "data": "id,x\n1,\"{\"\"a\"\": {\"\"b\"\": {\"\"c\"\": [1]}}}\"\n",
+        "valid": true
+      },
+      {
+        "description": "whitespace inside and around the JSON is valid",
+        "data": "id,x\n1,{ }\n2,\" {\"\"a\"\": 1} \"\n",
+        "valid": true
+      },
+      {
+        "description": "JSON null is a cell/type error",
+        "data": "id,x\n1,{}\n2,null\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "null"
+          }
+        ]
+      },
+      {
+        "description": "a JSON boolean is a cell/type error",
+        "data": "id,x\n1,{}\n2,true\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "true"
+          }
+        ]
+      },
+      {
+        "description": "an unquoted key is a cell/type error",
+        "data": "id,x\n1,{}\n2,{a: 1}\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "{a: 1}"
+          }
+        ]
+      },
+      {
+        "description": "an unclosed object is a cell/type error",
+        "data": "id,x\n1,{}\n2,\"{\"\"a\"\": 1\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "object",
+            "rowNumber": 2,
+            "cell": "{\"a\": 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "object column: deep error pointers",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#jsonschema",
+      "https://fairspec.org/specs/file-dialect/#jsonpointer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "object",
+              "properties": { "b": { "type": "array", "items": { "type": "integer" } } }
+            }
+          }
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a conforming nested value is valid",
+        "data": "id,x\n1,\"{\"\"a\"\": {\"\"b\"\": [1, 2]}}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a nested array item is reported at its full pointer",
+        "data": "id,x\n1,\"{\"\"a\"\": {\"\"b\"\": [1]}}\"\n2,\"{\"\"a\"\": {\"\"b\"\": [1, \"\"x\"\"]}}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "{\"a\": {\"b\": [1, \"x\"]}}",
+            "jsonPointer": "/a/b/1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "object column: pointers to keys with a slash or a tilde",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#jsonschema",
+      "https://fairspec.org/specs/file-dialect/#jsonpointer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "object",
+          "properties": { "a/b": { "type": "integer" }, "m~n": { "type": "integer" } }
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a slash in a key is written ~1",
+        "data": "id,x\n1,{}\n2,\"{\"\"a/b\"\": \"\"x\"\"}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "{\"a/b\": \"x\"}",
+            "jsonPointer": "/a~1b"
+          }
+        ]
+      },
+      {
+        "description": "a tilde in a key is written ~0",
+        "data": "id,x\n1,{}\n2,\"{\"\"m~n\"\": \"\"x\"\"}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "{\"m~n\": \"x\"}",
+            "jsonPointer": "/m~0n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "array column: pointers into nested arrays",
+    "specification": ["https://fairspec.org/specs/table-schema/#jsonschema"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "arrays of string arrays are valid",
+        "data": "id,x\n1,\"[[\"\"a\"\"], [\"\"b\"\", \"\"c\"\"]]\"\n",
+        "valid": true
+      },
+      {
+        "description": "an inner item is reported at both indexes",
+        "data": "id,x\n1,[]\n2,\"[[\"\"a\"\"], [\"\"b\"\", 1]]\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/json",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "[[\"a\"], [\"b\", 1]]",
+            "jsonPointer": "/1/1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "geojson column: geometry objects",
+    "comment": "GeoJSON as RFC 7946: a position has two or more numbers, a LineString two or more positions",
+    "specification": ["https://fairspec.org/specs/table-schema/#geojson"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "object", "format": "geojson" }
+      }
+    },
+    "tests": [
+      {
+        "description": "multi-geometries are valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"MultiPoint\"\", \"\"coordinates\"\": [[1, 2], [3, 4]]}\"\n2,\"{\"\"type\"\": \"\"MultiLineString\"\", \"\"coordinates\"\": [[[1, 2], [3, 4]]]}\"\n3,\"{\"\"type\"\": \"\"MultiPolygon\"\", \"\"coordinates\"\": [[[[0, 0], [1, 0], [1, 1], [0, 0]]]]}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a geometry collection is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"GeometryCollection\"\", \"\"geometries\"\": [{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}]}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a lowercase type is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"type\"\": \"\"point\"\", \"\"coordinates\"\": [1, 2]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"point\", \"coordinates\": [1, 2]}"
+          }
+        ]
+      },
+      {
+        "description": "a point without coordinates is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"type\"\": \"\"Point\"\"}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Point\"}"
+          }
+        ]
+      },
+      {
+        "description": "a position with one number is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Point\", \"coordinates\": [1]}"
+          }
+        ]
+      },
+      {
+        "description": "string coordinates are a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [\"\"1\"\", \"\"2\"\"]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Point\", \"coordinates\": [\"1\", \"2\"]}"
+          }
+        ]
+      },
+      {
+        "description": "a line of one position is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"type\"\": \"\"LineString\"\", \"\"coordinates\"\": [[1, 2]]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"LineString\", \"coordinates\": [[1, 2]]}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "geojson column: objects that are not geometries",
+    "comment": "A GeoJSON column holds GeoJSON geometry objects",
+    "specification": ["https://fairspec.org/specs/table-schema/#geojson"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "object", "format": "geojson" }
+      }
+    },
+    "tests": [
+      {
+        "description": "an object without a type is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [1, 2]}\"\n2,\"{\"\"coordinates\"\": [1, 2]}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "geojson",
+            "rowNumber": 2,
+            "cell": "{\"coordinates\": [1, 2]}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "topojson column: topologies",
+    "specification": ["https://fairspec.org/specs/table-schema/#topojson"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "object", "format": "topojson" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a topology with a transform is valid",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"transform\"\": {\"\"scale\"\": [1, 1], \"\"translate\"\": [0, 0]}, \"\"objects\"\": {\"\"p\"\": {\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [0, 0]}}, \"\"arcs\"\": []}\"\n",
+        "valid": true
+      },
+      {
+        "description": "a topology without objects is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [], \"\"objects\"\": {\"\"p\"\": {\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [0, 0]}}}\"\n2,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": []}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "topojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Topology\", \"arcs\": []}"
+          }
+        ]
+      },
+      {
+        "description": "a GeoJSON Feature is a cell/type error",
+        "data": "id,x\n1,\"{\"\"type\"\": \"\"Topology\"\", \"\"arcs\"\": [], \"\"objects\"\": {\"\"p\"\": {\"\"type\"\": \"\"Point\"\", \"\"coordinates\"\": [0, 0]}}}\"\n2,\"{\"\"type\"\": \"\"Feature\"\", \"\"geometry\"\": null, \"\"properties\"\": {}}\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "topojson",
+            "rowNumber": 2,
+            "cell": "{\"type\": \"Feature\", \"geometry\": null, \"properties\": {}}"
+          }
+        ]
+      }
+    ]
   }
 ]

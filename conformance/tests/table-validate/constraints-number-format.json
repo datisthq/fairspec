@@ -263,5 +263,526 @@
         ]
       }
     ]
+  },
+  {
+    "description": "decimalChar comma rejects a dot",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#decimalchar",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "decimalChar": "," }
+      }
+    },
+    "tests": [
+      {
+        "description": "comma decimals and integers are valid",
+        "data": "id,x\n1,\"1,5\"\n2,\"-0,25\"\n3,3\n",
+        "valid": true
+      },
+      {
+        "description": "a dot group separator without groupChar is a cell/type error",
+        "data": "id,x\n1,\"1,5\"\n2,\"1.234,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1.234,5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "decimalChar on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#decimalchar",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "decimalChar": ",", "minimum": 1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "comma decimals are valid",
+        "data": "id,x\n1,\"19,99\"\n2,\"1,00\"\n",
+        "valid": true
+      },
+      {
+        "description": "a parsed value below the minimum is a cell/minimum error",
+        "data": "id,x\n1,\"19,99\"\n2,\"0,99\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0,99",
+            "minimum": "1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "groupChar on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#groupchar",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "groupChar": "," }
+      }
+    },
+    "tests": [
+      {
+        "description": "grouped decimals are valid",
+        "data": "id,x\n1,\"1,234.56\"\n2,\"1,234,567.891\"\n3,12.5\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "groupChar space on an integer column",
+    "specification": ["https://fairspec.org/specs/table-schema/#groupchar"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "groupChar": " ", "minimum": 1000000 }
+      }
+    },
+    "tests": [
+      {
+        "description": "space grouped integers are valid",
+        "data": "id,x\n1,1 234 567\n2,1 000 000\n",
+        "valid": true
+      },
+      {
+        "description": "a grouped value below the minimum is a cell/minimum error",
+        "data": "id,x\n1,1 000 000\n2,999 999\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "999 999",
+            "minimum": "1000000"
+          }
+        ]
+      },
+      {
+        "description": "a comma group separator is a cell/type error",
+        "data": "id,x\n1,1 000 000\n2,\"1,234,567\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1,234,567"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "groupChar no-break space on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#groupchar",
+      "https://fairspec.org/specs/table-schema/#decimalchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "groupChar": " ", "decimalChar": "," }
+      }
+    },
+    "tests": [
+      {
+        "description": "no-break space grouped numbers are valid",
+        "data": "id,x\n1,\"1 234,5\"\n2,12 345 678\n",
+        "valid": true
+      },
+      {
+        "description": "a plain space is a cell/type error",
+        "data": "id,x\n1,\"1 234,5\"\n2,\"1 234,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1 234,5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "groupChar on a negative integer",
+    "specification": ["https://fairspec.org/specs/table-schema/#groupchar"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "groupChar": ",", "maximum": -1000 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a negative grouped integer is valid",
+        "data": "id,x\n1,\"-1,000\"\n2,\"-1,234,567\"\n",
+        "valid": true
+      },
+      {
+        "description": "a negative grouped value above the maximum is a cell/maximum error",
+        "data": "id,x\n1,\"-1,000\"\n2,-999\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-999",
+            "maximum": "-1000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText signs on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "withText": true, "minimum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a minus in the suffix does not make the value negative",
+        "data": "id,x\n1,5-\n2,5 -\n",
+        "valid": true
+      },
+      {
+        "description": "parentheses are stripped and the value stays positive",
+        "data": "id,x\n1,(5)\n",
+        "valid": true
+      },
+      {
+        "description": "a percent sign is stripped without scaling",
+        "data": "id,x\n1,5%\n2,100%\n",
+        "valid": true
+      },
+      {
+        "description": "a minus anywhere in the prefix makes the value negative",
+        "data": "id,x\n1,5\n2,USD -5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "USD -5",
+            "minimum": "0"
+          }
+        ]
+      },
+      {
+        "description": "two minus signs in the prefix make the value negative",
+        "data": "id,x\n1,5\n2,--5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "--5",
+            "minimum": "0"
+          }
+        ]
+      },
+      {
+        "description": "a minus before a currency sign makes the value negative",
+        "data": "id,x\n1,5\n2,-€5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-€5",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText and a decimalChar before the first digit",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#withtext",
+      "https://fairspec.org/specs/table-schema/#decimalchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "withText": true, "maximum": 1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "the decimal point before the first digit belongs to the number",
+        "data": "id,x\n1,$.5\n2,.5 kg\n",
+        "valid": true
+      },
+      {
+        "description": "a value above the maximum is a cell/maximum error",
+        "data": "id,x\n1,$.5\n2,$1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "$1.5",
+            "maximum": "1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText and a negative fraction",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#withtext",
+      "https://fairspec.org/specs/table-schema/#decimalchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "withText": true, "maximum": -0.25 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a minus and a decimal point before the first digit",
+        "data": "id,x\n1,-.5\n2,-$.5\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "withText with decimalChar and groupChar",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#withtext",
+      "https://fairspec.org/specs/table-schema/#decimalchar",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "number",
+          "withText": true,
+          "decimalChar": ",",
+          "groupChar": ".",
+          "minimum": 1000
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a grouped number with a currency is valid",
+        "data": "id,x\n1,\"€1.234,50\"\n2,\"1.000,00 EUR\"\n",
+        "valid": true
+      },
+      {
+        "description": "a parsed value below the minimum is a cell/minimum error",
+        "data": "id,x\n1,\"€1.234,50\"\n2,\"€999,99\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "€999,99",
+            "minimum": "1000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText without digits",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "withText": true }
+      }
+    },
+    "tests": [
+      {
+        "description": "text alone is a cell/type error",
+        "data": "id,x\n1,5\n2,abc\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "abc"
+          }
+        ]
+      },
+      {
+        "description": "a currency sign alone is a cell/type error",
+        "data": "id,x\n1,5\n2,$\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText with digits in the text",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "withText": true }
+      }
+    },
+    "tests": [
+      {
+        "description": "a digit in the prefix keeps the text between digits",
+        "data": "id,x\n1,5\n2,A1 5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "A1 5"
+          }
+        ]
+      },
+      {
+        "description": "a digit in the suffix keeps the text between digits",
+        "data": "id,x\n1,5\n2,5 m2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "5 m2"
+          }
+        ]
+      },
+      {
+        "description": "a decimal inside an integer is a cell/type error",
+        "data": "id,x\n1,5\n2,12.5 kg\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "12.5 kg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText on a negative integer",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "withText": true, "minimum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a unit is stripped from a positive integer",
+        "data": "id,x\n1,12 kg\n",
+        "valid": true
+      },
+      {
+        "description": "a minus before the first digit is a cell/minimum error",
+        "data": "id,x\n1,12 kg\n2,-5 kg\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-5 kg",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "withText and groupChar on an integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#withtext",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "withText": true, "groupChar": ",", "maximum": 1000 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a grouped integer with a unit is valid",
+        "data": "id,x\n1,\"1,000 kg\"\n2,999 kg\n",
+        "valid": true
+      },
+      {
+        "description": "a grouped value above the maximum is a cell/maximum error",
+        "data": "id,x\n1,999 kg\n2,\"1,001 kg\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "1,001 kg",
+            "maximum": "1000"
+          }
+        ]
+      }
+    ]
   }
 ]

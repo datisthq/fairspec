@@ -1,13 +1,20 @@
 [
   {
     "description": "column, cell and row errors in one report",
-    "comment": "The spec does not order errors. Proposed: column errors, then cell errors column by column in row order, then row errors",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
     "tableSchema": {
       "required": ["note"],
       "properties": {
-        "id": { "type": "integer" },
-        "age": { "type": "integer", "minimum": 0 },
-        "note": { "type": "string" }
+        "id": {
+          "type": "integer"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "note": {
+          "type": "string"
+        }
       },
       "primaryKey": ["id"]
     },
@@ -17,7 +24,10 @@
         "data": "id,age\n1,5\n1,-1\nx,3\n",
         "valid": false,
         "errors": [
-          { "type": "column/missing", "columnName": "note" },
+          {
+            "type": "column/missing",
+            "columnName": "note"
+          },
           {
             "type": "cell/type",
             "columnName": "id",
@@ -32,18 +42,27 @@
             "cell": "-1",
             "minimum": "0"
           },
-          { "type": "row/primaryKey", "rowNumber": 2, "columnNames": ["id"] }
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
         ]
       }
     ]
   },
   {
     "description": "cell errors in several columns and rows",
-    "comment": "The spec does not order errors; both libraries list them column by column, each column in row order",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
     "tableSchema": {
       "properties": {
-        "a": { "type": "integer" },
-        "b": { "type": "integer", "maximum": 9 }
+        "a": {
+          "type": "integer"
+        },
+        "b": {
+          "type": "integer",
+          "maximum": 9
+        }
       }
     },
     "tests": [
@@ -79,6 +98,161 @@
             "columnType": "integer",
             "rowNumber": 3,
             "cell": "z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "cell errors follow the order of properties",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "b": {
+          "type": "integer"
+        },
+        "a": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a later property's errors come later though its column is first",
+        "data": "a,b\nx,1\n1,y\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "b",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "y"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "a",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "column errors before cell errors",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "missing, then extra, then cell errors",
+        "data": "extra,id\n1,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "name"
+          },
+          {
+            "type": "column/extra",
+            "columnName": "extra"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "row errors after every cell error",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "v": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a later cell error precedes an earlier key error",
+        "data": "id,v\n1,1\n1,2\n2,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "v",
+            "columnType": "integer",
+            "rowNumber": 3,
+            "cell": "x"
+          },
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "different cell errors in one column",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "properties": {
+        "a": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "are listed by row whatever their kind",
+        "data": "a\n-1\nx\n-2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "a",
+            "rowNumber": 1,
+            "cell": "-1",
+            "minimum": "0"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "a",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          },
+          {
+            "type": "cell/minimum",
+            "columnName": "a",
+            "rowNumber": 3,
+            "cell": "-2",
+            "minimum": "0"
           }
         ]
       }

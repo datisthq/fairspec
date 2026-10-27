@@ -192,5 +192,31 @@
         }
       }
     ]
+  },
+  {
+    "description": "list item kinds",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tests": [
+      {
+        "description": "integers mixed with numbers are number items",
+        "data": "id,x\n1,\"1,2\"\n2,\"1.5,2\"\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "list",
+              "itemType": "number"
+            }
+          }
+        }
+      }
+    ]
   }
 ]

@@ -65,5 +65,222 @@
         }
       }
     ]
+  },
+  {
+    "description": "group by a key with nulls",
+    "comment": "SQL leaves the default position of nulls to the engine, so the queries name it with NULLS FIRST or NULLS LAST",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "query": "SELECT city, COUNT(*) AS n FROM self GROUP BY city ORDER BY city NULLS LAST",
+    "tests": [
+      {
+        "description": "missing keys form one group",
+        "data": "city,id\nparis,1\n,2\nrome,3\nparis,4\n,5\n",
+        "expected": {
+          "columns": ["city", "n"],
+          "rows": [
+            ["paris", 2],
+            ["rome", 1],
+            [null, 2]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "group by a boolean column",
+    "specification": ["https://fairspec.org/specs/table-schema/#boolean"],
+    "tableSchema": {
+      "properties": {
+        "flag": {
+          "type": "boolean"
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "query": "SELECT flag, SUM(count) AS total FROM self GROUP BY flag ORDER BY flag",
+    "tests": [
+      {
+        "description": "one row per value",
+        "data": "flag,count\ntrue,1\nfalse,2\ntrue,3\n",
+        "expected": {
+          "columns": ["flag", "total"],
+          "rows": [
+            [false, 2],
+            [true, 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "having",
+    "tableSchema": {
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "query": "SELECT city, SUM(count) AS total FROM self GROUP BY city HAVING SUM(count) > 2 ORDER BY city",
+    "tests": [
+      {
+        "description": "filters the groups",
+        "data": "city,count\nparis,1\nrome,2\nparis,3\nberlin,5\n",
+        "expected": {
+          "columns": ["city", "total"],
+          "rows": [
+            ["berlin", 5],
+            ["paris", 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "average",
+    "comment": "AVG skips nulls in SQL. Over an integer column its result type is implementation-defined, so only a number column is averaged",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tableSchema": {
+      "properties": {
+        "price": {
+          "type": "number"
+        }
+      }
+    },
+    "query": "SELECT AVG(price) AS a FROM self",
+    "tests": [
+      {
+        "description": "averages the values",
+        "data": "price\n0.5\n1.0\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[0.75]]
+        }
+      },
+      {
+        "description": "skips missing values",
+        "data": "price\n0.5\n\n2.0\n",
+        "expected": {
+          "columns": ["a"],
+          "rows": [[1.25]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "min and max",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#integer",
+      "https://fairspec.org/specs/table-schema/#string"
+    ],
+    "tableSchema": {
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "query": "SELECT MIN(count) AS lo, MAX(count) AS hi, MIN(name) AS first, MAX(name) AS last FROM self",
+    "tests": [
+      {
+        "description": "keep the column type",
+        "data": "count,name\n10,bob\n-3,alice\n7,carol\n",
+        "expected": {
+          "columns": ["lo", "hi", "first", "last"],
+          "rows": [[-3, 10, "alice", "carol"]]
+        }
+      },
+      {
+        "description": "skip missing values",
+        "data": "count,name\n10,\n,alice\n7,carol\n",
+        "expected": {
+          "columns": ["lo", "hi", "first", "last"],
+          "rows": [[7, 10, "alice", "carol"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "min and max of a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": "number"
+        }
+      }
+    },
+    "query": "SELECT MIN(x) AS lo, MAX(x) AS hi FROM self",
+    "tests": [
+      {
+        "description": "compare numerically",
+        "data": "x\n10.5\n9.25\n-1.5\n",
+        "expected": {
+          "columns": ["lo", "hi"],
+          "rows": [[-1.5, 10.5]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "count distinct",
+    "tableSchema": {
+      "properties": {
+        "city": {
+          "type": "string"
+        }
+      }
+    },
+    "query": "SELECT COUNT(DISTINCT city) AS n FROM self",
+    "tests": [
+      {
+        "description": "counts each value once and skips nulls",
+        "data": "city\nparis\nrome\nparis\n\n",
+        "expected": {
+          "columns": ["n"],
+          "rows": [[2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "sum of a column with missing values",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "properties": {
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "query": "SELECT SUM(count) AS total FROM self",
+    "tests": [
+      {
+        "description": "skips missing values",
+        "data": "count\n1\n\n3\n",
+        "expected": {
+          "columns": ["total"],
+          "rows": [[4]]
+        }
+      }
+    ]
   }
 ]

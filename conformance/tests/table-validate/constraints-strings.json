@@ -1,0 +1,490 @@
+[
+  {
+    "description": "lengths count characters, not bytes",
+    "comment": "As in JSON Schema, a length is a count of Unicode code points",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "minLength": 2, "maxLength": 2 }
+      }
+    },
+    "tests": [
+      {
+        "description": "two multibyte characters are valid",
+        "data": "id,x\n1,日本\n2,éé\n3,Жж\n",
+        "valid": true
+      },
+      {
+        "description": "two characters outside the Basic Multilingual Plane are valid",
+        "data": "id,x\n1,😀😀\n2,𝒜𝒜\n",
+        "valid": true
+      },
+      {
+        "description": "one multibyte character is a cell/minLength error",
+        "data": "id,x\n1,日本\n2,é\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "é",
+            "minLength": 2
+          }
+        ]
+      },
+      {
+        "description": "three multibyte characters are a cell/maxLength error",
+        "data": "id,x\n1,日本\n2,日本語\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "日本語",
+            "maxLength": 2
+          }
+        ]
+      },
+      {
+        "description": "three emoji are a cell/maxLength error",
+        "data": "id,x\n1,日本\n2,😀😀😀\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "😀😀😀",
+            "maxLength": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an emoji counts as one character",
+    "specification": ["https://fairspec.org/specs/table-schema/#maxlength"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "maxLength": 1 }
+      }
+    },
+    "tests": [
+      { "description": "one emoji is valid", "data": "id,x\n1,😀\n2,a\n", "valid": true }
+    ]
+  },
+  {
+    "description": "minLength equal to maxLength",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "minLength": 3, "maxLength": 3 }
+      }
+    },
+    "tests": [
+      {
+        "description": "the exact length is valid",
+        "data": "id,x\n1,abc\n2,a b\n",
+        "valid": true
+      },
+      {
+        "description": "one shorter is a cell/minLength error",
+        "data": "id,x\n1,abc\n2,ab\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "ab",
+            "minLength": 3
+          }
+        ]
+      },
+      {
+        "description": "one longer is a cell/maxLength error",
+        "data": "id,x\n1,abc\n2,abcd\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "abcd",
+            "maxLength": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a quoted empty string",
+    "comment": "A quoted \"\" stays an empty string; an unquoted empty cell is missing",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "minLength": 1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "has length 0 and is a cell/minLength error",
+        "data": "id,x\n1,a\n2,\"\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "",
+            "minLength": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxLength 0",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#maxlength",
+      "https://fairspec.org/specs/table-schema/#missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "maxLength": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty string is valid",
+        "data": "id,x\n1,\"\"\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a quoted empty string in a string column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#string",
+      "https://fairspec.org/specs/table-schema/#missingvalues"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "string" } }
+    },
+    "tests": [
+      {
+        "description": "is a value, not a missing one",
+        "data": "id,x\n1,a\n2,\"\"\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a pattern matching only the empty string",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "pattern": "^$" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty string is valid",
+        "data": "id,x\n1,\"\"\n",
+        "valid": true
+      },
+      {
+        "description": "a character is a cell/pattern error",
+        "data": "id,x\n1,\"\"\n2,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a",
+            "pattern": "^$"
+          }
+        ]
+      },
+      {
+        "description": "a space is a cell/pattern error",
+        "data": "id,x\n1,\"\"\n2, \n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": " ",
+            "pattern": "^$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a pattern is case sensitive",
+    "specification": ["https://fairspec.org/specs/table-schema/#pattern"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "pattern": "^[a-z]+$" }
+      }
+    },
+    "tests": [
+      {
+        "description": "lowercase letters are valid",
+        "data": "id,x\n1,abc\n",
+        "valid": true
+      },
+      {
+        "description": "an uppercase letter is a cell/pattern error",
+        "data": "id,x\n1,abc\n2,abC\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "abC",
+            "pattern": "^[a-z]+$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on a date column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#pattern",
+      "https://fairspec.org/specs/table-schema/#date"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "pattern": "^2024-" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a date whose text matches is valid",
+        "data": "id,x\n1,2024-01-15\n2,2024-12-31\n",
+        "valid": true
+      },
+      {
+        "description": "a valid date whose text does not match is a cell/pattern error",
+        "data": "id,x\n1,2024-01-15\n2,2023-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "2023-01-15",
+            "pattern": "^2024-"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on a date column with temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#pattern",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%d/%m/%Y",
+          "pattern": "^\\d{2}/\\d{2}/\\d{4}$"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the pattern matches the text as written",
+        "data": "id,x\n1,15/01/2024\n",
+        "valid": true
+      },
+      {
+        "description": "an unpadded date is a cell/pattern error",
+        "data": "id,x\n1,15/01/2024\n2,5/1/2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "5/1/2024",
+            "pattern": "^\\d{2}/\\d{2}/\\d{4}$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "pattern on an email column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#pattern",
+      "https://fairspec.org/specs/table-schema/#email"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "email", "pattern": "@example\\.com$" }
+      }
+    },
+    "tests": [
+      {
+        "description": "an address on the domain is valid",
+        "data": "id,x\n1,alice@example.com\n",
+        "valid": true
+      },
+      {
+        "description": "an address on another domain is a cell/pattern error",
+        "data": "id,x\n1,alice@example.com\n2,bob@example.org\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "bob@example.org",
+            "pattern": "@example\\.com$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minLength on a date column",
+    "comment": "Length counts the text as written, not the parsed date",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%m/%d/%Y",
+          "minLength": 10
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a padded date is valid",
+        "data": "id,x\n1,01/05/2024\n",
+        "valid": true
+      },
+      {
+        "description": "an unpadded date is a cell/minLength error",
+        "data": "id,x\n1,01/05/2024\n2,1/5/2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "1/5/2024",
+            "minLength": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxLength on a list column",
+    "comment": "minLength and maxLength count the characters of the cell; minItems and maxItems count items",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#maxlength",
+      "https://fairspec.org/specs/table-schema/#list"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "maxLength": 3 }
+      }
+    },
+    "tests": [
+      {
+        "description": "the text of the list within the length is valid",
+        "data": "id,x\n1,\"a,b\"\n",
+        "valid": true
+      },
+      {
+        "description": "a list text too long is a cell/maxLength error",
+        "data": "id,x\n1,\"a,b\"\n2,\"a,bc\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,bc",
+            "maxLength": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxLength on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#maxlength",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "maxLength": 4 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a short decimal is valid",
+        "data": "id,x\n1,1.50\n",
+        "valid": true
+      },
+      {
+        "description": "trailing zeros count toward the length",
+        "data": "id,x\n1,1.50\n2,1.500\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxLength",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "1.500",
+            "maxLength": 4
+          }
+        ]
+      }
+    ]
+  }
+]

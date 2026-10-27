@@ -71,6 +71,9 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `json.dumps(..., sort_keys=True)`, because `1 == 1.0 == True` in Python
 - Fix the library that disagrees with the spec, in its own `fix(typescript)` / `fix(python)`
   commit together with the test. The suite itself is `chore`
+- Three runners agreeing is not the spec agreeing: a spec-decided case that every library fails
+  is a divergence in all three, never an expectation to rewrite. When a bulk addition cannot
+  fix them in the same branch, leave the case out and record it for a follow-up fix
 - A fix that changes behaviour other unit tests asserted means updating those tests too. Check
   whether the other library's unit tests already encode the decision
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes

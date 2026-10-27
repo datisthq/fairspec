@@ -116,5 +116,228 @@
         }
       }
     ]
+  },
+  {
+    "description": "commentPrefix of several characters",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "fileDialect": {
+      "format": "csv",
+      "commentPrefix": "--"
+    },
+    "tests": [
+      {
+        "description": "only rows starting with the whole prefix are omitted",
+        "data": "id,name\n--x,skipped\n-a,kept\nb,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["-a", "kept"],
+            ["b", "c"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix on the last row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "fileDialect": {
+      "format": "csv",
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "a comment without a line terminator is omitted",
+        "data": "id,name\na,b\n# end",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      },
+      {
+        "description": "a comment with a line terminator is omitted",
+        "data": "id,name\na,b\n# end\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix inside a row",
+    "comment": "Only the row's prefix makes it a comment",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "fileDialect": {
+      "format": "csv",
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "a prefix after the start of the row is kept",
+        "data": "id,name\na,# not a comment\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "# not a comment"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix in tsv on the last row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "a comment without a line terminator is omitted",
+        "data": "id\tname\na\tb\n#x",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentPrefix with a custom delimiter",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentprefix"],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": ";",
+      "commentPrefix": "#"
+    },
+    "tests": [
+      {
+        "description": "rows starting with the prefix are omitted",
+        "data": "id;name\n#x;y\na;b\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows past the end of the file",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [99]
+    },
+    "tests": [
+      {
+        "description": "no row is omitted",
+        "data": "id,name\na,b\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows on the last row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "fileDialect": {
+      "format": "csv",
+      "commentRows": [3]
+    },
+    "tests": [
+      {
+        "description": "the last row is omitted",
+        "data": "id,name\na,b\nc,d\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "commentRows": [2]
+    },
+    "tests": [
+      {
+        "description": "the listed row is omitted",
+        "data": "id\tname\nx\ty\na\tb\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows on json arrays",
+    "comment": "The header array is row 1",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#commentrows",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "commentRows": [3]
+    },
+    "tests": [
+      {
+        "description": "the listed array is omitted",
+        "data": [["id"], ["a"], ["b"], ["c"]],
+        "expected": {
+          "columns": ["id"],
+          "rows": [["a"], ["c"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows on jsonl arrays",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array",
+      "commentRows": [3]
+    },
+    "tests": [
+      {
+        "description": "the listed line is omitted",
+        "data": "[\"id\"]\n[\"a\"]\n[\"b\"]\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [["a"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "commentRows on jsonl objects",
+    "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "object",
+      "commentRows": [1]
+    },
+    "tests": [
+      {
+        "description": "commentRows does not apply",
+        "data": "{\"id\":\"a\"}\n{\"id\":\"b\"}\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [["a"], ["b"]]
+        }
+      }
+    ]
   }
 ]

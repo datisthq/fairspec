@@ -1,0 +1,115 @@
+[
+  {
+    "description": "a resource error and a foreign key violation",
+    "comment": "The resource's own errors come first, then the dataset-level foreign key errors. The cell error sits in a column no foreign key reads",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#validation",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "age": { "type": "integer" } }
+          }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "user_id": { "type": "integer" },
+              "views": { "type": "integer" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the foreign key error follows the cell error",
+        "data": {
+          "users.csv": "id,age\n1,5\n",
+          "posts.csv": "user_id,views\n2,1\n1,y\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "posts",
+            "columnName": "views",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "y"
+          },
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": { "resource": "users", "columns": ["id"] }
+            },
+            "cells": ["2"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a resource error and a foreign key to a missing resource",
+    "specification": ["https://fairspec.org/specs/dataset/#validation"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "user_id": { "type": "integer" },
+              "views": { "type": "integer" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the resource error comes first",
+        "data": { "posts.csv": "user_id,views\n1,y\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "posts",
+            "columnName": "views",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "y"
+          },
+          {
+            "type": "resource/missing",
+            "resourceName": "users",
+            "referencingResourceName": "posts"
+          }
+        ]
+      }
+    ]
+  }
+]

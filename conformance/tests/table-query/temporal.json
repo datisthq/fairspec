@@ -133,5 +133,248 @@
         }
       }
     ]
+  },
+  {
+    "description": "order by a time column with offsets",
+    "comment": "A time with an offset denotes a time of day in UTC, so the offset is applied before comparing, and the runner renders the UTC time",
+    "specification": ["https://fairspec.org/specs/table-schema/#time"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "at": {
+          "type": "string",
+          "format": "time"
+        }
+      }
+    },
+    "query": "SELECT id, at FROM self ORDER BY at",
+    "tests": [
+      {
+        "description": "sorts by the UTC time, not the text",
+        "data": "id,at\n1,23:30:00-02:00\n2,00:30:00Z\n3,10:00:00+09:00\n",
+        "expected": {
+          "columns": ["id", "at"],
+          "rows": [
+            [2, "00:30:00"],
+            [3, "01:00:00"],
+            [1, "01:30:00"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "distinct times with offsets",
+    "comment": "A time with an offset denotes a time of day in UTC, so the offset is applied before comparing, and the runner renders the UTC time",
+    "specification": ["https://fairspec.org/specs/table-schema/#time"],
+    "tableSchema": {
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "time"
+        }
+      }
+    },
+    "query": "SELECT COUNT(DISTINCT at) AS n FROM self",
+    "tests": [
+      {
+        "description": "the same UTC time written with different offsets is one value",
+        "data": "at\n14:30:00+02:00\n12:30:00Z\n13:30:00+01:00\n",
+        "expected": {
+          "columns": ["n"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "date-time values with offsets",
+    "comment": "A date-time with an offset denotes an instant, so the offset is applied before comparing, and the runner renders it in UTC",
+    "specification": ["https://fairspec.org/specs/table-schema/#datetime"],
+    "tableSchema": {
+      "properties": {
+        "stamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "query": "SELECT stamp FROM self",
+    "tests": [
+      {
+        "description": "are rendered in UTC",
+        "data": "stamp\n2024-03-20T18:00:00-05:00\n2024-01-15T10:00:00+02:00\n",
+        "expected": {
+          "columns": ["stamp"],
+          "rows": [["2024-03-20T23:00:00+00:00"], ["2024-01-15T08:00:00+00:00"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "distinct date-times with offsets",
+    "comment": "A date-time with an offset denotes an instant, so the offset is applied before comparing, and the runner renders it in UTC",
+    "specification": ["https://fairspec.org/specs/table-schema/#datetime"],
+    "tableSchema": {
+      "properties": {
+        "stamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "query": "SELECT COUNT(DISTINCT stamp) AS n FROM self",
+    "tests": [
+      {
+        "description": "the same instant written with different offsets is one value",
+        "data": "stamp\n2024-03-20T18:00:00-05:00\n2024-03-20T23:00:00Z\n2024-03-21T01:00:00+02:00\n",
+        "expected": {
+          "columns": ["n"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "order by a local date-time column",
+    "comment": "A local date-time is never converted to an instant, so it keeps its wall-clock value",
+    "specification": ["https://fairspec.org/specs/table-schema/#localdatetime"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "stamp": {
+          "type": "string",
+          "format": "local-date-time"
+        }
+      }
+    },
+    "query": "SELECT id, stamp FROM self ORDER BY stamp",
+    "tests": [
+      {
+        "description": "sorts chronologically across days and fractions",
+        "data": "id,stamp\n1,2024-01-15T10:30:00.5\n2,2024-01-14T23:59:59\n3,2024-01-15T10:30:00\n",
+        "expected": {
+          "columns": ["id", "stamp"],
+          "rows": [
+            [2, "2024-01-14T23:59:59"],
+            [3, "2024-01-15T10:30:00"],
+            [1, "2024-01-15T10:30:00.500"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "order by a formatted date column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#temporalformat"
+    ],
+    "tableSchema": {
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date",
+          "temporalFormat": "%d/%m/%Y"
+        }
+      }
+    },
+    "query": "SELECT day FROM self ORDER BY day",
+    "tests": [
+      {
+        "description": "sorts the parsed dates and renders them as ISO 8601",
+        "data": "day\n01/02/2024\n15/01/2024\n31/12/2023\n",
+        "expected": {
+          "columns": ["day"],
+          "rows": [["2023-12-31"], ["2024-01-15"], ["2024-02-01"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "order by a date column with nulls",
+    "comment": "SQL leaves the default position of nulls to the engine, so the query names it",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#date",
+      "https://fairspec.org/specs/table-schema/#missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "day": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "query": "SELECT id FROM self ORDER BY day NULLS FIRST",
+    "tests": [
+      {
+        "description": "a missing date sorts first",
+        "data": "id,day\n1,2024-03-01\n2,\n3,2023-12-31\n",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[2], [3], [1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "group by a date column",
+    "specification": ["https://fairspec.org/specs/table-schema/#date"],
+    "tableSchema": {
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date"
+        },
+        "count": {
+          "type": "integer"
+        }
+      }
+    },
+    "query": "SELECT day, SUM(count) AS total FROM self GROUP BY day ORDER BY day",
+    "tests": [
+      {
+        "description": "one row per date",
+        "data": "day,count\n2024-01-15,1\n2024-01-14,2\n2024-01-15,3\n",
+        "expected": {
+          "columns": ["day", "total"],
+          "rows": [
+            ["2024-01-14", 2],
+            ["2024-01-15", 4]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "min of a local time column",
+    "specification": ["https://fairspec.org/specs/table-schema/#localtime"],
+    "tableSchema": {
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "local-time"
+        }
+      }
+    },
+    "query": "SELECT MIN(at) AS first FROM self",
+    "tests": [
+      {
+        "description": "is still a time",
+        "data": "at\n10:30:00\n09:05:00\n23:00:00\n",
+        "expected": {
+          "columns": ["first"],
+          "rows": [["09:05:00"]]
+        }
+      }
+    ]
   }
 ]

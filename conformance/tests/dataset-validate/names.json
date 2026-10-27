@@ -44,5 +44,37 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "two names each repeated",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [{ "name": "a" }, { "name": "b" }, { "name": "b" }, { "name": "a" }]
+    },
+    "tests": [
+      {
+        "description": "is a metadata error on each later use, in resource order",
+        "data": {},
+        "valid": false,
+        "errors": [
+          { "type": "metadata", "jsonPointer": "/resources/2/name" },
+          { "type": "metadata", "jsonPointer": "/resources/3/name" }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "unnamed resources pointing at the same file",
+    "comment": "Uniqueness applies to the names a descriptor gives; resources without one have none to repeat",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": {
+      "resources": [
+        { "data": "a.csv", "fileDialect": { "format": "csv" } },
+        { "data": "a.csv", "fileDialect": { "format": "csv" } }
+      ]
+    },
+    "tests": [
+      { "description": "are valid", "data": { "a.csv": "id\n1\n" }, "valid": true }
+    ]
   }
 ]

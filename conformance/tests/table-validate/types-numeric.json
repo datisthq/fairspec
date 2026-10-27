@@ -266,5 +266,266 @@
         ]
       }
     ]
+  },
+  {
+    "description": "integer column: whole numbers at the 64-bit limits",
+    "comment": "Whole numbers that a binary double cannot hold exactly are still integers",
+    "specification": ["https://fairspec.org/specs/table-schema/#integer"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "integer" } }
+    },
+    "tests": [
+      {
+        "description": "2^53 + 1 is a whole number",
+        "data": "id,x\n1,9007199254740993\n",
+        "valid": true
+      },
+      {
+        "description": "the largest and smallest 64-bit integers are whole numbers",
+        "data": "id,x\n1,9223372036854775807\n2,-9223372036854775808\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "integer column: separators without groupChar",
+    "comment": "groupChar: without it, a value has no group separator",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#integer",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "integer" } }
+    },
+    "tests": [
+      {
+        "description": "a comma group separator is a cell/type error",
+        "data": "id,x\n1,1\n2,\"1,000\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1,000"
+          }
+        ]
+      },
+      {
+        "description": "a space group separator is a cell/type error",
+        "data": "id,x\n1,1\n2,1 000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1 000"
+          }
+        ]
+      },
+      {
+        "description": "a dot group separator is a cell/type error",
+        "data": "id,x\n1,1\n2,1.000.000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "1.000.000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integer column: a fractional part",
+    "specification": ["https://fairspec.org/specs/table-schema/#integer"],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "integer" } }
+    },
+    "tests": [
+      {
+        "description": "a negative decimal is a cell/type error",
+        "data": "id,x\n1,1\n2,-2.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "-2.5"
+          }
+        ]
+      },
+      {
+        "description": "a decimal comma is a cell/type error",
+        "data": "id,x\n1,1\n2,\"2,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "2,5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "number column: separators and malformed numbers",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#number",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "number" } }
+    },
+    "tests": [
+      {
+        "description": "a comma group separator without groupChar is a cell/type error",
+        "data": "id,x\n1,1.5\n2,\"1,000.5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1,000.5"
+          }
+        ]
+      },
+      {
+        "description": "two decimal points are a cell/type error",
+        "data": "id,x\n1,1.5\n2,1.2.3\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1.2.3"
+          }
+        ]
+      },
+      {
+        "description": "a space between digits is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1 5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1 5"
+          }
+        ]
+      },
+      {
+        "description": "a number followed by a unit without withText is a cell/type error",
+        "data": "id,x\n1,1.5\n2,1.5 kg\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "1.5 kg"
+          }
+        ]
+      },
+      {
+        "description": "a currency prefix without withText is a cell/type error",
+        "data": "id,x\n1,1.5\n2,$1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "number",
+            "rowNumber": 2,
+            "cell": "$1.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "decimal column: precision and malformed decimals",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#decimal",
+      "https://fairspec.org/specs/table-schema/#groupchar"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal" }
+      }
+    },
+    "tests": [
+      {
+        "description": "digits beyond binary floating point precision are valid",
+        "data": "id,x\n1,12345678901234567.89\n2,0.30000000000000001\n",
+        "valid": true
+      },
+      {
+        "description": "trailing zeros are valid",
+        "data": "id,x\n1,1.10\n2,1.100\n3,0.0\n",
+        "valid": true
+      },
+      {
+        "description": "two decimal points are a cell/type error",
+        "data": "id,x\n1,1.5\n2,1.2.3\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "decimal",
+            "rowNumber": 2,
+            "cell": "1.2.3"
+          }
+        ]
+      },
+      {
+        "description": "a comma group separator without groupChar is a cell/type error",
+        "data": "id,x\n1,1.5\n2,\"1,000.5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "decimal",
+            "rowNumber": 2,
+            "cell": "1,000.5"
+          }
+        ]
+      },
+      {
+        "description": "a currency prefix without withText is a cell/type error",
+        "data": "id,x\n1,1.5\n2,$1.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "decimal",
+            "rowNumber": 2,
+            "cell": "$1.5"
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -48,5 +48,159 @@
         ]
       }
     ]
+  },
+  {
+    "description": "minItems equal to maxItems",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minitems",
+      "https://fairspec.org/specs/table-schema/#maxitems"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "minItems": 2, "maxItems": 2 }
+      }
+    },
+    "tests": [
+      {
+        "description": "exactly two items are valid",
+        "data": "id,x\n1,\"a,b\"\n2,\"1,2\"\n",
+        "valid": true
+      },
+      {
+        "description": "one item is a cell/minItems error",
+        "data": "id,x\n1,\"a,b\"\n2,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a",
+            "minItems": 2
+          }
+        ]
+      },
+      {
+        "description": "three items are a cell/maxItems error",
+        "data": "id,x\n1,\"a,b\"\n2,\"a,b,c\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,b,c",
+            "maxItems": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxItems 1",
+    "specification": ["https://fairspec.org/specs/table-schema/#maxitems"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "maxItems": 1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a single item is valid",
+        "data": "id,x\n1,abc\n",
+        "valid": true
+      },
+      {
+        "description": "two items are a cell/maxItems error",
+        "data": "id,x\n1,abc\n2,\"a,b\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,b",
+            "maxItems": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minItems with a custom delimiter",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minitems",
+      "https://fairspec.org/specs/table-schema/#delimiter"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "delimiter": ";", "minItems": 2 }
+      }
+    },
+    "tests": [
+      {
+        "description": "items split on the delimiter are counted",
+        "data": "id,x\n1,a;b\n2,\"a,b;c\"\n",
+        "valid": true
+      },
+      {
+        "description": "commas do not split items",
+        "data": "id,x\n1,a;b\n2,\"a,b,c\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "a,b,c",
+            "minItems": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minItems and maxItems on an integer list",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minitems",
+      "https://fairspec.org/specs/table-schema/#maxitems",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "minItems": 2,
+          "maxItems": 3
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "typed lists within the bounds are valid",
+        "data": "id,x\n1,\"1,2\"\n2,\"1,2,3\"\n",
+        "valid": true
+      },
+      {
+        "description": "four items are a cell/maxItems error",
+        "data": "id,x\n1,\"1,2\"\n2,\"1,2,3,4\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maxItems",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "1,2,3,4",
+            "maxItems": 3
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -1,0 +1,146 @@
+[
+  {
+    "description": "a dataset without resources",
+    "comment": "Every dataset property is optional, resources included",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset"],
+    "dataset": {},
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "an empty resources array",
+    "comment": "The dataset profile gives resources minItems 1",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": [] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "resources as a string",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": "a.csv" },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "resources as an object",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": { "data": "a.csv" } },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a resource given as a path string",
+    "comment": "Each item must be a Resource object, not the path it would hold",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": ["a.csv"] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a resource given as a number",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": [1] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "a resource given as null",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": [null] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "a valid resource next to a non-object one",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": { "resources": [{ "data": "a.csv" }, []] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an empty resource object",
+    "comment": "A resource without data describes no content and may carry no schema, so nothing applies to it",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{}] },
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "DataCite titles as a string",
+    "comment": "DataCite 4.6 titles is a list of title objects",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "titles": "My Dataset" },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "DataCite titles as a list of objects",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "titles": [{ "title": "My Dataset" }] },
+    "tests": [{ "description": "is valid", "data": {}, "valid": true }]
+  },
+  {
+    "description": "a DataCite title that is not a string",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "titles": [{ "title": 1 }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "DataCite creators as an object",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "creators": { "name": "John Doe" } },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "a DataCite creator without a name",
+    "comment": "DataCite 4.6 requires creatorName on every creator",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "creators": [{ "nameType": "Personal" }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "a DataCite version that is a number",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "version": 1 },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "a DataCite publisher as a string",
+    "comment": "DataCite 4.6 publisher is an object with a name",
+    "specification": ["https://fairspec.org/specs/dataset/#dataset-datacite"],
+    "dataset": { "publisher": "Example Press" },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "DataCite titles of a resource as a string",
+    "specification": ["https://fairspec.org/specs/dataset/#resource-datacite"],
+    "dataset": { "resources": [{ "data": "a.csv", "titles": "Table" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "DataCite sizes of a resource with a number",
+    "comment": "DataCite 4.6 sizes are free-text strings",
+    "specification": ["https://fairspec.org/specs/dataset/#resource-datacite"],
+    "dataset": { "resources": [{ "data": "a.csv", "sizes": [10] }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a resource name that is not a string",
+    "specification": ["https://fairspec.org/specs/dataset/#name"],
+    "dataset": { "resources": [{ "name": 1, "data": "a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "textual that is not a boolean",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "dataset": { "resources": [{ "data": "a.txt", "textual": "true" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.txt": "hello\n" }, "valid": false }
+    ]
+  }
+]

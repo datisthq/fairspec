@@ -163,5 +163,185 @@
         }
       }
     ]
+  },
+  {
+    "description": "nullSequence is case sensitive",
+    "comment": "A cell equal to the sequence is null; equality is exact",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA"
+    },
+    "tests": [
+      {
+        "description": "a cell in another case is kept",
+        "data": "id,name\na,na\nb,Na\nc,NA\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "na"],
+            ["b", "Na"],
+            ["c", null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence must equal the whole cell",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NA"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a cell with surrounding spaces is kept",
+        "data": "id,name\na, NA\nb,NA \n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", " NA"],
+            ["b", "NA "]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence with a typed column",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "-"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "count": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the sequence is null in an integer column",
+        "data": "id,count\na,1\nb,-\nc,3\n",
+        "expected": {
+          "columns": ["id", "count"],
+          "rows": [
+            ["a", 1],
+            ["b", null],
+            ["c", 3]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence backslash N in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "\\N"
+    },
+    "tests": [
+      {
+        "description": "the sequence is read as null",
+        "data": "id,name\na,\\N\nb,\\n\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", null],
+            ["b", "\\n"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence of several characters",
+    "specification": ["https://fairspec.org/specs/file-dialect/#nullsequence"],
+    "fileDialect": {
+      "format": "csv",
+      "nullSequence": "NULL"
+    },
+    "tests": [
+      {
+        "description": "only the full sequence is null",
+        "data": "id,name\na,NULL\nb,NUL\nc,NULLS\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", null],
+            ["b", "NUL"],
+            ["c", "NULLS"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence with a custom delimiter",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#nullsequence",
+      "https://fairspec.org/specs/file-dialect/#delimiter"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": ";",
+      "nullSequence": "NA"
+    },
+    "tests": [
+      {
+        "description": "the sequence is null in every column",
+        "data": "id;name\nNA;a\nb;NA\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [null, "a"],
+            ["b", null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "nullSequence in tsv with an empty cell",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#nullsequence",
+      "https://fairspec.org/specs/file-dialect/#tsv"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "nullSequence": "NA"
+    },
+    "tests": [
+      {
+        "description": "both the sequence and the empty cell are null",
+        "data": "id\tname\na\t\nb\tNA\nc\td\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", null],
+            ["b", null],
+            ["c", "d"]
+          ]
+        }
+      }
+    ]
   }
 ]

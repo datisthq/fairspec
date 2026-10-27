@@ -274,5 +274,374 @@
         ]
       }
     ]
+  },
+  {
+    "description": "list column of times",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#time"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "time" }
+      }
+    },
+    "tests": [
+      {
+        "description": "time items with offsets are valid",
+        "data": "id,x\n1,\"14:30:00Z,09:00:00+02:00\"\n",
+        "valid": true
+      },
+      {
+        "description": "an item without an offset is a cell/type error",
+        "data": "id,x\n1,14:30:00Z\n2,\"14:30:00Z,09:00:00\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "14:30:00Z,09:00:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of local times",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#localtime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "local-time" }
+      }
+    },
+    "tests": [
+      {
+        "description": "local time items are valid",
+        "data": "id,x\n1,\"14:30:00,09:00:00.5\"\n",
+        "valid": true
+      },
+      {
+        "description": "an item with an offset is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,\"14:30:00,09:00:00Z\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "14:30:00,09:00:00Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of date-times",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#datetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "date-time" }
+      }
+    },
+    "tests": [
+      {
+        "description": "date-time items are valid",
+        "data": "id,x\n1,\"2024-01-15T14:30:00Z,2024-01-16T09:00:00-05:00\"\n",
+        "valid": true
+      },
+      {
+        "description": "an item without an offset is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,\"2024-01-15T14:30:00Z,2024-01-16T09:00:00\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00Z,2024-01-16T09:00:00"
+          }
+        ]
+      },
+      {
+        "description": "a bare date item is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,\"2024-01-15T14:30:00Z,2024-01-16\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00Z,2024-01-16"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of local date-times",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#localdatetime"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "local-date-time" }
+      }
+    },
+    "tests": [
+      {
+        "description": "local date-time items are valid",
+        "data": "id,x\n1,\"2024-01-15T14:30:00,2024-01-16T09:00:00\"\n",
+        "valid": true
+      },
+      {
+        "description": "an item with an offset is a cell/type error",
+        "data": "id,x\n1,2024-01-15T14:30:00\n2,\"2024-01-15T14:30:00,2024-01-16T09:00:00Z\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15T14:30:00,2024-01-16T09:00:00Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of dates with an invalid calendar date",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#date"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "date" }
+      }
+    },
+    "tests": [
+      {
+        "description": "February 30 is a cell/type error",
+        "data": "id,x\n1,2024-01-15\n2,\"2024-01-15,2024-02-30\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "2024-01-15,2024-02-30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of booleans with the default values",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "boolean" }
+      }
+    },
+    "tests": [
+      {
+        "description": "every default true and false value is valid",
+        "data": "id,x\n1,\"True,FALSE,1,0\"\n",
+        "valid": true
+      },
+      {
+        "description": "yes is a cell/type error",
+        "data": "id,x\n1,true\n2,\"true,yes\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "true,yes"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of one item",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#list",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "list", "itemType": "integer" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a single integer is a list of one",
+        "data": "id,x\n1,5\n2,-7\n",
+        "valid": true
+      },
+      {
+        "description": "a single word is a cell/type error",
+        "data": "id,x\n1,5\n2,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column of numbers with a semicolon delimiter",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#delimiter",
+      "https://fairspec.org/specs/table-schema/#itemtype"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "number",
+          "delimiter": ";"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "decimal points stay inside the items",
+        "data": "id,x\n1,1.5;2.25;-3\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "list column with a pipe delimiter",
+    "comment": "A delimiter that is special in a regular expression is still a literal character",
+    "specification": ["https://fairspec.org/specs/table-schema/#delimiter"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "delimiter": "|"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "pipe-delimited integers are valid",
+        "data": "id,x\n1,1|2|3\n2,4\n",
+        "valid": true
+      },
+      {
+        "description": "a comma inside is a cell/type error",
+        "data": "id,x\n1,1|2\n2,\"1,2|3\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1,2|3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column with a dot delimiter",
+    "comment": "A delimiter that is special in a regular expression is still a literal character",
+    "specification": ["https://fairspec.org/specs/table-schema/#delimiter"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "delimiter": "."
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "dot-delimited integers are valid",
+        "data": "id,x\n1,1.2.3\n2,10.20\n",
+        "valid": true
+      },
+      {
+        "description": "a word item is a cell/type error",
+        "data": "id,x\n1,1.2\n2,1.x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "list",
+            "rowNumber": 2,
+            "cell": "1.x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "list column with an asterisk delimiter",
+    "specification": ["https://fairspec.org/specs/table-schema/#delimiter"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "delimiter": "*"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "asterisk-delimited integers are valid",
+        "data": "id,x\n1,1*2*3\n",
+        "valid": true
+      }
+    ]
   }
 ]

@@ -447,5 +447,119 @@
         }
       }
     ]
+  },
+  {
+    "description": "offset edges",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. Only Z and the +HH:MM form are read as offsets, as in RFC 3339 without a temporalFormat",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#datetime",
+      "https://fairspec.org/specs/table-schema/#time",
+      "https://fairspec.org/specs/table-schema/#localdatetime",
+      "https://fairspec.org/specs/table-schema/#localtime"
+    ],
+    "tests": [
+      {
+        "description": "fractional seconds with Z",
+        "data": "id,x\n1,2024-01-15T14:30:00.5Z\n2,2024-02-20T09:45:30Z\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "Z mixed with a numeric offset",
+        "data": "id,x\n1,2024-01-15T14:30:00Z\n2,2024-02-20T09:45:30+02:00\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "a lower-case z is a string",
+        "data": "id,x\n1,2024-01-15T14:30:00z\n2,2024-02-20T09:45:30z\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "an offset without a colon is a string",
+        "data": "id,x\n1,2024-01-15T14:30:00+0000\n2,2024-02-20T09:45:30+0100\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a T date-time without seconds is a string",
+        "data": "id,x\n1,2024-01-15T14:30\n2,2024-02-20T09:45\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "local times with fractional seconds",
+        "data": "id,x\n1,14:30:00.250\n2,09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "local-time"
+            }
+          }
+        }
+      },
+      {
+        "description": "times with fractional seconds and offsets",
+        "data": "id,x\n1,14:30:00.250Z\n2,09:45:30-05:00\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "time"
+            }
+          }
+        }
+      }
+    ]
   }
 ]

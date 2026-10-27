@@ -65,5 +65,114 @@
         }
       }
     ]
+  },
+  {
+    "description": "mixed LF and CRLF with the default lineTerminator",
+    "comment": "The default is \\n, and a \\r directly before it is not part of the row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "both read the same",
+        "data": "id,name\r\na,b\nc,d\r\ne,f\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "b"],
+            ["c", "d"],
+            ["e", "f"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a lone carriage return with the default lineTerminator",
+    "comment": "Only a \\r directly before the \\n terminator is dropped",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a carriage return inside a cell is part of the cell",
+        "data": "id,name\na\rb,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a\rb", "c"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a quoted line terminator with lineTerminator carriage return",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#lineterminator",
+      "https://fairspec.org/specs/file-dialect/#format-properties"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "lineTerminator": "\r"
+    },
+    "tests": [
+      {
+        "description": "a quoted carriage return is part of the cell",
+        "data": "id,name\ra,\"x\ry\"\r",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "x\ry"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "lineTerminator crlf in tsv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "lineTerminator": "\r\n"
+    },
+    "tests": [
+      {
+        "description": "rows end with crlf",
+        "data": "id\tname\r\na\tb\r\nc\td\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "b"],
+            ["c", "d"]
+          ]
+        }
+      },
+      {
+        "description": "the last row may omit the terminator",
+        "data": "id\tname\r\na\tb",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "crlf in tsv with the default lineTerminator",
+    "specification": ["https://fairspec.org/specs/file-dialect/#lineterminator"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv"
+    },
+    "tests": [
+      {
+        "description": "no carriage return is left in the cells",
+        "data": "id\tname\r\na\tb\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
   }
 ]

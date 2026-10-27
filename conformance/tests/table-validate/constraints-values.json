@@ -190,5 +190,111 @@
         ]
       }
     ]
+  },
+  {
+    "description": "enum on a number column",
+    "comment": "Values compare as numbers, so 1 and 1.0 are equal",
+    "specification": ["https://fairspec.org/specs/table-schema/#enum"],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": "number",
+          "enum": [1, 2.5]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "numerically equal values are valid",
+        "data": "x\n1\n1.0\n2.50\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "const on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#const"],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": "number",
+          "const": 1.5
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a numerically equal value is valid",
+        "data": "x\n1.5\n1.50\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "enum on a string column",
+    "specification": ["https://fairspec.org/specs/table-schema/#enum"],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": "string",
+          "enum": ["a", "b"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value in another case is a cell/enum error",
+        "data": "x\na\nA\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "A",
+            "enum": ["a", "b"]
+          }
+        ]
+      },
+      {
+        "description": "a value with a space is a cell/enum error",
+        "data": "x\n a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/enum",
+            "columnName": "x",
+            "rowNumber": 1,
+            "cell": " a",
+            "enum": ["a", "b"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "const null on a nullable column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#const",
+      "https://fairspec.org/specs/table-schema/#json-schema"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x": {
+          "type": ["string", "null"],
+          "const": null
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "an empty cell is valid",
+        "data": "id,x\n1,\n2,\n",
+        "valid": true
+      }
+    ]
   }
 ]

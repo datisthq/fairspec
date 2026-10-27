@@ -2,7 +2,14 @@
   {
     "description": "primary key",
     "tableSchema": {
-      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } },
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
       "primaryKey": ["id"]
     },
     "tests": [
@@ -15,14 +22,27 @@
         "description": "a repeated key is a row/primaryKey error",
         "data": "id,name\n1,alice\n2,bob\n1,carol\n",
         "valid": false,
-        "errors": [{ "type": "row/primaryKey", "rowNumber": 3, "columnNames": ["id"] }]
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 3,
+            "columnNames": ["id"]
+          }
+        ]
       }
     ]
   },
   {
     "description": "unique key",
     "tableSchema": {
-      "properties": { "id": { "type": "integer" }, "email": { "type": "string" } },
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
       "uniqueKeys": [["email"]]
     },
     "tests": [
@@ -30,7 +50,180 @@
         "description": "a repeated value is a row/uniqueKey error",
         "data": "id,email\n1,a@x.org\n2,a@x.org\n",
         "valid": false,
-        "errors": [{ "type": "row/uniqueKey", "rowNumber": 2, "columnNames": ["email"] }]
+        "errors": [
+          {
+            "type": "row/uniqueKey",
+            "rowNumber": 2,
+            "columnNames": ["email"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "primary key on a string column",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "primaryKey": ["x"],
+      "properties": {
+        "x": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values differing in case, zeros or spaces are distinct",
+        "data": "x\n1\n01\na\nA\n a\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "primary key errors before unique key errors",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "primaryKey": ["id"],
+      "uniqueKeys": [["email"]],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a later primary key error comes first",
+        "data": "id,email\n1,a\n2,a\n2,b\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "rowNumber": 3,
+            "columnNames": ["id"]
+          },
+          {
+            "type": "row/uniqueKey",
+            "rowNumber": 2,
+            "columnNames": ["email"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a single-column unique key with null cells",
+    "specification": ["https://fairspec.org/specs/table-schema/#uniquekeys"],
+    "tableSchema": {
+      "uniqueKeys": [["code"]],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "code": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "null cells never conflict",
+        "data": "id,code\n1,\n2,\n3,a\n",
+        "valid": true
+      },
+      {
+        "description": "repeated values still conflict",
+        "data": "id,code\n1,\n2,a\n3,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/uniqueKey",
+            "rowNumber": 3,
+            "columnNames": ["code"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a composite unique key with every cell null",
+    "specification": ["https://fairspec.org/specs/table-schema/#uniquekeys"],
+    "tableSchema": {
+      "uniqueKeys": [["a", "b"]],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "a": {
+          "type": ["integer", "null"]
+        },
+        "b": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "rows are not compared",
+        "data": "id,a,b\n1,,\n2,,\n",
+        "valid": true
+      },
+      {
+        "description": "a null part does not conflict with a full key",
+        "data": "id,a,b\n1,1,\n2,1,2\n3,1,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a composite primary key with a null part",
+    "specification": ["https://fairspec.org/specs/table-schema/#primarykey"],
+    "tableSchema": {
+      "primaryKey": ["a", "b"],
+      "properties": {
+        "a": {
+          "type": "integer"
+        },
+        "b": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the null part is a cell/missing error",
+        "data": "a,b\n1,1\n1,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "b",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      },
+      {
+        "description": "null parts are reported column by column",
+        "data": "a,b\n,1\n1,\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "a",
+            "rowNumber": 1,
+            "cell": ""
+          },
+          {
+            "type": "cell/missing",
+            "columnName": "b",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
       }
     ]
   }

@@ -74,5 +74,55 @@
         ]
       }
     ]
+  },
+  {
+    "description": "textual true with encodings other than utf-8",
+    "comment": "Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi' (ff fe 68 00 69 00); abc then the first two bytes of 中 (e4 b8); a, a lone continuation byte (80), b",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "textual": true,
+    "tests": [
+      {
+        "description": "utf-16 with a byte order mark is a file/textual error",
+        "data": { "base64": "//5oAGkA" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "a multi-byte character truncated at the end is a file/textual error",
+        "data": { "base64": "YWJj5Lg=" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      },
+      {
+        "description": "a stray continuation byte is a file/textual error",
+        "data": { "base64": "YYBi" },
+        "valid": false,
+        "errors": [{ "type": "file/textual" }]
+      }
+    ]
+  },
+  {
+    "description": "textual true with valid utf-8 edge cases",
+    "comment": "Each is well-formed utf-8: a four-byte character, a lone carriage return, a single byte, U+10FFFF",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "textual": true,
+    "tests": [
+      {
+        "description": "a four-byte character is valid",
+        "data": "a😀b\n",
+        "valid": true
+      },
+      {
+        "description": "carriage returns only are valid",
+        "data": "a\rb\r",
+        "valid": true
+      },
+      { "description": "a single byte is valid", "data": "a", "valid": true },
+      {
+        "description": "the largest code point is valid",
+        "data": "\udbff\udfff",
+        "valid": true
+      }
+    ]
   }
 ]

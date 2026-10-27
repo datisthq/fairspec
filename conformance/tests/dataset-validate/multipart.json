@@ -180,5 +180,226 @@
         "errors": [{ "type": "file/textual", "resourceName": "notes" }]
       }
     ]
+  },
+  {
+    "description": "multipart csv parts with different line endings",
+    "comment": "A \\r directly before the default \\n terminator is not part of the row, so a crlf part and an lf part read the same",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/file-dialect/#lineterminator"
+    ],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" }, "n": { "type": "integer" } }
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a crlf part and an lf part are valid",
+        "data": { "part1.csv": "id,n\r\n1,1\r\n", "part2.csv": "id,n\n2,2\n" },
+        "valid": true
+      },
+      {
+        "description": "a bad last cell of a crlf part is reported without the \\r",
+        "data": { "part1.csv": "id,n\r\n1,x\r\n", "part2.csv": "id,n\n2,2\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "n",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
+          }
+        ]
+      },
+      {
+        "description": "a bad cell of the lf part after a crlf part is numbered across parts",
+        "data": { "part1.csv": "id,n\r\n1,1\r\n", "part2.csv": "id,n\n2,x\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "n",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart integrity over parts with different line endings",
+    "comment": "The hash of id\\r\\n1\\r\\n followed by id\\n2\\n: integrity covers bytes, not records",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "integrity": {
+            "type": "sha256",
+            "hash": "45d8feaf92b931c1f45306bb00e73ff5bd293fd71a3ac0b7daa4f2ff3aa847a1"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the exact bytes are valid",
+        "data": { "part1.csv": "id\r\n1\r\n", "part2.csv": "id\n2\n" },
+        "valid": true
+      },
+      {
+        "description": "the same records with lf endings are a file/integrity error",
+        "data": { "part1.csv": "id\n1\n", "part2.csv": "id\n2\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "sha256",
+            "expectedHash": "45d8feaf92b931c1f45306bb00e73ff5bd293fd71a3ac0b7daa4f2ff3aa847a1",
+            "actualHash": "325e33d1906ba8bdfdd19fc5debc598064ab99698b8266d5028f7d7d2e73b8f5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart integrity with an empty part",
+    "comment": "The hash of id\\n1\\n: a 0-byte part adds no bytes to the concatenation, wherever it sits",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.txt", "part2.txt"],
+          "integrity": {
+            "type": "sha256",
+            "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "an empty second part is valid",
+        "data": { "part1.txt": "id\n1\n", "part2.txt": "" },
+        "valid": true
+      },
+      {
+        "description": "an empty first part is valid",
+        "data": { "part1.txt": "", "part2.txt": "id\n1\n" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "multipart sha512 integrity",
+    "comment": "the hash of id,name\\n1,alice\\n followed by id,name\\n2,bob\\n",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "integrity": {
+            "type": "sha512",
+            "hash": "7bde6a8e0a647cdc7eba31dcefb125c14bb88d7f5f89703f320bf28203ffa8b4d30551c9af5f08dffa06bf168aae111769eb1f05fe06e66438083f5f6edc21bf"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the concatenation of the parts in order is valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n2,bob\n" },
+        "valid": true
+      },
+      {
+        "description": "swapped parts are a file/integrity error",
+        "data": { "part1.csv": "id,name\n2,bob\n", "part2.csv": "id,name\n1,alice\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "sha512",
+            "expectedHash": "7bde6a8e0a647cdc7eba31dcefb125c14bb88d7f5f89703f320bf28203ffa8b4d30551c9af5f08dffa06bf168aae111769eb1f05fe06e66438083f5f6edc21bf",
+            "actualHash": "9e58c79819ec13c829431a4ba45c22a4cf321123a926e7374d8468088f1b0fa246233f1a8006b92a3b081a129dcb2a26e7949f5fcca7c6d26711271775c31ad2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart sha1 integrity",
+    "comment": "the hash of id,name\\n1,alice\\n followed by id,name\\n2,bob\\n",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv", "part2.csv"],
+          "integrity": {
+            "type": "sha1",
+            "hash": "c468136da3de82b3f0aa7fb7694ca36cb010f79e"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the concatenation of the parts in order is valid",
+        "data": { "part1.csv": "id,name\n1,alice\n", "part2.csv": "id,name\n2,bob\n" },
+        "valid": true
+      },
+      {
+        "description": "swapped parts are a file/integrity error",
+        "data": { "part1.csv": "id,name\n2,bob\n", "part2.csv": "id,name\n1,alice\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "people",
+            "hashType": "sha1",
+            "expectedHash": "c468136da3de82b3f0aa7fb7694ca36cb010f79e",
+            "actualHash": "d07e4676af881227780e18b0e63bc87cf904a21e"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipart textual with a part split inside a character",
+    "comment": "Every part must be utf-8 on its own: part1 ends with the first two bytes of 中 (e4 b8) and part2 starts with the last one (ad), so only their concatenation decodes",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "dataset": {
+      "resources": [
+        { "name": "notes", "data": ["part1.txt", "part2.txt"], "textual": true }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is a file/textual error",
+        "data": {
+          "part1.txt": { "base64": "YWJj5Lg=" },
+          "part2.txt": { "base64": "rQo=" }
+        },
+        "valid": false,
+        "errors": [{ "type": "file/textual", "resourceName": "notes" }]
+      }
+    ]
   }
 ]

@@ -1,0 +1,133 @@
+[
+  {
+    "description": "data mixing a path and an object",
+    "comment": "Neither an array of paths nor an array of objects",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": ["a.csv", { "id": 1 }] }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "data as a number",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": 1 }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "data as a boolean",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": true }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "data as null",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": null }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "data as an array of numbers",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": [1, 2] }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "data as an array of arrays",
+    "comment": "Inline rows must be objects",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": { "resources": [{ "name": "a", "data": [["id"], [1]] }] },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "multipart data with a single part",
+    "comment": "An array of one path is allowed and reads as that one file",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["part1.csv"],
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a valid part is valid",
+        "data": { "part1.csv": "id\n1\n2\n" },
+        "valid": true
+      },
+      {
+        "description": "a bad cell is reported as in a single file",
+        "data": { "part1.csv": "id\n1\nx\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "resourceName": "people",
+            "columnName": "id",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "x"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "the same file listed twice as parts",
+    "comment": "The records of a multipart resource are the records of each part in order, so a repeated part repeats its records",
+    "specification": ["https://fairspec.org/specs/dataset/#data"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["a.csv", "a.csv"],
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" } },
+            "primaryKey": ["id"]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "its key repeats in the second part",
+        "data": { "a.csv": "id\n1\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "row/primaryKey",
+            "resourceName": "people",
+            "rowNumber": 2,
+            "columnNames": ["id"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "the same file listed twice under integrity",
+    "comment": "The hash covers id\\n1\\n twice: every byte of every part, in order",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "people",
+          "data": ["a.csv", "a.csv"],
+          "integrity": { "type": "md5", "hash": "7cefafcb138f7f4291cb5fb0c072f2cf" }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "the doubled content is valid",
+        "data": { "a.csv": "id\n1\n" },
+        "valid": true
+      }
+    ]
+  }
+]

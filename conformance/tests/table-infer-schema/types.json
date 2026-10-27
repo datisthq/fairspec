@@ -116,5 +116,484 @@
         }
       }
     ]
+  },
+  {
+    "description": "integer boundaries",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. An integer column holds whole numbers of any size, so digits beyond 2^53 or 64 bits are still an integer",
+    "specification": ["https://fairspec.org/specs/table-schema/#integer"],
+    "tests": [
+      {
+        "description": "an integer beyond 2^53",
+        "data": "id,n\n1,9007199254740993\n2,1\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "n": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "the smallest 64-bit integer",
+        "data": "id,n\n1,-9223372036854775808\n2,1\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "n": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "an integer beyond 64 bits",
+        "data": "id,n\n1,99999999999999999999\n2,1\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "n": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "negative zero",
+        "data": "id,n\n1,-0\n2,0\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "n": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "leading zeros are still digits",
+        "data": "id,code\n1,00123\n2,00456\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "a plus sign is not a number",
+        "data": "id,n\n1,+5\n2,+6\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "n": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "number notations",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. Only plain decimal notation is inferred as a number",
+    "specification": ["https://fairspec.org/specs/table-schema/#number"],
+    "tests": [
+      {
+        "description": "exponent notation is a string",
+        "data": "id,x\n1,1e5\n2,2.5E-3\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a leading decimal point is a string",
+        "data": "id,x\n1,.5\n2,.25\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a trailing decimal point is a string",
+        "data": "id,x\n1,5.\n2,6.\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "NaN is a string",
+        "data": "id,x\n1,NaN\n2,1.5\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "inf is a string",
+        "data": "id,x\n1,inf\n2,1.5\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "boolean tokens",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. 0 and 1 are read as integers first, and only the true and false words make a boolean column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#boolean",
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tests": [
+      {
+        "description": "0 and 1 are integers",
+        "data": "id,f\n1,0\n2,1\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "f": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "true mixed with 0 is a string",
+        "data": "id,f\n1,true\n2,0\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "f": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "capitalised and upper-case words",
+        "data": "id,f\n1,True\n2,FALSE\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "f": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "description": "yes and no are strings",
+        "data": "id,f\n1,yes\n2,no\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "f": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "numbers with text",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tests": [
+      {
+        "description": "percentages",
+        "data": "id,x\n1,5%\n2,10%\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "integer",
+              "withText": true
+            }
+          }
+        }
+      },
+      {
+        "description": "a trailing currency sign with decimals",
+        "data": "id,x\n1,5 €\n2,10.5 €\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "number",
+              "withText": true
+            }
+          }
+        }
+      },
+      {
+        "description": "a minus before the currency sign",
+        "data": "id,x\n1,-$5\n2,$6\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "integer",
+              "withText": true
+            }
+          }
+        }
+      },
+      {
+        "description": "a unit word is a string",
+        "data": "id,x\n1,5 kg\n2,6 kg\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "surrounding whitespace",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. Whitespace around digits is read as surrounding text; around any other value it keeps the column a string",
+    "specification": ["https://fairspec.org/specs/table-schema/#withtext"],
+    "tests": [
+      {
+        "description": "spaces around integers",
+        "data": "id,x\n1, 5\n2,6 \n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "integer",
+              "withText": true
+            }
+          }
+        }
+      },
+      {
+        "description": "spaces around words",
+        "data": "id,x\n1, alice\n2,bob \n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a space before a boolean",
+        "data": "id,x\n1, true\n2,false\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a space before a date",
+        "data": "id,x\n1, 2024-01-15\n2,2024-02-20\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "mixed kinds",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library",
+    "tests": [
+      {
+        "description": "dates mixed with integers are a string",
+        "data": "id,x\n1,2024-01-15\n2,5\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "dates mixed with date-times are a string",
+        "data": "id,x\n1,2024-01-15\n2,2024-02-20T09:45:30\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "confidence",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. A column keeps a type only while fewer than 10% of its sampled values fail it",
+    "tests": [
+      {
+        "description": "one word in ten values is a string",
+        "data": "id\n1\n2\n3\n4\n5\n6\n7\n8\n9\nx\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "one word in twenty values is tolerated",
+        "data": "id\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\nx\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "line endings and shape",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. A header-only table needs a declared dialect, since the sniffer cannot read one",
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a header without rows types every column as string",
+        "data": "id,x\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "CRLF line endings",
+        "data": "id,x\r\n1,5\r\n2,6\r\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      {
+        "description": "a single data row",
+        "data": "id,x\n1,2024-01-15\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        }
+      }
+    ]
   }
 ]

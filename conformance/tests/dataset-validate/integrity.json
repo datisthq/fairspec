@@ -37,5 +37,258 @@
       ]
     },
     "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
+  },
+  {
+    "description": "an unknown hash type",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": {
+            "type": "sha384",
+            "hash": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a hash type in another case",
+    "comment": "The type must be one of the listed lowercase values",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "MD5", "hash": "d41d8cd98f00b204e9800998ecf8427e" }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "integrity without a type",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        { "data": "a.csv", "integrity": { "hash": "d41d8cd98f00b204e9800998ecf8427e" } }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "integrity without a hash",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": { "resources": [{ "data": "a.csv", "integrity": { "type": "md5" } }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an empty integrity object",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": { "resources": [{ "data": "a.csv", "integrity": {} }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "integrity as a string",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        { "data": "a.csv", "integrity": "md5:d41d8cd98f00b204e9800998ecf8427e" }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a hash that is not a string",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [{ "data": "a.csv", "integrity": { "type": "md5", "hash": 1 } }]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a non-hex md5 hash of the right length",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "md5", "hash": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an md5 hash one character short",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "md5", "hash": "d41d8cd98f00b204e9800998ecf8427" }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an md5 hash one character long",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "md5", "hash": "d41d8cd98f00b204e9800998ecf8427e0" }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a hash with surrounding whitespace",
+    "comment": "The hash is the bare digest, compared exactly",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": "a.csv",
+          "integrity": { "type": "md5", "hash": " d41d8cd98f00b204e9800998ecf8427e " }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an empty hash",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [{ "data": "a.csv", "integrity": { "type": "sha256", "hash": "" } }]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "sha256 of an empty file",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "empty",
+          "data": "a.txt",
+          "integrity": {
+            "type": "sha256",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "an empty file is valid", "data": { "a.txt": "" }, "valid": true },
+      {
+        "description": "a single newline is a file/integrity error",
+        "data": { "a.txt": "\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "empty",
+            "hashType": "sha256",
+            "expectedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "actualHash": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a hash of lf content",
+    "comment": "the sha256 of id\\n1\\n: the hash covers bytes, so the same records with crlf endings do not match",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "a.csv",
+          "integrity": {
+            "type": "sha256",
+            "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "lf content is valid",
+        "data": { "a.csv": "id\n1\n" },
+        "valid": true
+      },
+      {
+        "description": "crlf content is a file/integrity error",
+        "data": { "a.csv": "id\r\n1\r\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "table",
+            "hashType": "sha256",
+            "expectedHash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108",
+            "actualHash": "aaf52dc16349094c5563f8959ff0a9814354e804ff5c4e09457ae70040bc037c"
+          }
+        ]
+      },
+      {
+        "description": "content without the final newline is a file/integrity error",
+        "data": { "a.csv": "id\n1" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "resourceName": "table",
+            "hashType": "sha256",
+            "expectedHash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108",
+            "actualHash": "605096a310e4908def91488e2d873d6bd9f4a9930bcb42eeac08d6f0ccf3ba0e"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "integrity on an inline object",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "dataset": {
+      "resources": [
+        {
+          "data": { "id": 1 },
+          "integrity": { "type": "md5", "hash": "d41d8cd98f00b204e9800998ecf8427e" }
+        }
+      ]
+    },
+    "tests": [{ "description": "is invalid", "data": {}, "valid": false }]
   }
 ]

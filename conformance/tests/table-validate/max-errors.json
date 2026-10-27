@@ -1,8 +1,16 @@
 [
   {
     "description": "maxErrors truncates the report",
-    "tableSchema": { "properties": { "id": { "type": "integer" } } },
-    "options": { "maxErrors": 2 },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "options": {
+      "maxErrors": 2
+    },
     "tests": [
       {
         "description": "only the first two errors are kept",
@@ -22,6 +30,85 @@
             "columnType": "integer",
             "rowNumber": 2,
             "cell": "b"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxErrors of one",
+    "comment": "maxErrors is a library option; it keeps the first errors in the order the spec sets",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "required": ["note"],
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "v": {
+          "type": "integer"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "options": {
+      "maxErrors": 1
+    },
+    "tests": [
+      {
+        "description": "keeps only the column error",
+        "data": "id,v\n1,x\n1,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "note"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maxErrors cutting into cell errors",
+    "comment": "maxErrors is a library option; it keeps the first errors in the order the spec sets",
+    "specification": ["https://fairspec.org/specs/table-schema/#validation"],
+    "tableSchema": {
+      "required": ["note"],
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "v": {
+          "type": "integer"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "options": {
+      "maxErrors": 2
+    },
+    "tests": [
+      {
+        "description": "drops the row errors",
+        "data": "id,v\n1,x\n1,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "note"
+          },
+          {
+            "type": "cell/type",
+            "columnName": "v",
+            "columnType": "integer",
+            "rowNumber": 1,
+            "cell": "x"
           }
         ]
       }

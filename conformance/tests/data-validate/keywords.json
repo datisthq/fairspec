@@ -1,0 +1,436 @@
+[
+  {
+    "description": "$ref to $defs",
+    "comment": "Data Schema is JSON Schema 2020-12, so every keyword applies; a data error points at the instance location",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "$defs": { "positive": { "type": "integer", "minimum": 1 } },
+      "properties": {
+        "a": { "$ref": "#/$defs/positive" },
+        "b": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "tests": [
+      {
+        "description": "values matching the definition are valid",
+        "data": "{\"a\": 1, \"b\": 2}",
+        "valid": true
+      },
+      {
+        "description": "a value below the minimum points at its property",
+        "data": "{\"a\": 0}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      },
+      {
+        "description": "a wrong type in the second use points at that property",
+        "data": "{\"a\": 1, \"b\": \"x\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/b" }]
+      }
+    ]
+  },
+  {
+    "description": "recursive $ref",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "integer" },
+        "children": { "type": "array", "items": { "$ref": "#" } }
+      }
+    },
+    "tests": [
+      {
+        "description": "a nested tree is valid",
+        "data": "{\"value\": 1, \"children\": [{\"value\": 2, \"children\": [{\"value\": 3}]}]}",
+        "valid": true
+      },
+      {
+        "description": "a wrong value two levels down points at it",
+        "data": "{\"value\": 1, \"children\": [{\"value\": 2, \"children\": [{\"value\": \"x\"}]}]}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/children/0/children/0/value" }]
+      }
+    ]
+  },
+  {
+    "description": "prefixItems",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "array",
+      "prefixItems": [{ "type": "string" }, { "type": "integer" }]
+    },
+    "tests": [
+      { "description": "matching items are valid", "data": "[\"a\", 1]", "valid": true },
+      {
+        "description": "fewer items than prefixItems are valid",
+        "data": "[\"a\"]",
+        "valid": true
+      },
+      {
+        "description": "items after the prefix are not constrained",
+        "data": "[\"a\", 1, true]",
+        "valid": true
+      },
+      {
+        "description": "a wrong first item points at index 0",
+        "data": "[1, 1]",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/0" }]
+      },
+      {
+        "description": "a wrong second item points at index 1",
+        "data": "[\"a\", \"b\"]",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/1" }]
+      }
+    ]
+  },
+  {
+    "description": "unevaluatedProperties false",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "integer" } },
+      "unevaluatedProperties": false
+    },
+    "tests": [
+      {
+        "description": "declared properties are valid",
+        "data": "{\"a\": 1}",
+        "valid": true
+      },
+      {
+        "description": "an undeclared property is invalid",
+        "data": "{\"a\": 1, \"b\": 2}",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "unevaluatedProperties false behind allOf",
+    "comment": "Unlike additionalProperties, unevaluatedProperties sees the properties a subschema in allOf evaluated",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "allOf": [{ "properties": { "a": { "type": "integer" } } }],
+      "unevaluatedProperties": false
+    },
+    "tests": [
+      {
+        "description": "a property evaluated by allOf is valid",
+        "data": "{\"a\": 1}",
+        "valid": true
+      },
+      {
+        "description": "a property no subschema evaluates is invalid",
+        "data": "{\"a\": 1, \"b\": 2}",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "dependentRequired",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": { "type": "object", "dependentRequired": { "card": ["billing"] } },
+    "tests": [
+      { "description": "an empty object is valid", "data": "{}", "valid": true },
+      {
+        "description": "the dependency alone is valid",
+        "data": "{\"billing\": 1}",
+        "valid": true
+      },
+      {
+        "description": "both properties are valid",
+        "data": "{\"card\": 1, \"billing\": 1}",
+        "valid": true
+      },
+      {
+        "description": "the trigger without its dependency is a data error at the object",
+        "data": "{\"card\": 1}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "" }]
+      }
+    ]
+  },
+  {
+    "description": "if, then and else",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "if": { "properties": { "kind": { "const": "a" } }, "required": ["kind"] },
+      "then": { "required": ["x"] },
+      "else": { "required": ["y"] }
+    },
+    "tests": [
+      {
+        "description": "a matching if with its then property is valid",
+        "data": "{\"kind\": \"a\", \"x\": 1}",
+        "valid": true
+      },
+      {
+        "description": "a failing if with its else property is valid",
+        "data": "{\"kind\": \"b\", \"y\": 1}",
+        "valid": true
+      },
+      {
+        "description": "a matching if without its then property is invalid",
+        "data": "{\"kind\": \"a\", \"y\": 1}",
+        "valid": false
+      },
+      {
+        "description": "a failing if without its else property is invalid",
+        "data": "{}",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "oneOf with overlapping branches",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "v": { "oneOf": [{ "type": "integer" }, { "minimum": 0 }] } }
+    },
+    "tests": [
+      {
+        "description": "a value matching only the first branch is valid",
+        "data": "{\"v\": -1}",
+        "valid": true
+      },
+      {
+        "description": "a value matching only the second branch is valid",
+        "data": "{\"v\": 1.5}",
+        "valid": true
+      },
+      {
+        "description": "a value matching both branches is invalid",
+        "data": "{\"v\": 5}",
+        "valid": false
+      },
+      {
+        "description": "a value matching neither branch is invalid",
+        "data": "{\"v\": -1.5}",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "integer with a zero fraction",
+    "comment": "JSON Schema 2020-12 counts any number with a zero fractional part as an integer",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": { "type": "object", "properties": { "n": { "type": "integer" } } },
+    "tests": [
+      { "description": "1.0 is an integer", "data": "{\"n\": 1.0}", "valid": true },
+      { "description": "1e2 is an integer", "data": "{\"n\": 1e2}", "valid": true },
+      {
+        "description": "1.5 is not an integer",
+        "data": "{\"n\": 1.5}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/n" }]
+      }
+    ]
+  },
+  {
+    "description": "string length in code points",
+    "comment": "JSON Schema measures string length in Unicode code points, not bytes, UTF-16 units or graphemes",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "s": { "type": "string", "minLength": 2, "maxLength": 2 } }
+    },
+    "tests": [
+      {
+        "description": "two three-byte characters are two long",
+        "data": "{\"s\": \"中文\"}",
+        "valid": true
+      },
+      {
+        "description": "two characters outside the BMP are two long",
+        "data": "{\"s\": \"😀😀\"}",
+        "valid": true
+      },
+      {
+        "description": "a letter and a combining mark are two long",
+        "data": "{\"s\": \"e\u0301\"}",
+        "valid": true
+      },
+      {
+        "description": "one three-byte character is too short",
+        "data": "{\"s\": \"中\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/s" }]
+      },
+      {
+        "description": "one character outside the BMP is too short",
+        "data": "{\"s\": \"😀\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/s" }]
+      }
+    ]
+  },
+  {
+    "description": "uniqueItems with equal items",
+    "comment": "JSON Schema compares numbers by mathematical value and objects by their members, not by key order",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "a": { "type": "array", "uniqueItems": true } }
+    },
+    "tests": [
+      {
+        "description": "distinct numbers are valid",
+        "data": "{\"a\": [1, 2]}",
+        "valid": true
+      },
+      {
+        "description": "1 and 1.0 are the same item",
+        "data": "{\"a\": [1, 1.0]}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/a" }]
+      }
+    ]
+  },
+  {
+    "description": "const with an object",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "properties": { "c": { "const": { "x": 1, "y": [1, 2] } } }
+    },
+    "tests": [
+      {
+        "description": "an array in another order is a data error",
+        "data": "{\"c\": {\"x\": 1, \"y\": [2, 1]}}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/c" }]
+      }
+    ]
+  },
+  {
+    "description": "contains with minContains",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "array",
+      "contains": { "type": "integer" },
+      "minContains": 2
+    },
+    "tests": [
+      {
+        "description": "two matching items among others are valid",
+        "data": "[1, \"a\", 2]",
+        "valid": true
+      },
+      {
+        "description": "one matching item is invalid",
+        "data": "[1, \"a\"]",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "patternProperties with additionalProperties false",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": {
+      "type": "object",
+      "patternProperties": { "^x_": { "type": "integer" } },
+      "additionalProperties": false
+    },
+    "tests": [
+      {
+        "description": "a property matching the pattern is valid",
+        "data": "{\"x_a\": 1}",
+        "valid": true
+      },
+      {
+        "description": "a wrong value of a pattern property points at it",
+        "data": "{\"x_a\": \"s\"}",
+        "valid": false,
+        "errors": [{ "type": "data", "jsonPointer": "/x_a" }]
+      },
+      {
+        "description": "a property matching no pattern is invalid",
+        "data": "{\"y\": 1}",
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "propertyNames",
+    "specification": [
+      "https://fairspec.org/specs/data-schema/#jsonschema",
+      "https://fairspec.org/specs/dataset/#dataschema"
+    ],
+    "format": "json",
+    "dataSchema": { "type": "object", "propertyNames": { "pattern": "^[a-z]+$" } },
+    "tests": [
+      {
+        "description": "lowercase names are valid",
+        "data": "{\"ab\": 1}",
+        "valid": true
+      },
+      {
+        "description": "a name breaking the pattern is invalid",
+        "data": "{\"Ab\": 1}",
+        "valid": false
+      }
+    ]
+  }
+]

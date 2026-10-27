@@ -1,0 +1,189 @@
+[
+  {
+    "description": "utf-8 text",
+    "specification": ["https://fairspec.org/specs/file-dialect/#csv"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "non-ASCII cells are read as text",
+        "data": "name,city\nJosé,Zürich\n李,東京\n",
+        "expected": {
+          "columns": ["name", "city"],
+          "rows": [
+            ["José", "Zürich"],
+            ["李", "東京"]
+          ]
+        }
+      },
+      {
+        "description": "non-ASCII header cells name the columns",
+        "data": "名前,città\nα,β\n",
+        "expected": {
+          "columns": ["名前", "città"],
+          "rows": [["α", "β"]]
+        }
+      },
+      {
+        "description": "a four-byte character survives",
+        "data": "id,mark\na,😀\n",
+        "expected": {
+          "columns": ["id", "mark"],
+          "rows": [["a", "😀"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "header only",
+    "comment": "A declared dialect is never sniffed, so the single row is the header by default",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a header row with no data rows is an empty table",
+        "data": "id,name\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": []
+        }
+      },
+      {
+        "description": "a header row without a trailing newline is an empty table",
+        "data": "id,name",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": []
+        }
+      }
+    ]
+  },
+  {
+    "description": "last row without a line terminator",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#csv",
+      "https://fairspec.org/specs/file-dialect/#lineterminator"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "the last row is still read",
+        "data": "id,name\na,b\nc,d",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "b"],
+            ["c", "d"]
+          ]
+        }
+      },
+      {
+        "description": "a quoted last cell without a line terminator",
+        "data": "id,name\na,\"b,c\"",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b,c"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoted cells spanning lines",
+    "comment": "A quoted cell spanning several lines belongs to one row",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#quotechar"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a quoted LF is part of the cell",
+        "data": "id,name\na,\"two\nlines\"\nb,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "two\nlines"],
+            ["b", "c"]
+          ]
+        }
+      },
+      {
+        "description": "a quoted CRLF is part of the cell",
+        "data": "id,name\na,\"two\r\nlines\"\nb,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "two\r\nlines"],
+            ["b", "c"]
+          ]
+        }
+      },
+      {
+        "description": "a quoted cell spanning three lines",
+        "data": "id,name\na,\"x\ny\nz\"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "x\ny\nz"]]
+        }
+      },
+      {
+        "description": "a quoted header cell spanning two lines",
+        "data": "id,\"full\nname\"\na,b\n",
+        "expected": {
+          "columns": ["id", "full\nname"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoted cells",
+    "specification": ["https://fairspec.org/specs/file-dialect/#quotechar"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "the quotes are not part of the cell",
+        "data": "id,name\n\"a\",\"b\"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      },
+      {
+        "description": "a quoted header cell keeps its delimiter",
+        "data": "\"id\",\"na,me\"\na,b\n",
+        "expected": {
+          "columns": ["id", "na,me"],
+          "rows": [["a", "b"]]
+        }
+      },
+      {
+        "description": "a quoted cell keeps leading and trailing spaces",
+        "data": "id,name\na,\" b \"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", " b "]]
+        }
+      }
+    ]
+  }
+]

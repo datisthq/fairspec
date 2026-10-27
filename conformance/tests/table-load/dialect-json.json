@@ -223,5 +223,279 @@
       }
     ],
     "specification": ["https://fairspec.org/specs/file-dialect/#commentrows"]
+  },
+  {
+    "description": "jsonPointer with an escaped slash",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/a~1b"
+    },
+    "tests": [
+      {
+        "description": "~1 stands for a slash in the key",
+        "data": "{\"a/b\":[{\"id\":1}],\"a\":{\"b\":[{\"id\":2}]}}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer with an escaped tilde",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/a~0b"
+    },
+    "tests": [
+      {
+        "description": "~0 stands for a tilde in the key",
+        "data": "{\"a~b\":[{\"id\":1}]}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer with ~01",
+    "comment": "RFC 6901 decodes ~1 before ~0, so ~01 is ~1",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/~01"
+    },
+    "tests": [
+      {
+        "description": "~01 stands for the key ~1, not a slash",
+        "data": "{\"~1\":[{\"id\":1}],\"/\":[{\"id\":2}]}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer with an array index",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/pages/1/rows"
+    },
+    "tests": [
+      {
+        "description": "a number picks an item of an array",
+        "data": "{\"pages\":[{\"rows\":[{\"id\":1}]},{\"rows\":[{\"id\":2}]}]}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer to the empty key",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/"
+    },
+    "tests": [
+      {
+        "description": "/ points to the key that is the empty string",
+        "data": "{\"\":[{\"id\":1}],\"x\":[{\"id\":2}]}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer empty string",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": ""
+    },
+    "tests": [
+      {
+        "description": "the whole document is the array",
+        "data": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          }
+        ],
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1], [2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonPointer to a key with a space",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonpointer"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "jsonPointer": "/my items"
+    },
+    "tests": [
+      {
+        "description": "the key is matched as is",
+        "data": "{\"my items\":[{\"id\":1}]}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json without rowType, first item an array",
+    "comment": "Without rowType the first item decides; headerRows defaults to [1]",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#rowtype",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json"
+    },
+    "tests": [
+      {
+        "description": "the rows are arrays and the first is the header",
+        "data": [
+          ["id", "name"],
+          [1, "apple"]
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "json without rowType, first item an object",
+    "specification": ["https://fairspec.org/specs/file-dialect/#rowtype"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json"
+    },
+    "tests": [
+      {
+        "description": "the rows are objects",
+        "data": [
+          {
+            "id": 1,
+            "name": "apple"
+          }
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl with crlf lines",
+    "comment": "A \\r before the newline is JSON whitespace, so each line parses as the same value",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "objects on crlf lines",
+        "data": "{\"id\":1,\"name\":\"apple\"}\r\n{\"id\":2,\"name\":\"orange\"}\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl arrays with crlf lines",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array"
+    },
+    "tests": [
+      {
+        "description": "the first line names the columns",
+        "data": "[\"id\",\"name\"]\r\n[1,\"apple\"]\r\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl without a trailing newline",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "the last line is still a row",
+        "data": "{\"id\":1}\n{\"id\":2}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1], [2]]
+        }
+      },
+      {
+        "description": "a single line is one row",
+        "data": "{\"id\":1}",
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "jsonl non-ASCII values",
+    "specification": ["https://fairspec.org/specs/file-dialect/#jsonl"],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl"
+    },
+    "tests": [
+      {
+        "description": "text is kept",
+        "data": "{\"name\":\"José\",\"city\":\"東京\"}\n",
+        "expected": {
+          "columns": ["name", "city"],
+          "rows": [["José", "東京"]]
+        }
+      }
+    ]
   }
 ]

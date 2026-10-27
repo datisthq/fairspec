@@ -63,5 +63,138 @@
         ]
       }
     ]
+  },
+  {
+    "description": "composite foreign key with null local columns",
+    "comment": "A row in which any local column is null is not checked, so a row with every local column null is skipped",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "catalog",
+          "data": "catalog.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "supplier_id": { "type": "integer" },
+              "code": { "type": "string" }
+            }
+          }
+        },
+        {
+          "name": "orders",
+          "data": "orders.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "supplier_id": { "type": ["integer", "null"] },
+              "product_code": { "type": ["string", "null"] }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["supplier_id", "product_code"],
+                "reference": { "resource": "catalog", "columns": ["supplier_id", "code"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a row with every local column null is valid",
+        "data": {
+          "catalog.csv": "supplier_id,code\n1,a\n",
+          "orders.csv": "id,supplier_id,product_code\n1,1,a\n2,,\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a dangling row next to a null row is the only foreignKey error",
+        "data": {
+          "catalog.csv": "supplier_id,code\n1,a\n",
+          "orders.csv": "id,supplier_id,product_code\n1,,\n2,1,b\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "orders",
+            "foreignKey": {
+              "columns": ["supplier_id", "product_code"],
+              "reference": { "resource": "catalog", "columns": ["supplier_id", "code"] }
+            },
+            "cells": ["1", "b"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "composite foreign key with columns in another order",
+    "comment": "The n-th local column refers to the n-th referenced column, whatever order the referenced table keeps its columns in",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "catalog",
+          "data": "catalog.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "code": { "type": "string" },
+              "supplier_id": { "type": "integer" }
+            }
+          }
+        },
+        {
+          "name": "orders",
+          "data": "orders.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "supplier_id": { "type": "integer" },
+              "product_code": { "type": "string" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["product_code", "supplier_id"],
+                "reference": { "resource": "catalog", "columns": ["code", "supplier_id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "pairs matched column by column are valid",
+        "data": {
+          "catalog.csv": "code,supplier_id\na,1\nb,2\n",
+          "orders.csv": "supplier_id,product_code\n1,a\n2,b\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a pair that exists only crosswise is a foreignKey error",
+        "data": {
+          "catalog.csv": "code,supplier_id\na,1\nb,2\n",
+          "orders.csv": "supplier_id,product_code\n2,a\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "orders",
+            "foreignKey": {
+              "columns": ["product_code", "supplier_id"],
+              "reference": { "resource": "catalog", "columns": ["code", "supplier_id"] }
+            },
+            "cells": ["a", "2"]
+          }
+        ]
+      }
+    ]
   }
 ]

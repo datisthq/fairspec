@@ -66,5 +66,127 @@
         }
       }
     ]
+  },
+  {
+    "description": "columnNames on json objects",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object",
+      "columnNames": ["name", "id"]
+    },
+    "tests": [
+      {
+        "description": "the names pick the keys in their order",
+        "data": [
+          {
+            "id": 1,
+            "name": "apple"
+          },
+          {
+            "id": 2,
+            "name": "orange"
+          }
+        ],
+        "expected": {
+          "columns": ["name", "id"],
+          "rows": [
+            ["apple", 1],
+            ["orange", 2]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames instead of a json header array",
+    "comment": "columnNames are used instead of deriving names from the file; the header row is still not data",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": [1],
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "the names replace the header",
+        "data": [
+          ["a", "b"],
+          [1, "apple"]
+        ],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames instead of a tsv header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "the names replace the header",
+        "data": "a\tb\n1\tapple\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames with non-ASCII names",
+    "specification": ["https://fairspec.org/specs/file-dialect/#columnnames"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false,
+      "columnNames": ["número", "名前"]
+    },
+    "tests": [
+      {
+        "description": "the names are used as given",
+        "data": "1,apple\n",
+        "expected": {
+          "columns": ["número", "名前"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "columnNames for jsonl arrays",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#columnnames",
+      "https://fairspec.org/specs/file-dialect/#rowtype"
+    ],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array",
+      "headerRows": false,
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "every line is a row",
+        "data": "[1,\"apple\"]\n[2,\"orange\"]\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "apple"],
+            [2, "orange"]
+          ]
+        }
+      }
+    ]
   }
 ]

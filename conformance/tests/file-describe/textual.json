@@ -64,5 +64,90 @@
         }
       }
     ]
+  },
+  {
+    "description": "textual detection of malformed utf-8",
+    "comment": "textual true promises utf-8, so a file that is not well-formed utf-8 is described as not textual. Fixtures are raw bytes: utf-16le with a BOM ff fe then 'hi'; abc then the first two bytes of 中 (e4 b8); a, a lone continuation byte 80, b",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "tests": [
+      {
+        "description": "utf-16 with a byte order mark is not textual",
+        "data": { "base64": "//5oAGkA" },
+        "expected": {
+          "bytes": 6,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "ef34ffe1058578c4df3c8c5c2e3db5d4c258c9334dc81b353a4f4d0d1f8e3bc9"
+          }
+        }
+      },
+      {
+        "description": "a multi-byte character truncated at the end is not textual",
+        "data": { "base64": "YWJj5Lg=" },
+        "expected": {
+          "bytes": 5,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "afe239961d4f332c9b2e3efb5a0b6e679b344a587532562cc87a410c718b7526"
+          }
+        }
+      },
+      {
+        "description": "a stray continuation byte is not textual",
+        "data": { "base64": "YYBi" },
+        "expected": {
+          "bytes": 3,
+          "textual": false,
+          "integrity": {
+            "type": "sha256",
+            "hash": "dd8c0688f7b2a716fdc622d99cd7aae53b646031a9823af2c470ec8849fdbda6"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "description": "textual detection of small and unusual utf-8",
+    "specification": ["https://fairspec.org/specs/dataset/#textual"],
+    "tests": [
+      {
+        "description": "a single byte is textual",
+        "data": "a",
+        "expected": {
+          "bytes": 1,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+          }
+        }
+      },
+      {
+        "description": "carriage returns only are textual",
+        "data": "a\rb\r",
+        "expected": {
+          "bytes": 4,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "95214dcabd7c592744f2ed461262a22b05fc1b2fd6f332bc83d0acf23193f15b"
+          }
+        }
+      },
+      {
+        "description": "a four-byte character is textual",
+        "data": "a😀b\n",
+        "expected": {
+          "bytes": 7,
+          "textual": true,
+          "integrity": {
+            "type": "sha256",
+            "hash": "8dc7af5cf51a4f74292d63db5bbb8eb9b6a9f8f2b997f965db6b37da8fa03e60"
+          }
+        }
+      }
+    ]
   }
 ]

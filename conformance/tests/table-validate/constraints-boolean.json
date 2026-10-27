@@ -35,5 +35,233 @@
         ]
       }
     ]
+  },
+  {
+    "description": "default trueValues and falseValues",
+    "comment": "A quoted \"\" stays an empty string, so it is a value that is in neither list",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#boolean",
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": { "id": { "type": "integer" }, "x": { "type": "boolean" } }
+    },
+    "tests": [
+      {
+        "description": "every default true value is valid",
+        "data": "id,x\n1,true\n2,True\n3,TRUE\n4,1\n",
+        "valid": true
+      },
+      {
+        "description": "every default false value is valid",
+        "data": "id,x\n1,false\n2,False\n3,FALSE\n4,0\n",
+        "valid": true
+      },
+      {
+        "description": "mixed case is a cell/type error",
+        "data": "id,x\n1,true\n2,tRUE\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "tRUE"
+          }
+        ]
+      },
+      {
+        "description": "a single letter is a cell/type error",
+        "data": "id,x\n1,true\n2,t\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "t"
+          }
+        ]
+      },
+      {
+        "description": "yes is a cell/type error",
+        "data": "id,x\n1,true\n2,yes\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "yes"
+          }
+        ]
+      },
+      {
+        "description": "2 is a cell/type error",
+        "data": "id,x\n1,true\n2,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "2"
+          }
+        ]
+      },
+      {
+        "description": "1.0 is a cell/type error",
+        "data": "id,x\n1,true\n2,1.0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "1.0"
+          }
+        ]
+      },
+      {
+        "description": "a leading space is a cell/type error",
+        "data": "id,x\n1,true\n2, true\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": " true"
+          }
+        ]
+      },
+      {
+        "description": "a quoted empty string is a cell/type error",
+        "data": "id,x\n1,true\n2,\"\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "custom trueValues replace the defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "boolean", "trueValues": ["yes"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "the custom true value and the default false values are valid",
+        "data": "id,x\n1,yes\n2,false\n3,False\n4,FALSE\n5,0\n",
+        "valid": true
+      },
+      {
+        "description": "a default true value is a cell/type error",
+        "data": "id,x\n1,yes\n2,true\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "true"
+          }
+        ]
+      },
+      {
+        "description": "another case of the custom value is a cell/type error",
+        "data": "id,x\n1,yes\n2,YES\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "YES"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "custom falseValues replace the defaults",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "boolean", "falseValues": ["no"] }
+      }
+    },
+    "tests": [
+      {
+        "description": "the custom false value and the default true values are valid",
+        "data": "id,x\n1,no\n2,true\n3,True\n4,TRUE\n5,1\n",
+        "valid": true
+      },
+      {
+        "description": "a default false value is a cell/type error",
+        "data": "id,x\n1,no\n2,false\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "false"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "custom values that look like other types",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "boolean",
+          "trueValues": ["1", "on"],
+          "falseValues": ["-1", "off"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the listed values are valid",
+        "data": "id,x\n1,1\n2,on\n3,-1\n4,off\n",
+        "valid": true
+      }
+    ]
   }
 ]

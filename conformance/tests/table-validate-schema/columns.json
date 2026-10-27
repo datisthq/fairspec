@@ -1,0 +1,894 @@
+[
+  {
+    "description": "column type values",
+    "specification": ["https://fairspec.org/specs/table-schema/#type"],
+    "tests": [
+      {
+        "description": "a format name as the type is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "date"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a repeated type in an array is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["integer", "integer"]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a repeated null in an array is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["string", "null", "null"]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "null first in a type array is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["null", "string"],
+              "format": "date"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "number before integer with null is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["null", "number", "integer"]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a type that is not a string is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": 1
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "required and allRequired",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#required",
+      "https://fairspec.org/specs/table-schema/#allrequired"
+    ],
+    "tests": [
+      {
+        "description": "a required item that is not a string is invalid",
+        "data": {
+          "required": [1],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "required naming listed columns is valid",
+        "data": {
+          "required": ["id"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "allRequired that is not a boolean is invalid",
+        "data": {
+          "allRequired": "true",
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "additionalProperties values",
+    "specification": ["https://fairspec.org/specs/table-schema/#additionalproperties"],
+    "tests": [
+      {
+        "description": "an empty schema is invalid",
+        "data": {
+          "additionalProperties": {},
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a string is invalid",
+        "data": {
+          "additionalProperties": "false",
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "true is valid",
+        "data": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "numeric bounds and multipleOf",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#multipleof"
+    ],
+    "tests": [
+      {
+        "description": "multipleOf zero is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "multipleOf": 0
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a negative multipleOf is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "multipleOf": -0.5
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a negative integer multipleOf is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "multipleOf": -2
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a fractional multipleOf on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "multipleOf": 0.5
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a fractional multipleOf on a number column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "multipleOf": 0.5
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a fractional minimum on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 1.5
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a string maximum on a number column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "maximum": "10"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer minimum on a number column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": 1
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "length and item counts",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minlength",
+      "https://fairspec.org/specs/table-schema/#maxlength",
+      "https://fairspec.org/specs/table-schema/#minitems",
+      "https://fairspec.org/specs/table-schema/#maxitems"
+    ],
+    "tests": [
+      {
+        "description": "a negative minLength is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "minLength": -1
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a negative maxLength is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "maxLength": -1
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a fractional minLength is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "minLength": 1.5
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "zero minLength and maxLength are valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 0
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a negative minItems is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "minItems": -1
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a negative maxItems is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "maxItems": -1
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "zero minItems is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "minItems": 0
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "list itemType and delimiter",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#itemtype",
+      "https://fairspec.org/specs/table-schema/#delimiter"
+    ],
+    "tests": [
+      {
+        "description": "an itemType outside the list is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "itemType": "array"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "decimal as itemType is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "itemType": "decimal"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "local-date-time as itemType is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "itemType": "local-date-time"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a two-character delimiter is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "list",
+              "delimiter": ";;"
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "temporalFormat patterns",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tests": [
+      {
+        "description": "an unknown conversion specification is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%Y-%Q"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a literal percent sign is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%Y%%%m%%%d"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a date-time pattern without an offset is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "date-time",
+              "temporalFormat": "%Y-%m-%dT%H:%M:%S"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a time pattern with an offset is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "time",
+              "temporalFormat": "%H:%M:%S%:z"
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a date pattern with an offset is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "date",
+              "temporalFormat": "%Y-%m-%d%z"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a local-time pattern with an offset is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "local-time",
+              "temporalFormat": "%H:%M%z"
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "values that must match the column type",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#enum",
+      "https://fairspec.org/specs/table-schema/#const",
+      "https://fairspec.org/specs/table-schema/#default",
+      "https://fairspec.org/specs/table-schema/#examples",
+      "https://fairspec.org/specs/table-schema/#categories"
+    ],
+    "tests": [
+      {
+        "description": "a string enum on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "enum": ["a"]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer enum on a string column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "enum": [1]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a fractional enum on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "enum": [1, 1.5]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer enum on a number column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "enum": [1, 2.5]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a string const on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "const": "1"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a null const on a nullable column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": ["string", "null"],
+              "const": null
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "a string default on an integer column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "default": "x"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a string example on a boolean column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "examples": [true, "yes"]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "string categories on an integer column are invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "format": "categorical",
+              "categories": ["a", "b"]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a labelled integer category on a string column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "categorical",
+              "categories": [
+                {
+                  "value": 1,
+                  "label": "One"
+                }
+              ]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "labelled integer categories on an integer column are valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "format": "categorical",
+              "categories": [
+                {
+                  "value": 1,
+                  "label": "One"
+                },
+                2
+              ]
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "boolean values",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#truevalues",
+      "https://fairspec.org/specs/table-schema/#falsevalues"
+    ],
+    "tests": [
+      {
+        "description": "a number in trueValues is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": [1]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a boolean in falseValues is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "falseValues": [false]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a string trueValues is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": "yes"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "string arrays are valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "trueValues": ["Y"],
+              "falseValues": ["N"]
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "missingValues types",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#column-missingvalues"
+    ],
+    "tests": [
+      {
+        "description": "a number table-level value is invalid",
+        "data": {
+          "missingValues": [1.5],
+          "properties": {
+            "x": {
+              "type": "number"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a boolean table-level value is invalid",
+        "data": {
+          "missingValues": [false],
+          "properties": {
+            "x": {
+              "type": "number"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a labelled number value is invalid",
+        "data": {
+          "missingValues": [
+            {
+              "value": 1.5,
+              "label": "x"
+            }
+          ],
+          "properties": {
+            "x": {
+              "type": "number"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer value on a string column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "missingValues": [-999]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer value on a date column is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "format": "date",
+              "missingValues": [0]
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "an integer value on a boolean column is valid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "boolean",
+              "missingValues": [-1, "NA"]
+            }
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "mixed labelled and plain table-level values are valid",
+        "data": {
+          "missingValues": [
+            "NA",
+            {
+              "value": -999,
+              "label": "Sensor"
+            }
+          ],
+          "properties": {
+            "x": {
+              "type": "number"
+            }
+          }
+        },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "single characters and flags",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#groupchar",
+      "https://fairspec.org/specs/table-schema/#withtext",
+      "https://fairspec.org/specs/table-schema/#column-title",
+      "https://fairspec.org/specs/table-schema/#pattern"
+    ],
+    "tests": [
+      {
+        "description": "a two-character groupChar is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "groupChar": ",,"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a string withText is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "withText": "yes"
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a number column title is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "number",
+              "title": 5
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "a pattern that is not a string is invalid",
+        "data": {
+          "properties": {
+            "x": {
+              "type": "string",
+              "pattern": 5
+            }
+          }
+        },
+        "valid": false
+      }
+    ]
+  }
+]

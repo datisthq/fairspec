@@ -81,5 +81,243 @@
         ]
       }
     ]
+  },
+  {
+    "description": "two foreign keys on one table",
+    "comment": "Each foreign key is checked on its own; a violation of one names that foreign key only",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        },
+        {
+          "name": "tags",
+          "data": "tags.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "code": { "type": "string" } } }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "user_id": { "type": "integer" },
+              "tag": { "type": "string" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              },
+              {
+                "columns": ["tag"],
+                "reference": { "resource": "tags", "columns": ["code"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "rows resolving both are valid",
+        "data": {
+          "users.csv": "id\n1\n",
+          "tags.csv": "code\nx\n",
+          "posts.csv": "user_id,tag\n1,x\n"
+        },
+        "valid": true
+      },
+      {
+        "description": "a dangling user is an error of the first foreign key",
+        "data": {
+          "users.csv": "id\n1\n",
+          "tags.csv": "code\nx\n",
+          "posts.csv": "user_id,tag\n2,x\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": { "resource": "users", "columns": ["id"] }
+            },
+            "cells": ["2"]
+          }
+        ]
+      },
+      {
+        "description": "a dangling tag is an error of the second foreign key",
+        "data": {
+          "users.csv": "id\n1\n",
+          "tags.csv": "code\nx\n",
+          "posts.csv": "user_id,tag\n1,y\n"
+        },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["tag"],
+              "reference": { "resource": "tags", "columns": ["code"] }
+            },
+            "cells": ["y"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a referenced table without rows",
+    "comment": "No row of the referenced resource holds the value, so every non-null reference dangles",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "users",
+          "data": "users.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "id": { "type": "integer" },
+              "user_id": { "type": ["integer", "null"] }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "a null reference is valid",
+        "data": { "users.csv": "id\n", "posts.csv": "id,user_id\n1,\n" },
+        "valid": true
+      },
+      {
+        "description": "a value is a foreignKey error",
+        "data": { "users.csv": "id\n", "posts.csv": "id,user_id\n1,1\n" },
+        "valid": false,
+        "errors": [
+          {
+            "type": "foreignKey",
+            "resourceName": "posts",
+            "foreignKey": {
+              "columns": ["user_id"],
+              "reference": { "resource": "users", "columns": ["id"] }
+            },
+            "cells": ["1"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a foreign key whose local column is not in properties",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "users.csv", "fileDialect": { "format": "csv" } },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": { "id": { "type": "integer" } },
+            "foreignKeys": [
+              {
+                "columns": ["user_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": { "users.csv": "id\n1\n", "posts.csv": "id\n1\n" },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "a foreign key with column lists of different lengths",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "users.csv", "fileDialect": { "format": "csv" } },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": {
+              "user_id": { "type": "integer" },
+              "org_id": { "type": "integer" }
+            },
+            "foreignKeys": [
+              {
+                "columns": ["user_id", "org_id"],
+                "reference": { "resource": "users", "columns": ["id"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": { "users.csv": "id\n1\n", "posts.csv": "user_id,org_id\n1,1\n" },
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "a foreign key with no columns",
+    "specification": ["https://fairspec.org/specs/table-schema/#foreignkeys"],
+    "dataset": {
+      "resources": [
+        { "name": "users", "data": "users.csv", "fileDialect": { "format": "csv" } },
+        {
+          "name": "posts",
+          "data": "posts.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": {
+            "properties": { "user_id": { "type": "integer" } },
+            "foreignKeys": [
+              { "columns": [], "reference": { "resource": "users", "columns": [] } }
+            ]
+          }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is invalid",
+        "data": { "users.csv": "id\n1\n", "posts.csv": "user_id\n1\n" },
+        "valid": false
+      }
+    ]
   }
 ]

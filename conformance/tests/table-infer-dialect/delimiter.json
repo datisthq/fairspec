@@ -48,5 +48,65 @@
         }
       }
     ]
+  },
+  {
+    "description": "delimiter detection with quoted cells",
+    "comment": "Inferred dialects are library shape, not normative; the expected shape follows the TypeScript library, as in the other groups",
+    "tests": [
+      {
+        "description": "a quoted delimiter outnumbering the real one",
+        "data": "id,name\n1,\"a;b;c;d\"\n2,\"e;f;g;h\"\n",
+        "expected": {
+          "format": "csv",
+          "delimiter": ",",
+          "quoteChar": "\"",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      },
+      {
+        "description": "commas inside quoted semicolon-separated cells",
+        "data": "id;name\n1;\"a,b,c,d\"\n2;\"e,f,g,h\"\n",
+        "expected": {
+          "format": "csv",
+          "delimiter": ";",
+          "quoteChar": "\"",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      }
+    ]
+  },
+  {
+    "description": "delimiter detection with a byte order mark",
+    "comment": "Inferred dialects are library shape, not normative; the expected shape follows the TypeScript library, as in the other groups",
+    "tests": [
+      {
+        "description": "the BOM does not change the delimiter",
+        "data": "﻿id;name;age\n1;alice;25\n2;bob;30\n",
+        "expected": {
+          "format": "csv",
+          "delimiter": ";",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      }
+    ]
+  },
+  {
+    "description": "delimiter detection with non-ASCII cells",
+    "comment": "Inferred dialects are library shape, not normative; the expected shape follows the TypeScript library, as in the other groups",
+    "tests": [
+      {
+        "description": "pipe-separated non-ASCII text",
+        "data": "名前|ville\nアリス|Zürich\nボブ|Kraków\n",
+        "expected": {
+          "format": "csv",
+          "delimiter": "|",
+          "headerRows": [1],
+          "lineTerminator": "\n"
+        }
+      }
+    ]
   }
 ]

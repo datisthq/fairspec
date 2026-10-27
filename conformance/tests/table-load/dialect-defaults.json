@@ -22,5 +22,137 @@
         }
       }
     ]
+  },
+  {
+    "description": "a csv dialect without a delimiter or quoteChar",
+    "comment": "An absent property takes its default and is never inferred",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#delimiter",
+      "https://fairspec.org/specs/file-dialect/#quotechar"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a tab is not taken as the delimiter",
+        "data": "a\tb\nx\ty\n",
+        "expected": {
+          "columns": ["a\tb"],
+          "rows": [["x\ty"]]
+        }
+      },
+      {
+        "description": "a pipe is not taken as the delimiter",
+        "data": "a|b\nx|y\n",
+        "expected": {
+          "columns": ["a|b"],
+          "rows": [["x|y"]]
+        }
+      },
+      {
+        "description": "a single quote is not taken as the quoteChar",
+        "data": "id,name\na,'b'\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "'b'"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a csv dialect without headerRows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#headerrows"
+    ],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tests": [
+      {
+        "description": "a numeric first row is still the header",
+        "data": "1,2\n3,4\n",
+        "expected": {
+          "columns": ["1", "2"],
+          "rows": [[3, 4]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "unknown dialect properties",
+    "comment": "Properties the spec does not define, such as header, doubleQuote or skipInitialSpace, carry no meaning and must be ignored",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#extension"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "header": false,
+      "doubleQuote": false,
+      "skipInitialSpace": true,
+      "escapeChar": "\\",
+      "x-custom": {
+        "a": 1
+      }
+    },
+    "tests": [
+      {
+        "description": "the first row is still the header",
+        "data": "id,name\na,b\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "unknown dialect properties beside known ones",
+    "specification": ["https://fairspec.org/specs/file-dialect/#extension"],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": ";",
+      "nullSequence": "NA",
+      "title": "Semicolons",
+      "description": "A test",
+      "futureOption": "x"
+    },
+    "tests": [
+      {
+        "description": "the known properties apply",
+        "data": "id;name\na;NA\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", null]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "unknown properties on a json dialect",
+    "specification": ["https://fairspec.org/specs/file-dialect/#extension"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "object",
+      "encoding": "latin1"
+    },
+    "tests": [
+      {
+        "description": "the rows are read as declared",
+        "data": [
+          {
+            "id": 1
+          }
+        ],
+        "expected": {
+          "columns": ["id"],
+          "rows": [[1]]
+        }
+      }
+    ]
   }
 ]

@@ -1,0 +1,8 @@
+[
+  {
+    "description": "a dataset without resources",
+    "specification": ["https://fairspec.org/specs/dataset/#resources"],
+    "dataset": {},
+    "tests": [{ "description": "lists no names", "data": {}, "expected": [] }]
+  }
+]

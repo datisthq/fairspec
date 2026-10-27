@@ -36,5 +36,154 @@
         }
       }
     ]
+  },
+  {
+    "description": "missing value edges",
+    "comment": "The spec defines the column types but not how to infer them; inference is library shape, so the expected schemas follow the TypeScript library. The default tokens are empty, NA, N/A, null and -, matched case-sensitively",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tests": [
+      {
+        "description": "a column of only empty cells is a nullable string",
+        "data": "id,x\n1,\n2,\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      },
+      {
+        "description": "a column of only NA is a nullable string",
+        "data": "id,x\n1,NA\n2,NA\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["string", "null"]
+            }
+          },
+          "missingValues": ["NA"]
+        }
+      },
+      {
+        "description": "a quoted empty string is listed as a missing value",
+        "data": "id,x\n1,\"\"\n2,\"\"\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["string", "null"]
+            }
+          },
+          "missingValues": [""]
+        }
+      },
+      {
+        "description": "every default token at once",
+        "data": "a,b,c,d,e\n1,2,3,4,5\nNA,N/A,null,-,\n",
+        "expected": {
+          "properties": {
+            "a": {
+              "type": ["integer", "null"]
+            },
+            "b": {
+              "type": ["integer", "null"]
+            },
+            "c": {
+              "type": ["integer", "null"]
+            },
+            "d": {
+              "type": ["integer", "null"]
+            },
+            "e": {
+              "type": ["integer", "null"]
+            }
+          },
+          "missingValues": ["NA", "N/A", "null", "-"]
+        }
+      },
+      {
+        "description": "upper-case NULL is not a token",
+        "data": "id,x\n1,NULL\n2,5\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "lower-case na is not a token",
+        "data": "id,x\n1,na\n2,5\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "description": "a token in a string column",
+        "data": "id,x\n1,NA\n2,alice\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["string", "null"]
+            }
+          },
+          "missingValues": ["NA"]
+        }
+      },
+      {
+        "description": "a token in a boolean column",
+        "data": "id,x\n1,-\n2,true\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["boolean", "null"]
+            }
+          },
+          "missingValues": ["-"]
+        }
+      },
+      {
+        "description": "a token in a date column",
+        "data": "id,x\n1,N/A\n2,2024-01-15\n",
+        "expected": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "x": {
+              "type": ["string", "null"],
+              "format": "date"
+            }
+          },
+          "missingValues": ["N/A"]
+        }
+      }
+    ]
   }
 ]

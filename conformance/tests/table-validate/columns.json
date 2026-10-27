@@ -3,15 +3,31 @@
     "description": "required column absent from the data",
     "tableSchema": {
       "required": ["name"],
-      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
     "tests": [
-      { "description": "present is valid", "data": "id,name\n1,alice\n", "valid": true },
+      {
+        "description": "present is valid",
+        "data": "id,name\n1,alice\n",
+        "valid": true
+      },
       {
         "description": "absent is a column/missing error",
         "data": "id\n1\n2\n",
         "valid": false,
-        "errors": [{ "type": "column/missing", "columnName": "name" }]
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "name"
+          }
+        ]
       }
     ]
   },
@@ -19,14 +35,26 @@
     "description": "all columns required",
     "tableSchema": {
       "allRequired": true,
-      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
     "tests": [
       {
         "description": "an absent column is a column/missing error",
         "data": "id\n1\n2\n",
         "valid": false,
-        "errors": [{ "type": "column/missing", "columnName": "name" }]
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "name"
+          }
+        ]
       }
     ]
   },
@@ -34,8 +62,194 @@
     "description": "optional column absent from the data",
     "specification": ["https://fairspec.org/specs/table-schema/#required"],
     "tableSchema": {
-      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
-    "tests": [{ "description": "absent is valid", "data": "id\n1\n2\n", "valid": true }]
+    "tests": [
+      {
+        "description": "absent is valid",
+        "data": "id\n1\n2\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "allRequired with additionalProperties false",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#allrequired",
+      "https://fairspec.org/specs/table-schema/#additionalproperties",
+      "https://fairspec.org/specs/table-schema/#validation"
+    ],
+    "tableSchema": {
+      "allRequired": true,
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "exactly the listed columns in another order are valid",
+        "data": "name,id\na,1\n",
+        "valid": true
+      },
+      {
+        "description": "extra columns around a listed one follow the missing column",
+        "data": "x,id,y\n1,2,3\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "name"
+          },
+          {
+            "type": "column/extra",
+            "columnName": "x"
+          },
+          {
+            "type": "column/extra",
+            "columnName": "y"
+          }
+        ]
+      },
+      {
+        "description": "a header differing only in case is both missing and extra",
+        "data": "ID,name\n1,a\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "id"
+          },
+          {
+            "type": "column/extra",
+            "columnName": "ID"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "required columns of a header-only table",
+    "specification": ["https://fairspec.org/specs/table-schema/#required"],
+    "fileDialect": {
+      "format": "csv"
+    },
+    "tableSchema": {
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a header naming them is valid",
+        "data": "id,name\n",
+        "valid": true
+      },
+      {
+        "description": "a header without one is a column/missing error",
+        "data": "id\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "name"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a required column with a nullable type",
+    "comment": "required asks for the column, not for its cells",
+    "specification": ["https://fairspec.org/specs/table-schema/#required"],
+    "tableSchema": {
+      "required": ["note"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "note": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "present with only empty cells is valid",
+        "data": "id,note\n1,\n2,\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "extra columns allowed by default with a missing column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#additionalproperties",
+      "https://fairspec.org/specs/table-schema/#required"
+    ],
+    "tableSchema": {
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "only the missing column is reported",
+        "data": "x,y\n1,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/missing",
+            "columnName": "id"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "additionalProperties false with no properties",
+    "specification": ["https://fairspec.org/specs/table-schema/#additionalproperties"],
+    "tableSchema": {
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "tests": [
+      {
+        "description": "every column is a column/extra error",
+        "data": "a,b\n1,2\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "column/extra",
+            "columnName": "a"
+          },
+          {
+            "type": "column/extra",
+            "columnName": "b"
+          }
+        ]
+      }
+    ]
   }
 ]

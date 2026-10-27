@@ -46,5 +46,177 @@
         }
       }
     ]
+  },
+  {
+    "description": "delimiter pipe",
+    "specification": ["https://fairspec.org/specs/file-dialect/#delimiter"],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": "|"
+    },
+    "tests": [
+      {
+        "description": "cells are split on the pipe",
+        "data": "id|name\na|b,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b,c"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "delimiter tab in csv",
+    "specification": ["https://fairspec.org/specs/file-dialect/#delimiter"],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": "\t"
+    },
+    "tests": [
+      {
+        "description": "cells are split on the tab",
+        "data": "id\tname\na\tb,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b,c"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "delimiter semicolon with quotes",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#delimiter",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": ";"
+    },
+    "tests": [
+      {
+        "description": "a quoted cell keeps the delimiter",
+        "data": "id;name\na;\"b;c\"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b;c"]]
+        }
+      },
+      {
+        "description": "a comma is plain text",
+        "data": "id;name\na;b,c\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b,c"]]
+        }
+      },
+      {
+        "description": "an unquoted trailing delimiter leaves a null cell",
+        "data": "id;name\na;\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", null]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoteChar single quote",
+    "specification": ["https://fairspec.org/specs/file-dialect/#quotechar"],
+    "fileDialect": {
+      "format": "csv",
+      "quoteChar": "'"
+    },
+    "tests": [
+      {
+        "description": "a double quote is plain text",
+        "data": "id,name\na,say \"hi\"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "say \"hi\""]]
+        }
+      },
+      {
+        "description": "a cell wrapped in double quotes keeps them",
+        "data": "id,name\na,\"b\"\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "\"b\""]]
+        }
+      },
+      {
+        "description": "a quoted cell spans lines",
+        "data": "id,name\na,'x\ny'\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "x\ny"]]
+        }
+      },
+      {
+        "description": "a quoted header cell keeps its delimiter",
+        "data": "id,'na,me'\na,b\n",
+        "expected": {
+          "columns": ["id", "na,me"],
+          "rows": [["a", "b"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoteChar single quote with an empty cell",
+    "comment": "An explicit schema keeps schema inference out of the empty string",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#quotechar",
+      "https://fairspec.org/specs/file-dialect/#csv"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "quoteChar": "'"
+    },
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty cell is an empty string",
+        "data": "id,name\na,''\nb,\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", ""],
+            ["b", null]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "quoteChar with a custom delimiter",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#quotechar",
+      "https://fairspec.org/specs/file-dialect/#delimiter"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "delimiter": "|",
+      "quoteChar": "'"
+    },
+    "tests": [
+      {
+        "description": "the quote protects the delimiter",
+        "data": "id|name\na|'b|c'\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [["a", "b|c"]]
+        }
+      }
+    ]
   }
 ]

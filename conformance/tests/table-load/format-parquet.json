@@ -19,5 +19,45 @@
         }
       }
     ]
+  },
+  {
+    "description": "parquet file with nulls",
+    "comment": "Produced with polars write_parquet from a frame of Int64 id [1, null, 3] and String name [a, null, c]",
+    "specification": ["https://fairspec.org/specs/file-dialect/#parquet"],
+    "format": "parquet",
+    "tests": [
+      {
+        "description": "null cells stay null",
+        "data": {
+          "base64": "UEFSMRUEFSAVMkwVBBUAAAAotS/9IBCBAAABAAAAAAAAAAMAAAAAAAAAFQAVEhUkLBUGFRAVBhUGHDYCKAgDAAAAAAAAABgIAQAAAAAAAAAAAAAotS/9IAlJAAACAAAAAwUBAwIVBBk1AAYQGRgCaWQVDBYGFp4BFsIBJlQmCBw2AigIAwAAAAAAAAAYCAEAAAAAAAAAAAAVBBUUFSZMFQQVAAAAKLUv/SAKUQAAAQAAAGEBAAAAYxUAFRIVJCwVBhUQFQYVBhw2AigBYxgBYQAAACi1L/0gCUkAAAIAAAADBQEDAhUMGTUABhAZGARuYW1lFQwWBhZ2FpoBJvACJrACHDYCKAFjGAFhAAAZEQIZGAgBAAAAAAAAABkYCAMAAAAAAAAAFQAZFgIAGRECGRgBYRkYAWMVABkWAgAZHBZUFXYWAAAAGRwW8AIVWhYAAAAVAhk8SARyb290FQQAFQQlAhgCaWQAFQwlAhgEbmFtZSUATBwAAAAWBhkcGSwmlgIcFQQZNQAGEBkYAmlkFQwWBhaeARbCASZUJggcNgIoCAMAAAAAAAAAGAgBAAAAAAAAAAAAFvoEFRQWmgQVPgAmigQcFQwZNQAGEBkYBG5hbWUVDBYGFnYWmgEm8AImsAIcNgIoAWMYAWEAABaOBRUWFtgEFSIAFpQCFgYmCBbcAhQAABkcGAxBUlJPVzpzY2hlbWEY7AEvLy8vLzZjQUFBQUVBQUFBOHYvLy94UUFBQUFFQUFFQUFBQUtBQXNBQ0FBS0FBUUErUC8vL3d3QUFBQUlBQWdBQUFBRUFBSUFBQUEwQUFBQUJBQUFBTUQvLy84Y0FBQUFFQUFBQUFnQUFBQUJGQUFBQUFBQUFQei8vLzhFQUFRQUJBQUFBRzVoYldVQUFBQUE3UC8vL3pnQUFBQWdBQUFBR0FBQUFBRUNBQUFRQUJJQUJBQVFBQkVBQ0FBQUFBd0FBQUFBQVBULy8vOUFBQUFBQVFBQUFBZ0FDUUFFQUFnQUFnQUFBR2xrQUE9PQAYTlBvbGFycyAocHl0aG9uKSB2ZXJzaW9uIDIuMC4wIChidWlsZCAyMmExNDdkZTNkMmJiMmU0NGI5NzMzOGEyNTEwODE2YzcxMDVjOWYyKRksHAAAHAAAAAwCAABQQVIx"
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            [1, "a"],
+            [null, null],
+            [3, "c"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "parquet file with no rows",
+    "comment": "Produced with polars write_parquet from an empty frame of Int64 id and String name",
+    "specification": ["https://fairspec.org/specs/file-dialect/#parquet"],
+    "format": "parquet",
+    "tests": [
+      {
+        "description": "the columns are kept",
+        "data": {
+          "base64": "UEFSMRUCGTxIBHJvb3QVBAAVBCUCGAJpZAAVDCUCGARuYW1lJQBMHAAAABYAGQwZHBgMQVJST1c6c2NoZW1hGOwBLy8vLy82Y0FBQUFFQUFBQTh2Ly8veFFBQUFBRUFBRUFBQUFLQUFzQUNBQUtBQVFBK1AvLy93d0FBQUFJQUFnQUFBQUVBQUlBQUFBMEFBQUFCQUFBQU1ELy8vOGNBQUFBRUFBQUFBZ0FBQUFCRkFBQUFBQUFBUHovLy84RUFBUUFCQUFBQUc1aGJXVUFBQUFBN1AvLy96Z0FBQUFnQUFBQUdBQUFBQUVDQUFBUUFCSUFCQUFRQUJFQUNBQUFBQXdBQUFBQUFQVC8vLzlBQUFBQUFRQUFBQWdBQ1FBRUFBZ0FBZ0FBQUdsa0FBPT0AGE5Qb2xhcnMgKHB5dGhvbikgdmVyc2lvbiAyLjAuMCAoYnVpbGQgMjJhMTQ3ZGUzZDJiYjJlNDRiOTczMzhhMjUxMDgxNmM3MTA1YzlmMikZLBwAABwAAACEAQAAUEFSMQ=="
+        },
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": []
+        }
+      }
+    ]
   }
 ]

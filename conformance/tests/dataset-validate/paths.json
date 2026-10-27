@@ -30,5 +30,259 @@
         "valid": false
       }
     ]
+  },
+  {
+    "description": "an absolute internal path",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "/a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an internal path starting with a tilde",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "~/a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a bare tilde component",
+    "comment": "Any path starting with ~ is an absolute path indicator",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "~a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a .. component in the middle",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "a/../a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a path that is only ..",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": ".." }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a leading .. component",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "../a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a trailing .. component",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "a.csv/.." }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a backslash separator",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "sub\\a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a leading backslash",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "\\a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a windows drive without a separator",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "C:a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a lowercase windows drive",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "c:/a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a file scheme without slashes",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": { "resources": [{ "name": "table", "data": "file:a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a file URL",
+    "comment": "Not an internal path, since its first component starts with a letter and holds a colon, and not an external path, which is http or https only",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#internal-path",
+      "https://fairspec.org/specs/dataset/#external-path"
+    ],
+    "dataset": { "resources": [{ "name": "table", "data": "file:///a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "an ftp URL",
+    "comment": "An external path is an http or https URL",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#internal-path",
+      "https://fairspec.org/specs/dataset/#external-path"
+    ],
+    "dataset": { "resources": [{ "name": "table", "data": "ftp://example.com/a.csv" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a data URI",
+    "comment": "Neither an internal path nor an http or https URL",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#internal-path",
+      "https://fairspec.org/specs/dataset/#external-path"
+    ],
+    "dataset": { "resources": [{ "name": "table", "data": "data:text/csv,id%0A1" }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a multipart part with a .. component",
+    "comment": "Every part is a path, and each one must be a valid internal or external path",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": { "resources": [{ "name": "table", "data": ["a.csv", "../a.csv"] }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a multipart part with an absolute path",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#data",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": { "resources": [{ "name": "table", "data": ["a.csv", "/a.csv"] }] },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a table schema path with a .. component",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#tableschema",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [{ "name": "table", "data": "a.csv", "tableSchema": "../schema.json" }]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a data schema path that is absolute",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#dataschema",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [{ "name": "table", "data": "a.csv", "dataSchema": "/schema.json" }]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a file dialect path with a backslash",
+    "specification": [
+      "https://fairspec.org/specs/dataset/#filedialect",
+      "https://fairspec.org/specs/dataset/#internal-path"
+    ],
+    "dataset": {
+      "resources": [
+        { "name": "table", "data": "a.csv", "fileDialect": "sub\\dialect.json" }
+      ]
+    },
+    "tests": [
+      { "description": "is invalid", "data": { "a.csv": "id\n1\n" }, "valid": false }
+    ]
+  },
+  {
+    "description": "a path with a leading . component",
+    "comment": "Only a .. component leaves the directory; . stays in it",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "./a.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is valid", "data": { "a.csv": "id\n1\n" }, "valid": true }
+    ]
+  },
+  {
+    "description": "a path with spaces, parentheses and accents",
+    "comment": "Unicode, spaces and special characters are allowed in names",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "résultats (final).csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "is valid",
+        "data": { "résultats (final).csv": "id\n1\n" },
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "a file name that starts with a digit and a dot",
+    "specification": ["https://fairspec.org/specs/dataset/#internal-path"],
+    "dataset": {
+      "resources": [
+        {
+          "name": "table",
+          "data": "1.csv",
+          "fileDialect": { "format": "csv" },
+          "tableSchema": { "properties": { "id": { "type": "integer" } } }
+        }
+      ]
+    },
+    "tests": [
+      { "description": "is valid", "data": { "1.csv": "id\n1\n" }, "valid": true }
+    ]
   }
 ]

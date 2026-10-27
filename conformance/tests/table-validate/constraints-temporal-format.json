@@ -322,5 +322,519 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "12-hour clock bounds",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "local-time", "temporalFormat": "%I:%M %p" }
+      }
+    },
+    "tests": [
+      {
+        "description": "12 and 1 are valid hours",
+        "data": "id,x\n1,12:00 AM\n2,12:30 PM\n3,01:00 AM\n",
+        "valid": true
+      },
+      {
+        "description": "hour 13 is a cell/type error",
+        "data": "id,x\n1,12:00 AM\n2,13:00 PM\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "13:00 PM"
+          }
+        ]
+      },
+      {
+        "description": "hour 00 is a cell/type error",
+        "data": "id,x\n1,12:00 AM\n2,00:30 AM\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "00:30 AM"
+          }
+        ]
+      },
+      {
+        "description": "a missing AM or PM is a cell/type error",
+        "data": "id,x\n1,12:00 AM\n2,12:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "12:00"
+          }
+        ]
+      },
+      {
+        "description": "dotted A.M. is a cell/type error",
+        "data": "id,x\n1,12:00 AM\n2,12:00 A.M.\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "12:00 A.M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "two-digit years in the 2000s",
+    "comment": "%y 00 is 2000, a leap year; read as 1900 it would not be one",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "temporalFormat": "%d/%m/%y" }
+      }
+    },
+    "tests": [
+      {
+        "description": "February 29 of 00 is valid since 00 is 2000",
+        "data": "id,x\n1,29/02/00\n",
+        "valid": true
+      },
+      {
+        "description": "a four-digit year is a cell/type error",
+        "data": "id,x\n1,15/01/24\n2,15/01/2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "15/01/2024"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "day of the year bounds",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "temporalFormat": "%Y-%j" }
+      }
+    },
+    "tests": [
+      {
+        "description": "day 001 and day 365 of a common year are valid",
+        "data": "id,x\n1,2023-001\n2,2023-365\n",
+        "valid": true
+      },
+      {
+        "description": "day 000 is a cell/type error",
+        "data": "id,x\n1,2023-001\n2,2023-000\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2023-000"
+          }
+        ]
+      },
+      {
+        "description": "day 367 is a cell/type error",
+        "data": "id,x\n1,2023-001\n2,2024-367\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-367"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "field ranges",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "local-date-time",
+          "temporalFormat": "%Y-%m-%d %H:%M:%S"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the bounds of every field are valid",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-12-31 23:59:59\n",
+        "valid": true
+      },
+      {
+        "description": "unpadded fields are valid",
+        "data": "id,x\n1,2024-1-5 9:5:7\n",
+        "valid": true
+      },
+      {
+        "description": "minute 60 is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-01-01 00:60:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-01 00:60:00"
+          }
+        ]
+      },
+      {
+        "description": "hour 24 is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-01-01 24:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-01-01 24:00:00"
+          }
+        ]
+      },
+      {
+        "description": "month 13 is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-13-01 00:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-13-01 00:00:00"
+          }
+        ]
+      },
+      {
+        "description": "April 31 is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2024-04-31 00:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2024-04-31 00:00:00"
+          }
+        ]
+      },
+      {
+        "description": "February 29 of a common year is a cell/type error",
+        "data": "id,x\n1,2024-01-01 00:00:00\n2,2023-02-29 00:00:00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-date-time",
+            "rowNumber": 2,
+            "cell": "2023-02-29 00:00:00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "literal text in a pattern",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "temporalFormat": "on %Y-%m-%d" }
+      }
+    },
+    "tests": [
+      {
+        "description": "the literal text and the fields are valid",
+        "data": "id,x\n1,on 2024-01-15\n",
+        "valid": true
+      },
+      {
+        "description": "a missing literal is a cell/type error",
+        "data": "id,x\n1,on 2024-01-15\n2,2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "2024-01-15"
+          }
+        ]
+      },
+      {
+        "description": "another separator is a cell/type error",
+        "data": "id,x\n1,on 2024-01-15\n2,on 2024/01/15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "on 2024/01/15"
+          }
+        ]
+      },
+      {
+        "description": "trailing text is a cell/type error",
+        "data": "id,x\n1,on 2024-01-15\n2,on 2024-01-15 ok\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "on 2024-01-15 ok"
+          }
+        ]
+      },
+      {
+        "description": "leading text is a cell/type error",
+        "data": "id,x\n1,on 2024-01-15\n2,x on 2024-01-15\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "x on 2024-01-15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a percent sign next to a field",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "local-time", "temporalFormat": "%H%%%M" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a percent sign between fields is valid",
+        "data": "id,x\n1,14%30\n",
+        "valid": true
+      },
+      {
+        "description": "a missing percent sign is a cell/type error",
+        "data": "id,x\n1,14%30\n2,1430\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "1430"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "an offset without a colon",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "time", "temporalFormat": "%H:%M%z" }
+      }
+    },
+    "tests": [
+      {
+        "description": "%z reads offsets with and without a colon",
+        "data": "id,x\n1,14:30+0200\n2,14:30-05:30\n3,14:30+0000\n",
+        "valid": true
+      },
+      {
+        "description": "Z is a cell/type error under %z",
+        "data": "id,x\n1,14:30+0200\n2,14:30Z\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "14:30Z"
+          }
+        ]
+      },
+      {
+        "description": "an offset of hours only is a cell/type error",
+        "data": "id,x\n1,14:30+0200\n2,14:30+02\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "14:30+02"
+          }
+        ]
+      },
+      {
+        "description": "a missing offset is a cell/type error",
+        "data": "id,x\n1,14:30+0200\n2,14:30\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "time",
+            "rowNumber": 2,
+            "cell": "14:30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "fractional seconds need a digit",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "local-time",
+          "temporalFormat": "%H:%M:%S%.f"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a decimal point without digits is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,14:30:00.\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "14:30:00."
+          }
+        ]
+      },
+      {
+        "description": "a decimal comma is a cell/type error",
+        "data": "id,x\n1,14:30:00\n2,\"14:30:00,5\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "local-time",
+            "rowNumber": 2,
+            "cell": "14:30:00,5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "month names that are not English",
+    "specification": ["https://fairspec.org/specs/table-schema/#temporalformat"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "temporalFormat": "%d %B %Y" }
+      }
+    },
+    "tests": [
+      {
+        "description": "a truncated name is a cell/type error",
+        "data": "id,x\n1,15 January 2024\n2,15 Janu 2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "15 Janu 2024"
+          }
+        ]
+      },
+      {
+        "description": "a French name is a cell/type error",
+        "data": "id,x\n1,15 January 2024\n2,15 janvier 2024\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "date",
+            "rowNumber": 2,
+            "cell": "15 janvier 2024"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "unpadded fields under the default form",
+    "comment": "Without temporalFormat 2024-1-5 is invalid; with the same fields as a pattern, numeric fields match without leading zeros",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#temporalformat",
+      "https://fairspec.org/specs/table-schema/#date"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "date", "temporalFormat": "%Y-%m-%d" }
+      }
+    },
+    "tests": [
+      {
+        "description": "an unpadded month and day are valid with the pattern",
+        "data": "id,x\n1,2024-1-5\n2,2024-01-05\n",
+        "valid": true
+      }
+    ]
   }
 ]

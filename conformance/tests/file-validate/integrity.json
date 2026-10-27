@@ -21,5 +21,67 @@
         ]
       }
     ]
+  },
+  {
+    "description": "sha256 integrity of an empty file",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": {
+      "type": "sha256",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tests": [
+      { "description": "an empty file is valid", "data": "", "valid": true },
+      {
+        "description": "a single NUL byte is a file/integrity error",
+        "data": "\u0000",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha256",
+            "expectedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "actualHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "sha256 integrity of lf content",
+    "comment": "the sha256 of id\\n1\\n; hashes cover bytes, so line endings count",
+    "specification": ["https://fairspec.org/specs/dataset/#integrity"],
+    "integrity": {
+      "type": "sha256",
+      "hash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108"
+    },
+    "tests": [
+      { "description": "lf content is valid", "data": "id\n1\n", "valid": true },
+      {
+        "description": "crlf content is a file/integrity error",
+        "data": "id\r\n1\r\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha256",
+            "expectedHash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108",
+            "actualHash": "aaf52dc16349094c5563f8959ff0a9814354e804ff5c4e09457ae70040bc037c"
+          }
+        ]
+      },
+      {
+        "description": "a byte order mark in front is a file/integrity error",
+        "data": "\ufeffid\n1\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "file/integrity",
+            "hashType": "sha256",
+            "expectedHash": "7cde7fb64fd82bd152710cf238e017b9ab46c0592483edc067ba4f6c75fac108",
+            "actualHash": "7a8ab3b48769cc86df09eabd7ab1ae6cb9b15eb9dcf61b097ba85c2410a7c11c"
+          }
+        ]
+      }
+    ]
   }
 ]

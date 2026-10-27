@@ -264,5 +264,646 @@
         ]
       }
     ]
+  },
+  {
+    "description": "minimum equal to maximum on an integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "minimum": 5, "maximum": 5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "the single allowed value is valid",
+        "data": "id,x\n1,5\n2,5\n",
+        "valid": true
+      },
+      {
+        "description": "one below is a cell/minimum error",
+        "data": "id,x\n1,5\n2,4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "4",
+            "minimum": "5"
+          }
+        ]
+      },
+      {
+        "description": "one above is a cell/maximum error",
+        "data": "id,x\n1,5\n2,6\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "6",
+            "maximum": "5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "negative bounds on an integer column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "minimum": -10, "maximum": -5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values on and between the bounds are valid",
+        "data": "id,x\n1,-10\n2,-7\n3,-5\n",
+        "valid": true
+      },
+      {
+        "description": "a value below the negative minimum is a cell/minimum error",
+        "data": "id,x\n1,-7\n2,-11\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-11",
+            "minimum": "-10"
+          }
+        ]
+      },
+      {
+        "description": "a value above the negative maximum is a cell/maximum error",
+        "data": "id,x\n1,-7\n2,-4\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-4",
+            "maximum": "-5"
+          }
+        ]
+      },
+      {
+        "description": "zero is a cell/maximum error",
+        "data": "id,x\n1,-7\n2,0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0",
+            "maximum": "-5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "negative exclusive bounds on a number column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "exclusiveMinimum": -2.5, "exclusiveMaximum": -0.5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values strictly inside are valid",
+        "data": "id,x\n1,-2.49\n2,-1\n3,-0.51\n",
+        "valid": true
+      },
+      {
+        "description": "the exclusive minimum is a cell/exclusiveMinimum error",
+        "data": "id,x\n1,-1\n2,-2.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-2.5",
+            "minimum": "-2.5"
+          }
+        ]
+      },
+      {
+        "description": "the exclusive maximum is a cell/exclusiveMaximum error",
+        "data": "id,x\n1,-1\n2,-0.5\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMaximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-0.5",
+            "maximum": "-0.5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "exclusiveMinimum 0 on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#exclusiveminimum"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a tiny positive value is valid",
+        "data": "id,x\n1,0.0001\n",
+        "valid": true
+      },
+      {
+        "description": "0.0 is a cell/exclusiveMinimum error",
+        "data": "id,x\n1,1\n2,0.0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.0",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minimum and exclusiveMinimum together",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "minimum": 0, "exclusiveMinimum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a value above both is valid",
+        "data": "id,x\n1,1\n",
+        "valid": true
+      },
+      {
+        "description": "the shared bound fails only exclusiveMinimum",
+        "data": "id,x\n1,1\n2,0\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "maximum beyond binary floating point precision on an integer column",
+    "comment": "2^53 + 1 rounds to 2^53 as a binary double; integers compare exactly",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#integer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "maximum": 9007199254740992 }
+      }
+    },
+    "tests": [
+      {
+        "description": "the bound itself is valid",
+        "data": "id,x\n1,9007199254740992\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "trailing zeros on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "maximum": 1.1, "minimum": 1.1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "trailing zeros do not change the value",
+        "data": "id,x\n1,1.1\n2,1.10\n3,1.1000\n",
+        "valid": true
+      },
+      {
+        "description": "a value just above is a cell/maximum error",
+        "data": "id,x\n1,1.1\n2,1.1001\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/maximum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "1.1001",
+            "maximum": "1.1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "exclusive bounds on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "exclusiveMinimum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a positive value is valid",
+        "data": "id,x\n1,0.01\n",
+        "valid": true
+      },
+      {
+        "description": "zero with trailing zeros is a cell/exclusiveMinimum error",
+        "data": "id,x\n1,0.01\n2,0.00\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/exclusiveMinimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.00",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "minimum and maximum on a string column",
+    "comment": "A bound applies only to integer, number and decimal columns; on any other it MUST be ignored",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "minimum": 5, "maximum": 5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values the bound would reject are valid",
+        "data": "id,x\n1,1\n2,zzz\n3,9\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "exclusive bounds on a boolean column",
+    "comment": "A bound applies only to integer, number and decimal columns; on any other it MUST be ignored",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "boolean", "exclusiveMinimum": 1, "exclusiveMaximum": 0 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values the bound would reject are valid",
+        "data": "id,x\n1,true\n2,false\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "maximum on a local-time column",
+    "comment": "A bound applies only to integer, number and decimal columns; on any other it MUST be ignored",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "local-time", "maximum": 5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values the bound would reject are valid",
+        "data": "id,x\n1,14:30:00\n2,23:59:59\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "minimum on an integer list column",
+    "comment": "A bound applies only to integer, number and decimal columns; on any other it MUST be ignored",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "list",
+          "itemType": "integer",
+          "minimum": 10
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values the bound would reject are valid",
+        "data": "id,x\n1,\"1,2\"\n2,3\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "maximum on a string categorical column",
+    "comment": "A bound applies only to integer, number and decimal columns; on any other it MUST be ignored",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#maximum",
+      "https://fairspec.org/specs/table-schema/#exclusiveminimum",
+      "https://fairspec.org/specs/table-schema/#exclusivemaximum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "string",
+          "format": "categorical",
+          "categories": ["10", "20"],
+          "maximum": 15
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "values the bound would reject are valid",
+        "data": "id,x\n1,10\n2,20\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "minimum on an integer categorical column",
+    "comment": "An integer categorical column supports the integer type properties",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#categorical",
+      "https://fairspec.org/specs/table-schema/#minimum"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": {
+          "type": "integer",
+          "format": "categorical",
+          "categories": [1, 2, 3],
+          "minimum": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "listed categories above the minimum are valid",
+        "data": "id,x\n1,2\n2,3\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 0.1 on a number column",
+    "comment": "multipleOf uses exact decimal arithmetic on the value as written",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "multipleOf": 0.1 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values a binary double cannot divide exactly are multiples",
+        "data": "id,x\n1,0.3\n2,0.7\n3,1.1\n4,-0.3\n5,100.1\n",
+        "valid": true
+      },
+      {
+        "description": "a second decimal is a cell/multipleOf error",
+        "data": "id,x\n1,0.3\n2,0.35\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.35",
+            "multipleOf": 0.1
+          }
+        ]
+      },
+      {
+        "description": "a negative non-multiple is a cell/multipleOf error",
+        "data": "id,x\n1,0.3\n2,-0.35\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-0.35",
+            "multipleOf": 0.1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 0.001 on a number column",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "multipleOf": 0.001 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values with up to three decimals are multiples",
+        "data": "id,x\n1,0.005\n2,1.234\n3,2\n4,-0.001\n",
+        "valid": true
+      },
+      {
+        "description": "a fourth decimal is a cell/multipleOf error",
+        "data": "id,x\n1,0.005\n2,0.0055\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.0055",
+            "multipleOf": 0.001
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 0.5 on a number column with values beyond double precision",
+    "specification": ["https://fairspec.org/specs/table-schema/#multipleof"],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "number", "multipleOf": 0.5 }
+      }
+    },
+    "tests": [
+      {
+        "description": "a large multiple written exactly is valid",
+        "data": "id,x\n1,123456789012345678901.5\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 3 on an integer column beyond double precision",
+    "comment": "2^53 + 1 rounds to 2^53 as a binary double, which is not a multiple of 3",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#multipleof",
+      "https://fairspec.org/specs/table-schema/#integer"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "integer", "multipleOf": 3 }
+      }
+    },
+    "tests": [
+      {
+        "description": "2^53 + 1 is a multiple of 3",
+        "data": "id,x\n1,9007199254740993\n",
+        "valid": true
+      },
+      {
+        "description": "2^53 is a cell/multipleOf error",
+        "data": "id,x\n1,3\n2,9007199254740992\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "9007199254740992",
+            "multipleOf": 3
+          }
+        ]
+      },
+      {
+        "description": "a negative non-multiple is a cell/multipleOf error",
+        "data": "id,x\n1,3\n2,-7\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-7",
+            "multipleOf": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "multipleOf 0.01 on a decimal column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#multipleof",
+      "https://fairspec.org/specs/table-schema/#decimal"
+    ],
+    "tableSchema": {
+      "properties": {
+        "id": { "type": "integer" },
+        "x": { "type": "string", "format": "decimal", "multipleOf": 0.01 }
+      }
+    },
+    "tests": [
+      {
+        "description": "values with up to two decimals are multiples",
+        "data": "id,x\n1,0.3\n2,99.99\n3,12345678901234567.80\n4,-0.07\n",
+        "valid": true
+      },
+      {
+        "description": "a third decimal is a cell/multipleOf error",
+        "data": "id,x\n1,0.3\n2,0.305\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/multipleOf",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "0.305",
+            "multipleOf": 0.01
+          }
+        ]
+      }
+    ]
   }
 ]

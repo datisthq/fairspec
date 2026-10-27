@@ -141,5 +141,419 @@
         "valid": true
       }
     ]
+  },
+  {
+    "description": "missing values match the cell literally",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "missingValues": ["NA"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "s": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the exact value is missing in a column without null",
+        "data": "id,s\n1,NA\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": "NA"
+          }
+        ]
+      },
+      {
+        "description": "the value with spaces around it is text",
+        "data": "id,s\n1, NA \n",
+        "valid": true
+      },
+      {
+        "description": "the value in another case is text",
+        "data": "id,s\n1,na\n2,Na\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an empty string missing value",
+    "comment": "An unquoted empty cell is null by the dialect; a quoted one is text and matches the empty string",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "missingValues": [""],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "s": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "a quoted empty cell is missing",
+        "data": "id,s\n1,\"\"\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "s",
+            "rowNumber": 1,
+            "cell": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a quoted empty cell without missing values",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "s": {
+          "type": "string"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is an empty string",
+        "data": "id,s\n1,\"\"\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an integer missing value on csv",
+    "comment": "CSV delivers every cell as text, so an integer missing value never matches it",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#column-missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "missingValues": [-999]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the text -999 is a value",
+        "data": "x\n1\n-999\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-999",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a string missing value on csv",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#column-missingvalues"
+    ],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "missingValues": ["-999"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the text -999 is missing",
+        "data": "x\n1\n-999\n",
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an integer missing value on json",
+    "comment": "JSON delivers numbers, so an integer missing value matches a number cell",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "format": "json",
+    "tableSchema": {
+      "missingValues": [-999],
+      "properties": {
+        "x": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the number is missing",
+        "data": [
+          {
+            "x": 1
+          },
+          {
+            "x": -999
+          }
+        ],
+        "valid": true
+      }
+    ]
+  },
+  {
+    "description": "an integer missing value on json in a column without null",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "format": "json",
+    "tableSchema": {
+      "missingValues": [-999],
+      "properties": {
+        "x": {
+          "type": "integer"
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the number is a cell/missing error",
+        "data": [
+          {
+            "x": 1
+          },
+          {
+            "x": -999
+          }
+        ],
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-999"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a string missing value on json",
+    "comment": "A string missing value matches only a cell the format delivers as text",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "format": "json",
+    "tableSchema": {
+      "missingValues": ["-999"],
+      "properties": {
+        "x": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the number is a value",
+        "data": [
+          {
+            "x": 1
+          },
+          {
+            "x": -999
+          }
+        ],
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/minimum",
+            "columnName": "x",
+            "rowNumber": 2,
+            "cell": "-999",
+            "minimum": "0"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a missing value skips the column constraints",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#pattern",
+      "https://fairspec.org/specs/table-schema/#minimum",
+      "https://fairspec.org/specs/table-schema/#minlength"
+    ],
+    "tableSchema": {
+      "missingValues": ["NA"],
+      "properties": {
+        "p": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+$"
+        },
+        "n": {
+          "type": ["integer", "null"],
+          "minimum": 10
+        },
+        "l": {
+          "type": ["string", "null"],
+          "minLength": 3
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "missing cells are valid",
+        "data": "p,n,l\nNA,NA,NA\n12,10,abc\n",
+        "valid": true
+      },
+      {
+        "description": "values are still checked",
+        "data": "p,n,l\nNA,NA,NA\nab,1,x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/pattern",
+            "columnName": "p",
+            "rowNumber": 2,
+            "cell": "ab",
+            "pattern": "^[0-9]+$"
+          },
+          {
+            "type": "cell/minimum",
+            "columnName": "n",
+            "rowNumber": 2,
+            "cell": "1",
+            "minimum": "10"
+          },
+          {
+            "type": "cell/minLength",
+            "columnName": "l",
+            "rowNumber": 2,
+            "cell": "x",
+            "minLength": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "a missing value in a primary key column",
+    "specification": [
+      "https://fairspec.org/specs/table-schema/#missingvalues",
+      "https://fairspec.org/specs/table-schema/#primarykey"
+    ],
+    "tableSchema": {
+      "missingValues": ["NA"],
+      "primaryKey": ["id"],
+      "properties": {
+        "id": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "is a cell/missing error",
+        "data": "id\n1\nNA\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/missing",
+            "columnName": "id",
+            "rowNumber": 2,
+            "cell": "NA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "labelled and plain table-level values",
+    "specification": ["https://fairspec.org/specs/table-schema/#missingvalues"],
+    "tableSchema": {
+      "missingValues": [
+        "NA",
+        {
+          "value": "NR",
+          "label": "Not recorded"
+        }
+      ],
+      "properties": {
+        "x": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "both are missing",
+        "data": "x\nNA\n1\nNR\n",
+        "valid": true
+      },
+      {
+        "description": "an unlisted marker is a cell/type error",
+        "data": "x\nNA\nNX\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "integer",
+            "rowNumber": 2,
+            "cell": "NX"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "description": "missing values on a boolean column",
+    "specification": ["https://fairspec.org/specs/table-schema/#column-missingvalues"],
+    "tableSchema": {
+      "properties": {
+        "x": {
+          "type": ["boolean", "null"],
+          "missingValues": ["-"]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "the marker is missing",
+        "data": "x\ntrue\n-\nfalse\n",
+        "valid": true
+      },
+      {
+        "description": "another text is a cell/type error",
+        "data": "x\ntrue\n?\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "boolean",
+            "rowNumber": 2,
+            "cell": "?"
+          }
+        ]
+      }
+    ]
   }
 ]

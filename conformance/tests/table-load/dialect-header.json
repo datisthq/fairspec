@@ -108,5 +108,270 @@
         "expected": { "columns": ["id", "name"], "rows": [[1, "apple"]] }
       }
     ]
+  },
+  {
+    "description": "a header label carries forward over several empty cells",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "the label fills every empty cell to its right",
+        "data": "group,,,other\na,b,c,d\n1,2,3,4\n",
+        "expected": {
+          "columns": ["group a", "group b", "group c", "other d"],
+          "rows": [[1, 2, 3, 4]]
+        }
+      },
+      {
+        "description": "the label stops at the next label",
+        "data": "x,,y,\na,b,c,d\n1,2,3,4\n",
+        "expected": {
+          "columns": ["x a", "x b", "y c", "y d"],
+          "rows": [[1, 2, 3, 4]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "a header label carries forward in the second header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "an empty cell of the second row takes the label to its left",
+        "data": "a,b\nx,\n1,2\n",
+        "expected": {
+          "columns": ["a x", "b x"],
+          "rows": [[1, 2]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerJoin of several characters",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerjoin"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2],
+      "headerJoin": " / "
+    },
+    "tests": [
+      {
+        "description": "the labels are joined with the whole string",
+        "data": "fruit,fruit\nid,name\n1,apple\n",
+        "expected": {
+          "columns": ["fruit / id", "fruit / name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerJoin empty",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerjoin"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1, 2],
+      "headerJoin": ""
+    },
+    "tests": [
+      {
+        "description": "the labels are concatenated",
+        "data": "fruit,price\nid,usd\n1,1.5\n",
+        "expected": {
+          "columns": ["fruitid", "priceusd"],
+          "rows": [[1, 1.5]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerJoin with a single header row",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerjoin"],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [1],
+      "headerJoin": "_"
+    },
+    "tests": [
+      {
+        "description": "the join is not used",
+        "data": "id,name\n1,apple\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [2, 3]",
+    "comment": "Rows before the first header row are not data, as in the headerRows [2] group",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2, 3]
+    },
+    "tests": [
+      {
+        "description": "the first row is skipped and the next two joined",
+        "data": "a title line,\nfruit,price\nid,usd\n1,1.5\n",
+        "expected": {
+          "columns": ["fruit id", "price usd"],
+          "rows": [[1, 1.5]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows with commentRows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": [2],
+      "commentRows": [3]
+    },
+    "tests": [
+      {
+        "description": "both count rows from the start of the file",
+        "data": "a title line,\nid,name\n# skipped,\n1,apple\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows false with commentRows",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#format-properties",
+      "https://fairspec.org/specs/file-dialect/#commentrows"
+    ],
+    "fileDialect": {
+      "format": "csv",
+      "headerRows": false,
+      "commentRows": [1],
+      "columnNames": ["id", "name"]
+    },
+    "tests": [
+      {
+        "description": "row 1 is the first data row",
+        "data": "skip,me\na,b\nc,d\n",
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [
+            ["a", "b"],
+            ["c", "d"]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2] in tsv",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "format": "tsv",
+    "fileDialect": {
+      "format": "tsv",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "two header rows are joined with a space",
+        "data": "fruit\tfruit\nid\tname\n1\tapple\n",
+        "expected": {
+          "columns": ["fruit id", "fruit name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2] in json arrays",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": [1, 2]
+    },
+    "tests": [
+      {
+        "description": "two header arrays are joined",
+        "data": [
+          ["fruit", "fruit"],
+          ["id", "name"],
+          [1, "apple"]
+        ],
+        "expected": {
+          "columns": ["fruit id", "fruit name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [1, 2] in jsonl arrays",
+    "specification": [
+      "https://fairspec.org/specs/file-dialect/#headerrows",
+      "https://fairspec.org/specs/file-dialect/#headerjoin"
+    ],
+    "format": "jsonl",
+    "fileDialect": {
+      "format": "jsonl",
+      "rowType": "array",
+      "headerRows": [1, 2],
+      "headerJoin": "_"
+    },
+    "tests": [
+      {
+        "description": "two header lines are joined with the headerJoin",
+        "data": "[\"fruit\",\"fruit\"]\n[\"id\",\"name\"]\n[1,\"apple\"]\n",
+        "expected": {
+          "columns": ["fruit_id", "fruit_name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
+  },
+  {
+    "description": "headerRows [2] in json arrays",
+    "specification": ["https://fairspec.org/specs/file-dialect/#headerrows"],
+    "format": "json",
+    "fileDialect": {
+      "format": "json",
+      "rowType": "array",
+      "headerRows": [2]
+    },
+    "tests": [
+      {
+        "description": "the array above the header is skipped",
+        "data": [["a title"], ["id", "name"], [1, "apple"]],
+        "expected": {
+          "columns": ["id", "name"],
+          "rows": [[1, "apple"]]
+        }
+      }
+    ]
   }
 ]
