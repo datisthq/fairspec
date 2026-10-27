@@ -48,37 +48,18 @@ class TestInspectGeojsonColumn:
 
         assert len(errors) == 0
 
-    def test_valid_geojson_feature(self):
+    def test_valid_positions_with_altitude(self):
         table = pl.DataFrame(
             {
-                "feature": [
-                    '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"name":"Test"}}',
-                    '{"type":"Feature","geometry":{"type":"LineString","coordinates":[[0,0],[1,1]]},"properties":{"id":1}}',
-                    '{"type":"Feature","geometry":null,"properties":{}}',
+                "location": [
+                    '{"type":"Point","coordinates":[1,2,3]}',
+                    '{"type":"LineString","coordinates":[[0,0,1],[1,1,2]]}',
+                    '{"type":"Point","coordinates":[1,2,3,4]}',
                 ],
             }
         ).lazy()
         column = GeojsonColumn(
-            name="feature",
-            type="geojson",
-            property=GeojsonColumnProperty(),
-        )
-
-        errors = inspect_geojson_column(column, table)
-
-        assert len(errors) == 0
-
-    def test_valid_geojson_feature_collection(self):
-        table = pl.DataFrame(
-            {
-                "collection": [
-                    '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}',
-                    '{"type":"FeatureCollection","features":[]}',
-                ],
-            }
-        ).lazy()
-        column = GeojsonColumn(
-            name="collection",
+            name="location",
             type="geojson",
             property=GeojsonColumnProperty(),
         )
@@ -93,7 +74,7 @@ class TestInspectGeojsonColumn:
                 "location": [
                     '{"type":"Point","coordinates":[0,0]}',
                     None,
-                    '{"type":"Feature","geometry":null,"properties":{}}',
+                    '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
                 ],
             }
         ).lazy()
@@ -114,7 +95,7 @@ class TestInspectGeojsonColumn:
                 "data": [
                     '{"type":"Point","coordinates":[0,0]}',
                     "[[0,0],[1,1]]",
-                    '{"type":"Feature","geometry":null,"properties":{}}',
+                    '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
                 ],
             }
         ).lazy()
@@ -162,7 +143,7 @@ class TestInspectGeojsonColumn:
                 "data": [
                     '{"type":"Point","coordinates":[0,0]}',
                     "",
-                    '{"type":"Feature","geometry":null,"properties":{}}',
+                    '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
                 ],
             }
         ).lazy()
@@ -211,7 +192,7 @@ class TestInspectGeojsonColumn:
                 "location": [
                     '{"type":"Point","coordinates":[0,0]}',
                     '{"type":"Point","coordinates":[0]}',
-                    '{"type":"Point","coordinates":[0,0,0,0]}',
+                    '{"type":"Point","coordinates":[0,"0"]}',
                 ],
             }
         ).lazy()
@@ -229,7 +210,7 @@ class TestInspectGeojsonColumn:
             for e in errors
         )
         assert any(
-            e.rowNumber == 3 and e.cell == '{"type":"Point","coordinates":[0,0,0,0]}'
+            e.rowNumber == 3 and e.cell == '{"type":"Point","coordinates":[0,"0"]}'
             for e in errors
         )
 
@@ -261,54 +242,29 @@ class TestInspectGeojsonColumn:
             for e in errors
         )
 
-    def test_incomplete_geojson_feature(self):
+    def test_feature_and_feature_collection_error(self):
         table = pl.DataFrame(
             {
-                "feature": [
-                    '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}',
-                    '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}',
-                    '{"type":"Feature","properties":{}}',
+                "data": [
+                    '{"type":"Point","coordinates":[0,0]}',
+                    '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}',
+                    '{"type":"FeatureCollection","features":[]}',
                 ],
             }
         ).lazy()
         column = GeojsonColumn(
-            name="feature",
+            name="data",
             type="geojson",
             property=GeojsonColumnProperty(),
         )
 
         errors = inspect_geojson_column(column, table)
 
-        assert len(errors) == 2
-        assert any(
-            e.rowNumber == 2
-            and e.cell
-            == '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}'
-            for e in errors
-        )
-        assert any(
-            e.rowNumber == 3 and e.cell == '{"type":"Feature","properties":{}}'
-            for e in errors
-        )
-
-    def test_invalid_geojson_feature_collection(self):
-        table = pl.DataFrame(
-            {
-                "collection": [
-                    '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}',
-                    '{"type":"FeatureCollection"}',
-                ],
-            }
-        ).lazy()
-        column = GeojsonColumn(
-            name="collection",
-            type="geojson",
-            property=GeojsonColumnProperty(),
-        )
-
-        errors = inspect_geojson_column(column, table)
-
-        assert len(errors) == 1
-        assert errors[0].type == "cell/type"
-        assert errors[0].rowNumber == 2
-        assert errors[0].cell == '{"type":"FeatureCollection"}'
+        assert [(e.type, e.rowNumber, e.cell) for e in errors] == [
+            (
+                "cell/type",
+                2,
+                '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}',
+            ),
+            ("cell/type", 3, '{"type":"FeatureCollection","features":[]}'),
+        ]

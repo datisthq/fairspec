@@ -52,43 +52,20 @@ describe("validateGeojsonColumn", () => {
     expect(errors).toHaveLength(0)
   })
 
-  it("should not errors for valid GeoJSON Feature", async () => {
+  it("should not errors for positions with altitude", async () => {
     const table = pl
       .DataFrame({
-        feature: [
-          '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"name":"Test"}}',
-          '{"type":"Feature","geometry":{"type":"LineString","coordinates":[[0,0],[1,1]]},"properties":{"id":1}}',
-          '{"type":"Feature","geometry":null,"properties":{}}',
+        location: [
+          '{"type":"Point","coordinates":[1,2,3]}',
+          '{"type":"LineString","coordinates":[[0,0,1],[1,1,2]]}',
+          '{"type":"Point","coordinates":[1,2,3,4]}',
         ],
       })
       .lazy()
 
     const tableSchema: TableSchema = {
       properties: {
-        feature: {
-          type: "object",
-          format: "geojson",
-        },
-      },
-    }
-
-    const errors = await inspectTable(table, { tableSchema })
-    expect(errors).toHaveLength(0)
-  })
-
-  it("should not errors for valid GeoJSON FeatureCollection", async () => {
-    const table = pl
-      .DataFrame({
-        collection: [
-          '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}',
-          '{"type":"FeatureCollection","features":[]}',
-        ],
-      })
-      .lazy()
-
-    const tableSchema: TableSchema = {
-      properties: {
-        collection: {
+        location: {
           type: "object",
           format: "geojson",
         },
@@ -105,7 +82,7 @@ describe("validateGeojsonColumn", () => {
         location: [
           '{"type":"Point","coordinates":[0,0]}',
           null,
-          '{"type":"Feature","geometry":null,"properties":{}}',
+          '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
         ],
       })
       .lazy()
@@ -129,7 +106,7 @@ describe("validateGeojsonColumn", () => {
         data: [
           '{"type":"Point","coordinates":[0,0]}',
           "[[0,0],[1,1]]",
-          '{"type":"Feature","geometry":null,"properties":{}}',
+          '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
         ],
       })
       .lazy()
@@ -195,7 +172,7 @@ describe("validateGeojsonColumn", () => {
         data: [
           '{"type":"Point","coordinates":[0,0]}',
           "",
-          '{"type":"Feature","geometry":null,"properties":{}}',
+          '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
         ],
       })
       .lazy()
@@ -283,7 +260,7 @@ describe("validateGeojsonColumn", () => {
         location: [
           '{"type":"Point","coordinates":[0,0]}',
           '{"type":"Point","coordinates":[0]}',
-          '{"type":"Point","coordinates":[0,0,0,0]}',
+          '{"type":"Point","coordinates":[0,"0"]}',
         ],
       })
       .lazy()
@@ -311,7 +288,7 @@ describe("validateGeojsonColumn", () => {
       columnName: "location",
       columnType: "geojson",
       rowNumber: 3,
-      cell: '{"type":"Point","coordinates":[0,0,0,0]}',
+      cell: '{"type":"Point","coordinates":[0,"0"]}',
     })
   })
 
@@ -353,57 +330,20 @@ describe("validateGeojsonColumn", () => {
     })
   })
 
-  it("should errors for incomplete GeoJSON Feature", async () => {
+  it("should errors for Feature and FeatureCollection", async () => {
     const table = pl
       .DataFrame({
-        feature: [
-          '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}',
-          '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}',
-          '{"type":"Feature","properties":{}}',
+        data: [
+          '{"type":"Point","coordinates":[0,0]}',
+          '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}',
+          '{"type":"FeatureCollection","features":[]}',
         ],
       })
       .lazy()
 
     const tableSchema: TableSchema = {
       properties: {
-        feature: {
-          type: "object",
-          format: "geojson",
-        },
-      },
-    }
-
-    const errors = await inspectTable(table, { tableSchema })
-    expect(errors).toHaveLength(2)
-    expect(errors).toContainEqual({
-      type: "cell/type",
-      columnName: "feature",
-      columnType: "geojson",
-      rowNumber: 2,
-      cell: '{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}',
-    })
-    expect(errors).toContainEqual({
-      type: "cell/type",
-      columnName: "feature",
-      columnType: "geojson",
-      rowNumber: 3,
-      cell: '{"type":"Feature","properties":{}}',
-    })
-  })
-
-  it("should errors for invalid GeoJSON FeatureCollection", async () => {
-    const table = pl
-      .DataFrame({
-        collection: [
-          '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}',
-          '{"type":"FeatureCollection"}',
-        ],
-      })
-      .lazy()
-
-    const tableSchema: TableSchema = {
-      properties: {
-        collection: {
+        data: {
           type: "object",
           format: "geojson",
         },
@@ -414,10 +354,17 @@ describe("validateGeojsonColumn", () => {
     expect(errors).toEqual([
       {
         type: "cell/type",
-        columnName: "collection",
+        columnName: "data",
         columnType: "geojson",
         rowNumber: 2,
-        cell: '{"type":"FeatureCollection"}',
+        cell: '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}',
+      },
+      {
+        type: "cell/type",
+        columnName: "data",
+        columnType: "geojson",
+        rowNumber: 3,
+        cell: '{"type":"FeatureCollection","features":[]}',
       },
     ])
   })

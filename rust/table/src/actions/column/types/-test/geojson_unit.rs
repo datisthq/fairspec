@@ -29,7 +29,7 @@ fn locate(errors: &[Value]) -> Vec<(Value, Value)> {
 }
 
 const POINT: &str = r#"{"type":"Point","coordinates":[0,0]}"#;
-const EMPTY_FEATURE: &str = r#"{"type":"Feature","geometry":null,"properties":{}}"#;
+const LINE: &str = r#"{"type":"LineString","coordinates":[[0,0],[1,1]]}"#;
 
 #[test]
 fn test_valid_geojson_point() {
@@ -52,41 +52,26 @@ fn test_valid_geojson_geometries() {
 }
 
 #[test]
-fn test_valid_geojson_feature() {
+fn test_valid_positions_with_altitude() {
     let cells = [
-        Some(
-            r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"name":"Test"}}"#,
-        ),
-        Some(
-            r#"{"type":"Feature","geometry":{"type":"LineString","coordinates":[[0,0],[1,1]]},"properties":{"id":1}}"#,
-        ),
-        Some(EMPTY_FEATURE),
+        Some(r#"{"type":"Point","coordinates":[1,2,3]}"#),
+        Some(r#"{"type":"LineString","coordinates":[[0,0,1],[1,1,2]]}"#),
+        Some(r#"{"type":"Point","coordinates":[1,2,3,4]}"#),
     ];
-    assert!(inspect(&create_column("feature"), "feature", &cells).is_empty());
-}
-
-#[test]
-fn test_valid_geojson_feature_collection() {
-    let cells = [
-        Some(
-            r#"{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}"#,
-        ),
-        Some(r#"{"type":"FeatureCollection","features":[]}"#),
-    ];
-    assert!(inspect(&create_column("collection"), "collection", &cells).is_empty());
+    assert!(inspect(&create_column("location"), "location", &cells).is_empty());
 }
 
 #[test]
 fn test_null_values() {
     let mut column = create_column("location");
     column.nullable = Some(true);
-    let cells = [Some(POINT), None, Some(EMPTY_FEATURE)];
+    let cells = [Some(POINT), None, Some(LINE)];
     assert!(inspect(&column, "location", &cells).is_empty());
 }
 
 #[test]
 fn test_json_arrays_error() {
-    let cells = [Some(POINT), Some("[[0,0],[1,1]]"), Some(EMPTY_FEATURE)];
+    let cells = [Some(POINT), Some("[[0,0],[1,1]]"), Some(LINE)];
 
     let errors = inspect(&create_column("data"), "data", &cells);
 
@@ -120,7 +105,7 @@ fn test_invalid_json_error() {
 
 #[test]
 fn test_empty_strings_error() {
-    let cells = [Some(POINT), Some(""), Some(EMPTY_FEATURE)];
+    let cells = [Some(POINT), Some(""), Some(LINE)];
 
     let errors = inspect(&create_column("data"), "data", &cells);
 
@@ -158,7 +143,7 @@ fn test_invalid_geojson_point_coordinates() {
     let cells = [
         Some(POINT),
         Some(r#"{"type":"Point","coordinates":[0]}"#),
-        Some(r#"{"type":"Point","coordinates":[0,0,0,0]}"#),
+        Some(r#"{"type":"Point","coordinates":[0,"0"]}"#),
     ];
 
     let errors = inspect(&create_column("location"), "location", &cells);
@@ -167,10 +152,7 @@ fn test_invalid_geojson_point_coordinates() {
         locate(&errors),
         vec![
             (json!(2), json!(r#"{"type":"Point","coordinates":[0]}"#)),
-            (
-                json!(3),
-                json!(r#"{"type":"Point","coordinates":[0,0,0,0]}"#)
-            ),
+            (json!(3), json!(r#"{"type":"Point","coordinates":[0,"0"]}"#)),
         ]
     );
 }
@@ -201,44 +183,31 @@ fn test_invalid_geojson_linestring() {
 }
 
 #[test]
-fn test_incomplete_geojson_feature() {
+fn test_feature_and_feature_collection_error() {
     let cells = [
+        Some(POINT),
         Some(
-            r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}"#,
+            r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}"#,
         ),
-        Some(r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}"#),
-        Some(r#"{"type":"Feature","properties":{}}"#),
+        Some(r#"{"type":"FeatureCollection","features":[]}"#),
     ];
 
-    let errors = inspect(&create_column("feature"), "feature", &cells);
+    let errors = inspect(&create_column("data"), "data", &cells);
 
+    assert!(errors.iter().all(|error| error["type"] == "cell/type"));
     assert_eq!(
         locate(&errors),
         vec![
             (
                 json!(2),
-                json!(r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]}}"#)
+                json!(
+                    r#"{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{}}"#
+                )
             ),
-            (json!(3), json!(r#"{"type":"Feature","properties":{}}"#)),
+            (
+                json!(3),
+                json!(r#"{"type":"FeatureCollection","features":[]}"#)
+            ),
         ]
-    );
-}
-
-#[test]
-fn test_invalid_geojson_feature_collection() {
-    let cells = [
-        Some(
-            r#"{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}}]}"#,
-        ),
-        Some(r#"{"type":"FeatureCollection"}"#),
-    ];
-
-    let errors = inspect(&create_column("collection"), "collection", &cells);
-
-    assert_eq!(errors.len(), 1);
-    assert_eq!(errors[0]["type"], "cell/type");
-    assert_eq!(
-        locate(&errors),
-        vec![(json!(2), json!(r#"{"type":"FeatureCollection"}"#))]
     );
 }

@@ -786,6 +786,48 @@
             "cell": "POINT (30 10"
           }
         ]
+      },
+      {
+        "description": "a non-numeric coordinate is a cell/type error",
+        "data": "id,x\n1,POINT (30 10)\n2,POINT (a b)\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "POINT (a b)"
+          }
+        ]
+      },
+      {
+        "description": "trailing text is a cell/type error",
+        "data": "id,x\n1,POINT (30 10)\n2,POINT (30 10) x\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "POINT (30 10) x"
+          }
+        ]
+      },
+      {
+        "description": "a geometry type with trailing letters is a cell/type error",
+        "data": "id,x\n1,POINT (30 10)\n2,POINTX (30 10)\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkt",
+            "rowNumber": 2,
+            "cell": "POINTX (30 10)"
+          }
+        ]
       }
     ]
   },
@@ -835,6 +877,20 @@
             "columnType": "wkb",
             "rowNumber": 2,
             "cell": "0101000000000000000000F03F000000000000004"
+          }
+        ]
+      },
+      {
+        "description": "an unknown byte order is a cell/type error",
+        "data": "id,x\n1,0101000000000000000000F03F0000000000000040\n2,0201000000000000000000F03F0000000000000040\n",
+        "valid": false,
+        "errors": [
+          {
+            "type": "cell/type",
+            "columnName": "x",
+            "columnType": "wkb",
+            "rowNumber": 2,
+            "cell": "0201000000000000000000F03F0000000000000040"
           }
         ]
       }

@@ -8,12 +8,7 @@
     "crs": { "$ref": "#/$defs/crs" },
     "bbox": { "$ref": "#/$defs/bbox" }
   },
-  "oneOf": [
-    { "$ref": "#/$defs/geometry" },
-    { "$ref": "#/$defs/geometryCollection" },
-    { "$ref": "#/$defs/feature" },
-    { "$ref": "#/$defs/featureCollection" }
-  ],
+  "oneOf": [{ "$ref": "#/$defs/geometry" }, { "$ref": "#/$defs/geometryCollection" }],
   "$defs": {
     "geometryCollection": {
       "title": "GeometryCollection",
@@ -24,31 +19,6 @@
         "geometries": {
           "type": "array",
           "items": { "$ref": "#/$defs/geometry" }
-        }
-      }
-    },
-    "feature": {
-      "title": "Feature",
-      "description": "A Geo JSON feature object",
-      "required": ["geometry", "properties"],
-      "properties": {
-        "type": { "enum": ["Feature"] },
-        "geometry": {
-          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/geometry" }]
-        },
-        "properties": { "type": ["object", "null"] },
-        "id": { "FIXME": "may be there, type not known (string? number?)" }
-      }
-    },
-    "featureCollection": {
-      "title": "FeatureCollection",
-      "description": "A Geo JSON feature collection",
-      "required": ["features"],
-      "properties": {
-        "type": { "enum": ["FeatureCollection"] },
-        "features": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/feature" }
         }
       }
     },
@@ -119,11 +89,10 @@
       ],
       "$defs": {
         "position": {
-          "description": "A single position",
+          "description": "A single position: two or more numbers",
           "type": "array",
           "minItems": 2,
-          "maxItems": 2,
-          "prefixItems": [{ "type": "number" }, { "type": "number" }]
+          "items": { "type": "number" }
         },
         "positionArray": {
           "description": "An array of positions",

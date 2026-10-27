@@ -95,6 +95,11 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   `jsonschema_regex::is_valid_ecma_regex` in Rust, its ports `isValidEcmaRegex` and
   `is_valid_ecma_regex` in `jsonSchema/regex.ts` and `json_schema/regex.py`. Never `re` or native
   `RegExp`: they disagree on `(?<name>…)`, `\p{L}`, `(?i)` and `\-`
+- WKT and WKB cells follow GEOS (shapely in Python): TypeScript's `wkt.ts`/`wkb.ts` and Rust's
+  `wkt.rs`/`wkb.rs` are one hand-written reader, so a fix lands in both; GEOS itself takes any
+  WKB byte order but 0 as little-endian, which Python's `_skip_wkb_geometry` refuses, and a WKT
+  type by prefix (`POINTX (1 2)`), which `_get_are_words_known` refuses. The
+  GeoJSON cell schema, `schemas/geojson.json`, is one byte-identical file in all three twins
 - A Polars native panic aborts the whole TypeScript worker, so every later test in the file goes
   unreported. Narrow the run with `-t "<operation>"` until the crash is fixed
 - A whole number in a `number` column renders as `1.0` in Python and `1` in TypeScript, on every

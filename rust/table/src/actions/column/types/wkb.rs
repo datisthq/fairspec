@@ -14,7 +14,8 @@ pub fn inspect_wkb_column(
 }
 
 /// Whether GEOS (shapely's `from_wkb(bytes.fromhex(text))`) reads a linear geometry;
-/// bytes after the geometry are ignored, as GEOS does.
+/// bytes after the geometry are ignored, as GEOS does. A byte order other than 0 or 1,
+/// which GEOS reads as the machine's, is refused.
 fn parse_wkb(text: &str) -> bool {
     let Some(bytes) = decode_hex(text) else {
         return false;
@@ -50,7 +51,11 @@ struct WkbReader<'a> {
 
 impl WkbReader<'_> {
     fn read_geometry(&mut self, expected_type: Option<u32>) -> Option<()> {
-        let is_little_endian = self.read_byte()? != 0;
+        let is_little_endian = match self.read_byte()? {
+            0 => false,
+            1 => true,
+            _ => return None,
+        };
         let type_int = self.read_u32(is_little_endian)?;
         let geometry_type = (type_int & 0xffff) % 1000;
         let iso_type_range = (type_int & 0xffff) / 1000;

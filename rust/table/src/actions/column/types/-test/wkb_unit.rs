@@ -80,9 +80,25 @@ fn test_wkb_validation_matches_shapely() {
         ),
         ("010f00000000000000".to_string(), false),
         ("0102000000ffffffff".to_string(), false),
-        (format!("02{}", &point[2..]), true),
         ("010300000000000000".to_string(), true),
         ("010600000001000000010300000000000000".to_string(), true),
+    ];
+    for (cell, valid) in cases {
+        assert_eq!(get_is_valid(&cell), valid, "{cell:?}");
+    }
+}
+
+#[test]
+fn test_wkb_unknown_byte_order() {
+    let point = "0101000000000000000000f03f0000000000000040";
+    let cases = [
+        (format!("02{}", &point[2..]), false),
+        (format!("ff{}", &point[2..]), false),
+        (format!("010400000001000000{point}"), true),
+        (
+            format!("010400000001000000{}", format!("02{}", &point[2..])),
+            false,
+        ),
     ];
     for (cell, valid) in cases {
         assert_eq!(get_is_valid(&cell), valid, "{cell:?}");
