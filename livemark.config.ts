@@ -17,6 +17,8 @@ export default defineConfig({
     "python/project/docs/**/*.md",
     "typescript/README.md",
     "typescript/project/docs/**/*.md",
+    "rust/README.md",
+    "rust/project/docs/**/*.md",
     "standard/CHANGELOG.md",
     "python/CHANGELOG.md",
     "typescript/CHANGELOG.md",
@@ -38,6 +40,11 @@ export default defineConfig({
       title: "TypeScript",
       prefix: "/typescript/",
       icon: "code-xml",
+    },
+    {
+      title: "Rust",
+      prefix: "/rust/",
+      icon: "cog",
     },
     {
       type: "custom",
@@ -94,6 +101,17 @@ export default defineConfig({
         description: "Data management framework",
         icon: "rocket",
         path: "/typescript/getting-started/",
+        order: 0,
+      },
+    },
+    {
+      file: "rust/README.md",
+      article: {
+        title: "Fairspec Rust",
+        label: "Getting Started",
+        description: "Data management framework",
+        icon: "rocket",
+        path: "/rust/getting-started/",
         order: 0,
       },
     },

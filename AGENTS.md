@@ -35,7 +35,8 @@ Fairspec (changes to them are `docs`).
   `python/library/fairspec_library/actions/table_schema/render.py`
 - **interfaces** — how a user reaches a library: its API, its CLI (`terminal`), its MCP server
 - **surfaces** — every place a behaviour shows up: both libraries' interfaces, `desktop/`, the
-  `.skills/` user skills, `python/project/docs/` and `typescript/project/docs/`, and the site
+  `.skills/` user skills, `python/project/docs/` and `typescript/project/docs/` (and
+  `rust/project/docs/` where `rust/` has the behaviour), and the site
   pages that list commands and tools (`.livemark/routes/cli-tool.tsx`,
   `.livemark/routes/mcp-server.tsx`)
 - `desktop/` is the one surface with no twin: it sits on the TypeScript library only
@@ -88,8 +89,8 @@ Fairspec (changes to them are `docs`).
   change lands in its twin with the same names (case-converted), inputs, defaults, limits and
   output, and a behaviour both share gets a `conformance/` case, not only a unit test per library
   (**`conformance-development`**). Then its CLI command, MCP tool, desktop screen, `.skills/` row
-  and both libraries' docs. A twin left out on purpose is named in the commit body with why.
-  When it is unclear which surfaces count, ask first
+  and both libraries' docs — and the Rust docs where `rust/` has it. A twin left out on purpose
+  is named in the commit body with why. When it is unclear which surfaces count, ask first
 
 ## Commands
 

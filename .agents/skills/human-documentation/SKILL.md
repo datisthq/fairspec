@@ -80,8 +80,8 @@ Work through the diff asking each of these:
   invisible.
 - `README.md`, `CONTRIBUTING.md` (published at `/overview/contributing/`), and each section's
   `README.md` and `CONTRIBUTING.md`.
-- The published docs under `python/project/docs/`, `typescript/project/docs/` and
-  `standard/` when the diff changes behaviour they describe.
+- The published docs under `python/project/docs/`, `typescript/project/docs/`,
+  `rust/project/docs/` and `standard/` when the diff changes behaviour they describe.
 - The pages under `.humans/`, HTML included.
 - Comments that assert a repo-wide invariant, not just local ones — the header comment on a
   registry, a guard test's explanation of what it protects.

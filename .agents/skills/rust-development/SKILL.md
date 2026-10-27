@@ -170,6 +170,28 @@ library API (`validate_table`, `query_dataset`, …) as the Python runner does. 
 file against `conformance/test-schema.json` and runs every operation; an unknown operation directory
 fails, so a new operation in `conformance/` lands here too (**`conformance-development`**).
 
+## Docs
+
+`rust/README.md` (Getting Started) and `rust/project/docs/` are the site's Rust section
+(`/rust/…`, after TypeScript in the header), mirroring `python/project/docs/` page for page
+minus Jupyter. A change to a documented Python page lands on its Rust page where Rust has the
+behaviour.
+
+- Snippets are function bodies returning `Result<(), Box<dyn Error>>`; descriptors come from
+  `serde_json::from_value(json!({…}))` with the wire's camelCase keys, format loaders from
+  `fairspec::fairspec_table`, file actions from `fairspec::fairspec_dataset`
+- Compile every ` ```rust ` block before landing: write each as a function into a
+  throwaway `docs` example of the `fairspec` crate (with `unimplemented!()` lets for the `table`,
+  `schema`, `dataset` and `resource` a snippet assumes), run
+  `cargo check -p fairspec --example docs`, then delete the file. A compile passes wrong JSON
+  keys — they land in `extra` — so check key names against the models
+- Sample outputs come from running the binary, never from the Python pages: data errors carry
+  `jsonPointer`, messages are jsonschema-rs wording, and `format` is annotation only
+- Say where Rust differs: `script` takes SQL lines, not a REPL; `render-*` returns `None`;
+  usage errors exit 1
+- The section's changelog arrives with the first `rust-v` release; then add it to `include` in
+  `livemark.config.ts` with a `/rust/changelog/` patch, as for the other libraries
+
 ## Releases
 
 This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own changelog.
