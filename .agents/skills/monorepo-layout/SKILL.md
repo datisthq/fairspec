@@ -116,6 +116,8 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 sections="python rust"`): it skips release-please and publishes those sections at their
   manifest version, from their existing tags. Every publish step must tolerate a partial earlier
   run — `uv publish --check-url` skips wheels already on PyPI, pnpm skips published versions
+- A `release-as` pin in `.release/config.json` holds for one release only: remove it once that
+  version is tagged, or the next Release PR proposes the same, already tagged, version again
 - Never write `<placeholder>` in a commit subject or body line: release-please escapes it in
   the Release PR, then un-escapes it when it re-parses the body at release time, and the bare
   tag swallows every section after it — they go untagged and one body passes GitHub's 125000

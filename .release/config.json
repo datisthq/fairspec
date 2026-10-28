@@ -81,7 +81,6 @@
     "typescript": {
       "release-type": "node",
       "component": "typescript",
-      "release-as": "0.13.1",
       "extra-files": [
         {
           "type": "json",
@@ -128,7 +127,6 @@
     "rust": {
       "release-type": "simple",
       "component": "rust",
-      "release-as": "0.1.0",
       "changelog-sections": [
         {
           "type": "feat",
