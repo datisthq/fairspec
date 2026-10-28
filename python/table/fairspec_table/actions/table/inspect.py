@@ -7,12 +7,13 @@ import polars as pl
 from fairspec_dataset.helpers.concurrency import iter_concurrent_chunks
 from fairspec_metadata import TableError, get_columns
 from fairspec_metadata import ColumnExtraError, ColumnMissingError
-from fairspec_metadata import RowError
+from fairspec_metadata import CellTypeError, IntegerColumn, RowError
 from fairspec_metadata import TableSchema
 from pydantic import TypeAdapter
 
 from fairspec_table.actions.check.inspect import inspect_table_checks
-from fairspec_table.actions.column.inspect import inspect_columns
+from fairspec_table.actions.column.inspect import FlagFactory, inspect_columns
+from fairspec_table.actions.column.types.integer import parse_integer_column
 from fairspec_table.helpers.schema import get_polars_schema
 from fairspec_table.models import ColumnMapping, SchemaMapping, Table, TableCheck
 from fairspec_table.settings import (
@@ -51,12 +52,26 @@ def inspect_table(
 
         key_checks = create_row_key_checks(mapping)
         key_probes = [create_key_hash_probe(check) for check in key_checks]
+        plain_integer_columns = _get_plain_integer_columns(mapping, sample)
         column_errors = _inspect_columns(
             mapping,
             table,
             max_errors=max_errors,
-            flag_exprs=[probe.flag_expr for probe in key_probes],
+            flags=[probe.create_flag_expr for probe in key_probes],
+            plain_integer_columns=frozenset(plain_integer_columns),
         )
+        # The exact integer reading costs every read, so an integer column whose sample
+        # holds no cell only it reads is read plain: such a cell then fails the type
+        # check, and only then is the table read again, exactly
+        if _get_has_unplain_integer_cell(column_errors, plain_integer_columns):
+            key_probes = [create_key_hash_probe(check) for check in key_checks]
+            column_errors = _inspect_columns(
+                mapping,
+                table,
+                max_errors=max_errors,
+                flags=[probe.create_flag_expr for probe in key_probes],
+                plain_integer_columns=frozenset(),
+            )
         errors.extend(column_errors)
 
         # The cell checks stop reading at max_errors, leaving the key hashes partial, but
@@ -86,7 +101,8 @@ def _inspect_columns(
     table: Table,
     *,
     max_errors: int,
-    flag_exprs: list[pl.Expr],
+    flags: list[FlagFactory],
+    plain_integer_columns: frozenset[str],
 ) -> list[TableError]:
     errors: list[TableError] = []
     columns = get_columns(mapping.target.model_dump())
@@ -120,7 +136,11 @@ def _inspect_columns(
         column_mappings.append(ColumnMapping(source=polars_column, target=merged_column))
 
     cell_errors = inspect_columns(
-        column_mappings, table, max_errors=max_errors, flag_exprs=flag_exprs
+        column_mappings,
+        table,
+        max_errors=max_errors,
+        flags=flags,
+        plain_integer_columns=plain_integer_columns,
     )
     for column in columns:
         errors.extend(missing_errors.get(column.name) or cell_errors.get(column.name, []))
@@ -134,6 +154,41 @@ def _inspect_columns(
                 )
 
     return sorted(errors, key=lambda error: not error.type.startswith("column/"))
+
+
+def _get_plain_integer_columns(
+    mapping: SchemaMapping, sample: pl.DataFrame
+) -> dict[str, IntegerColumn]:
+    names = {column.name for column in mapping.source.columns if column.type == pl.String}
+    return {
+        column.name: column
+        for column in get_columns(mapping.target.model_dump())
+        if isinstance(column, IntegerColumn)
+        and column.name in names
+        and not _get_has_exact_integer(column, sample.get_column(column.name))
+    }
+
+
+def _get_has_unplain_integer_cell(
+    errors: list[TableError], plain_integer_columns: dict[str, IntegerColumn]
+) -> bool:
+    cells: dict[str, list[str]] = {}
+    for error in errors:
+        if isinstance(error, CellTypeError) and error.columnName in plain_integer_columns:
+            cells.setdefault(error.columnName, []).append(error.cell)
+    return any(
+        _get_has_exact_integer(plain_integer_columns[name], pl.Series(name, values))
+        for name, values in cells.items()
+    )
+
+
+# Whether the exact reading reads a cell the plain form does not
+def _get_has_exact_integer(column: IntegerColumn, cells: pl.Series) -> bool:
+    cell = pl.col(cells.name)
+    is_exact_only = parse_integer_column(column, cell).is_not_null() & (
+        parse_integer_column(column, cell, is_plain=True).is_null()
+    )
+    return bool(cells.to_frame().select(is_exact_only.any()).item())
 
 
 def _inspect_rows(

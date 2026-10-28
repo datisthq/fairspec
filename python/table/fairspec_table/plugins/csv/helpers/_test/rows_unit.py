@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import pytest
 from fairspec_dataset import write_temp_file
 from fairspec_metadata import CsvFileDialect, TsvFileDialect
 
+from .. import rows
 from ..rows import clean_csv_rows
 
 
@@ -51,3 +53,30 @@ class TestCleanCsvRows:
 
         assert cleaned is not None
         assert read_text(cleaned.paths[0]) == "a\n# it's\nx\n"
+
+    @pytest.mark.parametrize("parallel_search_bytes", [1 << 24, 0])
+    @pytest.mark.parametrize(
+        ("content", "has_blank_line"),
+        [
+            (b"a,b\r\n\r\n1,2\r\n", True),
+            (b"\xef\xbb\xbf\r\na,b\n1,2\n", True),
+            (b"\xef\xbb\xbfa,b\n1,2\n", False),
+            (b"a,b\n1,2\n\xef\xbb\xbf\n", False),
+            (b"a,b\n1,2\n\r", False),
+            (b"a,b\n1,2\r\r\n", False),
+            (b"a,b\n\xff\n\n1,2\n", True),
+            (b"a,b\n1,2\n\n", True),
+            (b"a,b\n1,2\n", False),
+        ],
+    )
+    def test_should_find_a_blank_line_as_its_bytes_hold_one(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        content: bytes,
+        has_blank_line: bool,
+        parallel_search_bytes: int,
+    ):
+        monkeypatch.setattr(rows, "PARALLEL_SEARCH_BYTES", parallel_search_bytes)
+        path = write_temp_file(content)
+        cleaned = clean_csv_rows([path], CsvFileDialect())
+        assert (cleaned is not None) is has_blank_line

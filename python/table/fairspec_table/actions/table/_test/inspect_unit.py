@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import polars as pl
-from fairspec_metadata import NumberColumnProperty
+from fairspec_metadata import IntegerColumnProperty, NumberColumnProperty
 from fairspec_metadata import StringColumnProperty
 from fairspec_metadata import ColumnMissingError
 from fairspec_metadata import TableSchema
@@ -377,4 +377,32 @@ class TestInspectTableConcurrency:
 
         assert [error.model_dump(exclude_none=True) for error in errors] == [
             {"type": "cell/missing", "columnName": "id", "rowNumber": 2, "cell": "NA"}
+        ]
+
+    def test_should_read_exactly_an_integer_written_with_a_fraction_after_the_sample(
+        self,
+    ):
+        ids = [str(number) for number in range(1, 201)]
+        table = pl.DataFrame(
+            {
+                "id": [*ids, "5.0", "2e2", "east"],
+                "value": [*ids, "1.5e1", "7", "9"],
+            }
+        ).lazy()
+
+        table_schema = TableSchema(
+            properties={
+                "id": IntegerColumnProperty(),
+                "value": IntegerColumnProperty(maximum=100),
+            },
+            primaryKey=["id"],
+        )
+
+        errors = inspect_table(table, table_schema=table_schema)
+
+        assert [(error.type, getattr(error, "rowNumber", None)) for error in errors] == [
+            ("cell/type", 203),
+            *(("cell/maximum", row) for row in range(101, 201)),
+            ("row/primaryKey", 201),
+            ("row/primaryKey", 202),
         ]

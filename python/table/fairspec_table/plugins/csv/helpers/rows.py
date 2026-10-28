@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import ctypes
+import mmap
+import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -18,6 +22,8 @@ if TYPE_CHECKING:
 CR = 0x0D
 LF = 0x0A
 BOM = b"\xef\xbb\xbf"
+# Below this a single mmap.find is faster than starting the threads
+PARALLEL_SEARCH_BYTES = 1 << 24
 
 
 @dataclass
@@ -79,24 +85,72 @@ def clean_csv_rows(
 # A blank line is two line ends with nothing (or only a CR) between them, or one at
 # the start of the file after any BOM; the copy drops it unless inside a quoted cell
 def _get_has_blank_line(path: str, eol: int, max_bytes: int | None) -> bool:
-    needles = [bytes([eol, eol])]
-    if eol == LF:
-        needles.append(bytes([LF, CR, LF]))
-
-    carry = b""
-    is_start = True
-    for chunk in read_file_chunks(path, max_bytes):
-        data = carry + chunk
-        if is_start:
-            start = len(BOM) if data.startswith(BOM) else 0
-            first = data[start : start + 2]
+    with open(path, "rb") as file:
+        size = os.fstat(file.fileno()).st_size
+        end = min(size, max_bytes) if max_bytes else size
+        if not end:
+            return False
+        is_parallel = MEMMEM is not None and end >= PARALLEL_SEARCH_BYTES
+        with _map_file(file.fileno(), is_writable=is_parallel) as data:
+            head = data[: min(end, len(BOM) + 2)]
+            start = len(BOM) if head.startswith(BOM) else 0
+            first = head[start : start + 2]
             if first[:1] == bytes([eol]) or (eol == LF and first == b"\r\n"):
                 return True
-            is_start = len(data) < start + 2
-        if any(needle in data for needle in needles):
-            return True
-        carry = data[-2:]
-    return False
+            needles = [bytes([eol, eol])]
+            if eol == LF and _find_bytes(data, bytes([CR]), end):
+                needles.append(bytes([LF, CR, LF]))
+            return any(_find_bytes(data, needle, end) for needle in needles)
+
+
+# A private mapping is writable, which ctypes needs to take its address; its pages stay
+# the file's until written, and nothing writes them. Only the parallel search asks for
+# one: Windows and strict overcommit charge its whole size up front
+def _map_file(fileno: int, *, is_writable: bool) -> mmap.mmap:
+    if is_writable:
+        try:
+            return mmap.mmap(fileno, 0, access=mmap.ACCESS_COPY)
+        except (OSError, ValueError):
+            pass
+    return mmap.mmap(fileno, 0, access=mmap.ACCESS_READ)
+
+
+# mmap.find holds the GIL, so a large file is searched by C memmem, which ctypes calls
+# without it, in one slice per core; slices overlap by the needle's length less one
+def _find_bytes(data: mmap.mmap, needle: bytes, end: int) -> bool:
+    with memoryview(data) as view:
+        is_readonly = view.readonly
+    if MEMMEM is None or end < PARALLEL_SEARCH_BYTES or is_readonly:
+        return data.find(needle, 0, end) != -1
+
+    array = (ctypes.c_char * len(data)).from_buffer(data)
+    try:
+        address = ctypes.addressof(array)
+        workers = os.cpu_count() or 1
+        step = -(-end // workers)
+
+        def search(start: int) -> bool:
+            stop = min(end, start + step + len(needle) - 1)
+            return MEMMEM(address + start, stop - start, needle, len(needle)) is not None
+
+        with ThreadPoolExecutor(workers) as executor:
+            return any(executor.map(search, range(0, end, step)))
+    finally:
+        del array
+
+
+def _load_memmem():
+    try:
+        memmem = ctypes.CDLL(None).memmem
+    except (AttributeError, OSError, TypeError):
+        return None
+    memmem.restype = ctypes.c_void_p
+    memmem.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_char_p, ctypes.c_size_t]
+    return memmem
+
+
+# glibc, musl and macOS export memmem; Windows has none and searches with mmap.find
+MEMMEM = _load_memmem()
 
 
 # A row is a record of the file: a line end inside a quoted cell does not end it. A

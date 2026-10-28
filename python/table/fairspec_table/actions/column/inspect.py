@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 
 import polars as pl
@@ -35,17 +35,23 @@ from .types.topojson import inspect_topojson_column
 from .types.wkb import inspect_wkb_column
 from .types.wkt import inspect_wkt_column
 
+FlagFactory = Callable[[Callable[[str], pl.Expr | None]], pl.Expr]
+
 
 def inspect_columns(
     mappings: list[ColumnMapping],
     table: Table,
     *,
     max_errors: int,
-    flag_exprs: Sequence[pl.Expr] = (),
+    flags: Sequence[FlagFactory] = (),
+    plain_integer_columns: frozenset[str] = frozenset(),
 ) -> dict[str, list[TableError]]:
     """Check every column against its schema, keyed by column name in mapping order.
 
-    Each of `flag_exprs`, an always-false Boolean, is evaluated in the same read.
+    Each of `flags` builds an always-false Boolean, evaluated in the same read, from a
+    reader of the typed value of a column this read parses (None for any other). The
+    integer columns in `plain_integer_columns` read only the plain form: a cell with a
+    fraction or an exponent fails their type check.
     """
     errors: dict[str, list[TableError]] = {}
     polars_mappings: list[ColumnMapping] = []
@@ -56,10 +62,14 @@ def inspect_columns(
         if is_checked and mapping.target.type not in ROW_INSPECTED_TYPES:
             polars_mappings.append(mapping)
 
-    if polars_mappings or flag_exprs:
+    if polars_mappings or flags:
         errors.update(
             _inspect_cells_in_polars(
-                polars_mappings, table, max_errors=max_errors, flag_exprs=flag_exprs
+                polars_mappings,
+                table,
+                max_errors=max_errors,
+                flags=flags,
+                plain_integer_columns=plain_integer_columns,
             )
         )
 
@@ -180,33 +190,40 @@ def _inspect_cells_in_polars(
     table: Table,
     *,
     max_errors: int,
-    flag_exprs: Sequence[pl.Expr],
+    flags: Sequence[FlagFactory],
+    plain_integer_columns: frozenset[str],
 ) -> dict[str, list[TableError]]:
     errors: dict[str, list[TableError]] = {m.target.name: [] for m in mappings}
-    flags = [expr.alias(_get_flag_name(index)) for index, expr in enumerate(flag_exprs)]
     is_flagged = [pl.col(_get_flag_name(index)) for index in range(len(flags))]
 
     # The error columns carry a tag, not the error itself: a literal is broadcast to
     # every row, so a JSON template would materialize a full-length string column per
     # check. Templates are resolved back in Python once the frame is filtered down.
-    checked: list[tuple[int, ColumnMapping, list[CellError], pl.Expr]] = []
-    for index, mapping in enumerate(mappings):
-        if mapping.target.type == "unknown":
-            continue
-        cell_mapping = CellMapping(
-            source=pl.col(_get_source_name(index)),
-            target=pl.col(_get_target_name(index)),
-        )
+    candidates = [
+        (index, mapping, _create_check_pairs(mapping, index), _get_is_parsed(mapping))
+        for index, mapping in enumerate(mappings)
+        if mapping.target.type != "unknown"
+    ]
 
+    # A target read as its source is null only where the source is, so it never fails the
+    # type check; a column left with no check is still read (carried), as the read
+    # reports a long row or invalid UTF-8 only in the columns it reads
+    has_check = any(is_parsed or len(pairs) > 1 for _, _, pairs, is_parsed in candidates)
+    checked: list[tuple[int, ColumnMapping, list[CellError], pl.Expr]] = []
+    carried: list[tuple[int, ColumnMapping]] = []
+    for index, mapping, all_pairs, is_parsed in candidates:
         pairs = [
             (check_cell, check)
-            for check_cell in CHECK_FUNCTIONS
-            if (check := check_cell(mapping.target, cell_mapping))
+            for check_cell, check in all_pairs
+            if is_parsed or not has_check or check_cell is not check_cell_type
         ]
         if not pairs:
+            carried.append((index, mapping))
             continue
 
-        # The error column is a bitmask over the checks, bit n set when check n fails
+        # The error column is a bitmask over the checks, bit n set when check n fails, and
+        # 0 when none does: nulling the 0 would copy the whole mask, as the streaming
+        # engine evaluates an expression once per use
         bits = [pl.lit(1 << tag, dtype=pl.UInt32) for tag in range(len(pairs))]
         zero = pl.lit(0, dtype=pl.UInt32)
         constraint_exprs = [
@@ -214,37 +231,52 @@ def _inspect_cells_in_polars(
             for (check_cell, check), bit in zip(pairs, bits)
             if check_cell not in SHORT_CIRCUIT_CHECKS
         ]
-        mask_expr = pl.sum_horizontal(constraint_exprs) if constraint_exprs else zero
+        error_expr = pl.sum_horizontal(constraint_exprs) if constraint_exprs else zero
         for (check_cell, check), bit in reversed(list(zip(pairs, bits))):
             if check_cell in SHORT_CIRCUIT_CHECKS:
-                mask_expr = pl.when(check.is_error_expr).then(bit).otherwise(mask_expr)
-        error_expr = pl.when(mask_expr != 0).then(mask_expr)
+                error_expr = pl.when(check.is_error_expr).then(bit).otherwise(error_expr)
 
         templates = [check.error_template for _, check in pairs]
         checked.append((index, mapping, templates, error_expr))
 
     if not checked:
         if flags:
-            table.select(flags).filter(pl.any_horizontal(is_flagged)).collect(
+            flag_exprs = _create_flag_exprs(flags, {})
+            table.select(flag_exprs).filter(pl.any_horizontal(is_flagged)).collect(
                 engine=QUERY_ENGINE
             )
         return errors
 
+    # The targets come first so the flags read them: the streaming engine evaluates a
+    # repeated expression once per use, so a flag parsing a column again parses it twice
+    target_names = {
+        mapping.source.name: _get_target_name(index) for index, mapping, _, _ in checked
+    }
     check_table = (
         table.with_row_index(NUMBER_COLUMN_NAME, 1)
+        .with_columns(
+            normalize_column(
+                mapping, is_plain=mapping.source.name in plain_integer_columns
+            ).alias(_get_target_name(index))
+            for index, mapping, _, _ in checked
+        )
         .select(
             pl.col(NUMBER_COLUMN_NAME),
-            *flags,
+            *_create_flag_exprs(flags, target_names),
             *(
                 expr
                 for index, mapping, _, _ in checked
                 for expr in (
-                    normalize_column(mapping).alias(_get_target_name(index)),
+                    pl.col(_get_target_name(index)),
                     normalize_column(mapping, keep_type=True).alias(
                         _get_source_name(index)
                     ),
                     pl.col(mapping.source.name).alias(_get_cell_name(index)),
                 )
+            ),
+            *(
+                pl.col(mapping.source.name).alias(_get_cell_name(index))
+                for index, mapping in carried
             ),
         )
         .with_columns(
@@ -259,10 +291,7 @@ def _inspect_cells_in_polars(
     check_frame: pl.DataFrame = (  # ty: ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2278
         check_table.filter(
             pl.any_horizontal(
-                *(
-                    pl.col(_get_error_name(index)).is_not_null()
-                    for index, _, _, _ in checked
-                ),
+                *(pl.col(_get_error_name(index)) != 0 for index, _, _, _ in checked),
                 *is_flagged,
             )
         )
@@ -272,6 +301,7 @@ def _inspect_cells_in_polars(
                 pl.col(_get_cell_name(index), _get_error_name(index))
                 for index, _, _, _ in checked
             ),
+            *(pl.col(_get_cell_name(index)) for index, _ in carried),
         )
         .head(max_errors)
         .collect(engine=QUERY_ENGINE)
@@ -284,7 +314,7 @@ def _inspect_cells_in_polars(
         error_tags = check_frame.get_column(_get_error_name(index)).to_list()
 
         for row_number, cell, error_mask in zip(row_numbers, cells, error_tags):
-            if error_mask is None:
+            if not error_mask:
                 continue
 
             for error_tag, template in enumerate(templates):
@@ -298,6 +328,37 @@ def _inspect_cells_in_polars(
                 )
 
     return errors
+
+
+def _create_check_pairs(mapping: ColumnMapping, index: int):
+    cell_mapping = CellMapping(
+        source=pl.col(_get_source_name(index)),
+        target=pl.col(_get_target_name(index)),
+    )
+    return [
+        (check_cell, check)
+        for check_cell in CHECK_FUNCTIONS
+        if (check := check_cell(mapping.target, cell_mapping))
+    ]
+
+
+def _get_is_parsed(mapping: ColumnMapping) -> bool:
+    return not normalize_column(mapping).meta.eq(
+        normalize_column(mapping, keep_type=True)
+    )
+
+
+def _create_flag_exprs(
+    flags: Sequence[FlagFactory], target_names: dict[str, str]
+) -> list[pl.Expr]:
+    def read_typed(name: str) -> pl.Expr | None:
+        target_name = target_names.get(name)
+        return pl.col(target_name) if target_name else None
+
+    return [
+        create_flag(read_typed).alias(_get_flag_name(index))
+        for index, create_flag in enumerate(flags)
+    ]
 
 
 def _get_target_name(index: int) -> str:

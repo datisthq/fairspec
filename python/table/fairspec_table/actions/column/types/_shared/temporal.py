@@ -20,6 +20,8 @@ TOKEN_PATTERNS = {
 
 
 LEAP_SECOND_PATTERN = r"([0-9]{2}:[0-9]{2}:)60"
+SECOND_PATTERN = r":[0-9]{2}(?:\.[0-9]+)?"
+PLAIN_SECOND_PATTERN = r":[0-5][0-9]"
 
 
 def parse_default_temporal(
@@ -31,16 +33,50 @@ def parse_default_temporal(
 ) -> pl.Expr:
     """Reads an RFC 3339 default form: `T` and `Z` in any case, and a second `60` only at
     23:59 in UTC, read as 23:59:59"""
-    matched_expr = text_expr.str.to_uppercase().str.extract(pattern, 0)
-    value_expr = pl.concat_str(
-        [pl.lit(prefix), matched_expr.str.replace(LEAP_SECOND_PATTERN, "${1}59")]
-    ).str.strptime(dtype, fmt, strict=False)
-    is_leap_second_expr = matched_expr.str.contains(LEAP_SECOND_PATTERN)
-
-    return pl.when(
-        is_leap_second_expr.not_()
-        | (value_expr.dt.hour().eq(23) & value_expr.dt.minute().eq(59))
-    ).then(value_expr)
+    # Polars evaluates every branch on every cell, so the common form (uppercase, whole
+    # seconds below 60) takes its fast parser alone and the full reading sees only nulls.
+    # Each step is a struct field, read by name, so no step is evaluated twice
+    plain_text_expr = pl.when(pl.field("is_plain")).then(pl.field("text"))
+    if prefix:
+        plain_text_expr = pl.concat_str([pl.lit(prefix), plain_text_expr])
+    return (
+        pl.struct(text=text_expr)
+        .struct.with_fields(
+            is_plain=pl.field("text").str.contains(
+                pattern.replace(SECOND_PATTERN, PLAIN_SECOND_PATTERN)
+            )
+        )
+        .struct.with_fields(
+            plain=plain_text_expr.str.strptime(
+                dtype, fmt.replace("%.f", ""), strict=False
+            ),
+            matched=pl.when(pl.field("is_plain").not_())
+            .then(pl.field("text"))
+            .str.to_uppercase()
+            .str.extract(pattern, 0),
+        )
+        .struct.with_fields(
+            value=pl.concat_str(
+                [
+                    pl.lit(prefix),
+                    pl.field("matched").str.replace(LEAP_SECOND_PATTERN, "${1}59"),
+                ]
+            ).str.strptime(dtype, fmt, strict=False)
+        )
+        .struct.with_fields(
+            value=pl.coalesce(
+                pl.field("plain"),
+                pl.when(
+                    pl.field("matched").str.contains(LEAP_SECOND_PATTERN).not_()
+                    | (
+                        pl.field("value").dt.hour().eq(23)
+                        & pl.field("value").dt.minute().eq(59)
+                    )
+                ).then(pl.field("value")),
+            )
+        )
+        .struct.field("value")
+    )
 
 
 def reject_leap_second(text_expr: pl.Expr, value_expr: pl.Expr, fmt: str) -> pl.Expr:

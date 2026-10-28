@@ -17,7 +17,7 @@ user reference; this skill is how to change it without making the numbers lie.
   `test:unit` and `test` chains include it. Nothing here runs a real tool, and the section has
   no CI job by decision: its numbers need a fixed, idle machine, not a shared runner
 - `pnpm -C benchmark setup:rivals` — `uv sync --frozen` in `rivals/` and the pinned qsv binary
-  into `.cache/bin/`. The Fairspec adapters (`fairspec/validate.{py,ts}`) need `pnpm -C python setup` and `pnpm -C typescript build`; the Rust one (`fairspec/rust/`, a member of the `rust/` workspace so it shares its polars patch, profile and CPU flags) is built by its tool with `pnpm -C rust build:dist` before each run, so it never goes stale; that needs the pinned nightly toolchain (`rustup toolchain install nightly-2026-09-01`). Rust runs on the streaming engine like Python; on the in-memory engine it held 2.8GB per GB
+  into .cache/bin/. The Fairspec adapters (`fairspec/validate.{py,ts}`) need `pnpm -C python setup` and `pnpm -C typescript build`; the Rust one (`fairspec/rust/`, a member of the `rust/` workspace so it shares its polars patch, profile and CPU flags) is built by its tool with `pnpm -C rust build:dist` before each run, so it never goes stale; that needs the pinned nightly toolchain (`rustup toolchain install nightly-2026-09-01`). Rust runs on the streaming engine like Python; on the in-memory engine it held 2.8GB per GB
 - `pnpm -C benchmark measure` — narrowed with `--case`, `--size`, `--tool`; set `--runs 1 --warmup 0`
   and a `--timeout` for multi-gigabyte sizes, and `--memory-max` below what the machine has free
 - `pnpm -C benchmark show:report` — merges `.cache/results/`, latest result per case, size and tool

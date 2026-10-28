@@ -145,11 +145,26 @@ relative import reaches beyond the top-level package.
   prints through Rich, whose markup swallows `[...]` in the content
 - **Table validation collects once for every column.** A LazyFrame caches nothing, so each
   `collect` re-parses the source: `inspect_columns` (`python/table/fairspec_table/actions/column/inspect.py`)
-  puts each column's target, source, cell and UInt8 tag columns into one frame, filters rows
-  with any tag, takes one global `head(max_errors)` and expands errors column by column, so the
+  puts each column's target, source, cell and UInt32 error-bitmask columns into one frame,
+  filters rows with any bit set, takes one global `head(max_errors)` and expands errors column by column, so the
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
   wkt, array, object, geojson, topojson) and a key's locating query keep their own scan.
-  Collect with `engine=QUERY_ENGINE`
+  Collect with `engine=QUERY_ENGINE`. The one second read: an integer column whose sample
+  is plain is read by the plain form alone (`plain_integer_columns`), and only when a type
+  error cell is one the exact reading reads does `inspect_table` read again, exactly
+- **Count expression nodes, not rows, in the check read.** The streaming engine does no
+  common-subexpression elimination, so an expression used twice runs twice: bind a
+  multi-step reading as `struct.with_fields` fields read by `pl.field` (`parse_integer_text`,
+  `parse_default_temporal`), and compute a column once and reference it (targets come
+  before the flags that read them). The CSV source hands ~512 KB morsels, ~1000 rows of a
+  wide file, so every node costs per morsel even on all-null input: a branch that is rarely
+  taken still pays for each of its nodes, and a `fill_null` on its strings pays per row
+- **Every column the schema types stays in the read**, checks or not: Polars reports a long
+  row only when the read projects every column, and invalid UTF-8 only in a column it reads.
+  A column read as its own source drops its impossible type check but is still carried
+- **The CSV blank-line pre-scan is a byte search** (`python/table/fairspec_table/plugins/csv/helpers/rows.py`):
+  C `memmem` through ctypes, which drops the GIL, one slice per core, `mmap.find` where libc
+  has none. Not `pl.scan_lines`: it prefetches ~0.9 GB of the file into anonymous memory
 - **A row key check hashes in the cell checks' read, then locates.** `create_key_hash_probe`
   (`python/table/fairspec_table/actions/table/checks/key.py`) is an always-false flag in that
   read's filter whose `map_batches` keeps each batch's key hashes; only when they repeat does
@@ -159,8 +174,8 @@ relative import reaches beyond the top-level package.
   drop null keys, while key checks skip any key with a null cell (`create_key_presence_expr`;
   a null primary key cell is `cell/missing` instead), and a key whose columns are not all in
   the data is skipped. Keys compare typed values, so each key column goes through
-  `normalize_column` (`key_exprs`): `1.0` and `1` are one number key, and a `missingValues`
-  marker is null there too. py-polars hands `map_batches` a constant batch (every key parsed
+  `normalize_column` (`key_exprs`), or is read from the target the cell checks already
+  parse: `1.0` and `1` are one number key, and a `missingValues` marker is null there too. py-polars hands `map_batches` a constant batch (every key parsed
   to one literal, such as `true`) as one row, so the probe adds the raw cell's null flag to
   the hash to keep a row per cell
 - **Never share one read between two queries** with a diagonal `pl.concat` or `pl.collect_all`:

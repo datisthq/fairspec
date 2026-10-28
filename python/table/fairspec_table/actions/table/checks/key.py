@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Callable, Literal
 
 import polars as pl
 from fairspec_metadata import RowPrimaryKeyError, RowUniqueKeyError, get_columns
@@ -41,11 +41,15 @@ def create_row_key_checks(mapping: SchemaMapping) -> list[RowKeyCheck]:
     return checks
 
 
+# Reads a column's typed value from a query that already parses it, or None
+TypedColumnReader = Callable[[str], "pl.Expr | None"]
+
+
 @dataclass
 class KeyHashProbe:
     """Records the hash of every present key while another query reads the table."""
 
-    flag_expr: pl.Expr
+    create_flag_expr: Callable[[TypedColumnReader], pl.Expr]
     hashes: list[pl.Series] = field(default_factory=list)
 
     def get_has_duplicate_key(self) -> bool:
@@ -58,7 +62,6 @@ class KeyHashProbe:
 def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
     hashes: list[pl.Series] = []
     falses: dict[int, pl.Series] = {}
-    keys = check.key_exprs
 
     # Called per batch on polars worker threads; the GIL makes the append safe, and polars
     # hashes before the call, so the Python side only keeps the batch. It returns
@@ -72,16 +75,24 @@ def create_key_hash_probe(check: RowKeyCheck) -> KeyHashProbe:
             result = falses[size] = pl.repeat(False, size, dtype=pl.Boolean, eager=True)
         return result
 
-    key_expr = keys[0] if len(keys) == 1 else pl.struct(keys)
-    # py-polars passes a constant batch, such as a parsed all-`true` key, as one row;
-    # adding the raw cell's null flag, 0 wherever the key is present, keeps every row
-    row_expr = pl.col(check.key_columns[0]).is_null().cast(pl.UInt64)
-    flag_expr = (
-        pl.when(create_key_presence_expr(keys))
-        .then(key_expr.hash() + row_expr)
-        .map_batches(record_hashes, return_dtype=pl.Boolean, is_elementwise=True)
-    )
-    return KeyHashProbe(flag_expr=flag_expr, hashes=hashes)
+    # A key column the reading query already parses is read from it: the streaming
+    # engine does not share a repeated expression, so parsing it again costs a second read
+    def create_flag_expr(read_typed: TypedColumnReader) -> pl.Expr:
+        keys = [
+            typed if (typed := read_typed(name)) is not None else key
+            for name, key in zip(check.key_columns, check.key_exprs, strict=True)
+        ]
+        key_expr = keys[0] if len(keys) == 1 else pl.struct(keys)
+        # py-polars passes a constant batch, such as a parsed all-`true` key, as one row;
+        # adding the raw cell's null flag, 0 wherever the key is present, keeps every row
+        row_expr = pl.col(check.key_columns[0]).is_null().cast(pl.UInt64)
+        return (
+            pl.when(create_key_presence_expr(keys))
+            .then(key_expr.hash() + row_expr)
+            .map_batches(record_hashes, return_dtype=pl.Boolean, is_elementwise=True)
+        )
+
+    return KeyHashProbe(create_flag_expr=create_flag_expr, hashes=hashes)
 
 
 def create_key_presence_expr(key_exprs: list[pl.Expr]) -> pl.Expr:

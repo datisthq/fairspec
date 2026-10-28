@@ -43,7 +43,9 @@ from .types.time import parse_time_column
 from .types.url import parse_url_column
 
 
-def parse_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
+def parse_column(
+    mapping: ColumnMapping, column_expr: pl.Expr, *, is_plain: bool = False
+) -> pl.Expr:
     if mapping.source.type != pl.String:
         return column_expr
 
@@ -69,7 +71,7 @@ def parse_column(mapping: ColumnMapping, column_expr: pl.Expr) -> pl.Expr:
     elif isinstance(column, HexColumn):
         return parse_hex_column(column, column_expr)
     elif isinstance(column, IntegerColumn):
-        return parse_integer_column(column, column_expr)
+        return parse_integer_column(column, column_expr, is_plain=is_plain)
     elif isinstance(column, ListColumn):
         return parse_list_column(column, column_expr)
     elif isinstance(column, LocalDateTimeColumn):
