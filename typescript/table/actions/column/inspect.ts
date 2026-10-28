@@ -26,16 +26,19 @@ import { inspectWkbColumn } from "./types/wkb.ts"
 import { inspectWktColumn } from "./types/wkt.ts"
 
 /**
- * Check every column against its schema, keyed by column name in mapping order
+ * Check every column against its schema, keyed by column name in mapping order. The
+ * integer columns in `plainIntegerColumns` read only the plain form, so a cell with a
+ * fraction or an exponent fails their type check
  */
 export async function inspectColumns(
   mappings: ColumnMapping[],
   table: Table,
   options: {
     maxErrors: number
+    plainIntegerColumns?: ReadonlySet<string>
   },
 ) {
-  const { maxErrors } = options
+  const { maxErrors, plainIntegerColumns = new Set<string>() } = options
   const errors = new Map<string, TableError[]>()
   const polarsMappings: ColumnMapping[] = []
 
@@ -48,7 +51,10 @@ export async function inspectColumns(
   }
 
   if (polarsMappings.length) {
-    const cellErrors = await inspectCellsInPolars(polarsMappings, table, { maxErrors })
+    const cellErrors = await inspectCellsInPolars(polarsMappings, table, {
+      maxErrors,
+      plainIntegerColumns,
+    })
     for (const [name, columnErrors] of cellErrors) {
       errors.set(name, columnErrors)
     }
@@ -172,9 +178,10 @@ async function inspectCellsInPolars(
   table: Table,
   options: {
     maxErrors: number
+    plainIntegerColumns: ReadonlySet<string>
   },
 ) {
-  const { maxErrors } = options
+  const { maxErrors, plainIntegerColumns } = options
   const errors = new Map<string, TableError[]>(
     mappings.map(mapping => [mapping.target.name, []]),
   )
@@ -182,65 +189,29 @@ async function inspectCellsInPolars(
   // The error columns carry a tag, not the error itself: a literal is broadcast to
   // every row, so a JSON template would materialize a full-length string column per
   // check. Templates are resolved back in JS once the frame is filtered down.
-  const checked: {
-    index: number
-    mapping: ColumnMapping
-    templates: CellError[]
-    errorExpr: pl.Expr
-  }[] = []
-
-  for (const [index, mapping] of mappings.entries()) {
-    if (mapping.target.type === "unknown") continue
-    const cellMapping = {
-      source: pl.col(getSourceName(index)),
-      target: pl.col(getTargetName(index)),
-    }
-
-    const pairs = CHECK_FUNCTIONS.flatMap(checkCell => {
-      const check = checkCell(mapping.target, cellMapping)
-      return check ? [{ checkCell, check }] : []
-    })
-    if (!pairs.length) continue
-
-    // The error column is a bitmask over the checks, bit n set when check n fails
-    const bits = pairs.map((_, errorTag) => pl.lit(2 ** errorTag).cast(pl.UInt32))
-    const zero = pl.lit(0).cast(pl.UInt32)
-    const constraintExprs = pairs.flatMap(({ checkCell, check }, errorTag) =>
-      SHORT_CIRCUIT_CHECKS.includes(checkCell)
-        ? []
-        : [
-            pl
-              .when(check.isErrorExpr)
-              .then(bits[errorTag] ?? zero)
-              .otherwise(zero),
-          ],
-    )
-    let maskExpr = constraintExprs.length ? pl.sumHorizontal(constraintExprs) : zero
-    for (const [errorTag, { checkCell, check }] of [...pairs.entries()].reverse()) {
-      if (SHORT_CIRCUIT_CHECKS.includes(checkCell)) {
-        maskExpr = pl
-          .when(check.isErrorExpr)
-          .then(bits[errorTag] ?? zero)
-          .otherwise(maskExpr)
-      }
-    }
-    const errorExpr = pl.when(maskExpr.neq(0)).then(maskExpr).otherwise(pl.lit(null))
-
-    const templates = pairs.map(({ check }) => check.errorTemplate)
-    checked.push({ index, mapping, templates, errorExpr })
+  let { checked, carried } = createCellChecks(mappings, plainIntegerColumns, {
+    isSourceTypeDropped: true,
+  })
+  // A read with no check is no read, and it still has to report long rows and invalid UTF-8
+  if (!checked.length && carried.length) {
+    ;({ checked, carried } = createCellChecks(mappings, plainIntegerColumns, {
+      isSourceTypeDropped: false,
+    }))
   }
-
   if (!checked.length) return errors
 
   const checkTable = table
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
     .select(
       pl.col(NUMBER_COLUMN_NAME),
-      ...checked.flatMap(({ index, mapping }) => [
-        normalizeColumn(mapping).alias(getTargetName(index)),
-        normalizeColumn(mapping, { keepType: true }).alias(getSourceName(index)),
+      ...checked.flatMap(({ index, mapping, targetExpr, sourceExpr }) => [
+        targetExpr.alias(getTargetName(index)),
+        ...(sourceExpr ? [sourceExpr.alias(getSourceName(index))] : []),
         pl.col(mapping.source.name).alias(getCellName(index)),
       ]),
+      ...carried.map(index =>
+        pl.col(mappings[index]?.source.name ?? "").alias(getCellName(index)),
+      ),
     )
     .withColumns(
       ...checked.map(({ index, errorExpr }) => errorExpr.alias(getErrorName(index))),
@@ -250,9 +221,7 @@ async function inspectCellsInPolars(
   // per column would parse the whole source once for each
   const checkFrame = await checkTable
     .filter(
-      pl.anyHorizontal(
-        checked.map(({ index }) => pl.col(getErrorName(index)).isNotNull()),
-      ),
+      pl.anyHorizontal(checked.map(({ index }) => pl.col(getErrorName(index)).neq(0))),
     )
     .select(
       pl.col(NUMBER_COLUMN_NAME),
@@ -270,7 +239,7 @@ async function inspectCellsInPolars(
 
     for (const row of rows) {
       const errorMask = row[getErrorName(index)]
-      if (errorMask === null || errorMask === undefined) continue
+      if (!errorMask) continue
 
       for (const [errorTag, template] of templates.entries()) {
         if (!(Number(errorMask) & (2 ** errorTag))) continue
@@ -284,6 +253,92 @@ async function inspectCellsInPolars(
   }
 
   return errors
+}
+
+// A column read as its own source cannot fail its type check, so that check is dropped,
+// but the column stays in the read unless `isSourceTypeDropped` is off
+function createCellChecks(
+  mappings: ColumnMapping[],
+  plainIntegerColumns: ReadonlySet<string>,
+  options: { isSourceTypeDropped: boolean },
+) {
+  const checked: {
+    index: number
+    mapping: ColumnMapping
+    templates: CellError[]
+    targetExpr: pl.Expr
+    sourceExpr?: pl.Expr
+    errorExpr: pl.Expr
+  }[] = []
+  const carried: number[] = []
+
+  for (const [index, mapping] of mappings.entries()) {
+    if (mapping.target.type === "unknown") continue
+    const targetExpr = normalizeColumn(mapping, {
+      isPlain: plainIntegerColumns.has(mapping.source.name),
+    })
+    const sourceExpr = normalizeColumn(mapping, { keepType: true })
+    const isSource = options.isSourceTypeDropped && getIsSameExpr(targetExpr, sourceExpr)
+    const cellMapping = {
+      source: pl.col(isSource ? getTargetName(index) : getSourceName(index)),
+      target: pl.col(getTargetName(index)),
+    }
+
+    const pairs = CHECK_FUNCTIONS.flatMap(checkCell => {
+      if (isSource && checkCell === checkCellType) return []
+      const check = checkCell(mapping.target, cellMapping)
+      return check ? [{ checkCell, check }] : []
+    })
+    if (!pairs.length) {
+      if (isSource) carried.push(index)
+      continue
+    }
+
+    // The error column is a bitmask over the checks, bit n set when check n fails, and
+    // 0 when none does: a null for 0 would repeat the whole mask in its condition
+    const bits = pairs.map((_, errorTag) => pl.lit(2 ** errorTag).cast(pl.UInt32))
+    const zero = pl.lit(0).cast(pl.UInt32)
+    const constraintExprs = pairs.flatMap(({ checkCell, check }, errorTag) =>
+      SHORT_CIRCUIT_CHECKS.includes(checkCell)
+        ? []
+        : [
+            pl
+              .when(check.isErrorExpr)
+              .then(bits[errorTag] ?? zero)
+              .otherwise(zero),
+          ],
+    )
+    let errorExpr = constraintExprs.length ? pl.sumHorizontal(constraintExprs) : zero
+    for (const [errorTag, { checkCell, check }] of [...pairs.entries()].reverse()) {
+      if (SHORT_CIRCUIT_CHECKS.includes(checkCell)) {
+        errorExpr = pl
+          .when(check.isErrorExpr)
+          .then(bits[errorTag] ?? zero)
+          .otherwise(errorExpr)
+      }
+    }
+
+    const templates = pairs.map(({ check }) => check.errorTemplate)
+    checked.push({
+      index,
+      mapping,
+      templates,
+      targetExpr,
+      sourceExpr: isSource ? undefined : sourceExpr,
+      errorExpr,
+    })
+  }
+
+  return { checked, carried }
+}
+
+// Opaque functions do not serialize, and an expression holding one counts as different
+function getIsSameExpr(a: pl.Expr, b: pl.Expr) {
+  try {
+    return a.serialize("json").equals(b.serialize("json"))
+  } catch {
+    return false
+  }
 }
 
 function getTargetName(index: number) {

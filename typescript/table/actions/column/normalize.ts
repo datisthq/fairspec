@@ -6,13 +6,13 @@ import { substituteColumn } from "./substitute.ts"
 
 export function normalizeColumn(
   mapping: ColumnMapping,
-  options?: { keepType?: boolean },
+  options?: { keepType?: boolean; isPlain?: boolean },
 ) {
   let columnExpr = pl.col(mapping.source.name)
   columnExpr = substituteColumn(mapping, columnExpr)
 
   if (!options?.keepType) {
-    columnExpr = parseColumn(mapping, columnExpr)
+    columnExpr = parseColumn(mapping, columnExpr, { isPlain: options?.isPlain })
     columnExpr = narrowColumn(mapping, columnExpr)
   }
 

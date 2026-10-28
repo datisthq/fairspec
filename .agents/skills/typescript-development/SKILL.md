@@ -89,10 +89,30 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
 - **Polars runs on the streaming engine through `POLARS_FORCE_STREAMING`**, set once in `typescript/table/settings.ts` (listed in `sideEffects`). Async `collect()` takes no engine and its `streaming` option is a dead flag, so call plain `collect()` — never `collect({ streaming: true })`, and never `collectSync` to reach the engine, which blocks the MCP server and the desktop app. Not every expression streams: `Expr.replace` holds the whole column (use an anchored `str.replace`), so one such check makes a validation's memory grow with the file. Judge a memory change by the smallest cgroup cap it survives (`systemd-run --user --scope -p MemoryMax=…`), not peak RSS, which counts the mmap'd source
 - **Table validation collects once for every column.** A LazyFrame caches nothing, so each
   `collect()` re-parses the source: `inspectColumns` (`typescript/table/actions/column/inspect.ts`)
-  puts each column's target, source, cell and UInt8 tag columns into one frame, filters rows
-  with any tag, takes one global `head(maxErrors)` and expands errors column by column, so the
+  puts each column's target, source, cell and UInt32 error-bitmask columns into one frame,
+  filters rows with any bit set, takes one global `head(maxErrors)` and expands errors column by column, so the
   spec order holds. Never add a per-column collect; only the row-parsed types (duration, wkb,
-  wkt, array, object, geojson, topojson) and the row key checks keep their own scan
+  wkt, array, object, geojson, topojson) and the row key checks keep their own scan. The one
+  second read: an integer column whose sample is plain is read by the plain form alone
+  (`getPlainIntegerColumns` in `typescript/table/actions/table/inspect.ts`), and only when one
+  of its type error cells reads exactly are the columns and key probes read again, exactly
+- **Count expression nodes, not rows, in the check read.** The streaming engine shares no
+  repeated expression, so one used twice runs twice, and the CSV source hands ~1000-row
+  morsels of a wide file, so every node costs per morsel even on all-null input: a branch
+  rarely taken still pays for each of its nodes. Bind a multi-step reading as
+  `struct.withFields` fields read by `createFieldExpr` (`typescript/table/helpers/expr.ts`,
+  Polars' `pl.field`, which nodejs-polars lacks, built by `pl.Expr.deserialize`), as
+  `parseIntegerText` and the temporal defaults do. A field's dtype after `str.lengths` (an
+  opaque map) resolves as its input's, so cast it before arithmetic. The error bitmask keeps
+  0 as no error and the filter reads `neq(0)`: a null for 0 repeats the whole mask. A column
+  whose target serializes like its source drops its type check but stays in the read (long
+  rows, invalid UTF-8); an expression holding an opaque function does not serialize and
+  counts as different. Attribute time by timing `benchmark/fairspec/validate.ts` on schema
+  variants (a type, a format or the key dropped); `--cpu-prof` sees only the JS thread
+- The CSV blank-line pre-scan (`typescript/table/plugins/csv/helpers/rows.ts`) is
+  `Buffer.indexOf` over four concurrent `FileHandle.read`s into fixed 4MB buffers, each
+  slice starting two bytes early; searching LF CR LF only in a slice holding a CR. Never a
+  stream that concatenates its chunks: that cost 0.5s per GB
 - **A row key check probes before it locates.** `inspectRows` first runs a `groupBy(key).len()`
   probe on the key columns alone, and only on a duplicate runs the row-indexed
   `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
@@ -110,7 +130,9 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.
   The Python twin hashes keys inside the cell checks' read instead of probing; nodejs-polars has
   no lazy batch function to do the same, so this probe keeps its separate read until
-  nodejs-polars has one, tracked in https://github.com/datisthq/fairspec/issues/77
+  nodejs-polars has one, tracked in https://github.com/datisthq/fairspec/issues/77. It runs
+  after the column checks: beside them (`Promise.all`) it saved ~13% of the time but held
+  ~7GB of anonymous memory at 10GB in three runs of four, against a steady 1.5GB
 - **nodejs-polars is patched** (`.patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every

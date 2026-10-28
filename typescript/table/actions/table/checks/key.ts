@@ -7,7 +7,11 @@ import { mergeMissingValues } from "../-shared/helpers.ts"
 
 type KeyCheckType = "primary" | "unique"
 
-export function createRowKeyChecks(mapping: SchemaMapping) {
+export function createRowKeyChecks(
+  mapping: SchemaMapping,
+  options?: { plainIntegerColumns?: ReadonlySet<string> },
+) {
+  const plainIntegerColumns = options?.plainIntegerColumns ?? new Set<string>()
   const names = new Set(mapping.source.columns.map(column => column.name))
   const isPresent = (key: string[]) => key.every(name => names.has(name))
   const uniqueKeys = (mapping.target.uniqueKeys ?? []).filter(isPresent)
@@ -15,9 +19,16 @@ export function createRowKeyChecks(mapping: SchemaMapping) {
 
   const checks = [
     ...(primaryKey && isPresent(primaryKey)
-      ? [createRowKeyCheck(mapping, primaryKey, { keyType: "primary" })]
+      ? [
+          createRowKeyCheck(mapping, primaryKey, {
+            keyType: "primary",
+            plainIntegerColumns,
+          }),
+        ]
       : []),
-    ...uniqueKeys.map(key => createRowKeyCheck(mapping, key, { keyType: "unique" })),
+    ...uniqueKeys.map(key =>
+      createRowKeyCheck(mapping, key, { keyType: "unique", plainIntegerColumns }),
+    ),
   ]
 
   return checks
@@ -31,9 +42,11 @@ export function createKeyPresenceExpr(keyExprs: pl.Expr[]) {
 function createRowKeyCheck(
   mapping: SchemaMapping,
   keyColumns: string[],
-  options: { keyType: KeyCheckType },
+  options: { keyType: KeyCheckType; plainIntegerColumns: ReadonlySet<string> },
 ) {
-  const keyExprs = keyColumns.map(name => createKeyColumnExpr(mapping, name))
+  const keyExprs = keyColumns.map(name =>
+    createKeyColumnExpr(mapping, name, options.plainIntegerColumns.has(name)),
+  )
   const isErrorExpr = pl
     .struct(keyExprs)
     .isFirstDistinct()
@@ -50,11 +63,11 @@ function createRowKeyCheck(
 }
 
 // Keys compare the typed values, so `1.0` and `1` in a number column are one key
-function createKeyColumnExpr(mapping: SchemaMapping, name: string) {
+function createKeyColumnExpr(mapping: SchemaMapping, name: string, isPlain: boolean) {
   const source = mapping.source.columns.find(column => column.name === name)
   const column = getColumns(mapping.target).find(column => column.name === name)
   if (!source || !column) return pl.col(name)
 
   const target = mergeMissingValues(column, mapping.target)
-  return normalizeColumn({ source, target })
+  return normalizeColumn({ source, target }, { isPlain })
 }

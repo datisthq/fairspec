@@ -299,4 +299,32 @@ describe("inspectTable", () => {
       columnName: "name",
     })
   })
+
+  it("should read exactly an integer written with a fraction after the sample", async () => {
+    const ids = Array.from({ length: 200 }, (_, index) => String(index + 1))
+    const table = pl
+      .DataFrame({
+        id: [...ids, "5.0", "2e2", "east"],
+        value: [...ids, "1.5e1", "7", "9"],
+      })
+      .lazy()
+
+    const tableSchema: TableSchema = {
+      properties: {
+        id: { type: "integer" },
+        value: { type: "integer", maximum: 100 },
+      },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+    expect(
+      errors.map(error => [error.type, "rowNumber" in error ? error.rowNumber : 0]),
+    ).toEqual([
+      ["cell/type", 203],
+      ...Array.from({ length: 100 }, (_, index) => ["cell/maximum", index + 101]),
+      ["row/primaryKey", 201],
+      ["row/primaryKey", 202],
+    ])
+  })
 })

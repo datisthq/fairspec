@@ -4,6 +4,7 @@ import * as pl from "nodejs-polars"
 import pAll from "p-all"
 import { inspectTableChecks } from "../../actions/check/inspect.ts"
 import { inspectColumns } from "../../actions/column/inspect.ts"
+import { normalizeColumn } from "../../actions/column/normalize.ts"
 import { getPolarsSchema } from "../../helpers/schema.ts"
 import type { TableCheck } from "../../models/check.ts"
 import type { ColumnMapping } from "../../models/column.ts"
@@ -36,10 +37,17 @@ export async function inspectTable(
     const polarsSchema = getPolarsSchema(sample.schema)
     mapping = { source: polarsSchema, target: tableSchema }
 
-    const columnErrors = await inspectSchemaColumns(mapping, table, { maxErrors })
+    const { columnErrors, plainIntegerColumns } = await inspectSchemaColumns(
+      mapping,
+      table,
+      { sample, maxErrors },
+    )
     errors.push(...columnErrors)
 
-    const rowErrors = await inspectRows(mapping, table, { maxErrors })
+    const rowErrors = await inspectRows(mapping, table, {
+      maxErrors,
+      plainIntegerColumns,
+    })
     errors.push(...rowErrors)
   }
 
@@ -55,10 +63,11 @@ async function inspectSchemaColumns(
   mapping: SchemaMapping,
   table: Table,
   options: {
+    sample: pl.DataFrame
     maxErrors: number
   },
 ) {
-  const { maxErrors } = options
+  const { sample, maxErrors } = options
   const errors: TableError[] = []
   const columns = getColumns(mapping.target)
 
@@ -88,7 +97,19 @@ async function inspectSchemaColumns(
     columnMappings.push({ source: polarsColumn, target })
   }
 
-  const cellErrors = await inspectColumns(columnMappings, table, { maxErrors })
+  // The exact integer reading costs every read, so an integer column whose sample holds
+  // no cell only it reads is read plain: such a cell then fails the type check, and only
+  // then are the columns read again, exactly
+  let plainIntegerColumns = await getPlainIntegerColumns(columnMappings, sample)
+  let cellErrors = await inspectColumns(columnMappings, table, {
+    maxErrors,
+    plainIntegerColumns,
+  })
+  if (await getHasUnplainIntegerCell(columnMappings, cellErrors, plainIntegerColumns)) {
+    plainIntegerColumns = new Set()
+    cellErrors = await inspectColumns(columnMappings, table, { maxErrors })
+  }
+
   for (const column of columns) {
     errors.push(...(missingErrors.get(column.name) ?? cellErrors.get(column.name) ?? []))
   }
@@ -101,18 +122,72 @@ async function inspectSchemaColumns(
     }
   }
 
-  return errors.sort(
+  const columnErrors = errors.sort(
     (a, b) =>
       Number(!a.type.startsWith("column/")) - Number(!b.type.startsWith("column/")),
   )
+
+  return { columnErrors, plainIntegerColumns }
+}
+
+async function getPlainIntegerColumns(mappings: ColumnMapping[], sample: pl.DataFrame) {
+  const integerMappings = mappings.filter(
+    mapping => mapping.target.type === "integer" && mapping.source.type.equals(pl.String),
+  )
+  if (!integerMappings.length) return new Set<string>()
+
+  const flags = await getHasExactIntegers(integerMappings, sample.lazy())
+  return new Set(
+    integerMappings
+      .filter((_, index) => !flags[index])
+      .map(mapping => mapping.source.name),
+  )
+}
+
+async function getHasUnplainIntegerCell(
+  mappings: ColumnMapping[],
+  cellErrors: Map<string, TableError[]>,
+  plainIntegerColumns: ReadonlySet<string>,
+) {
+  for (const mapping of mappings) {
+    if (!plainIntegerColumns.has(mapping.source.name)) continue
+    const cells = (cellErrors.get(mapping.target.name) ?? []).flatMap(error =>
+      error.type === "cell/type" ? [error.cell] : [],
+    )
+    if (!cells.length) continue
+
+    const frame = pl.DataFrame([pl.Series(mapping.source.name, cells, pl.String)])
+    const [hasExact] = await getHasExactIntegers([mapping], frame.lazy())
+    if (hasExact) return true
+  }
+
+  return false
+}
+
+// Whether the exact reading reads a cell the plain form does not, per mapping
+async function getHasExactIntegers(mappings: ColumnMapping[], table: Table) {
+  const frame = await table
+    .select(
+      mappings.map((mapping, index) =>
+        normalizeColumn(mapping)
+          .isNotNull()
+          .and(normalizeColumn(mapping, { isPlain: true }).isNull())
+          .any()
+          .alias(String(index)),
+      ),
+    )
+    .collect()
+
+  const [row] = frame.toRecords()
+  return mappings.map((_, index) => row?.[String(index)] === true)
 }
 
 async function inspectRows(
   mapping: SchemaMapping,
   table: Table,
-  options: { maxErrors: number },
+  options: { maxErrors: number; plainIntegerColumns: ReadonlySet<string> },
 ) {
-  const { maxErrors } = options
+  const { maxErrors, plainIntegerColumns } = options
   const errors: TableError[] = []
   const columns = getColumns(mapping.target)
   const abortController = new AbortController()
@@ -154,7 +229,9 @@ async function inspectRows(
 
   try {
     await pAll(
-      [...createRowKeyChecks(mapping)].map(it => () => collectRowErrors(it)),
+      [...createRowKeyChecks(mapping, { plainIntegerColumns })].map(
+        it => () => collectRowErrors(it),
+      ),
       { concurrency: INSPECT_ROW_CONCURRENCY },
     )
   } catch (error) {

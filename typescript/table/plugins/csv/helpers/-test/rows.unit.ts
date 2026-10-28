@@ -9,6 +9,18 @@ describe("cleanCsvRows", () => {
     expect(await cleanCsvRows([path], { format: "csv" })).toBeUndefined()
   })
 
+  it.each([
+    ["a blank line", "\n\n", 4 * 1024 * 1024 - 1],
+    ["a blank CRLF line", "\n\r\n", 4 * 1024 * 1024 - 2],
+  ])("should find %s across a slice boundary", async (_name, blank, offset) => {
+    const head = "a,b\n".repeat(offset / 4)
+    const text = `${head}${"1".repeat(offset - head.length)}${blank}3,4\n`
+    const path = await writeTempFile(text)
+    const cleaned = await cleanCsvRows([path], { format: "csv" })
+
+    expect(cleaned).toBeDefined()
+  })
+
   it("should drop blank lines but not a blank line inside a quoted cell", async () => {
     const path = await writeTempFile('\na,b\n1,"x\n\ny"\n\r\n3,4\n\n')
     const cleaned = await cleanCsvRows([path], { format: "csv" })

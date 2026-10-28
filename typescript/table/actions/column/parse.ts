@@ -20,7 +20,11 @@ import { parseNumberColumn } from "./types/number.ts"
 import { parseTimeColumn } from "./types/time.ts"
 import { parseUrlColumn } from "./types/url.ts"
 
-export function parseColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
+export function parseColumn(
+  mapping: ColumnMapping,
+  columnExpr: pl.Expr,
+  options?: { isPlain?: boolean },
+) {
   if (!mapping.source.type.equals(pl.String)) {
     return columnExpr
   }
@@ -45,7 +49,7 @@ export function parseColumn(mapping: ColumnMapping, columnExpr: pl.Expr) {
     case "hex":
       return parseHexColumn(column, columnExpr)
     case "integer":
-      return parseIntegerColumn(column, columnExpr)
+      return parseIntegerColumn(column, columnExpr, options)
     case "list":
       return parseListColumn(column, columnExpr)
     case "local-date-time":

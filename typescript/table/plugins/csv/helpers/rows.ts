@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer"
 import { createReadStream, createWriteStream } from "node:fs"
+import { open } from "node:fs/promises"
 import { Transform } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import { getTempFilePath } from "@fairspec/dataset"
@@ -9,6 +10,10 @@ import { getHeaderRows } from "../../../helpers/fileDialect.ts"
 const CR = 0x0d
 const LF = 0x0a
 const BOM = Buffer.from([0xef, 0xbb, 0xbf])
+const LF_CR_LF = Buffer.from([LF, CR, LF])
+// Four readers fill libuv's default thread pool of four
+const BLANK_READERS = 4
+const BLANK_SLICE_BYTES = 4 * 1024 * 1024
 const LONG_ROW_MESSAGE = "found more fields than defined in the header"
 
 /**
@@ -75,29 +80,50 @@ interface RowScanner {
 }
 
 // A blank line is two line ends with nothing (or only a CR) between them, or one at
-// the start of the file after any BOM; the copy drops it unless inside a quoted cell
+// the start of the file after any BOM. Each slice starts two bytes early, so a needle
+// across a boundary lies whole in the later one
 async function getHasBlankLine(path: string, eol: number, end?: number) {
-  const needles = [Buffer.from([eol, eol])]
-  if (eol === LF) needles.push(Buffer.from([LF, CR, LF]))
+  const file = await open(path)
+  try {
+    const { size } = await file.stat()
+    const total = end === undefined ? size : Math.min(size, end + 1)
+    if (!total) return false
 
-  let carry = Buffer.alloc(0)
-  let isStart = true
-  for await (const chunk of createReadStream(path, { end })) {
-    if (!Buffer.isBuffer(chunk)) continue
-    const data = Buffer.concat([carry, chunk])
-    if (isStart) {
-      const start = getBomLength(data)
-      const first = data[start]
-      if (first === eol || (eol === LF && first === CR && data[start + 1] === LF)) {
-        return true
-      }
-      isStart = data.length < start + 2
+    const head = Buffer.alloc(Math.min(total, BOM.length + 2))
+    await file.read(head, 0, head.length, 0)
+    const start = getBomLength(head)
+    const first = head[start]
+    if (first === eol || (eol === LF && first === CR && head[start + 1] === LF)) {
+      return true
     }
-    if (needles.some(needle => data.includes(needle))) return true
-    carry = data.subarray(-2)
-  }
 
-  return false
+    const pair = Buffer.from([eol, eol])
+    let next = 0
+    let isFound = false
+    const searchSlices = async () => {
+      const buffer = Buffer.allocUnsafe(Math.min(BLANK_SLICE_BYTES, total) + 2)
+      while (!isFound && next < total) {
+        const from = Math.max(0, next - 2)
+        next += BLANK_SLICE_BYTES
+        const length = Math.min(buffer.length, total - from)
+        const { bytesRead } = await file.read(buffer, 0, length, from)
+        const data = buffer.subarray(0, bytesRead)
+        // LF CR LF holds a CR, so only a slice with one can hold it
+        if (
+          data.indexOf(pair) !== -1 ||
+          (eol === LF && data.indexOf(CR) !== -1 && data.indexOf(LF_CR_LF) !== -1)
+        ) {
+          isFound = true
+        }
+      }
+    }
+
+    const readers = Math.min(BLANK_READERS, Math.ceil(total / BLANK_SLICE_BYTES))
+    await Promise.all(Array.from({ length: readers }, searchSlices))
+    return isFound
+  } finally {
+    await file.close()
+  }
 }
 
 async function cleanFileRows(path: string, scanner: RowScanner, end?: number) {
