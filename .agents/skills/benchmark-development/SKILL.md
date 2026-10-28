@@ -124,3 +124,7 @@ and leaves it out of the validator count and the fastest-rival tile.
 The published comparison is a `.humans/` page: `pnpm -C benchmark show:report --out
 ../.humans/benchmark-nyc-311.html`. Its numbers carry the date and machine. Regenerate it from a
 full run of the case on an otherwise idle machine; a partial or noisy run is not published.
+A bare `show:report` merges every file in the results cache, so stale sizes, renamed tools and
+partial reruns resurface on the page: pass the result files explicitly, the rivals' files the
+current page was built from plus the new Fairspec runs. Re-run a Fairspec number that moves
+far from its last review before publishing it; a single cold 10GB run under load is noise
