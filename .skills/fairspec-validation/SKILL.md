@@ -1,6 +1,6 @@
 ---
 name: fairspec-validation
-description: Use when checking whether data, a table, a dataset, a file or a schema conforms to Fairspec — choosing the command, the MCP tool or the TypeScript/Python call, and reading the report's errors to fix them.
+description: Use when checking whether data, a table, a dataset, a file or a schema conforms to Fairspec — choosing the command, the MCP tool or the TypeScript/Python/Rust call, and reading the report's errors to fix them.
 ---
 
 # Validating with Fairspec
@@ -11,22 +11,26 @@ Use the dataset only when foreign keys or several resources matter.
 
 ## Surfaces
 
-Install with `npm install fairspec` (TypeScript CLI, library and MCP server) or
-`pip install fairspec` (Python CLI, library and MCP server). Both ship a `fairspec` binary
-with the same commands and flags. `fairspec mcp` starts the MCP server on stdio.
+Install with `npm install fairspec` (TypeScript CLI, library and MCP server),
+`pip install fairspec` (Python CLI, library and MCP server), or the Rust binary
+(`curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal`, or `cargo install fairspec`;
+`cargo add fairspec` for the library). Each ships a `fairspec` binary with the same commands and
+flags. `fairspec mcp` starts the MCP server on stdio.
 
-| target       | CLI                                         | MCP tool                  | TypeScript (async)         | Python                       |
-| ------------ | ------------------------------------------- | ------------------------- | -------------------------- | ---------------------------- |
-| table        | `fairspec table validate <path> --schema s` | `validateTableTool`       | `validateTable(resource)`  | `validate_table(resource)`   |
-| dataset      | `fairspec dataset validate dataset.json`    | `validateDatasetTool`     | `validateDataset(source)`  | `validate_dataset(source)`   |
-| JSON data    | `fairspec data validate <path> --schema s`  | `validateDataTool`        | `validateData(resource)`   | `validate_data(resource)`    |
-| table schema | `fairspec table validate-schema <path>`     | `validateTableSchemaTool` | `validateTableSchema(src)` | `validate_table_schema(src)` |
-| data schema  | `fairspec data validate-schema <path>`      | `validateDataSchemaTool`  | `validateDataSchema(src)`  | `validate_data_schema(src)`  |
-| file         | `fairspec file validate <path> --hash h`    | —                         | `validateFile(resource)`   | `validate_file(resource)`    |
+| target       | CLI                                         | MCP tool                  | TypeScript (async)         | Python                       | Rust                                                  |
+| ------------ | ------------------------------------------- | ------------------------- | -------------------------- | ---------------------------- | ----------------------------------------------------- |
+| table        | `fairspec table validate <path> --schema s` | `validateTableTool`       | `validateTable(resource)`  | `validate_table(resource)`   | `validate_table(&resource, &options)`                 |
+| dataset      | `fairspec dataset validate dataset.json`    | `validateDatasetTool`     | `validateDataset(source)`  | `validate_dataset(source)`   | `validate_dataset(source, &options)`                  |
+| JSON data    | `fairspec data validate <path> --schema s`  | `validateDataTool`        | `validateData(resource)`   | `validate_data(resource)`    | `validate_data(&resource)`                            |
+| table schema | `fairspec table validate-schema <path>`     | `validateTableSchemaTool` | `validateTableSchema(src)` | `validate_table_schema(src)` | `fairspec_metadata::validate_table_schema(src, None)` |
+| data schema  | `fairspec data validate-schema <path>`      | `validateDataSchemaTool`  | `validateDataSchema(src)`  | `validate_data_schema(src)`  | `fairspec_metadata::validate_data_schema(src, None)`  |
+| file         | `fairspec file validate <path> --hash h`    | —                         | `validateFile(resource)`   | `validate_file(resource)`    | `fairspec_dataset::validate_file(&resource, None)`    |
 
 A resource is `{ data, tableSchema?, fileDialect?, dataSchema?, integrity? }`. In TypeScript pass a
 plain object. In Python build `fairspec.Resource(data=..., tableSchema=...)`, since a dict is
-rejected. A table inside a dataset is selected with `-d dataset.json -r <name>` in place of a path.
+rejected. In Rust deserialise one with `serde_json::from_value(json!({...}))`; `options` is
+`ValidateTableOptions::default()` unless you set checks or limits, and the calls are synchronous,
+returning `Result<Report>`. A table inside a dataset is selected with `-d dataset.json -r <name>` in place of a path.
 A Frictionless Data Package, Table Schema or Table Dialect is recognised by its content and validates the
 same way (`fairspec dataset validate package.json`, `--schema schema.json`, `--dialect dialect.json`);
 errors point at the Frictionless field, key and resource name.
@@ -41,14 +45,20 @@ from fairspec import Resource, validate_table
 report = validate_table(Resource(data="sales.csv", tableSchema="schema.json"))
 ```
 
+```rust
+use fairspec::{ValidateTableOptions, validate_table};
+let resource = serde_json::from_value(serde_json::json!({"data": "sales.csv", "tableSchema": "schema.json"}))?;
+let report = validate_table(&resource, &ValidateTableOptions::default())?;
+```
+
 ## Before validating
 
 - **Without a schema, a table is checked against an inferred one.** Inference widens any column
   holding one bad value to `string`, so the bad value passes. To catch it, give a schema
   (`--schema`, or `tableSchema` on the resource) that says what the column must be. Draft one with
   **`fairspec-inference`**, tighten it, then validate
-- Paths inside descriptors must be relative to the descriptor or `https://` URLs. Python
-  rejects absolute paths, so run from the data's directory
+- Paths inside descriptors must be relative to the descriptor or `https://` URLs. An absolute
+  path is a `metadata` error in every library, so run from the data's directory
 - The MCP server fetches only public URLs: one on `localhost` or a private network fails with
   `Host … resolves to non-public address …`. Set `FAIRSPEC_HOST_POLICY=any` in the server's `env`
   to reach it; the CLI and the libraries fetch any URL unless it is set to `public`
@@ -66,6 +76,8 @@ table, and a window (`count(*) OVER (PARTITION BY zip) >= 2`) checks each row ag
 - MCP: `validateTableTool` with `options.checks: [{ name, condition, columnName?, message? }]`
 - TypeScript: `validateTable(resource, { checks: [...] })`; a condition may also be a nodejs-polars expression
 - Python: `validate_table(resource, checks=[{"name": ..., "condition": ...}])`; a condition may also be a `pl.Expr`
+- Rust: `ValidateTableOptions { checks: Some(vec![TableCheck { name, condition, column_name, message }]), ..Default::default() }`;
+  `condition` is `TableCheckCondition::Sql(...)` or `TableCheckCondition::Expr(...)` (a polars `Expr`)
 
 Quote column names that are SQL keywords (`"end"`). Conditions see values typed by the schema,
 so a value that fails its type passes the check and is reported once, as `cell/type`.

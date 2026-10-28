@@ -1,6 +1,6 @@
 ---
 name: fairspec-exploration
-description: Use when looking into tabular data with Fairspec — previewing rows, column stats, SQL queries over a CSV/Excel/JSON/Parquet table, listing a dataset's resources, a file's source, size and hash, from the CLI, MCP server or TypeScript/Python library.
+description: Use when looking into tabular data with Fairspec — previewing rows, column stats, SQL queries over a CSV/Excel/JSON/Parquet table, listing a dataset's resources, a file's size and hash, from the CLI, MCP server or TypeScript/Python/Rust library.
 ---
 
 # Exploring data with Fairspec
@@ -11,19 +11,24 @@ shows the delimiter, header and type problems those steps would trip on.
 
 ## Surfaces
 
-Install with `npm install fairspec` or `pip install fairspec`. Both ship a `fairspec` binary with the
-same commands and flags, and `fairspec mcp` serves the MCP tools. Both also print every
+Install with `npm install fairspec`, `pip install fairspec`, or the Rust binary
+(`curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal`, or `cargo install fairspec`;
+`cargo add fairspec` for the library). Each ships a `fairspec` binary with the same commands and flags,
+and `fairspec mcp` serves the MCP tools. Each also prints every
 command's input and output schema with `fairspec --llms`.
 
-| task                 | CLI                                                  | MCP tool           | TypeScript / Python                                    |
-| -------------------- | ---------------------------------------------------- | ------------------ | ------------------------------------------------------ |
-| SQL query            | `fairspec table query <path> "<sql>" --json`         | `queryTableTool`   | `queryTable(table, sql)` / `query_table(table, sql)`   |
-| SQL across a dataset | `fairspec dataset query dataset.json "<sql>" --json` | `queryDatasetTool` | `queryDataset(path, sql)` / `query_dataset(path, sql)` |
-| first rows           | `fairspec table preview <path>`                      | —                  | `loadTable(resource)` / `load_table(resource)`         |
-| raw source           | `fairspec file preview <path>`                       | `previewFileTool`  | `previewFile(path)` / `preview_file(path)`             |
-| column stats         | `fairspec table describe <path> --json`              | —                  | load, then Polars `describe()`                         |
-| dataset's resources  | `fairspec dataset list dataset.json --json`          | —                  | `loadDataset(path)` / `load_dataset(path)`             |
-| file size, hash      | `fairspec file describe <path> --json`               | —                  | `describeFile(path)` / `describe_file(path)`           |
+| task                 | CLI                                                  | MCP tool           | TypeScript / Python                                    | Rust                                               |
+| -------------------- | ---------------------------------------------------- | ------------------ | ------------------------------------------------------ | -------------------------------------------------- |
+| SQL query            | `fairspec table query <path> "<sql>" --json`         | `queryTableTool`   | `queryTable(table, sql)` / `query_table(table, sql)`   | `fairspec_table::query_table(table, sql)`          |
+| SQL across a dataset | `fairspec dataset query dataset.json "<sql>" --json` | `queryDatasetTool` | `queryDataset(path, sql)` / `query_dataset(path, sql)` | `query_dataset(path, sql, &options)`               |
+| first rows           | `fairspec table preview <path>`                      | —                  | `loadTable(resource)` / `load_table(resource)`         | `load_table(&resource, &options)`                  |
+| raw source           | `fairspec file preview <path>`                       | `previewFileTool`  | `previewFile(path)` / `preview_file(path)`             | `fairspec_dataset::preview_file(path, None, None)` |
+| column stats         | `fairspec table describe <path> --json`              | —                  | load, then Polars `describe()`                         | load, then SQL aggregates                          |
+| dataset's resources  | `fairspec dataset list dataset.json --json`          | —                  | `loadDataset(path)` / `load_dataset(path)`             | `load_dataset(path)`                               |
+| file size, hash      | `fairspec file describe <path> --json`               | —                  | `describeFile(path)` / `describe_file(path)`           | `fairspec_dataset::describe_file(path, None)`      |
+
+In Rust `options` is `LoadTableOptions::default()` (from `fairspec::fairspec_table`), and every
+call is synchronous and returns `Result`.
 
 In SQL the table is named `self`: `SELECT name, sum(price) FROM self GROUP BY name`. A dataset
 query names each table after its resource instead (`dataset list` shows the names), so it can join
@@ -47,8 +52,18 @@ table = load_table(Resource(data="sales.csv"))
 print(query_table(table, "SELECT count(*) AS n FROM self").collect())
 ```
 
-Both libraries return a lazy frame: call `.collect()` before reading rows, and narrow with SQL or
-`limit` first on large files. `loadTable` returns `undefined` (`None`) for a non-tabular resource.
+```rust
+use fairspec::fairspec_table::{LoadTableOptions, query_table};
+use fairspec::load_table;
+let resource = serde_json::from_value(serde_json::json!({"data": "sales.csv"}))?;
+if let Some(table) = load_table(&resource, &LoadTableOptions::default())? {
+    println!("{}", query_table(table, "SELECT count(*) AS n FROM self")?.collect()?);
+}
+```
+
+All libraries return a lazy frame: call `.collect()` before reading rows, and narrow with SQL or
+`limit` first on large files. `loadTable` returns `undefined` (`None` in Python and Rust) for a
+non-tabular resource.
 
 ## Gotchas
 
@@ -65,8 +80,8 @@ Both libraries return a lazy frame: call `.collect()` before reading rows, and n
   values: validate against a schema (**`fairspec-validation`**) to find the rows
 - A column read as one `string` blob, or a header row read as data, means the dialect is wrong.
   Check `fairspec table infer-dialect <path> --json` and override it with dialect flags
-- Paths inside a descriptor are relative to it. Python rejects absolute ones, so run from the data's
-  directory
+- Paths inside a descriptor are relative to it. An absolute one is a `metadata` error in every
+  library, so run from the data's directory
 - The MCP server fetches only public URLs: one on `localhost` or a private network fails with
   `Host … resolves to non-public address …`. Set `FAIRSPEC_HOST_POLICY=any` in the server's `env`
   to reach it; the CLI and the libraries fetch any URL unless it is set to `public`

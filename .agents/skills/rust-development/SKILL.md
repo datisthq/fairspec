@@ -228,6 +228,9 @@ behaviour.
   `jsonPointer`, messages are jsonschema-rs wording, and `format` is annotation only
 - Say where Rust differs: `script` takes SQL lines, not a REPL; `render-*` returns `None`;
   usage errors exit 1
+- The user-facing `.skills/fairspec-*` skills carry a Rust column and install line beside
+  TypeScript and Python: a new or renamed public function lands there too, and its ` ```rust `
+  snippets are compiled the same way
 - The section's changelog arrives with the first `rust-v` release; then add it to `include` in
   `livemark.config.ts` with a `/rust/changelog/` patch, as for the other libraries
 

@@ -1,6 +1,6 @@
 ---
 name: fairspec-inference
-description: Use when describing data files with Fairspec — inferring a file dialect, a table schema, a JSON data schema or a whole dataset descriptor from files, via the CLI, the MCP server or the TypeScript/Python library.
+description: Use when describing data files with Fairspec — inferring a file dialect, a table schema, a JSON data schema or a whole dataset descriptor from files, via the CLI, the MCP server or the TypeScript/Python/Rust library.
 ---
 
 # Inferring Fairspec metadata
@@ -11,16 +11,21 @@ review it before anyone relies on it. Then check the data against it with
 
 ## Surfaces
 
-Install with `npm install fairspec` or `pip install fairspec`. Both ship a `fairspec` binary with the
-same commands and flags, and `fairspec mcp` serves the MCP tools. Add `--json` to get
+Install with `npm install fairspec`, `pip install fairspec`, or the Rust binary
+(`curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal`, or `cargo install fairspec`;
+`cargo add fairspec` for the library). Each ships a `fairspec` binary with the same commands and flags, and `fairspec mcp` serves the MCP tools. Add `--json` to get
 machine-readable output on stdout, then redirect it to save a descriptor.
 
-| infer              | CLI                                          | MCP tool               | TypeScript (async)           | Python                         |
-| ------------------ | -------------------------------------------- | ---------------------- | ---------------------------- | ------------------------------ |
-| dataset descriptor | `fairspec dataset infer a.csv b.xlsx --json` | `inferDatasetTool`     | `inferDataset(dataset)`      | `infer_dataset(dataset)`       |
-| table schema       | `fairspec table infer-schema <path> --json`  | `inferTableSchemaTool` | `inferTableSchema(resource)` | `infer_table_schema(resource)` |
-| file dialect       | `fairspec table infer-dialect <path> --json` | `inferFileDialectTool` | `inferFileDialect(resource)` | `infer_file_dialect(resource)` |
-| data schema (JSON) | `fairspec data infer-schema <path> --json`   | `inferDataSchemaTool`  | `inferDataSchema(resource)`  | `infer_data_schema(resource)`  |
+| infer              | CLI                                          | MCP tool               | TypeScript (async)           | Python                         | Rust                                      |
+| ------------------ | -------------------------------------------- | ---------------------- | ---------------------------- | ------------------------------ | ----------------------------------------- |
+| dataset descriptor | `fairspec dataset infer a.csv b.xlsx --json` | `inferDatasetTool`     | `inferDataset(dataset)`      | `infer_dataset(dataset)`       | `infer_dataset(&dataset, &options)`       |
+| table schema       | `fairspec table infer-schema <path> --json`  | `inferTableSchemaTool` | `inferTableSchema(resource)` | `infer_table_schema(resource)` | `infer_table_schema(&resource, &options)` |
+| file dialect       | `fairspec table infer-dialect <path> --json` | `inferFileDialectTool` | `inferFileDialect(resource)` | `infer_file_dialect(resource)` | `infer_file_dialect(&resource, &options)` |
+| data schema (JSON) | `fairspec data infer-schema <path> --json`   | `inferDataSchemaTool`  | `inferDataSchema(resource)`  | `infer_data_schema(resource)`  | `infer_data_schema(&resource)`            |
+
+Rust calls are synchronous and return `Result`; `options` is `InferTableSchemaOptions::default()`
+(`InferFileDialectOptions` for the dialect), and the single-resource calls return `Option`, `None`
+when no plugin reads the format.
 
 `dataset infer` produces each resource's `name`, `fileDialect`, `textual`, `integrity` (sha256)
 and `tableSchema` in one pass. It is usually the right start:
@@ -39,6 +44,15 @@ await saveDatasetDescriptor(dataset, { path: "dataset.json" })
 from fairspec import Dataset, Resource, infer_dataset, save_dataset_descriptor
 dataset = infer_dataset(Dataset(resources=[Resource(data="sales.csv")]))
 save_dataset_descriptor(dataset, path="dataset.json")
+```
+
+```rust
+use fairspec::fairspec_metadata::save_dataset_descriptor;
+use fairspec::fairspec_table::InferTableSchemaOptions;
+use fairspec::infer_dataset;
+let dataset = serde_json::from_value(serde_json::json!({"resources": [{"data": "sales.csv"}]}))?;
+let dataset = infer_dataset(&dataset, &InferTableSchemaOptions::default())?;
+save_dataset_descriptor(&dataset, "dataset.json", false)?;
 ```
 
 ## Steering inference
@@ -63,4 +77,5 @@ when the draft is wrong, instead of hand-editing every column:
 - A table schema is JSON-Schema shaped: `{ "primaryKey": [...], "properties": { "col": { "type":
 "integer" } } }`. Dates are `"type": "string", "format": "date"`
 - `integrity` hashes the file as it is now, so re-infer or re-hash after editing the data
-- Keep `data` paths relative to the descriptor. Python rejects absolute ones
+- Keep `data` paths relative to the descriptor. An absolute one is a `metadata` error in every
+  library
