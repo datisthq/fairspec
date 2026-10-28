@@ -123,7 +123,7 @@ pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
             let record_hashes = Arc::clone(&record_hashes);
             // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
             when(create_key_presence_expr(&keys))
-                .then(key_expr.hash(0) + row_expr)
+                .then(hash_expr(Expr::hash, key_expr) + row_expr)
                 .otherwise(lit(NULL))
                 .map(
                     move |batch| record_hashes(batch),
@@ -227,4 +227,26 @@ fn create_key_column_expr(mapping: &SchemaMapping, name: &str) -> Result<Expr> {
         target,
     };
     Ok(normalize_column(&column_mapping, false))
+}
+
+// `Expr::hash` takes one seed in the patched polars and four in crates.io's 0.55.2, which a
+// published crate builds against: the arity picks the impl, so both compile
+fn hash_expr<Seeds, F: HashFn<Seeds>>(hash: F, expr: Expr) -> Expr {
+    hash.call(expr)
+}
+
+trait HashFn<Seeds> {
+    fn call(self, expr: Expr) -> Expr;
+}
+
+impl<F: FnOnce(Expr, u64) -> Expr> HashFn<(u64,)> for F {
+    fn call(self, expr: Expr) -> Expr {
+        self(expr, 0)
+    }
+}
+
+impl<F: FnOnce(Expr, u64, u64, u64, u64) -> Expr> HashFn<(u64, u64, u64, u64)> for F {
+    fn call(self, expr: Expr) -> Expr {
+        self(expr, 0, 0, 0, 0)
+    }
 }

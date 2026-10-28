@@ -23,6 +23,11 @@ export type Slide = {
   source: { eyebrow: string; file: string; code: ReactNode }
 } & ({ shot: Shot } | { content: ReactNode })
 
+export interface InstallCommand {
+  command: string
+  target: string
+}
+
 export interface Point {
   icon: ComponentType<SVGProps<SVGSVGElement>>
   title: string
@@ -96,6 +101,7 @@ export function Hero(props: {
   title: ReactNode
   lede: ReactNode
   actions: ReactNode
+  install?: InstallCommand[]
   slides: Slide[]
 }) {
   return (
@@ -113,12 +119,30 @@ export function Hero(props: {
             {props.lede}
           </p>
           <div className="mt-8 flex flex-wrap gap-3 sm:mt-10">{props.actions}</div>
+          {props.install ? <InstallCard commands={props.install} /> : null}
         </div>
         <div className="mt-12 lg:mt-0 xl:w-[60rem] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out motion-reduce:animate-none">
           <HeroCarousel slides={props.slides} />
         </div>
       </div>
     </section>
+  )
+}
+
+function InstallCard(props: { commands: InstallCommand[] }) {
+  return (
+    <ul className="mt-6 hidden w-max list-none gap-1 rounded-card border border-border bg-background/50 px-5 py-3 backdrop-blur-sm sm:grid">
+      {props.commands.map(c => (
+        <li
+          key={c.command}
+          className="font-mono text-[0.78125rem] leading-5 whitespace-nowrap text-muted-foreground before:text-primary before:content-['$_'] before:select-none"
+        >
+          <samp className="font-[inherit]">
+            <b className="font-normal text-foreground">{c.command}</b> {c.target}
+          </samp>
+        </li>
+      ))}
+    </ul>
   )
 }
 

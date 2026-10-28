@@ -24,6 +24,7 @@ import {
   FinalCta,
   Hero,
   Highlight,
+  type InstallCommand,
   LandingSection,
   type Point,
   ShowcaseSection,
@@ -91,6 +92,7 @@ function Landing() {
               </a>
             </>
           }
+          install={install}
           slides={slides}
         />
         <SplitSection
@@ -195,6 +197,13 @@ function Landing() {
 }
 
 /* ─────────────────────────── Hero ─────────────────────────── */
+
+const install: InstallCommand[] = [
+  { command: "curl -fsSL", target: "https://fairspec.org/install.sh | sh" },
+  { command: "pip install", target: "fairspec" },
+  { command: "npm install", target: "fairspec" },
+  { command: "cargo install", target: "fairspec" },
+]
 
 const brokenCsv = { eyebrow: "The same input", file: "broken.csv", code: <BrokenCsv /> }
 

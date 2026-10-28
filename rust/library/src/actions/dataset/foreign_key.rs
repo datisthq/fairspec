@@ -99,6 +99,7 @@ fn validate_foreign_key(
         .drop_nulls(None)
         .with_columns(create_keys(columns))
         .join(ref_selected, on.clone(), on, JoinArgs::new(JoinType::Anti))
+        .into_join_result()
         .map_err(|error| fairspec_metadata::Error::Load(error.to_string()))?
         .select(selected)
         .unique_stable(None, UniqueKeepStrategy::Any)
@@ -220,5 +221,23 @@ fn stringify_float(value: f64) -> String {
         text
     } else {
         format!("{text}.0")
+    }
+}
+
+// `LazyFrame::join` returns a `PolarsResult` in the patched polars and a bare frame in
+// crates.io's 0.55.2, which a published crate builds against: this compiles on both
+trait JoinResult {
+    fn into_join_result(self) -> PolarsResult<LazyFrame>;
+}
+
+impl JoinResult for LazyFrame {
+    fn into_join_result(self) -> PolarsResult<LazyFrame> {
+        Ok(self)
+    }
+}
+
+impl JoinResult for PolarsResult<LazyFrame> {
+    fn into_join_result(self) -> PolarsResult<LazyFrame> {
+        self
     }
 }

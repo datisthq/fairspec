@@ -17,6 +17,16 @@ edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 repository = "https://github.com/datisthq/fairspec"
+homepage = "https://fairspec.org"
+
+# Path and version both: a published crate keeps only the version
+[workspace.dependencies]
+fairspec-metadata = { path = "metadata", version = "0.0.0" }
+fairspec-dataset = { path = "dataset", version = "0.0.0" }
+fairspec-table = { path = "table", version = "0.0.0" }
+fairspec-library = { path = "library", version = "0.0.0" }
+fairspec-mcp-server = { path = "mcp-server", version = "0.0.0" }
+fairspec-terminal = { path = "terminal", version = "0.0.0" }
 
 [profile.dev]
 debug = "line-tables-only"

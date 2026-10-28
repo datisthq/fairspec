@@ -20,16 +20,16 @@ Install the binary for your platform from the [GitHub releases](https://github.c
 curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal
 ```
 
-Or build it from source:
+Or build it from crates.io:
 
 ```bash
-cargo install --locked --git https://github.com/datisthq/fairspec fairspec
+cargo install fairspec
 ```
 
-The crates are not on crates.io yet, so a project depends on the library through git:
+A crates.io build runs on the Polars that crates.io carries, which is older than the one the prebuilt binaries are built with, so it validates large tables more slowly. To use the library in a project:
 
 ```bash
-cargo add --git https://github.com/datisthq/fairspec fairspec
+cargo add fairspec
 cargo add serde_json
 ```
 

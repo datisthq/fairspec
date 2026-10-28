@@ -11,7 +11,7 @@ conventions live in its skill (see **Skills**) — load it before working there.
 | `standard/`    | the specification: `specs/`, `profiles/`, `extensions/`           | profiles on fairspec.org     |
 | `python/`      | uv workspace: `fairspec` and `fairspec-*`, incl. the MCP server   | PyPI                         |
 | `typescript/`  | pnpm packages: `fairspec` and `@fairspec/*`, incl. the MCP server | npm                          |
-| `rust/`        | Cargo workspace: `fairspec` and `fairspec-*`, incl. CLI and MCP   | binaries on GitHub release   |
+| `rust/`        | Cargo workspace: `fairspec` and `fairspec-*`, incl. CLI and MCP   | crates.io, GitHub binaries   |
 | `desktop/`     | Electron application                                              | installers on GitHub release |
 | `portal/`      | reserved for the portal application                               | —                            |
 | `flow/`        | reserved for the flow application                                 | —                            |

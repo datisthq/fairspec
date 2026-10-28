@@ -164,6 +164,11 @@
         },
         {
           "type": "toml",
+          "path": "Cargo.toml",
+          "jsonpath": "$.workspace.dependencies.*.version"
+        },
+        {
+          "type": "toml",
           "path": "Cargo.lock",
           "jsonpath": "$.package[?(@.name.value === 'fairspec' || @.name.value === 'fairspec-dataset' || @.name.value === 'fairspec-library' || @.name.value === 'fairspec-mcp-server' || @.name.value === 'fairspec-metadata' || @.name.value === 'fairspec-table' || @.name.value === 'fairspec-terminal')].version"
         }

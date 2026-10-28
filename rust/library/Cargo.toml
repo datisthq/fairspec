@@ -6,15 +6,15 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish = false
+homepage.workspace = true
 
 [lib]
 name = "fairspec_library"
 
 [dependencies]
-fairspec-dataset = { path = "../dataset" }
-fairspec-metadata = { path = "../metadata" }
-fairspec-table = { path = "../table" }
+fairspec-dataset.workspace = true
+fairspec-metadata.workspace = true
+fairspec-table.workspace = true
 polars = { version = "0.55", default-features = false, features = [
   "lazy",
   "semi_anti_join",

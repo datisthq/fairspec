@@ -154,7 +154,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   bottom-left corner (`lg:-bottom-10 lg:-left-10`, as irondocs). Slides are terminal screenshots rendered from
   real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself, and the
   home Standard slide is markup (`content`), the annotated `dataset.json`. The
-  home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code
+  home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code.
+  Under its actions the home hero has an install card (`Hero`'s `install` prop, as htmlpress):
+  one `$ command target` row per channel — `install.sh`, PyPI, npm, crates.io — hidden below `sm`
 - Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
   `shots` list and the showcase samples), imported relatively: a new file under `.livemark/components/` must not take a
   livemark component's name (`Section.tsx` would replace livemark's), and

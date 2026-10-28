@@ -11,8 +11,9 @@ wrap as a CLI. `rust/metadata/` (`fairspec-metadata`), `rust/dataset/` (`fairspe
 `rust/table/` (`fairspec-table`, on Polars) and `rust/library/` (`fairspec-library`) are
 ported from their Python packages; the crates follow Python's package DAG. `rust/terminal/`
 (`fairspec-terminal`) is the CLI and `rust/fairspec/` the umbrella crate whose `fairspec` binary
-runs it (`cargo build --release -p fairspec`). No crate goes to crates.io; the binary ships as
-`fairspec-terminal` archives on the GitHub release (**Releases** below).
+runs it (`cargo build --release -p fairspec`). Every crate but `fairspec-benchmark` goes to
+crates.io, and the binary also ships as `fairspec-terminal` archives on the GitHub release
+(**Releases** below).
 
 ## Commands
 
@@ -88,6 +89,12 @@ positional parameters (`Option` where optional). Fallible actions return the cra
   fork, which a dependency's `[patch]` never passes on. crates.io 0.55.2 was two months and 661
   commits older; with `build:dist` on top, Rust went from 1.5x Python's time to parity. Bump both revs with the py-polars the Python
   section pins, so both twins run the same engine
+- **The source must also compile on crates.io's polars** (0.55.2): a published crate drops
+  `[patch]`, so `cargo install fairspec` builds against it. Where the two APIs differ, call
+  through a shim that compiles on both — `hash_expr` (`table/src/actions/table/checks/key.rs`, `Expr::hash`'s seed
+  count) and `JoinResult` (`library/src/actions/dataset/foreign_key.rs`, `join` returning a `Result` or not) —
+  never pick the patched signature alone. `cargo publish --workspace --dry-run --allow-dirty`
+  in `rust/` builds the packaged crates without the patch and catches a new one
 - `rust/.cargo/config.toml` gives x86-64 py-polars' wheel CPU features (AVX2, FMA, BMI2:
   Haswell and later), about 20% at 10GB; py-polars' `performant` feature is on too
 - `Table` is a polars `LazyFrame`. Wherever Python passes `engine=QUERY_ENGINE`, Rust calls
@@ -241,4 +248,11 @@ This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own
   `fairspec-benchmark` pins its own `0.0.0` and stays out
 - The job calls cargo directly with `-p fairspec`, so `build:dist`'s nightly pin
   (`nightly-2026-09-01`) is repeated there: bump both together
+- `release.yaml`'s `crates` job runs `cargo publish --workspace` after the `rust` job, through
+  crates.io trusted publishing (`crates-io-auth-action`), so each crate needs a trusted
+  publisher on crates.io for `datisthq/fairspec`'s `release.yaml` in the `release` environment
+- Internal dependencies are `fairspec-*.workspace = true` against `[workspace.dependencies]`
+  in `rust/Cargo.toml`, which carries a `version` beside the `path` (crates.io keeps only the
+  version); a third `extra-files` entry, `$.workspace.dependencies.*.version`, bumps them. A
+  new crate gets a line there too
 - Only a change to what the binary does is `feat`/`fix`

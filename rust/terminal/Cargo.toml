@@ -6,15 +6,15 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish = false
+homepage.workspace = true
 
 [lib]
 name = "fairspec_terminal"
 
 [dependencies]
 clap = { version = "4.6.7", features = ["wrap_help"] }
-fairspec-library = { path = "../library" }
-fairspec-mcp-server = { path = "../mcp-server" }
+fairspec-library.workspace = true
+fairspec-mcp-server.workspace = true
 fireargs = "0.3.0"
 indexmap = { version = "2.14.2", features = ["serde"] }
 pollster = "1.0.1"
