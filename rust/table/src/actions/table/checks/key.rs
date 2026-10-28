@@ -5,6 +5,7 @@ use fairspec_metadata::{
 };
 use polars::prelude::*;
 
+use crate::actions::column::inspect::FlagFactory;
 use crate::actions::column::normalize::normalize_column;
 use crate::actions::table::_shared::helpers::merge_missing_values;
 use crate::actions::table::normalize::get_schema_descriptor;
@@ -62,7 +63,7 @@ pub fn create_row_key_checks(mapping: &SchemaMapping) -> Result<Vec<RowKeyCheck>
 /// Records the hash of every present key while another query reads the table.
 #[derive(Clone)]
 pub struct KeyHashProbe {
-    pub flag_expr: Expr,
+    pub create_flag_expr: FlagFactory,
     pub hashes: Arc<Mutex<Vec<Series>>>,
 }
 
@@ -85,39 +86,55 @@ impl KeyHashProbe {
 
 pub fn create_key_hash_probe(check: &RowKeyCheck) -> KeyHashProbe {
     let hashes: Arc<Mutex<Vec<Series>>> = Arc::default();
-    let keys = &check.key_exprs;
+    let key_columns = check.key_columns.clone();
+    let key_exprs = check.key_exprs.clone();
 
     // Polars calls this per batch; it returns all-false, so the flag joins the reading
     // query's filter without changing its rows
     let recorder = Arc::clone(&hashes);
-    let record_hashes = move |batch: Column| {
+    let record_hashes = Arc::new(move |batch: Column| {
         let size = batch.len();
         recorder
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .push(batch.take_materialized_series());
         Ok(BooleanChunked::full(PlSmallStr::EMPTY, false, size).into_column())
-    };
+    });
 
-    let key_expr = if keys.len() == 1 {
-        keys[0].clone()
-    } else {
-        as_struct(keys.clone())
-    };
-    // polars passes a constant batch, such as a parsed all-`true` key, as one row;
-    // adding the raw cell's null flag, 0 wherever the key is present, keeps every row
-    let row_expr = col(check.key_columns[0].as_str())
-        .is_null()
-        .cast(DataType::UInt64);
-    // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
-    let flag_expr = when(create_key_presence_expr(keys))
-        .then(key_expr.hash(0) + row_expr)
-        .otherwise(lit(NULL))
-        .map(record_hashes, |_, field| {
-            Ok(Field::new(field.name().clone(), DataType::Boolean))
+    // A key column the reading query already parses is read from it: the streaming
+    // engine shares no repeated expression, so parsing it again costs a second parse
+    let create_flag_expr: FlagFactory =
+        Arc::new(move |read_typed: &dyn Fn(&str) -> Option<Expr>| {
+            let keys: Vec<Expr> = key_columns
+                .iter()
+                .zip(&key_exprs)
+                .map(|(name, key)| read_typed(name).unwrap_or_else(|| key.clone()))
+                .collect();
+            let key_expr = if keys.len() == 1 {
+                keys[0].clone()
+            } else {
+                as_struct(keys.clone())
+            };
+            // polars passes a constant batch, such as a parsed all-`true` key, as one row;
+            // adding the raw cell's null flag, 0 wherever the key is present, keeps every row
+            let row_expr = col(key_columns[0].as_str())
+                .is_null()
+                .cast(DataType::UInt64);
+            let record_hashes = Arc::clone(&record_hashes);
+            // Hashed inside polars, so a batch keeps 8 bytes per key, not the key values
+            when(create_key_presence_expr(&keys))
+                .then(key_expr.hash(0) + row_expr)
+                .otherwise(lit(NULL))
+                .map(
+                    move |batch| record_hashes(batch),
+                    |_, field| Ok(Field::new(field.name().clone(), DataType::Boolean)),
+                )
         });
 
-    KeyHashProbe { flag_expr, hashes }
+    KeyHashProbe {
+        create_flag_expr,
+        hashes,
+    }
 }
 
 /// A key with any null value is never a duplicate.

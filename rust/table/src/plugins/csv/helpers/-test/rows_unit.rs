@@ -86,3 +86,43 @@ mod clean_csv_rows {
         );
     }
 }
+
+mod find_blank_line {
+    use crate::plugins::csv::helpers::rows::find_blank_line;
+
+    const CASES: [(&[u8], bool); 10] = [
+        (b"a,b\r\n\r\n1,2\r\n", true),
+        (b"\xef\xbb\xbf\r\na,b\n1,2\n", true),
+        (b"\xef\xbb\xbfa,b\n1,2\n", false),
+        (b"a,b\n1,2\n\xef\xbb\xbf\n", false),
+        (b"a,b\n1,2\n\r", false),
+        (b"a,b\n1,2\r\r\n", false),
+        (b"a,b\n\xff\n\n1,2\n", true),
+        (b"a,b\n1,2\n\n", true),
+        (b"a,b\n1,2\n", false),
+        (b"\na,b\n", true),
+    ];
+
+    #[test]
+    fn test_should_find_a_blank_line_as_its_bytes_hold_one() {
+        for parallel_bytes in [1 << 24, 0, 2, 5] {
+            for (content, has_blank_line) in CASES {
+                assert_eq!(
+                    find_blank_line(content, b'\n', parallel_bytes),
+                    has_blank_line,
+                    "{content:?} at {parallel_bytes}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_should_find_a_needle_cut_by_a_slice_boundary() {
+        for position in 1..64 {
+            let mut content = vec![b'a'; 64];
+            content[position - 1] = b'\n';
+            content[position] = b'\n';
+            assert!(find_blank_line(&content, b'\n', 1), "at {position}");
+        }
+    }
+}

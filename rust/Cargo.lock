@@ -983,6 +983,8 @@ dependencies = [
  "fairspec-dataset",
  "fairspec-metadata",
  "indexmap",
+ "memchr",
+ "memmap2",
  "polars",
  "regex",
  "rusqlite",

@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 use fairspec_metadata::{
     ColumnError, ColumnExtraError, ColumnMissingError, Result, TableError, TableSchema, get_columns,
@@ -11,7 +12,7 @@ use super::checks::key::{
 };
 use super::normalize::get_schema_descriptor;
 use crate::actions::check::inspect::inspect_table_checks;
-use crate::actions::column::inspect::inspect_columns;
+use crate::actions::column::inspect::{FlagFactory, inspect_columns};
 use crate::helpers::error::PolarsResultExt;
 use crate::helpers::schema::get_polars_schema;
 use crate::helpers::table::LazyFrameExt;
@@ -49,12 +50,15 @@ pub fn inspect_table(
 
         let key_checks = create_row_key_checks(&schema_mapping)?;
         let key_probes: Vec<KeyHashProbe> = key_checks.iter().map(create_key_hash_probe).collect();
-        let flag_exprs: Vec<Expr> = key_probes.iter().map(|p| p.flag_expr.clone()).collect();
+        let flags: Vec<FlagFactory> = key_probes
+            .iter()
+            .map(|probe| Arc::clone(&probe.create_flag_expr))
+            .collect();
         errors.extend(inspect_columns_of_table(
             &schema_mapping,
             table.clone(),
             max_errors,
-            &flag_exprs,
+            &flags,
         )?);
 
         // The cell checks stop reading at max_errors, leaving the key hashes partial, but
@@ -91,7 +95,7 @@ fn inspect_columns_of_table(
     mapping: &SchemaMapping,
     table: Table,
     max_errors: usize,
-    flag_exprs: &[Expr],
+    flags: &[FlagFactory],
 ) -> Result<Vec<TableError>> {
     let mut errors = Vec::new();
     let target = &mapping.target;
@@ -143,7 +147,7 @@ fn inspect_columns_of_table(
         });
     }
 
-    let mut cell_errors = inspect_columns(&column_mappings, table, max_errors, flag_exprs)?;
+    let mut cell_errors = inspect_columns(&column_mappings, table, max_errors, flags)?;
     for column in &columns {
         let column_errors = match missing_errors.remove(column.name()) {
             Some(column_errors) if !column_errors.is_empty() => column_errors,

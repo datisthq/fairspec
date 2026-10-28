@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use fairspec_metadata::{
     CellError, Column, ColumnError, ColumnType, ColumnTypeError, Error, Result, TableError,
 };
@@ -34,13 +37,17 @@ use crate::models::column::ColumnMapping;
 use crate::models::table::Table;
 use crate::settings::NUMBER_COLUMN_NAME;
 
+/// Builds an always-false Boolean from a reader of the typed value of a column the read
+/// parses (None for any other).
+pub type FlagFactory = Arc<dyn Fn(&dyn Fn(&str) -> Option<Expr>) -> Expr + Send + Sync>;
+
 /// Checks every column against its schema, keyed by column name in mapping order.
-/// Each of `flag_exprs`, an always-false Boolean, is evaluated in the same read.
+/// Each of `flags` is evaluated in the same read.
 pub fn inspect_columns(
     mappings: &[ColumnMapping],
     table: Table,
     max_errors: usize,
-    flag_exprs: &[Expr],
+    flags: &[FlagFactory],
 ) -> Result<IndexMap<String, Vec<TableError>>> {
     let mut errors: IndexMap<String, Vec<TableError>> = IndexMap::new();
     let mut polars_mappings = Vec::new();
@@ -54,9 +61,9 @@ pub fn inspect_columns(
         }
     }
 
-    if !polars_mappings.is_empty() || !flag_exprs.is_empty() {
+    if !polars_mappings.is_empty() || !flags.is_empty() {
         let cell_errors =
-            inspect_cells_in_polars(&polars_mappings, table.clone(), max_errors, flag_exprs)?;
+            inspect_cells_in_polars(&polars_mappings, table.clone(), max_errors, flags)?;
         errors.extend(cell_errors);
     }
 
@@ -201,62 +208,74 @@ fn inspect_cells_in_polars(
     mappings: &[ColumnMapping],
     table: Table,
     max_errors: usize,
-    flag_exprs: &[Expr],
+    flags: &[FlagFactory],
 ) -> Result<IndexMap<String, Vec<TableError>>> {
     let mut errors: IndexMap<String, Vec<TableError>> = mappings
         .iter()
         .map(|mapping| (mapping.target.name().to_string(), Vec::new()))
         .collect();
-    let flags: Vec<Expr> = flag_exprs
-        .iter()
-        .enumerate()
-        .map(|(index, expr)| expr.clone().alias(get_flag_name(index)))
-        .collect();
     let is_flagged: Vec<Expr> = (0..flags.len())
         .map(|index| col(get_flag_name(index)))
         .collect();
 
-    // The error columns carry a bitmask, not the errors themselves: a literal is broadcast to
-    // every row, so a template column would materialize per check. Templates are
-    // resolved back once the frame is filtered down.
+    let candidates: Vec<(usize, &ColumnMapping, Vec<(bool, ColumnCheck)>, bool)> = mappings
+        .iter()
+        .enumerate()
+        .filter(|(_, mapping)| mapping.target.column_type() != ColumnType::Unknown)
+        .map(|(index, mapping)| {
+            let cell_mapping = CellMapping {
+                source: col(get_source_name(index)),
+                target: col(get_target_name(index)),
+            };
+            let checks = check_cells(&mapping.target, &cell_mapping);
+            let is_parsed = normalize_column(mapping, false) != normalize_column(mapping, true);
+            (index, mapping, checks, is_parsed)
+        })
+        .collect();
+
+    // A target read as its source is null only where the source is, so it never fails the
+    // type check; a column left with no check is still read (carried), as the read
+    // reports a long row or invalid UTF-8 only in the columns it reads
+    let has_check = candidates
+        .iter()
+        .any(|(_, _, checks, is_parsed)| *is_parsed || checks.len() > 1);
     let mut checked = Vec::new();
-    for (index, mapping) in mappings.iter().enumerate() {
-        if mapping.target.column_type() == ColumnType::Unknown {
-            continue;
-        }
-        let cell_mapping = CellMapping {
-            source: col(get_source_name(index)),
-            target: col(get_target_name(index)),
-        };
-
-        let checks = check_cells(&mapping.target, &cell_mapping);
+    let mut carried = Vec::new();
+    for (index, mapping, checks, is_parsed) in candidates {
+        let checks: Vec<(bool, ColumnCheck)> = checks
+            .into_iter()
+            .filter(|(_, check)| {
+                is_parsed || !has_check || !matches!(check.error_template, CellError::Type(_))
+            })
+            .collect();
         if checks.is_empty() {
+            carried.push((index, mapping));
             continue;
         }
 
-        // The error column is a bitmask over the checks, bit n set when check n fails
-        let zero = || lit(0u32);
-        let mut mask_expr = checks
+        // The error column is a bitmask over the checks, bit n set when check n fails, and
+        // 0 when none does: nulling the 0 would read the mask twice, as the streaming
+        // engine evaluates an expression once per use. Templates, not errors: a literal is
+        // broadcast to every row, so they are resolved once the frame is filtered down
+        let zero = || create_mask_literal(0);
+        let mut error_expr = checks
             .iter()
             .enumerate()
             .filter(|(_, (is_short_circuit, _))| !is_short_circuit)
             .map(|(error_tag, (_, check))| {
                 when(check.is_error_expr.clone())
-                    .then(lit(1u32 << error_tag))
+                    .then(create_mask_literal(1 << error_tag))
                     .otherwise(zero())
             })
             .reduce(|left, right| left + right)
             .unwrap_or_else(zero);
         for (error_tag, (is_short_circuit, check)) in checks.iter().enumerate().rev() {
             if *is_short_circuit {
-                mask_expr = when(check.is_error_expr.clone())
-                    .then(lit(1u32 << error_tag))
-                    .otherwise(mask_expr);
+                error_expr = when(check.is_error_expr.clone())
+                    .then(create_mask_literal(1 << error_tag))
+                    .otherwise(error_expr);
             }
         }
-        let error_expr = when(mask_expr.clone().neq(zero()))
-            .then(mask_expr)
-            .otherwise(lit(NULL).cast(DataType::UInt32));
 
         checked.push(CheckedColumn {
             index,
@@ -272,23 +291,45 @@ fn inspect_cells_in_polars(
     if checked.is_empty() {
         if !flags.is_empty() {
             table
-                .select(flags)
+                .select(create_flag_exprs(flags, &HashMap::new()))
                 .filter(any_horizontal(is_flagged).into_result()?)
                 .collect_table()?;
         }
         return Ok(errors);
     }
 
+    // The targets come first so the flags read them: a flag parsing a column again
+    // would parse it twice, as the streaming engine shares no repeated expression
+    let target_names: HashMap<String, String> = checked
+        .iter()
+        .map(|column| {
+            (
+                column.mapping.source.name.clone(),
+                get_target_name(column.index),
+            )
+        })
+        .collect();
     let mut selection = vec![col(NUMBER_COLUMN_NAME)];
-    selection.extend(flags);
+    selection.extend(create_flag_exprs(flags, &target_names));
     for column in &checked {
         let index = column.index;
-        selection.push(normalize_column(column.mapping, false).alias(get_target_name(index)));
+        selection.push(col(get_target_name(index)));
         selection.push(normalize_column(column.mapping, true).alias(get_source_name(index)));
         selection.push(col(column.mapping.source.name.as_str()).alias(get_cell_name(index)));
     }
+    for (index, mapping) in &carried {
+        selection.push(col(mapping.source.name.as_str()).alias(get_cell_name(*index)));
+    }
     let check_table = table
         .with_row_index(NUMBER_COLUMN_NAME, Some(1))
+        .with_columns(
+            checked
+                .iter()
+                .map(|column| {
+                    normalize_column(column.mapping, false).alias(get_target_name(column.index))
+                })
+                .collect::<Vec<_>>(),
+        )
         .select(selection)
         .with_columns(
             checked
@@ -307,13 +348,16 @@ fn inspect_cells_in_polars(
     // only so the optimizer keeps them; they are never true
     let mut is_failed: Vec<Expr> = checked
         .iter()
-        .map(|column| col(get_error_name(column.index)).is_not_null())
+        .map(|column| col(get_error_name(column.index)).neq(create_mask_literal(0)))
         .collect();
     is_failed.extend(is_flagged);
     let mut output = vec![col(NUMBER_COLUMN_NAME).cast(DataType::UInt64)];
     for column in &checked {
         output.push(col(get_cell_name(column.index)));
         output.push(col(get_error_name(column.index)));
+    }
+    for (index, _) in &carried {
+        output.push(col(get_cell_name(*index)));
     }
     let check_frame = check_table
         .filter(any_horizontal(is_failed).into_result()?)
@@ -336,7 +380,7 @@ fn inspect_cells_in_polars(
             .or_default();
 
         for row in 0..check_frame.height() {
-            let Some(error_mask) = error_masks.get(row) else {
+            let Some(error_mask) = error_masks.get(row).filter(|mask| *mask != 0) else {
                 continue;
             };
             let row_number = row_numbers.get(row).unwrap_or_default() as usize;
@@ -371,6 +415,20 @@ pub(crate) fn locate_cell_error(
 
 fn create_error(error: serde_json::Error) -> Error {
     Error::Load(error.to_string())
+}
+
+// A bare literal is a dynamic integer, which would leave an all-literal mask Int32
+fn create_mask_literal(value: u32) -> Expr {
+    lit(value).cast(DataType::UInt32)
+}
+
+fn create_flag_exprs(flags: &[FlagFactory], target_names: &HashMap<String, String>) -> Vec<Expr> {
+    let read_typed = |name: &str| target_names.get(name).map(|target| col(target.as_str()));
+    flags
+        .iter()
+        .enumerate()
+        .map(|(index, create_flag)| create_flag(&read_typed).alias(get_flag_name(index)))
+        .collect()
 }
 
 fn get_target_name(index: usize) -> String {

@@ -106,7 +106,25 @@ false`, `%#z`, `replace_strict`, `list().eval` over `col("")`); a scale-only `pl
   `normalize_column`, so keys compare typed values and a `missingValues` marker is null there
   too. A streamed constant batch reaches the probe's `map` as one row, so the probe adds the
   raw cell's null flag to the hash, as Python's does. The key probe hashes inside polars
-  (`row_hash`) before its callback, as Python does, so it keeps 8 bytes per key, not the keys
+  (`row_hash`) before its callback, as Python does, so it keeps 8 bytes per key, not the keys.
+  It is a `FlagFactory` that reads a key column from the target the check read already
+  parses (targets are a `with_columns` before the `select`), never a second parse
+- **Count expression nodes, not rows, in the check read** (Python's rule holds: the
+  streaming engine shares no repeated expression, `cse` feature or not, and every node
+  costs per ~1000-row morsel even on all-null input). Bind a multi-step reading as struct
+  fields (`struct_().with_fields`, read back by `Expr::Field`), as `parse_default_temporal`
+  does; the error bitmask keeps 0 as no error (its literals cast to `UInt32`, or an
+  all-literal mask is a dynamic Int32); a column read as its source drops its type check
+  but stays projected (long rows, UTF-8)
+- `parse_integer_text` is one native `map` pass (`parse_integer`, i128, no regex): Python's
+  exact reading as expressions cost ~0.7s per GB here. Keep it equal to `NUMBER_PATTERN`
+  plus the whole-value rule; Python's plain-first second read is not ported, as the native
+  pass costs ~0.05s per GB
+- The CSV blank-line pre-scan (`plugins/csv/helpers/rows.rs`) is `memchr::memmem` over a
+  `memmap2` mapping, one overlapping slice per core from 16MB, with the byte loop as the
+  fallback when the file cannot be mapped
+- `perf` may be unavailable (`perf_event_paranoid`); attribute time by running the
+  `build:dist` benchmark binary on schema variants (a type, a format or the key dropped)
 
 ## Library
 

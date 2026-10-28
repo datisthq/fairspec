@@ -16,6 +16,8 @@ pub fn get_utc_datetime_type() -> DataType {
 }
 
 const LEAP_SECOND_PATTERN: &str = "([0-9]{2}:[0-9]{2}:)60";
+const SECOND_PATTERN: &str = r":[0-9]{2}(?:\.[0-9]+)?";
+const PLAIN_SECOND_PATTERN: &str = ":[0-5][0-9]";
 
 /// Reads an RFC 3339 default form: `T` and `Z` in any case, and a second `60` only at
 /// 23:59 in UTC, read as 23:59:59.
@@ -26,34 +28,88 @@ pub fn parse_default_temporal(
     data_type: DataType,
     prefix: &str,
 ) -> Expr {
-    let matched_expr = text_expr
+    // Polars evaluates every branch on every cell, so the common form (uppercase, whole
+    // seconds below 60) takes its fast parser alone and the full reading sees only nulls.
+    // Each step is a struct field, read by name, so no step is evaluated twice
+    let plain_pattern = pattern.replace(SECOND_PATTERN, PLAIN_SECOND_PATTERN);
+    let plain_format = format.replace("%.f", "");
+    let with_prefix = |expr: Expr| {
+        if prefix.is_empty() {
+            expr
+        } else {
+            concat_str([lit(prefix), expr], "", false)
+        }
+    };
+    let strptime = |expr: Expr, format: &str| {
+        expr.str().strptime(
+            data_type.clone(),
+            create_strptime_options(format),
+            lit("raise"),
+        )
+    };
+
+    let plain_text_expr = when(field("is_plain"))
+        .then(field("text"))
+        .otherwise(lit(NULL).cast(DataType::String));
+    let matched_expr = when(field("is_plain").not())
+        .then(field("text"))
+        .otherwise(lit(NULL).cast(DataType::String))
         .str()
         .to_uppercase()
         .str()
         .extract(lit(pattern), 0);
-    let value_expr = concat_str(
-        [
-            lit(prefix),
-            matched_expr
-                .clone()
+    let value_expr = strptime(
+        concat_str(
+            [
+                lit(prefix),
+                field("matched")
+                    .str()
+                    .replace(lit(LEAP_SECOND_PATTERN), lit("${1}59"), false),
+            ],
+            "",
+            false,
+        ),
+        format,
+    );
+    let is_kept_expr = field("matched")
+        .str()
+        .contains(lit(LEAP_SECOND_PATTERN), true)
+        .not()
+        .or(field("value")
+            .dt()
+            .hour()
+            .eq(lit(23))
+            .and(field("value").dt().minute().eq(lit(59))));
+
+    as_struct(vec![text_expr.alias("text")])
+        .struct_()
+        .with_fields(vec![
+            field("text")
                 .str()
-                .replace(lit(LEAP_SECOND_PATTERN), lit("${1}59"), false),
-        ],
-        "",
-        false,
-    )
-    .str()
-    .strptime(data_type, create_strptime_options(format), lit("raise"));
-    let is_leap_second_expr = matched_expr.str().contains(lit(LEAP_SECOND_PATTERN), true);
-    let is_last_minute_expr = value_expr
-        .clone()
-        .dt()
-        .hour()
-        .eq(lit(23))
-        .and(value_expr.clone().dt().minute().eq(lit(59)));
-    when(is_leap_second_expr.not().or(is_last_minute_expr))
-        .then(value_expr)
-        .otherwise(lit(NULL))
+                .contains(lit(plain_pattern), true)
+                .alias("is_plain"),
+        ])
+        .struct_()
+        .with_fields(vec![
+            strptime(with_prefix(plain_text_expr), &plain_format).alias("plain"),
+            matched_expr.alias("matched"),
+        ])
+        .struct_()
+        .with_fields(vec![value_expr.alias("value")])
+        .struct_()
+        .with_fields(vec![
+            coalesce(&[
+                field("plain"),
+                when(is_kept_expr).then(field("value")).otherwise(lit(NULL)),
+            ])
+            .alias("value"),
+        ])
+        .struct_()
+        .field_by_name("value")
+}
+
+fn field(name: &str) -> Expr {
+    Expr::Field(Arc::from([PlSmallStr::from(name)]))
 }
 
 /// Nulls a value whose `%S` reads `60`, which Polars parses as a leap second.

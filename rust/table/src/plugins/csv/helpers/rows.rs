@@ -1,8 +1,11 @@
 use std::fs::File;
 use std::io::{BufWriter, Read, Write};
+use std::thread;
 
 use fairspec_dataset::get_temp_file_path;
 use fairspec_metadata::{FileDialect, Result};
+use memchr::memmem;
+use memmap2::Mmap;
 
 use crate::helpers::file_dialect::get_header_rows;
 use crate::plugins::csv::helpers::delimiter::{CHUNK_SIZE, open_file};
@@ -10,6 +13,8 @@ use crate::plugins::csv::helpers::delimiter::{CHUNK_SIZE, open_file};
 const CR: u8 = b'\r';
 const LF: u8 = b'\n';
 const BOM: &[u8] = b"\xef\xbb\xbf";
+// Below this one search is faster than starting the threads
+const PARALLEL_SEARCH_BYTES: usize = 1 << 24;
 
 pub struct CleanedRows {
     pub paths: Vec<String>,
@@ -105,6 +110,55 @@ pub fn clean_csv_rows(
 // A blank line is two line ends with nothing (or only a CR) between them, or one at
 // the start of the file after any BOM; the copy drops it unless inside a quoted cell
 fn get_has_blank_line(path: &str, eol: u8, max_bytes: Option<usize>) -> Result<bool> {
+    let file = File::open(path)?;
+    // SAFETY: the mapping is read-only and dropped before this returns; a file truncated
+    // meanwhile raises SIGBUS here, as it would in polars, which maps the same file to read it
+    match unsafe { Mmap::map(&file) } {
+        Ok(data) => {
+            let end = max_bytes
+                .filter(|max_bytes| *max_bytes > 0)
+                .map_or(data.len(), |max_bytes| max_bytes.min(data.len()));
+            Ok(find_blank_line(&data[..end], eol, PARALLEL_SEARCH_BYTES))
+        }
+        Err(_) => read_has_blank_line(path, eol, max_bytes),
+    }
+}
+
+pub(crate) fn find_blank_line(data: &[u8], eol: u8, parallel_bytes: usize) -> bool {
+    let head = &data[get_bom_length(data, true)..];
+    if head.first() == Some(&eol) || (eol == LF && head.starts_with(&[CR, LF])) {
+        return true;
+    }
+    let mut needles = vec![[eol, eol].to_vec()];
+    if eol == LF {
+        needles.push(vec![LF, CR, LF]);
+    }
+    let finders: Vec<memmem::Finder> = needles.iter().map(memmem::Finder::new).collect();
+    let is_found = |slice: &[u8]| finders.iter().any(|finder| finder.find(slice).is_some());
+    if data.len() < parallel_bytes.max(1) {
+        return is_found(data);
+    }
+
+    // One slice per core, each overlapping the next by the longest needle less one
+    let workers = thread::available_parallelism().map_or(1, |count| count.get());
+    let step = data.len().div_ceil(workers);
+    let overlap = needles.iter().map(Vec::len).max().unwrap_or(1) - 1;
+    thread::scope(|scope| {
+        let searches: Vec<_> = (0..data.len())
+            .step_by(step)
+            .map(|start| {
+                let slice = &data[start..data.len().min(start + step + overlap)];
+                scope.spawn(move || is_found(slice))
+            })
+            .collect();
+        searches
+            .into_iter()
+            .any(|search| search.join().unwrap_or(true))
+    })
+}
+
+// The byte loop for a file that cannot be mapped
+fn read_has_blank_line(path: &str, eol: u8, max_bytes: Option<usize>) -> Result<bool> {
     let mut file = open_file(path, max_bytes)?;
     let mut chunk = vec![0; CHUNK_SIZE];
     // The file starts as if a line had just ended

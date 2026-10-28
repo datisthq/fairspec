@@ -18,6 +18,8 @@ encoding_rs = "0.8"
 fairspec-dataset = { path = "../dataset" }
 fairspec-metadata = { path = "../metadata" }
 indexmap = { version = "2.14.2", features = ["serde"] }
+memchr = "2.8"
+memmap2 = "0.9"
 polars = { version = "0.55", default-features = false, features = [
   "lazy",
   "strings",
