@@ -154,8 +154,8 @@ importers:
         specifier: 6.9.1
         version: 6.9.1
       nodejs-polars:
-        specifier: 0.23.5
-        version: 0.23.5
+        specifier: 0.26.1
+        version: 0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a)
       wasm-xlsxwriter:
         specifier: 0.13.1
         version: 0.13.1
@@ -7578,10 +7578,6 @@ packages:
     engines: {node: '>= 22'}
     cpu: [x64]
     os: [win32]
-
-  nodejs-polars@0.23.5:
-    resolution: {integrity: sha512-CurrTVkQkobicEyE1wNBIIgnWFxKqTRqz9sPMmUvS9qKk9H+fDdebaVdaHNVg+I4/G9/91vzTnTNMEYvgyGggA==}
-    engines: {node: '>= 20'}
 
   nodejs-polars@0.26.1:
     resolution: {integrity: sha512-nOWRNrwPAle1KP2w+fj9v1UDUZWbPU37uuImF3mntQyLgUvJ6BTj7+gdR3smKHwtm0t2xY5fbFUoRpj3FobZqQ==}
@@ -16921,17 +16917,6 @@ snapshots:
 
   nodejs-polars-win32-x64-msvc@0.26.1:
     optional: true
-
-  nodejs-polars@0.23.5:
-    optionalDependencies:
-      nodejs-polars-android-arm64: 0.23.5
-      nodejs-polars-darwin-arm64: 0.23.5
-      nodejs-polars-darwin-x64: 0.23.5
-      nodejs-polars-linux-arm64-gnu: 0.23.5
-      nodejs-polars-linux-arm64-musl: 0.23.5
-      nodejs-polars-linux-x64-gnu: 0.23.5
-      nodejs-polars-linux-x64-musl: 0.23.5
-      nodejs-polars-win32-x64-msvc: 0.23.5
 
   nodejs-polars@0.26.1(patch_hash=9d719b648afbedfd5046999a328f8861802d0289be430e525625e39046330e0a):
     optionalDependencies:

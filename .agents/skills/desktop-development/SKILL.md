@@ -41,7 +41,13 @@ Run from the repo root; `pnpm -C desktop <script>` runs a script of this section
 - The main process bundles the library but externalises `desktop/package.json`'s own
   `dependencies`, so a native or wasm dependency of the library (`nodejs-polars`,
   `calamine-node`, `wasm-xlsxwriter`) is listed there, and a native one's platform packages go
-  in `asarUnpack` in `desktop/electron-builder.yaml`
+  in `asarUnpack` in `desktop/electron-builder.yaml`. Its version there is what runs, so keep it
+  on the exact version `typescript/` uses (`nodejs-polars` also carries a version-keyed patch in
+  `pnpm-workspace.yaml`); a stale pin type-checks and builds but fails at runtime
+  (`….any is not a function`). Bumping polars in `typescript/` means bumping it here too
+- Types and unit tests don't exercise the engine: to check the app works, `pnpm -C desktop build`,
+  launch `desktop/node_modules/.bin/electron desktop --remote-debugging-port=<port>`, and drive a
+  validate/infer route over CDP with a real file
 - `desktop/package.json` pins `productName: fairspec`: Electron derives the user-data directory
   from it, so renaming it would orphan every user's settings
 
