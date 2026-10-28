@@ -308,7 +308,7 @@ wheels = [
 
 [[package]]
 name = "fairspec"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "fairspec" }
 dependencies = [
     { name = "fairspec-library" },
@@ -323,7 +323,7 @@ requires-dist = [
 
 [[package]]
 name = "fairspec-dataset"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "dataset" }
 dependencies = [
     { name = "fairspec-metadata" },
@@ -334,7 +334,7 @@ requires-dist = [{ name = "fairspec-metadata", editable = "metadata" }]
 
 [[package]]
 name = "fairspec-library"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "library" }
 dependencies = [
     { name = "fairspec-dataset" },
@@ -351,7 +351,7 @@ requires-dist = [
 
 [[package]]
 name = "fairspec-mcp-server"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "mcp-server" }
 dependencies = [
     { name = "fairspec-library" },
@@ -366,7 +366,7 @@ requires-dist = [
 
 [[package]]
 name = "fairspec-metadata"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "metadata" }
 dependencies = [
     { name = "jsonschema" },
@@ -383,7 +383,7 @@ requires-dist = [
 
 [[package]]
 name = "fairspec-python"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -408,7 +408,7 @@ dev = [
 
 [[package]]
 name = "fairspec-table"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "table" }
 dependencies = [
     { name = "fairspec-dataset" },
@@ -433,7 +433,7 @@ requires-dist = [
 
 [[package]]
 name = "fairspec-terminal"
-version = "0.0.0.dev0"
+version = "0.3.0"
 source = { editable = "terminal" }
 dependencies = [
     { name = "fairspec-library" },

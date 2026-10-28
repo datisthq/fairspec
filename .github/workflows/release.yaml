@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  # Publishes released sections again at their manifest version, when a publish job failed
+  workflow_dispatch:
+    inputs:
+      sections:
+        description: Sections to publish, space-separated (desktop python typescript rust)
+        required: true
 
 # Never cancel: a run cancelled after tagging leaves a release no later run publishes.
 concurrency:
@@ -25,13 +31,13 @@ jobs:
 
     outputs:
       standard: ${{ steps.release.outputs['standard--release_created'] }}
-      desktop: ${{ steps.release.outputs['desktop--release_created'] }}
-      desktop-tag: ${{ steps.release.outputs['desktop--tag_name'] }}
-      python: ${{ steps.release.outputs['python--release_created'] }}
-      rust: ${{ steps.release.outputs['rust--release_created'] }}
-      rust-tag: ${{ steps.release.outputs['rust--tag_name'] }}
-      rust-version: ${{ steps.release.outputs['rust--version'] }}
-      typescript: ${{ steps.release.outputs['typescript--release_created'] }}
+      desktop: ${{ steps.release.outputs['desktop--release_created'] || steps.dispatch.outputs.desktop }}
+      desktop-tag: ${{ steps.release.outputs['desktop--tag_name'] || steps.dispatch.outputs.desktop-tag }}
+      python: ${{ steps.release.outputs['python--release_created'] || steps.dispatch.outputs.python }}
+      rust: ${{ steps.release.outputs['rust--release_created'] || steps.dispatch.outputs.rust }}
+      rust-tag: ${{ steps.release.outputs['rust--tag_name'] || steps.dispatch.outputs.rust-tag }}
+      rust-version: ${{ steps.release.outputs['rust--version'] || steps.dispatch.outputs.rust-version }}
+      typescript: ${{ steps.release.outputs['typescript--release_created'] || steps.dispatch.outputs.typescript }}
 
     permissions:
       contents: write
@@ -39,6 +45,7 @@ jobs:
 
     steps:
       - name: Release Sections
+        if: github.event_name == 'push'
         uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         id: release
         with:
@@ -46,7 +53,30 @@ jobs:
           manifest-file: .release/manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout Repo
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Select Sections
+        if: github.event_name == 'workflow_dispatch'
+        id: dispatch
+        env:
+          SECTIONS: ${{ inputs.sections }}
+        run: |
+          for section in $SECTIONS; do
+            case "$section" in
+              desktop | python | typescript | rust) ;;
+              *) echo "Unknown section: $section" >&2; exit 1 ;;
+            esac
+            version=$(jq -r --arg s "$section" '.[$s]' .release/manifest.json)
+            git ls-remote --exit-code --tags origin "$section-v$version" > /dev/null ||
+              { echo "No tag $section-v$version: release it first" >&2; exit 1; }
+            echo "$section=true" >> "$GITHUB_OUTPUT"
+            echo "$section-tag=$section-v$version" >> "$GITHUB_OUTPUT"
+            echo "$section-version=$version" >> "$GITHUB_OUTPUT"
+          done
+
       - name: Assign Release PRs
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -56,6 +86,7 @@ jobs:
 
   profiles:
     needs: [release]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
@@ -111,6 +142,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os:
           [ubuntu-latest, ubuntu-24.04-arm, macos-15-intel, macos-latest, windows-latest]
@@ -161,6 +193,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           # 22.04 for the oldest glibc the binary links against
@@ -185,6 +218,15 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Setup Rust
         run: rustup toolchain install nightly-2026-09-01 --profile minimal
+      # The fat-LTO link of the binary outgrows the Linux runners' 16GB and they are killed
+      - name: Add Swap
+        if: matrix.os == 'linux'
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 16G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
       - name: Build Binary
         working-directory: rust
         run: cargo +nightly-2026-09-01 build --locked --profile dist-release --features fairspec-library/nightly -p fairspec

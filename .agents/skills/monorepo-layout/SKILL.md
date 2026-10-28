@@ -111,6 +111,15 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   folder the sync writes, `rust/metadata` included: a folder left out stays on the old version
   and fails the post-merge guard, so nothing tags. When the standard is not in
   the release its version already has checksums, so the generator skips and nothing changes
+- A publish job that fails after its tag exists never runs again on push: release-please has
+  nothing left to tag. Run `release.yaml` by hand (`gh workflow run release.yaml -f
+sections="python rust"`): it skips release-please and publishes those sections at their
+  manifest version, from their existing tags. Every publish step must tolerate a partial earlier
+  run — `uv publish --check-url` skips wheels already on PyPI, pnpm skips published versions
+- Never write `<placeholder>` in a commit subject or body line: release-please escapes it in
+  the Release PR, then un-escapes it when it re-parses the body at release time, and the bare
+  tag swallows every section after it — they go untagged and one body passes GitHub's 125000
+  limit. Write `{placeholder}` or a backticked word instead
 - The Release PR runs no CI (its pushes use `GITHUB_TOKEN`), so the published-profiles guard
   (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
   `standard/package.json`'s version must exist and `latest/` must equal it. Merging before

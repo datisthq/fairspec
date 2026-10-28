@@ -7,7 +7,7 @@
     "check:lint": "uv run ruff check",
     "check:types": "uv run ty check",
     "format": "uv run ruff format",
-    "release": "uv publish build/*",
+    "release": "uv publish --check-url https://pypi.org/simple/ build/*",
     "setup": "uv sync --all-packages",
     "show:coverage": "sensible-browser htmlcov/index.html",
     "test": "pnpm check:types && pnpm test:unit",

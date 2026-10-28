@@ -246,6 +246,8 @@ This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own
   `.release/config.json`, or the release builds `--locked` against a stale lock and fails.
   The filter compares `@.name.value` because release-please parses TOML into tagged values.
   `fairspec-benchmark` pins its own `0.0.0` and stays out
+- The fat-LTO link outgrows the 16GB Linux runners, which are then killed with "The runner has
+  received a shutdown signal"; the job adds 16GB of swap on Linux before building
 - The job calls cargo directly with `-p fairspec`, so `build:dist`'s nightly pin
   (`nightly-2026-09-01`) is repeated there: bump both together
 - `release.yaml`'s `crates` job runs `cargo publish --workspace` after the `rust` job, through
