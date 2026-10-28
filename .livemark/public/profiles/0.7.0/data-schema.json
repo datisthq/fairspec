@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [{ "$ref": "#/$defs/DataSchema" }],
+  "$defs": {
+    "DataSchema": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/JsonSchema" }],
+      "properties": {
+        "$schema": { "$ref": "#/$defs/Profile" }
+      }
+    },
+    "JsonSchema": {
+      "$ref": "https://json-schema.org/draft/2020-12/schema"
+    },
+    "Profile": {
+      "allOf": [{ "$ref": "#/$defs/ExternalPath" }],
+      "anyOf": [
+        { "const": "https://json-schema.org/draft/2020-12/schema" },
+        { "pattern": "^https://fairspec\\.org/profiles/[^/]+/data-schema\\.json$" }
+      ]
+    },
+    "ExternalPath": {
+      "type": "string",
+      "pattern": "^https?://"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fairspec DataCite Profile",
+  "allOf": [
+    {
+      "$ref": "https://fairspec.org/profiles/0.7.0/dataset.json"
+    },
+    {
+      "$ref": "#/$defs/Dataset"
+    }
+  ],
+  "$defs": {
+    "Dataset": {
+      "type": "object",
+      "required": [
+        "$schema",
+        "doi",
+        "creators",
+        "titles",
+        "publisher",
+        "publicationYear",
+        "types"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "pattern": "^https://fairspec\\.org/profiles/(\\d+\\.\\d+\\.\\d+|latest)/datacite/dataset\\.json$"
+        }
+      }
+    }
+  }
+}
