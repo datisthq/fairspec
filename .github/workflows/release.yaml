@@ -238,8 +238,10 @@ jobs:
           TAG: ${{ needs.release.outputs.rust-tag }}
         run: gh release upload "$TAG" --clobber dist/*
 
+  # Publishes from source, so it waits on no binary build
   crates:
-    needs: [release, rust]
+    needs: [release]
+    if: needs.release.outputs.rust == 'true'
     environment: release
     runs-on: ubuntu-latest
 

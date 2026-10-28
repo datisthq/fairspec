@@ -253,7 +253,7 @@ This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own
   received a shutdown signal"; the job adds 16GB of swap on Linux before building
 - The job calls cargo directly with `-p fairspec`, so `build:dist`'s nightly pin
   (`nightly-2026-09-01`) is repeated there: bump both together
-- `release.yaml`'s `crates` job runs `cargo publish --workspace` after the `rust` job, through
+- `release.yaml`'s `crates` job runs `cargo publish --workspace` beside the `rust` job, not after it (it builds from source, and macOS binaries take an hour), through
   crates.io trusted publishing (`crates-io-auth-action`), so each crate needs a trusted
   publisher on crates.io for `datisthq/fairspec`'s `release.yaml` in the `release` environment
 - Internal dependencies are `fairspec-*.workspace = true` against `[workspace.dependencies]`
