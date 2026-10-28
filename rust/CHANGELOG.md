@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/datisthq/fairspec/compare/rust-v0.1.0...rust-v0.1.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **rust:** pin the bundled profiles to standard 0.7.0 ([c5138b8](https://github.com/datisthq/fairspec/commit/c5138b8f643aa5aad30e739a08d8adeed696b39d))
+
 ## 0.1.0 (2026-10-28)
 
 
