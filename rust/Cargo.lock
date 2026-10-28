@@ -887,7 +887,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "fairspec-library",
  "fairspec-terminal",
@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-dataset"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "base64 0.23.1",
  "fairspec-metadata",
@@ -928,7 +928,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-library"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "base64 0.23.1",
  "fairspec-dataset",
@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-mcp-server"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "fairspec-library",
  "libc",
@@ -955,7 +955,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-metadata"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "indexmap",
  "jsonschema 0.60.2",
@@ -975,7 +975,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-table"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "calamine",
  "chrono",
@@ -998,7 +998,7 @@ dependencies = [
 
 [[package]]
 name = "fairspec-terminal"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "clap",
  "fairspec-library",
