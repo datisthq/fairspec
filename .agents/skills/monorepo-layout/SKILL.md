@@ -175,6 +175,10 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 - Changelogs are articles, not `type: "changelog"` sections: each article section includes its
   `<section>/CHANGELOG.md` and patches it to `<prefix>changelog/` with `order: -1`, so it is
   the last item of that section's sidebar. One page per changelog, no per-version pages
+- livemark (0.32+) compiles every `.md` as plain Markdown: raw HTML works, JSX and `{…}`
+  expressions do not. Keep it that way — release-please copies commit text such as `\p{..}`
+  into the changelogs verbatim, which MDX rejects and fails the whole site build. A page that
+  truly needs JSX opts in with a patch's `article: { format: "mdx" }`
 - Cloudflare Workers Builds deploys the site. `wrangler.jsonc` `build.command` runs
   `pnpm build:site` before every `wrangler versions upload`, so the deploy never depends on the
   dashboard's build command; root `pnpm build` builds the packages, not the site

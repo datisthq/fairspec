@@ -32,7 +32,7 @@
     "@typescript/native-preview": "catalog:",
     "cn": "catalog:",
     "lefthook": "2.1.1",
-    "livemark": "0.28.6",
+    "livemark": "0.32.0",
     "lucide-react": "catalog:",
     "npm-check-updates": "23.1.0",
     "react": "catalog:",
