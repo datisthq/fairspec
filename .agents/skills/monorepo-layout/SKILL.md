@@ -107,7 +107,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   each twin's column models, which parse descriptors independently of the profile
 - `release.yaml`'s `profiles` job runs on the Release PR: `pnpm generate:profiles`
   (`.scripts/@generate.ts`) writes `.livemark/public/profiles/{latest,<version>}`, then
-  `pnpm sync:profiles` bumps the libraries' `FAIRSPEC_VERSION`. When the standard is not in
+  `pnpm sync:profiles` bumps the libraries' `FAIRSPEC_VERSION`. Its `git add` must list every
+  folder the sync writes, `rust/metadata` included: a folder left out stays on the old version
+  and fails the post-merge guard, so nothing tags. When the standard is not in
   the release its version already has checksums, so the generator skips and nothing changes
 - The Release PR runs no CI (its pushes use `GITHUB_TOKEN`), so the published-profiles guard
   (`.scripts/-test/profiles.unit.ts`) gates it after the merge instead: the folder for
