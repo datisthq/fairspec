@@ -1,8 +1,14 @@
+use std::path::Component;
+
 use crate::actions::path::normalize::normalize_path;
 
 #[test]
 fn test_valid() {
-    let depth = std::env::current_dir().unwrap().components().count() - 1;
+    let depth = std::env::current_dir()
+        .unwrap()
+        .components()
+        .filter(|component| matches!(component, Component::Normal(_)))
+        .count();
     let absolute = format!("{}absolute/path/file.txt", "../".repeat(depth));
     let cases = [
         ("path/to/file.txt", None, "path/to/file.txt"),

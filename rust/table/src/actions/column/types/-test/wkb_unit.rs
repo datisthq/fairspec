@@ -95,10 +95,7 @@ fn test_wkb_unknown_byte_order() {
         (format!("02{}", &point[2..]), false),
         (format!("ff{}", &point[2..]), false),
         (format!("010400000001000000{point}"), true),
-        (
-            format!("010400000001000000{}", format!("02{}", &point[2..])),
-            false,
-        ),
+        (format!("01040000000100000002{}", &point[2..]), false),
     ];
     for (cell, valid) in cases {
         assert_eq!(get_is_valid(&cell), valid, "{cell:?}");

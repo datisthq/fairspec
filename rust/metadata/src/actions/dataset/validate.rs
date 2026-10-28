@@ -91,7 +91,7 @@ pub fn validate_dataset_descriptor(
                 report.errors.extend(result.errors);
             }
             Some(PathOr::Value(file_dialect)) => {
-                let pointer = format!("{}/fileDialect", root_json_pointer.unwrap_or_default());
+                let pointer = format!("/resources/{index}/fileDialect");
                 report
                     .errors
                     .extend(inspect_file_dialect(file_dialect, Some(pointer.as_str())));

@@ -5,6 +5,7 @@ from typing import Any
 
 import referencing
 from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.protocols import Validator
 
 from fairspec_metadata.actions.json_schema.load import load_json_schema
 from fairspec_metadata.models.json_schema import JsonSchema
@@ -40,12 +41,12 @@ def inspect_json(
 
 # Keyed by identity, holding the schema so its id is never reused: callers pass one
 # schema object for a whole column, and a schema mutated after use keeps its validator
-_VALIDATORS: dict[tuple[int, int], tuple[JsonSchema, Draft202012Validator]] = {}
+_VALIDATORS: dict[tuple[int, int], tuple[JsonSchema, Validator]] = {}
 
 
 def _get_validator(
     json_schema: JsonSchema, formats: dict[str, Callable[[str], bool]] | None
-) -> Draft202012Validator:
+) -> Validator:
     key = (id(json_schema), id(formats))
     cached = _VALIDATORS.get(key)
     if cached and cached[0] is json_schema:

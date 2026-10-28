@@ -218,7 +218,7 @@ fn inspect_cells_in_polars(
         .map(|index| col(get_flag_name(index)))
         .collect();
 
-    let candidates: Vec<(usize, &ColumnMapping, Vec<(bool, ColumnCheck)>, bool)> = mappings
+    let candidates: Vec<_> = mappings
         .iter()
         .enumerate()
         .filter(|(_, mapping)| mapping.target.column_type() != ColumnType::Unknown)

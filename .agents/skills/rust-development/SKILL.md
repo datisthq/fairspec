@@ -31,6 +31,11 @@ Run from the repo root; `pnpm -C rust <script>` calls `cargo` inside `rust/`.
 Windows); a local nightly can accept code CI rejects. rustfmt keeps its 4-space default, a
 deliberate deviation from the 2-space rule, like Python.
 
+- Clippy stops at the first crate that fails, hiding later crates' errors: when fixing lint,
+  run `cargo clippy --all-targets --keep-going -- -D warnings` to see them all at once
+- A test that derives depth from `current_dir()` counts only `Component::Normal` parts —
+  on Windows the drive prefix is a component too, so `components().count() - 1` is off by one
+
 ## Layout
 
 Mirror Python's concern-then-entity tree so twins are found by name:

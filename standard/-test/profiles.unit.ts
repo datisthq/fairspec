@@ -213,8 +213,9 @@ describe("catalog entries", () => {
     },
     {
       valid: true,
-      entry: { loc: "s3://bucket/a.json", upd: "2024-01-01T00:00:00.5+02:00" },
+      entry: { loc: "HTTP://example.com/a.json", upd: "2024-01-01T00:00:00.5+02:00" },
     },
+    { valid: false, entry: { loc: "s3://bucket/a.json", upd: "2024-01-01T00:00:00Z" } },
     { valid: false, entry: { loc: "example.com/a.json", upd: "2024-01-01T00:00:00Z" } },
     {
       valid: false,
