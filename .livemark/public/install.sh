@@ -33,13 +33,14 @@ main() {
   os=${platform%-*}
   arch=${platform#*-}
 
-  version=$(find_version "$prefix")
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=100" -o "$tmp/releases.json"
+  version=$(find_version "$tmp/releases.json" "$prefix")
   [ -n "$version" ] || fail "No Fairspec $product release yet: see https://github.com/$REPO/releases"
   asset=$(name_asset "$product" "$os" "$arch" "$version")
 
   log "Installing: Fairspec $product $version for $platform"
-  tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
   download_asset "$prefix$version" "$asset" "$tmp"
 
   case "$product" in
@@ -84,9 +85,15 @@ detect_platform() {
 
 # Every section of the monorepo releases on its own tag, so releases/latest may be another one
 find_version() {
-  curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=100" |
-    sed -n "s/.*\"tag_name\": *\"$1\([^\"]*\)\".*/\1/p" |
-    head -n 1
+  sed -n "s/.*\"tag_name\": *\"$2\([^\"]*\)\".*/\1/p" "$1" | head -n 1
+}
+
+# GitHub records each asset's sha256 as its "digest", a few lines below its "name"
+find_digest() {
+  awk -v name="\"name\": \"$2\"" '
+    index($0, name) { found = 1 }
+    found && /"digest":/ { sub(/.*"sha256:/, ""); sub(/".*/, ""); print; exit }
+  ' "$1"
 }
 
 name_asset() {
@@ -110,8 +117,8 @@ download_asset() {
   url="https://github.com/$REPO/releases/download/$1/$2"
   log "Downloading: $url"
   curl -fL --progress-bar "$url" -o "$3/$2"
-  curl -fsSL "$url.sha256" -o "$3/$2.sha256"
-  expected=$(cut -d ' ' -f 1 < "$3/$2.sha256")
+  expected=$(find_digest "$3/releases.json" "$2")
+  [ -n "$expected" ] || fail "No checksum published for $2"
   actual=$(hash_file "$3/$2")
   [ "$expected" = "$actual" ] || fail "Checksum mismatch for $2"
   log "Verified: sha256 $actual"

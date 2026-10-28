@@ -96,7 +96,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
   (`releases?q=rust-v`), never a direct asset
 - `.livemark/public/install.sh` (served as `fairspec.org/install.sh`, ported from dpkit's)
   asks Terminal or Desktop on `/dev/tty`, or takes `sh -s -- terminal|desktop`, then picks the newest
-  `rust-v`/`desktop-v` tag from the releases API and checks the `.sha256`. It builds asset
+  `rust-v`/`desktop-v` tag from the releases API and checks the download against the asset's
+  `digest` in that same response, GitHub's sha256 of every upload; release assets carry no
+  `.sha256` files of their own. It builds asset
   names itself: rename an asset or add a platform there too. Test it with a stub `curl` on
   `PATH` serving fake releases, under `dash`
 - The libraries and the Rust port bundle `standard/profiles/` (refs resolved to `latest`) in

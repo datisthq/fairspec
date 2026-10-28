@@ -168,12 +168,6 @@ jobs:
         run: pnpm -C desktop build
       - name: Compile App
         run: pnpm -C desktop compile
-      - name: Hash Installers
-        shell: bash
-        working-directory: desktop/compile
-        run: |
-          shopt -s nullglob
-          for f in *.AppImage *.deb *.dmg *.exe; do (sha256sum "$f" || shasum -a 256 "$f") > "$f.sha256"; done
       # Upload only: editing the release moves its target to the run's ref, which GitHub refuses
       # once that ref carries workflow changes the tag does not
       - name: Publish Release
@@ -185,7 +179,7 @@ jobs:
           shopt -s nullglob
           gh release upload "$TAG" --clobber \
             desktop/compile/*.AppImage desktop/compile/*.deb desktop/compile/*.dmg \
-            desktop/compile/*.exe desktop/compile/*.sha256
+            desktop/compile/*.exe
 
   rust:
     needs: [release]
@@ -238,7 +232,6 @@ jobs:
           else
             tar -czf "dist/$NAME.tar.gz" -C rust/target/dist-release fairspec
           fi
-          cd dist && for f in *; do (sha256sum "$f" || shasum -a 256 "$f") > "$f.sha256"; done
       - name: Publish Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

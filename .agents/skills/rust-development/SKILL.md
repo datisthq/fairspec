@@ -235,7 +235,7 @@ behaviour.
 
 This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own changelog.
 `release.yaml`'s `rust` job builds `fairspec` with the `build:dist` profile and attaches
-`fairspec-terminal-<os>-<arch>-<version>.{tar.gz,zip}` plus a `.sha256` each for linux, macOS
+`fairspec-terminal-<os>-<arch>-<version>.{tar.gz,zip}` for linux, macOS
 (x64, arm64) and windows x64. No Windows on Arm: the desktop app cannot ship there
 (`nodejs-polars` has no win32-arm64 build) and the CLI keeps parity with it.
 

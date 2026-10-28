@@ -14,7 +14,7 @@ Building from source requires **Rust 1.88+**.
 
 ## Installation
 
-Install the binary for your platform from the [GitHub releases](https://github.com/datisthq/fairspec/releases?q=rust-v), checking its checksum:
+Install the binary for your platform from the [GitHub releases](https://github.com/datisthq/fairspec/releases?q=rust-v), checked against the sha256 GitHub records for it:
 
 ```bash
 curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal
