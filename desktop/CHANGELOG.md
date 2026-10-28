@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.9.0](https://github.com/datisthq/fairspec/compare/desktop-v0.8.0...desktop-v0.9.0) (2026-10-28)
+
+
+### Features
+
+* add local-date-time and local-time, and require a UTC offset in date-time and time ([cac2830](https://github.com/datisthq/fairspec/commit/cac2830c45c83f3ef8478738678d39bd528d65e4))
+* **desktop:** render custom check errors in the report ([1323ee6](https://github.com/datisthq/fairspec/commit/1323ee69eff741a8a5cf2da5ccd6fba5c98a8905))
+* **desktop:** ship x64 and arm64 installers with checksums ([278bc75](https://github.com/datisthq/fairspec/commit/278bc754cf0996726b62ed42767df60a34039f60))
+* **desktop:** show column/extra errors ([4fe5d2f](https://github.com/datisthq/fairspec/commit/4fe5d2f038d775e16a09d257f57e7414e9c2ed1b))
+* **python:** accept a JSON Schema 2020-12 subset as a table schema ([4fe5d2f](https://github.com/datisthq/fairspec/commit/4fe5d2f038d775e16a09d257f57e7414e9c2ed1b))
+* **python:** add checks to validate_table, inspect_table, the CLI and the MCP tool ([1323ee6](https://github.com/datisthq/fairspec/commit/1323ee69eff741a8a5cf2da5ccd6fba5c98a8905))
+* **python:** read date-time and time values with an offset as UTC and add the local types ([cac2830](https://github.com/datisthq/fairspec/commit/cac2830c45c83f3ef8478738678d39bd528d65e4))
+* read and write spreadsheets with calamine and xlsxwriter ([82539a3](https://github.com/datisthq/fairspec/commit/82539a3a0435bf712544ea0bad0bcbf3e92a6fae))
+* **rust:** release the fairspec-cli binaries on GitHub ([278bc75](https://github.com/datisthq/fairspec/commit/278bc754cf0996726b62ed42767df60a34039f60))
+* **standard:** accept a JSON Schema 2020-12 subset as a table schema ([4fe5d2f](https://github.com/datisthq/fairspec/commit/4fe5d2f038d775e16a09d257f57e7414e9c2ed1b))
+* **standard:** define the temporalFormat specifiers and the offset rule per temporal type ([cac2830](https://github.com/datisthq/fairspec/commit/cac2830c45c83f3ef8478738678d39bd528d65e4)), closes [#42](https://github.com/datisthq/fairspec/issues/42)
+* **typescript:** accept a JSON Schema 2020-12 subset as a table schema ([4fe5d2f](https://github.com/datisthq/fairspec/commit/4fe5d2f038d775e16a09d257f57e7414e9c2ed1b))
+* **typescript:** add checks to validateTable, inspectTable, the CLI and the MCP tool ([1323ee6](https://github.com/datisthq/fairspec/commit/1323ee69eff741a8a5cf2da5ccd6fba5c98a8905))
+* **typescript:** read date-time and time values with an offset as UTC and add the local types ([cac2830](https://github.com/datisthq/fairspec/commit/cac2830c45c83f3ef8478738678d39bd528d65e4))
+* **typescript:** read xlsx and ods with calamine-node and write them with wasm-xlsxwriter, dropping SheetJS ([82539a3](https://github.com/datisthq/fairspec/commit/82539a3a0435bf712544ea0bad0bcbf3e92a6fae))
+* validate tables against named custom checks ([1323ee6](https://github.com/datisthq/fairspec/commit/1323ee69eff741a8a5cf2da5ccd6fba5c98a8905))
+
+
+### Bug Fixes
+
+* **desktop:** render the file/header error ([a9b6352](https://github.com/datisthq/fairspec/commit/a9b6352b7dba6544ca24767ea7bdfab968682059))
+* **desktop:** run the engine on the library's nodejs-polars 0.26.1 so table validation no longer fails ([c290426](https://github.com/datisthq/fairspec/commit/c290426981dba3a7bd7f19fb4aae672494c99672))
+* **desktop:** show local date-times without shifting them into the viewer's time zone ([cac2830](https://github.com/datisthq/fairspec/commit/cac2830c45c83f3ef8478738678d39bd528d65e4))
+* **python:** check the hash shape before hashing, compare multipart headers, validate a data schema's $schema, $ref and $dynamicRef first, assert its known formats and point a false subschema at its member ([a9b6352](https://github.com/datisthq/fairspec/commit/a9b6352b7dba6544ca24767ea7bdfab968682059))
+* report part headers, hash shape, data schema refs, dialects and formats as the dataset and data schema specs decide ([a9b6352](https://github.com/datisthq/fairspec/commit/a9b6352b7dba6544ca24767ea7bdfab968682059))
+* **rust:** check the hash shape before hashing, compare multipart headers, validate a data schema's $schema, $ref and $dynamicRef first, and assert its known formats ([a9b6352](https://github.com/datisthq/fairspec/commit/a9b6352b7dba6544ca24767ea7bdfab968682059))
+* **standard:** improve standard pipeline ([#52](https://github.com/datisthq/fairspec/issues/52)) ([407d938](https://github.com/datisthq/fairspec/commit/407d9381adb1be365ac7243ece48410aca150ec7))
+* **typescript:** check the hash shape before hashing, compare multipart headers, validate a data schema's $schema, $ref and $dynamicRef first, and assert its known formats ([a9b6352](https://github.com/datisthq/fairspec/commit/a9b6352b7dba6544ca24767ea7bdfab968682059))
+
 ## [0.8.0](https://github.com/datisthq/fairspec-application/compare/v0.7.0...v0.8.0) (2026-09-05)
 
 ### Features

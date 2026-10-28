@@ -13,7 +13,11 @@
       "$ref": "https://json-schema.org/draft/2020-12/schema"
     },
     "Profile": {
-      "$ref": "#/$defs/ExternalPath"
+      "allOf": [{ "$ref": "#/$defs/ExternalPath" }],
+      "anyOf": [
+        { "const": "https://json-schema.org/draft/2020-12/schema" },
+        { "pattern": "^https://fairspec\\.org/profiles/[^/]+/data-schema\\.json$" }
+      ]
     },
     "ExternalPath": {
       "type": "string",

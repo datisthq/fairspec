@@ -1,12 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "allOf": [{ "$ref": "#/$defs/Dataset" }],
+  "allOf": [
+    {
+      "$ref": "#/$defs/Dataset"
+    }
+  ],
   "$defs": {
     "Dataset": {
-      "allOf": [{ "$ref": "#/$defs/Datacite" }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/Datacite"
+        }
+      ],
       "properties": {
-        "$schema": { "$ref": "#/$defs/Profile" },
-        "resources": { "$ref": "#/$defs/Resources" }
+        "$schema": {
+          "$ref": "#/$defs/Profile"
+        },
+        "resources": {
+          "$ref": "#/$defs/Resources"
+        }
       }
     },
     "Profile": {
@@ -15,18 +27,53 @@
     "Resources": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/Resource" }
+      "items": {
+        "$ref": "#/$defs/Resource"
+      }
     },
     "Resource": {
-      "allOf": [{ "$ref": "#/$defs/Datacite" }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/Datacite"
+        },
+        {
+          "if": {
+            "required": ["data"],
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/JsonData"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "integrity": false
+            }
+          }
+        }
+      ],
       "properties": {
-        "name": { "$ref": "#/$defs/Name" },
-        "data": { "$ref": "#/$defs/Data" },
-        "textual": { "$ref": "#/$defs/Textual" },
-        "integrity": { "$ref": "#/$defs/Integrity" },
-        "fileDialect": { "$ref": "#/$defs/FileDialect" },
-        "dataSchema": { "$ref": "#/$defs/DataSchema" },
-        "tableSchema": { "$ref": "#/$defs/TableSchema" }
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "data": {
+          "$ref": "#/$defs/Data"
+        },
+        "textual": {
+          "$ref": "#/$defs/Textual"
+        },
+        "integrity": {
+          "$ref": "#/$defs/Integrity"
+        },
+        "fileDialect": {
+          "$ref": "#/$defs/FileDialect"
+        },
+        "dataSchema": {
+          "$ref": "#/$defs/DataSchema"
+        },
+        "tableSchema": {
+          "$ref": "#/$defs/TableSchema"
+        }
       }
     },
     "Name": {
@@ -34,12 +81,27 @@
       "pattern": "^[a-zA-Z0-9_]+$"
     },
     "Data": {
-      "oneOf": [{ "$ref": "#/$defs/PathData" }, { "$ref": "#/$defs/JsonData" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PathData"
+        },
+        {
+          "$ref": "#/$defs/JsonData"
+        }
+      ]
     },
     "PathData": {
       "oneOf": [
-        { "$ref": "#/$defs/Path" },
-        { "type": "array", "items": { "$ref": "#/$defs/Path" } }
+        {
+          "$ref": "#/$defs/Path"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Path"
+          }
+        }
       ]
     },
     "JsonData": {
@@ -49,69 +111,214 @@
         },
         {
           "type": "array",
-          "items": { "type": "object" }
+          "items": {
+            "type": "object"
+          }
         }
       ]
     },
     "Path": {
-      "oneOf": [{ "$ref": "#/$defs/InternalPath" }, { "$ref": "#/$defs/ExternalPath" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/InternalPath"
+        },
+        {
+          "$ref": "#/$defs/ExternalPath"
+        }
+      ]
     },
     "InternalPath": {
       "type": "string",
-      "pattern": "^(?![./~])(?!.*://)(?!.*\\.\\.)(?!.*\\\\)(?!.*:)[^/\\\\]+(/[^/\\\\]+)*$"
+      "pattern": "^(?:[^/\\\\.~A-Za-z][^/\\\\]*|[A-Za-z][^/\\\\:]*|\\.[^/\\\\.][^/\\\\]*|\\.\\.[^/\\\\]+|\\.)(?:/(?:[^/\\\\.][^/\\\\]*|\\.[^/\\\\.][^/\\\\]*|\\.\\.[^/\\\\]+|\\.))*$"
     },
     "ExternalPath": {
       "type": "string",
-      "pattern": "^https?://"
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://"
     },
     "Textual": {
       "type": "boolean"
     },
     "FileDialect": {
-      "oneOf": [{ "$ref": "#/$defs/Path" }, { "$ref": "https://fairspec.org/profiles/latest/file-dialect.json" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Path"
+        },
+        {
+          "$ref": "https://fairspec.org/profiles/latest/file-dialect.json"
+        }
+      ]
     },
     "Integrity": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "type": {
           "enum": ["md5", "sha1", "sha256", "sha512"]
         },
-        "hash": { "type": "string" }
+        "hash": {
+          "type": "string"
+        }
       },
-      "required": ["type", "hash"]
+      "required": ["type", "hash"],
+      "allOf": [
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "md5"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{32}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{40}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha256"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "sha512"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hash": {
+                "pattern": "^[0-9a-f]{128}$"
+              }
+            }
+          }
+        }
+      ]
     },
     "DataSchema": {
-      "oneOf": [{ "$ref": "#/$defs/Path" }, { "$ref": "https://fairspec.org/profiles/latest/data-schema.json" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Path"
+        },
+        {
+          "$ref": "https://fairspec.org/profiles/latest/data-schema.json"
+        }
+      ]
     },
     "TableSchema": {
-      "oneOf": [{ "$ref": "#/$defs/Path" }, { "$ref": "https://fairspec.org/profiles/latest/table-schema.json" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Path"
+        },
+        {
+          "$ref": "https://fairspec.org/profiles/latest/table-schema.json"
+        }
+      ]
     },
     "Datacite": {
       "type": "object",
       "properties": {
-        "doi": { "$ref": "#/$defs/Doi" },
-        "prefix": { "$ref": "#/$defs/DoiPrefix" },
-        "suffix": { "$ref": "#/$defs/DoiSuffix" },
-        "creators": { "$ref": "#/$defs/Creators" },
-        "titles": { "$ref": "#/$defs/Titles" },
-        "publisher": { "$ref": "#/$defs/Publisher" },
-        "publicationYear": { "$ref": "#/$defs/PublicationYear" },
-        "subjects": { "$ref": "#/$defs/Subjects" },
-        "contributors": { "$ref": "#/$defs/Contributors" },
-        "dates": { "$ref": "#/$defs/Dates" },
-        "language": { "$ref": "#/$defs/Language" },
-        "types": { "$ref": "#/$defs/ContentTypes" },
-        "alternateIdentifiers": { "$ref": "#/$defs/AlternateIdentifiers" },
-        "relatedIdentifiers": { "$ref": "#/$defs/RelatedIdentifiers" },
-        "sizes": { "$ref": "#/$defs/Sizes" },
-        "formats": { "$ref": "#/$defs/Formats" },
-        "version": { "$ref": "#/$defs/Version" },
-        "rightsList": { "$ref": "#/$defs/RightsList" },
-        "descriptions": { "$ref": "#/$defs/Descriptions" },
-        "geoLocations": { "$ref": "#/$defs/GeoLocations" },
-        "fundingReferences": { "$ref": "#/$defs/FundingReferences" },
-        "relatedItems": { "$ref": "#/$defs/RelatedItems" }
+        "doi": {
+          "$ref": "#/$defs/Doi"
+        },
+        "prefix": {
+          "$ref": "#/$defs/DoiPrefix"
+        },
+        "suffix": {
+          "$ref": "#/$defs/DoiSuffix"
+        },
+        "creators": {
+          "$ref": "#/$defs/Creators"
+        },
+        "titles": {
+          "$ref": "#/$defs/Titles"
+        },
+        "publisher": {
+          "$ref": "#/$defs/Publisher"
+        },
+        "publicationYear": {
+          "$ref": "#/$defs/PublicationYear"
+        },
+        "subjects": {
+          "$ref": "#/$defs/Subjects"
+        },
+        "contributors": {
+          "$ref": "#/$defs/Contributors"
+        },
+        "dates": {
+          "$ref": "#/$defs/Dates"
+        },
+        "language": {
+          "$ref": "#/$defs/Language"
+        },
+        "types": {
+          "$ref": "#/$defs/ContentTypes"
+        },
+        "alternateIdentifiers": {
+          "$ref": "#/$defs/AlternateIdentifiers"
+        },
+        "relatedIdentifiers": {
+          "$ref": "#/$defs/RelatedIdentifiers"
+        },
+        "sizes": {
+          "$ref": "#/$defs/Sizes"
+        },
+        "formats": {
+          "$ref": "#/$defs/Formats"
+        },
+        "version": {
+          "$ref": "#/$defs/Version"
+        },
+        "rightsList": {
+          "$ref": "#/$defs/RightsList"
+        },
+        "descriptions": {
+          "$ref": "#/$defs/Descriptions"
+        },
+        "geoLocations": {
+          "$ref": "#/$defs/GeoLocations"
+        },
+        "fundingReferences": {
+          "$ref": "#/$defs/FundingReferences"
+        },
+        "relatedItems": {
+          "$ref": "#/$defs/RelatedItems"
+        }
       }
     },
     "Doi": {
@@ -129,19 +336,35 @@
     "Creators": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/Creator" }
+      "items": {
+        "$ref": "#/$defs/Creator"
+      }
     },
     "Creator": {
       "type": "object",
       "required": ["name"],
       "properties": {
-        "name": { "type": "string" },
-        "nameType": { "$ref": "#/$defs/CreatorNameType" },
-        "givenName": { "type": "string" },
-        "familyName": { "type": "string" },
-        "nameIdentifiers": { "$ref": "#/$defs/CreatorNameIdentifiers" },
-        "affiliation": { "$ref": "#/$defs/CreatorAffiliations" },
-        "lang": { "type": "string" }
+        "name": {
+          "type": "string"
+        },
+        "nameType": {
+          "$ref": "#/$defs/CreatorNameType"
+        },
+        "givenName": {
+          "type": "string"
+        },
+        "familyName": {
+          "type": "string"
+        },
+        "nameIdentifiers": {
+          "$ref": "#/$defs/CreatorNameIdentifiers"
+        },
+        "affiliation": {
+          "$ref": "#/$defs/CreatorAffiliations"
+        },
+        "lang": {
+          "type": "string"
+        }
       }
     },
     "CreatorNameType": {
@@ -154,9 +377,17 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "nameIdentifier": { "type": "string" },
-          "nameIdentifierScheme": { "type": "string" },
-          "schemeUri": { "type": "string", "format": "uri" }
+          "nameIdentifier": {
+            "type": "string"
+          },
+          "nameIdentifierScheme": {
+            "type": "string"
+          },
+          "schemeUri": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+          }
         },
         "required": ["nameIdentifier", "nameIdentifierScheme"]
       },
@@ -166,16 +397,28 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/CreatorAffiliation" }
+      "items": {
+        "$ref": "#/$defs/CreatorAffiliation"
+      }
     },
     "CreatorAffiliation": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "affiliationIdentifier": { "type": "string" },
-        "affiliationIdentifierScheme": { "type": "string" },
-        "schemeUri": { "type": "string", "format": "uri" }
+        "name": {
+          "type": "string"
+        },
+        "affiliationIdentifier": {
+          "type": "string"
+        },
+        "affiliationIdentifierScheme": {
+          "type": "string"
+        },
+        "schemeUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        }
       },
       "required": ["name"]
     },
@@ -183,15 +426,23 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/Title" }
+      "items": {
+        "$ref": "#/$defs/Title"
+      }
     },
     "Title": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "title": { "type": "string" },
-        "titleType": { "$ref": "#/$defs/TitleType" },
-        "lang": { "type": "string" }
+        "title": {
+          "type": "string"
+        },
+        "titleType": {
+          "$ref": "#/$defs/TitleType"
+        },
+        "lang": {
+          "type": "string"
+        }
       },
       "required": ["title"]
     },
@@ -202,11 +453,23 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "publisherIdentifier": { "type": "string" },
-        "publisherIdentifierScheme": { "type": "string" },
-        "schemeUri": { "type": "string", "format": "uri" },
-        "lang": { "type": "string" }
+        "name": {
+          "type": "string"
+        },
+        "publisherIdentifier": {
+          "type": "string"
+        },
+        "publisherIdentifierScheme": {
+          "type": "string"
+        },
+        "schemeUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "lang": {
+          "type": "string"
+        }
       },
       "required": ["name"]
     },
@@ -218,33 +481,59 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/Subject" }
+      "items": {
+        "$ref": "#/$defs/Subject"
+      }
     },
     "Subject": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subject": { "type": "string" },
-        "subjectScheme": { "type": "string" },
-        "schemeUri": { "type": "string", "format": "uri" },
-        "valueUri": { "type": "string", "format": "uri" },
-        "classificationCode": { "type": "string" },
-        "lang": { "type": "string" }
+        "subject": {
+          "type": "string"
+        },
+        "subjectScheme": {
+          "type": "string"
+        },
+        "schemeUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "valueUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "classificationCode": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        }
       },
       "required": ["subject"]
     },
     "Contributors": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/Contributor" }
+      "items": {
+        "$ref": "#/$defs/Contributor"
+      }
     },
     "Contributor": {
       "type": "object",
       "required": ["name", "contributorType"],
-      "allOf": [{ "$ref": "#/$defs/Creator" }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/Creator"
+        }
+      ],
       "unevaluatedProperties": false,
       "properties": {
-        "contributorType": { "$ref": "#/$defs/ContributorType" }
+        "contributorType": {
+          "$ref": "#/$defs/ContributorType"
+        }
       }
     },
     "ContributorType": {
@@ -277,30 +566,29 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/Date" }
+      "items": {
+        "$ref": "#/$defs/Date"
+      }
     },
     "Date": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "date": { "$ref": "#/$defs/DateValue" },
-        "dateType": { "$ref": "#/$defs/DateType" },
-        "dateInformation": { "type": "string" }
+        "date": {
+          "$ref": "#/$defs/DateValue"
+        },
+        "dateType": {
+          "$ref": "#/$defs/DateType"
+        },
+        "dateInformation": {
+          "type": "string"
+        }
       },
       "required": ["date", "dateType"]
     },
     "DateValue": {
       "type": "string",
-      "anyOf": [
-        { "format": "year" },
-        { "format": "yearmonth" },
-        { "format": "date" },
-        { "format": "datetime" },
-        { "format": "year-range" },
-        { "format": "yearmonth-range" },
-        { "format": "date-range" },
-        { "format": "datetime-range" }
-      ]
+      "pattern": "^([0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})?)?)?)?(/([0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})?)?)?)?)?)?|/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})?)?)?)?)$"
     },
     "DateType": {
       "enum": [
@@ -325,7 +613,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "resourceType": { "type": "string" },
+        "resourceType": {
+          "type": "string"
+        },
         "resourceTypeGeneral": {
           "$ref": "#/$defs/ContentTypeGeneral"
         }
@@ -372,44 +662,74 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/AlternateIdentifier" }
+      "items": {
+        "$ref": "#/$defs/AlternateIdentifier"
+      }
     },
     "AlternateIdentifier": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "alternateIdentifier": { "type": "string" },
-        "alternateIdentifierType": { "type": "string" }
+        "alternateIdentifier": {
+          "type": "string"
+        },
+        "alternateIdentifierType": {
+          "type": "string"
+        }
       },
       "required": ["alternateIdentifier", "alternateIdentifierType"]
     },
     "RelatedIdentifiers": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/RelatedIdentifier" }
+      "items": {
+        "$ref": "#/$defs/RelatedIdentifier"
+      }
     },
     "RelatedIdentifier": {
       "type": "object",
-      "allOf": [{ "$ref": "#/$defs/RelatedObject" }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/RelatedObject"
+        }
+      ],
       "unevaluatedProperties": false,
       "properties": {
-        "relatedIdentifier": { "type": "string" },
+        "relatedIdentifier": {
+          "type": "string"
+        },
         "relatedIdentifierType": {
           "$ref": "#/$defs/RelatedIdentifierType"
         }
       },
       "required": ["relatedIdentifier", "relatedIdentifierType", "relationType"],
-      "if": { "$ref": "#/$defs/RelatedObjectIf" },
-      "else": { "$ref": "#/$defs/RelatedObjectElse" }
+      "if": {
+        "$ref": "#/$defs/RelatedObjectIf"
+      },
+      "else": {
+        "$ref": "#/$defs/RelatedObjectElse"
+      }
     },
     "RelatedObject": {
       "type": "object",
       "properties": {
-        "relationType": { "$ref": "#/$defs/RelationType" },
-        "relatedMetadataScheme": { "type": "string" },
-        "schemeUri": { "type": "string", "format": "uri" },
-        "schemeType": { "type": "string" },
-        "resourceTypeGeneral": { "$ref": "#/$defs/ContentTypeGeneral" }
+        "relationType": {
+          "$ref": "#/$defs/RelationType"
+        },
+        "relatedMetadataScheme": {
+          "type": "string"
+        },
+        "schemeUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "schemeType": {
+          "type": "string"
+        },
+        "resourceTypeGeneral": {
+          "$ref": "#/$defs/ContentTypeGeneral"
+        }
       },
       "required": ["relationType"]
     },
@@ -482,7 +802,9 @@
     },
     "RelatedObjectIf": {
       "properties": {
-        "relationType": { "enum": ["HasMetadata", "IsMetadataFor"] }
+        "relationType": {
+          "enum": ["HasMetadata", "IsMetadataFor"]
+        }
       }
     },
     "RelatedObjectElse": {
@@ -514,34 +836,60 @@
     "RightsList": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/Rights" },
+      "items": {
+        "$ref": "#/$defs/Rights"
+      },
       "uniqueItems": true
     },
     "Rights": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "rights": { "type": "string" },
-        "rightsUri": { "type": "string", "format": "uri" },
-        "rightsIdentifier": { "type": "string" },
-        "rightsIdentifierScheme": { "type": "string" },
-        "schemeUri": { "type": "string", "format": "uri" },
-        "lang": { "type": "string" }
+        "rights": {
+          "type": "string"
+        },
+        "rightsUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "rightsIdentifier": {
+          "type": "string"
+        },
+        "rightsIdentifierScheme": {
+          "type": "string"
+        },
+        "schemeUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "lang": {
+          "type": "string"
+        }
       }
     },
     "Descriptions": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/Description" },
+      "items": {
+        "$ref": "#/$defs/Description"
+      },
       "uniqueItems": true
     },
     "Description": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "description": { "type": "string" },
-        "descriptionType": { "$ref": "#/$defs/DescriptionType" },
-        "lang": { "type": "string" }
+        "description": {
+          "type": "string"
+        },
+        "descriptionType": {
+          "$ref": "#/$defs/DescriptionType"
+        },
+        "lang": {
+          "type": "string"
+        }
       },
       "required": ["description", "descriptionType"]
     },
@@ -558,20 +906,30 @@
     "GeoLocations": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/GeoLocation" },
+      "items": {
+        "$ref": "#/$defs/GeoLocation"
+      },
       "uniqueItems": true
     },
     "GeoLocation": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "geoLocationPlace": { "type": "string" },
-        "geoLocationPoint": { "$ref": "#/$defs/GeoLocationPoint" },
-        "geoLocationBox": { "$ref": "#/$defs/GeoLocationBox" },
+        "geoLocationPlace": {
+          "type": "string"
+        },
+        "geoLocationPoint": {
+          "$ref": "#/$defs/GeoLocationPoint"
+        },
+        "geoLocationBox": {
+          "$ref": "#/$defs/GeoLocationBox"
+        },
         "geoLocationPolygon": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/GeoLocationPolygonItem" }
+          "items": {
+            "$ref": "#/$defs/GeoLocationPolygonItem"
+          }
         }
       }
     },
@@ -579,8 +937,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "pointLongitude": { "$ref": "#/$defs/Longitude" },
-        "pointLatitude": { "$ref": "#/$defs/Latitude" }
+        "pointLongitude": {
+          "$ref": "#/$defs/Longitude"
+        },
+        "pointLatitude": {
+          "$ref": "#/$defs/Latitude"
+        }
       },
       "required": ["pointLongitude", "pointLatitude"]
     },
@@ -598,10 +960,18 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "westBoundLongitude": { "$ref": "#/$defs/Longitude" },
-        "eastBoundLongitude": { "$ref": "#/$defs/Longitude" },
-        "southBoundLatitude": { "$ref": "#/$defs/Latitude" },
-        "northBoundLatitude": { "$ref": "#/$defs/Latitude" }
+        "westBoundLongitude": {
+          "$ref": "#/$defs/Longitude"
+        },
+        "eastBoundLongitude": {
+          "$ref": "#/$defs/Longitude"
+        },
+        "southBoundLatitude": {
+          "$ref": "#/$defs/Latitude"
+        },
+        "northBoundLatitude": {
+          "$ref": "#/$defs/Latitude"
+        }
       },
       "required": [
         "westBoundLongitude",
@@ -625,21 +995,35 @@
     "FundingReferences": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/FundingReference" },
+      "items": {
+        "$ref": "#/$defs/FundingReference"
+      },
       "uniqueItems": true
     },
     "FundingReference": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "funderName": { "type": "string" },
-        "funderIdentifier": { "type": "string" },
+        "funderName": {
+          "type": "string"
+        },
+        "funderIdentifier": {
+          "type": "string"
+        },
         "funderIdentifierType": {
           "$ref": "#/$defs/FunderIdentifierType"
         },
-        "awardNumber": { "type": "string" },
-        "awardUri": { "type": "string", "format": "uri" },
-        "awardTitle": { "type": "string" }
+        "awardNumber": {
+          "type": "string"
+        },
+        "awardUri": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "awardTitle": {
+          "type": "string"
+        }
       },
       "required": ["funderName"]
     },
@@ -649,40 +1033,78 @@
     "RelatedItems": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/RelatedItem" },
+      "items": {
+        "$ref": "#/$defs/RelatedItem"
+      },
       "uniqueItems": true
     },
     "RelatedItem": {
       "type": "object",
-      "allOf": [{ "$ref": "#/$defs/RelatedObject" }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/RelatedObject"
+        }
+      ],
       "unevaluatedProperties": false,
       "properties": {
         "relatedItemIdentifier": {
           "$ref": "#/$defs/RelatedItemIdentifier"
         },
-        "relatedItemType": { "$ref": "#/$defs/ContentTypeGeneral" },
-        "creators": { "$ref": "#/$defs/Creators" },
-        "contributors": { "$ref": "#/$defs/Contributors" },
-        "titles": { "$ref": "#/$defs/Titles" },
-        "publicationYear": { "$ref": "#/$defs/PublicationYear" },
-        "volume": { "type": "string" },
-        "issue": { "type": "string" },
-        "firstPage": { "type": "string" },
-        "lastPage": { "type": "string" },
-        "edition": { "type": "string" },
-        "publisher": { "type": "string" },
-        "number": { "type": "string" },
-        "numberType": { "$ref": "#/$defs/NumberType" }
+        "relatedItemType": {
+          "$ref": "#/$defs/ContentTypeGeneral"
+        },
+        "creators": {
+          "$ref": "#/$defs/Creators"
+        },
+        "contributors": {
+          "$ref": "#/$defs/Contributors"
+        },
+        "titles": {
+          "$ref": "#/$defs/Titles"
+        },
+        "publicationYear": {
+          "$ref": "#/$defs/PublicationYear"
+        },
+        "volume": {
+          "type": "string"
+        },
+        "issue": {
+          "type": "string"
+        },
+        "firstPage": {
+          "type": "string"
+        },
+        "lastPage": {
+          "type": "string"
+        },
+        "edition": {
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "numberType": {
+          "$ref": "#/$defs/NumberType"
+        }
       },
       "required": ["titles", "relatedItemType", "relationType"],
-      "if": { "$ref": "#/$defs/RelatedObjectIf" },
-      "else": { "$ref": "#/$defs/RelatedObjectElse" }
+      "if": {
+        "$ref": "#/$defs/RelatedObjectIf"
+      },
+      "else": {
+        "$ref": "#/$defs/RelatedObjectElse"
+      }
     },
     "RelatedItemIdentifier": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "relatedItemIdentifier": { "type": "string" },
+        "relatedItemIdentifier": {
+          "type": "string"
+        },
         "relatedItemIdentifierType": {
           "$ref": "#/$defs/RelatedIdentifierType"
         }
