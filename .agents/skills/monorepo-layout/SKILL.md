@@ -116,6 +116,9 @@ never picks them up. Root `tsconfig.json` includes `.scripts/` so `pnpm check:ty
 sections="python rust"`): it skips release-please and publishes those sections at their
   manifest version, from their existing tags. Every publish step must tolerate a partial earlier
   run — `uv publish --check-url` skips wheels already on PyPI, pnpm skips published versions
+- Release assets go up with `gh release upload --clobber`, never an action that edits the
+  release: editing moves its target to the run's ref, which the workflow token may not do once
+  that ref carries workflow changes the tag lacks ("Resource not accessible by integration")
 - A `release-as` pin in `.release/config.json` holds for one release only: remove it once that
   version is tagged, or the next Release PR proposes the same, already tagged, version again
 - Never write `<placeholder>` in a commit subject or body line: release-please escapes it in

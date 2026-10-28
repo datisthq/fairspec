@@ -174,18 +174,18 @@ jobs:
         run: |
           shopt -s nullglob
           for f in *.AppImage *.deb *.dmg *.exe; do (sha256sum "$f" || shasum -a 256 "$f") > "$f.sha256"; done
+      # Upload only: editing the release moves its target to the run's ref, which GitHub refuses
+      # once that ref carries workflow changes the tag does not
       - name: Publish Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
-        with:
-          tag_name: ${{ needs.release.outputs.desktop-tag }}
-          files: |
-            desktop/compile/*.AppImage
-            desktop/compile/*.deb
-            desktop/compile/*.dmg
-            desktop/compile/*.exe
-            desktop/compile/*.sha256
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release.outputs.desktop-tag }}
+        run: |
+          shopt -s nullglob
+          gh release upload "$TAG" --clobber \
+            desktop/compile/*.AppImage desktop/compile/*.deb desktop/compile/*.dmg \
+            desktop/compile/*.exe desktop/compile/*.sha256
 
   rust:
     needs: [release]
@@ -240,12 +240,10 @@ jobs:
           fi
           cd dist && for f in *; do (sha256sum "$f" || shasum -a 256 "$f") > "$f.sha256"; done
       - name: Publish Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
-        with:
-          tag_name: ${{ needs.release.outputs.rust-tag }}
-          files: dist/*
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release.outputs.rust-tag }}
+        run: gh release upload "$TAG" --clobber dist/*
 
   crates:
     needs: [release, rust]
