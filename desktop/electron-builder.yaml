@@ -23,6 +23,7 @@ asarUnpack:
 # Linux
 
 linux:
+  executableName: fairspec-desktop
   maintainer: fairspec.org
   category: Utility
   target:
