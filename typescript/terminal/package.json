@@ -27,7 +27,8 @@
     "fairspec": "./build/entrypoints/run.js"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": false,

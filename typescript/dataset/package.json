@@ -25,7 +25,8 @@
     "directory": "typescript/dataset"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": false,

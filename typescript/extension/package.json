@@ -24,7 +24,8 @@
     "directory": "typescript/extension"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": false,

@@ -37,3 +37,6 @@ fairspec = "fairspec.main:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = ["**/_test"]

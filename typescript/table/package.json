@@ -30,7 +30,8 @@
     "directory": "typescript/table"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": [

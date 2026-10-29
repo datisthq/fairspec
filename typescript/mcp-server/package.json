@@ -25,7 +25,8 @@
     "directory": "typescript/mcp-server"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": false,

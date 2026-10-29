@@ -50,3 +50,6 @@ repository = "https://github.com/datisthq/fairspec"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = ["**/_test"]

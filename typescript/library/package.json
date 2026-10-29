@@ -23,7 +23,8 @@
     "directory": "typescript/library"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/-test"
   ],
   "type": "module",
   "sideEffects": false,
