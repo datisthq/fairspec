@@ -299,3 +299,6 @@ Release PR, published to npm by `release.yaml`. All packages are lock-stepped to
 via `extra-files`. Only changes to the published packages use `feat` or `fix`; tests, the docs
 in `typescript/project/`, READMEs and tooling are `chore` or `docs`. When in doubt, ask whether
 the change alters what someone installing a package gets.
+
+Each package's `files` is `build` minus `!build/**/-test`, so test builds never reach npm;
+`@fairspec/metadata/testing` therefore resolves only inside the workspace.

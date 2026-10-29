@@ -278,3 +278,6 @@ PR, published to PyPI by `release.yaml`. All seven packages are lock-stepped to 
 `python/project/`, READMEs and tooling are `chore` or `docs`. PyPI never lets a version be
 re-uploaded. release-please's `python` release type would release on `docs` alone, so the
 component's `changelog-sections` in `.release/config.json` hide `docs`, as `node` does.
+
+Each member's `[tool.hatch.build] exclude = ["**/_test"]` keeps tests out of the wheel and
+sdist; a new member copies it.
