@@ -6,7 +6,10 @@ description: Use when changing a landing page hero carousel or regenerating its 
 # Landing screenshots
 
 Every landing hero (`.livemark/routes/{index,cli-tool,mcp-server,desktop}.tsx`) is livemark's
-carousel of screenshots, each paired with a source chip. Fairspec's tools live in a terminal or
+carousel of screenshots, each paired with a source chip. The home hero passes `aside` instead:
+one fixed `BenchmarkCard` (nyc-311 10GB, full validators only, from
+`.humans/benchmark-nyc-311.html`) that does not change with the slides — refresh its numbers
+when that report is republished. Fairspec's tools live in a terminal or
 an assistant, so the slides are **terminal sessions** rendered as images, listed in `shots` in
 `.livemark/components/Panes.tsx`:
 

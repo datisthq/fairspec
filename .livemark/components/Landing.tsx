@@ -20,8 +20,15 @@ export interface Shot {
 export type Slide = {
   id: string
   title: string
-  source: { eyebrow: string; file: string; code: ReactNode }
+  source?: { eyebrow: string; file: string; code: ReactNode }
 } & ({ shot: Shot } | { content: ReactNode })
+
+export interface Benchmark {
+  title: string
+  caption: string
+  rows: { tool: string; seconds: number; ours?: boolean }[]
+  footnote: string
+}
 
 export interface InstallCommand {
   command: string
@@ -103,6 +110,7 @@ export function Hero(props: {
   actions: ReactNode
   install?: InstallCommand[]
   slides: Slide[]
+  aside?: ReactNode
 }) {
   return (
     <section className="relative overflow-hidden border-b border-border">
@@ -122,7 +130,7 @@ export function Hero(props: {
           {props.install ? <InstallCard commands={props.install} /> : null}
         </div>
         <div className="mt-12 lg:mt-0 xl:w-[60rem] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out motion-reduce:animate-none">
-          <HeroCarousel slides={props.slides} />
+          <HeroCarousel slides={props.slides} aside={props.aside} />
         </div>
       </div>
     </section>
@@ -148,7 +156,7 @@ function InstallCard(props: { commands: InstallCommand[] }) {
 
 // Every slide is in the prerendered HTML, stacked in one grid cell; only the active
 // one is visible and reachable. All shots share one aspect, so the window never jumps.
-function HeroCarousel(props: { slides: Slide[] }) {
+function HeroCarousel(props: { slides: Slide[]; aside?: ReactNode }) {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [stopped, setStopped] = useState(false)
@@ -243,19 +251,22 @@ function HeroCarousel(props: { slides: Slide[] }) {
         </div>
       </figure>
       <div className="mt-4 grid grid-cols-1 lg:absolute lg:-bottom-10 lg:-left-10 lg:mt-0 lg:w-[24rem]">
-        {props.slides.map((slide, index) => (
-          <div
-            key={slide.id}
-            aria-hidden={index !== active}
-            inert={index !== active}
-            className={cn(
-              "[grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
-              index === active ? "opacity-100" : "pointer-events-none opacity-0",
-            )}
-          >
-            <SourceChip source={slide.source} />
-          </div>
-        ))}
+        {props.aside ??
+          props.slides.map((slide, index) =>
+            slide.source ? (
+              <div
+                key={slide.id}
+                aria-hidden={index !== active}
+                inert={index !== active}
+                className={cn(
+                  "[grid-area:1/1] transition-opacity duration-700 motion-reduce:transition-none",
+                  index === active ? "opacity-100" : "pointer-events-none opacity-0",
+                )}
+              >
+                <SourceChip source={slide.source} />
+              </div>
+            ) : null,
+          )}
       </div>
     </div>
   )
@@ -290,7 +301,7 @@ export function ShotCard(props: { shot: Shot }) {
   )
 }
 
-function SourceChip(props: { source: Slide["source"] }) {
+function SourceChip(props: { source: NonNullable<Slide["source"]> }) {
   return (
     <figure className="flex h-full gap-3 rounded-card border border-primary/25 bg-card p-4 shadow-lg">
       <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -309,6 +320,70 @@ function SourceChip(props: { source: Slide["source"] }) {
       </div>
     </figure>
   )
+}
+
+// Bars are on a log scale: on a linear one every tool under a minute is the same sliver.
+export function BenchmarkCard(props: { benchmark: Benchmark }) {
+  const { rows } = props.benchmark
+  const fastest = Math.min(...rows.map(r => r.seconds))
+  const span = Math.log(Math.max(...rows.map(r => r.seconds)) / fastest)
+  return (
+    <figure className="rounded-card border border-primary/25 bg-card p-4 shadow-lg">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
+          {props.benchmark.title}
+        </p>
+        <figcaption className="font-mono text-[0.6875rem] whitespace-nowrap text-muted-foreground">
+          {props.benchmark.caption}
+        </figcaption>
+      </div>
+      <ul className="mt-3 grid list-none gap-1.5">
+        {rows.map(r => (
+          <li
+            key={r.tool}
+            className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.75rem] items-center gap-2 text-xs"
+          >
+            <span
+              className={cn(
+                "truncate",
+                r.ours ? "font-semibold text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {r.tool}
+            </span>
+            <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <span
+                className={cn(
+                  "block h-full rounded-full",
+                  r.ours ? "bg-primary" : "bg-muted-foreground/40",
+                )}
+                style={{
+                  width: `${8 + (92 * Math.log(r.seconds / fastest)) / span}%`,
+                }}
+              />
+            </span>
+            <span
+              className={cn(
+                "text-right font-mono tabular-nums",
+                r.ours ? "font-semibold text-primary" : "text-muted-foreground",
+              )}
+            >
+              {formatSeconds(r.seconds)}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[0.6875rem] text-muted-foreground">
+        {props.benchmark.footnote}
+      </p>
+    </figure>
+  )
+}
+
+function formatSeconds(seconds: number) {
+  return seconds < 100
+    ? `${Math.round(seconds)} s`
+    : `${(seconds / 60).toFixed(seconds < 600 ? 1 : 0)} min`
 }
 
 export function Highlight(props: { children: ReactNode }) {

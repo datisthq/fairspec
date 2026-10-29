@@ -32,17 +32,13 @@ import {
   SplitSection,
   WindowCard,
   actionClass,
+  type Benchmark,
+  BenchmarkCard,
   textLinkClass,
   tk,
   ShotCard,
 } from "../components/Landing.tsx"
-import {
-  BrokenCsv,
-  InferredDataset,
-  MembersCsv,
-  shots,
-  WindowCode,
-} from "../components/Panes.tsx"
+import { InferredDataset, MembersCsv, shots, WindowCode } from "../components/Panes.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/")({
@@ -94,6 +90,7 @@ function Landing() {
           }
           install={install}
           slides={slides}
+          aside={<BenchmarkCard benchmark={benchmark} />}
         />
         <SplitSection
           title="A simple format for FAIR data"
@@ -205,48 +202,27 @@ const install: InstallCommand[] = [
   { command: "cargo install", target: "fairspec" },
 ]
 
-const brokenCsv = { eyebrow: "The same input", file: "broken.csv", code: <BrokenCsv /> }
-
 const slides: Slide[] = [
-  {
-    id: "standard",
-    title: "Standard",
-    content: <SpecPreview />,
-    source: {
-      eyebrow: "Checked by a profile",
-      file: "$schema",
-      code: (
-        <span className={tk.url}>{"fairspec.org/profiles/\nlatest/dataset.json"}</span>
-      ),
-    },
-  },
-  { id: "cli", title: "CLI", shot: shots.validate, source: brokenCsv },
-  { id: "mcp", title: "MCP", shot: shots.mcpValidate, source: brokenCsv },
-  {
-    id: "skills",
-    title: "Skills",
-    shot: shots.skills,
-    source: {
-      eyebrow: "Three agent skills",
-      file: "fairspec.org/.well-known/agent-skills/",
-      code: (
-        <>
-          fairspec-exploration{"\n"}fairspec-inference{"\n"}fairspec-validation
-        </>
-      ),
-    },
-  },
-  {
-    id: "desktop",
-    title: "Desktop",
-    shot: shots.desktop,
-    source: {
-      eyebrow: "No code required",
-      file: "macOS · Windows · Linux",
-      code: <>Your files never leave your machine.</>,
-    },
-  },
+  { id: "standard", title: "Standard", content: <SpecPreview /> },
+  { id: "cli", title: "CLI", shot: shots.validate },
+  { id: "mcp", title: "MCP", shot: shots.mcpValidate },
+  { id: "skills", title: "Skills", shot: shots.skills },
+  { id: "desktop", title: "Desktop", shot: shots.desktop },
 ]
+
+// From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.
+const benchmark: Benchmark = {
+  title: "Validating a 10 GB CSV",
+  caption: "19.4M rows · 41 columns",
+  rows: [
+    { tool: "Fairspec", seconds: 12.6, ours: true },
+    { tool: "pandera (DuckDB)", seconds: 64.9 },
+    { tool: "qsv", seconds: 71.4 },
+    { tool: "CSV Validator", seconds: 530.3 },
+    { tool: "frictionless-py", seconds: 787.7 },
+  ],
+  footnote: "Four more validators ran out of memory under a 10 GB cap.",
+}
 
 const agentPoints: Point[] = [
   {
