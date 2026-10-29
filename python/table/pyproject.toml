@@ -1,6 +1,6 @@
 [project]
 name = "fairspec-table"
-version = "0.3.0"
+version = "0.3.1"
 description = "Fairspec Python is a fast data management framework built on top of the Fairspec standard and Polars DataFrames"
 readme = "README.md"
 requires-python = ">=3.12"

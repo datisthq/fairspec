@@ -1,6 +1,6 @@
 {
   "name": "@fairspec/desktop",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "Fairspec Desktop is a visual tool for managing and validating tabular and structured data",
   "homepage": "https://fairspec.org/desktop/",

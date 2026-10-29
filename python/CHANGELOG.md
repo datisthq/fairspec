@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/datisthq/fairspec/compare/python-v0.3.0...python-v0.3.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **python:** require fireargs 0.1.2 so a missing aliased option is named by its flag ([931c6a6](https://github.com/datisthq/fairspec/commit/931c6a6d9cd976d52175d7061d25195e9f97152e))
+* **python:** stop shipping _test folders in the wheels and sdists ([0651536](https://github.com/datisthq/fairspec/commit/0651536433ed64fa744bf677f0ec2e12a9825880))
+* **typescript:** stop shipping test builds in the npm packages ([0651536](https://github.com/datisthq/fairspec/commit/0651536433ed64fa744bf677f0ec2e12a9825880))
+
 ## [0.3.0](https://github.com/datisthq/fairspec/compare/python-v0.2.0...python-v0.3.0) (2026-10-28)
 
 

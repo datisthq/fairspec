@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.1](https://github.com/datisthq/fairspec/compare/desktop-v0.9.0...desktop-v0.9.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **desktop:** keep the window controls and one sidebar toggle at narrow widths ([0881d37](https://github.com/datisthq/fairspec/commit/0881d37308756034fb92b5498df829e22fbb5772))
+* **desktop:** name the Linux executable fairspec-desktop ([01d2840](https://github.com/datisthq/fairspec/commit/01d284027b29071d6238fd98c6b9d933eef810d7))
+* **desktop:** shorten the header's MCP Server link to MCP ([0f8786f](https://github.com/datisthq/fairspec/commit/0f8786ff09ac8e1127ca3872e1cfbaf9d0183195))
+* **desktop:** title the application Fairspec Desktop ([b675a99](https://github.com/datisthq/fairspec/commit/b675a995e11d8ad828fa6523721a89f68f0ab4bf))
+
 ## [0.9.0](https://github.com/datisthq/fairspec/compare/desktop-v0.8.0...desktop-v0.9.0) (2026-10-28)
 
 
