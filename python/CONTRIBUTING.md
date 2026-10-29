@@ -1,6 +1,9 @@
 # Contributing
 
-Thank you for your interest in contributing to Fairspec Python! This document provides guidelines and instructions for contributing to this project.
+> [!WARNING]
+> **We don't accept pull requests from outside contributors.** Pull requests opened by anyone outside the team are closed without review. If you've found a bug or have an idea, open an issue or start a discussion instead, as described in the [main contributing guide](../CONTRIBUTING.md).
+
+This guide is for Datist team members working on Fairspec Python.
 
 ## Project Overview
 
