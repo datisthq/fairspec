@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.2](https://github.com/datisthq/fairspec/compare/typescript-v0.13.1...typescript-v0.13.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **python:** stop shipping _test folders in the wheels and sdists ([0651536](https://github.com/datisthq/fairspec/commit/0651536433ed64fa744bf677f0ec2e12a9825880))
+* **typescript:** stop shipping test builds in the npm packages ([0651536](https://github.com/datisthq/fairspec/commit/0651536433ed64fa744bf677f0ec2e12a9825880))
+
 ## [0.13.1](https://github.com/datisthq/fairspec/compare/typescript-v0.12.4...typescript-v0.13.1) (2026-10-28)
 
 
