@@ -317,20 +317,37 @@ function SourceChip(props: { source: NonNullable<Slide["source"]> }) {
 // Bars are on a log scale: on a linear one every tool under a minute is the same sliver.
 export function BenchmarkCard(props: { benchmark: Benchmark }) {
   const { rows } = props.benchmark
+  const { ref, isVisible } = useInView()
   const fastest = Math.min(...rows.map(r => r.seconds))
   const span = Math.log(Math.max(...rows.map(r => r.seconds)) / fastest)
+  const ours = rows.find(r => r.ours)?.seconds ?? fastest
+  const runnerUp = Math.min(...rows.filter(r => !r.ours).map(r => r.seconds))
   return (
-    <figure className="rounded-card border border-primary/25 bg-card p-4 shadow-lg">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
-          {props.benchmark.title}
+    <figure
+      ref={ref}
+      className="relative overflow-hidden rounded-card border border-primary/30 bg-card p-4 shadow-xl shadow-primary/10"
+    >
+      <div className="pointer-events-none absolute -top-16 -right-12 size-40 rounded-full bg-primary/15 blur-3xl" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
+            {props.benchmark.title}
+          </p>
+          <figcaption className="mt-0.5 font-mono text-[0.6875rem] text-muted-foreground">
+            {props.benchmark.caption}
+          </figcaption>
+        </div>
+        <p className="text-right leading-none">
+          <span className="bg-gradient-to-br from-primary to-primary/60 bg-clip-text font-mono text-3xl font-bold tracking-tight text-transparent tabular-nums">
+            {Math.floor(runnerUp / ours)}×
+          </span>
+          <span className="mt-1 block text-[0.625rem] tracking-wide text-muted-foreground uppercase">
+            faster than next
+          </span>
         </p>
-        <figcaption className="font-mono text-[0.6875rem] whitespace-nowrap text-muted-foreground">
-          {props.benchmark.caption}
-        </figcaption>
       </div>
-      <ul className="mt-3 grid list-none gap-1.5">
-        {rows.map(r => (
+      <ul className="relative mt-4 grid list-none gap-2">
+        {rows.map((r, i) => (
           <li
             key={r.tool}
             className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.75rem] items-center gap-2 text-xs"
@@ -343,14 +360,24 @@ export function BenchmarkCard(props: { benchmark: Benchmark }) {
             >
               {r.tool}
             </span>
-            <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <span
+              className={cn(
+                "overflow-hidden rounded-full bg-muted",
+                r.ours ? "h-2.5" : "h-1.5",
+              )}
+            >
               <span
                 className={cn(
-                  "block h-full rounded-full",
-                  r.ours ? "bg-primary" : "bg-muted-foreground/40",
+                  "block h-full rounded-full transition-[width] duration-1000 ease-out motion-reduce:transition-none",
+                  r.ours
+                    ? "bg-gradient-to-r from-primary to-primary/70 shadow-[0_0_10px] shadow-primary/60"
+                    : "bg-muted-foreground/35",
                 )}
                 style={{
-                  width: `${8 + (92 * Math.log(r.seconds / fastest)) / span}%`,
+                  width: isVisible
+                    ? `${8 + (92 * Math.log(r.seconds / fastest)) / span}%`
+                    : "0%",
+                  transitionDelay: `${150 + i * 90}ms`,
                 }}
               />
             </span>
@@ -365,7 +392,7 @@ export function BenchmarkCard(props: { benchmark: Benchmark }) {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[0.6875rem] text-muted-foreground">
+      <p className="relative mt-3 border-t border-border/60 pt-2.5 text-[0.6875rem] text-muted-foreground">
         {props.benchmark.footnote}
       </p>
     </figure>
