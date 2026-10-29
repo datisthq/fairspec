@@ -3,6 +3,7 @@ import {
   BookOpen,
   Bot,
   Code,
+  CircleCheck,
   CodeXml,
   FileText,
   Github,
@@ -15,6 +16,7 @@ import {
   SquareTerminal,
 } from "lucide-react"
 import type { ReactNode } from "react"
+import { cn } from "cn"
 import { BackToTop } from "livemark/components/BackToTop"
 import { Banner } from "livemark/components/Banner"
 import { Header } from "livemark/components/Header"
@@ -22,6 +24,7 @@ import {
   Datist,
   FeatureGrid,
   FinalCta,
+  Reveal,
   Hero,
   Highlight,
   type InstallCommand,
@@ -38,11 +41,11 @@ import {
   tk,
 } from "../components/Landing.tsx"
 import {
+  DatasetInferSession,
   desktopShots,
   HeroTerminal,
   InferredDataset,
   McpValidateSession,
-  MembersCsv,
   SkillsSession,
   TerminalPane,
   ValidateSession,
@@ -126,15 +129,15 @@ function Landing() {
           title="One command. A FAIR dataset."
           lede="Point Fairspec at your files and it describes them: dialect, schema and integrity, ready to cite and validate."
           left={{
-            label: "members.csv",
+            label: "terminal",
             content: (
-              <WindowCode>
-                <MembersCsv />
-              </WindowCode>
+              <TerminalPane>
+                <DatasetInferSession />
+              </TerminalPane>
             ),
           }}
           right={{
-            label: "fairspec dataset infer members.csv",
+            label: "dataset.json",
             content: (
               <WindowCode>
                 <InferredDataset />
@@ -169,6 +172,7 @@ function Landing() {
             </>
           }
         />
+        <ConformanceStripe />
         <FinalCta
           title={
             <>
@@ -535,5 +539,99 @@ function DatasetSample() {
         <span className={tk.punct}>{"}"}</span>
       </code>
     </pre>
+  )
+}
+
+/* ─────────────────────────── Conformance ─────────────────────────── */
+
+const SUITE = "https://github.com/datisthq/fairspec/tree/main/conformance"
+
+const conformanceStats = [
+  { value: "2,000+", label: "test cases" },
+  { value: "17", label: "operations" },
+  { value: "3", label: "libraries" },
+]
+
+function ConformanceStripe() {
+  return (
+    <section className="border-b border-border bg-primary/5">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-2 md:gap-12 md:py-20">
+        <Reveal>
+          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
+            Conformance suite
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+            One test suite, every language
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Python, TypeScript and Rust run the same language-neutral cases: the same
+            input, the same operation, the same expected result. A difference between them
+            is a failing test, not a surprise in your data.
+          </p>
+          <dl className="mt-8 grid grid-cols-3 gap-4">
+            {conformanceStats.map(s => (
+              <div key={s.label} className="border-l-2 border-primary/40 pl-3">
+                <dt className="text-xs text-muted-foreground">{s.label}</dt>
+                <dd className="order-first font-mono text-2xl font-bold tracking-tight text-foreground tabular-nums">
+                  {s.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <a
+            href={SUITE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(textLinkClass, "mt-8 inline-block")}
+          >
+            Browse the suite →
+          </a>
+        </Reveal>
+        <Reveal delayMs={100}>
+          <WindowCard label="conformance/tests/table-validate/cell-type.json">
+            <pre className="overflow-x-auto p-5 font-mono text-sm leading-relaxed">
+              <code className={tk.body}>
+                <ConformanceCase />
+              </code>
+            </pre>
+            <div className="flex flex-wrap gap-2 border-t border-primary/20 bg-muted/50 px-4 py-3">
+              {["Python", "TypeScript", "Rust"].map(language => (
+                <span
+                  key={language}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 font-mono text-xs"
+                >
+                  <CircleCheck className="size-3.5 text-[#40a02b] dark:text-[#a6e3a1]" />
+                  {language}
+                </span>
+              ))}
+            </div>
+          </WindowCard>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+function ConformanceCase() {
+  return (
+    <>
+      {"{\n  "}
+      <span className={tk.key}>"description"</span>:{" "}
+      <span className={tk.str}>"a word is a cell/type error"</span>,{"\n  "}
+      <span className={tk.key}>"data"</span>:{" "}
+      <span className={tk.str}>"id,name\ninvalid,alice\n2,bob\n"</span>,{"\n  "}
+      <span className={tk.key}>"valid"</span>: <span className={tk.num}>false</span>,
+      {"\n  "}
+      <span className={tk.key}>"errors"</span>: [{"{\n    "}
+      <span className={tk.key}>"type"</span>: <span className={tk.str}>"cell/type"</span>,{" "}
+      <span className={tk.key}>"columnName"</span>: <span className={tk.str}>"id"</span>,
+      {"\n    "}
+      <span className={tk.key}>"columnType"</span>:{" "}
+      <span className={tk.str}>"integer"</span>,{" "}
+      <span className={tk.key}>"rowNumber"</span>: <span className={tk.num}>1</span>,
+      {"\n    "}
+      <span className={tk.key}>"cell"</span>: <span className={tk.str}>"invalid"</span>
+      {"\n  }]\n}"}
+    </>
   )
 }

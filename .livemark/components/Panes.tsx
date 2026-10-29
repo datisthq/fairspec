@@ -173,6 +173,29 @@ export function McpQuerySession() {
   )
 }
 
+export function DatasetInferSession() {
+  return (
+    <>
+      <div>
+        <p>
+          <span className="font-semibold text-destructive">$</span>{" "}
+          <span className={cn(tk.key, "font-semibold")}>cat</span> members.csv
+        </p>
+        <pre>
+          <MembersCsv />
+        </pre>
+      </div>
+      <Command args="dataset infer members.csv" flags="--json" rest="> dataset.json" />
+      <div>
+        <Command args="dataset validate dataset.json" />
+        <p>
+          <span className={tk.str}>✔</span> Validation passed
+        </p>
+      </div>
+    </>
+  )
+}
+
 export function SkillsSession() {
   return (
     <>
