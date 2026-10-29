@@ -3,7 +3,7 @@ import { defineConfig } from "livemark"
 export default defineConfig({
   site: "https://fairspec.org",
   title: "Fairspec",
-  description: "Data exchange format",
+  description: "Making data FAIR",
   logo: "/logo.svg",
   favicon: "/logo.png",
   include: [
