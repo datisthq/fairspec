@@ -213,6 +213,16 @@ function ApplicationPage() {
 const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> }
 
 const slides: Slide[] = [
+  {
+    id: "overview",
+    title: "Overview",
+    shot: desktopShots.main,
+    source: {
+      eyebrow: "No code required",
+      file: "macOS · Windows · Linux",
+      code: <>Your files never leave your machine.</>,
+    },
+  },
   { id: "dataset", title: "Dataset", shot: desktopShots.dataset, source: membersCsv },
   {
     id: "table",

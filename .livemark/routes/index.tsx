@@ -246,7 +246,7 @@ const slides: Slide[] = [
       </HeroTerminal>
     ),
   },
-  { id: "desktop", title: "Desktop", shot: desktopShots.table },
+  { id: "desktop", title: "Desktop", shot: desktopShots.main },
 ]
 
 // From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.

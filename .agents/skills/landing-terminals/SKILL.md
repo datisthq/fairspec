@@ -26,12 +26,13 @@ to unreadable sizes in a narrow column. They live in `.livemark/components/Panes
 
 A hero slide wraps a session in `HeroTerminal`; a split section puts it in
 `<WindowCard><TerminalPane>`. The only images are the desktop
-app's own screens, `desktopShots` in `.livemark/public/desktop/` — one per tool (Dataset, Table,
-Data, File), each a real run's result drawer, 1600×1000 webp in light and `-dark`. Recapture
+app's own screens, `desktopShots` in `.livemark/public/desktop/`, 1600×1000 webp in light and
+`-dark`: the home screen first, then one per tool, alternating a page with its input filled
+(Dataset, File) and a real run's result drawer (Table, Data) so not every slide is an overlay. Recapture
 them from the built app: `pnpm -C desktop build`, launch
 `desktop/node_modules/.bin/electron desktop --remote-debugging-port=<port>` from a copy of
 `samples/` so the fields hold bare file names, set the window to 1200×750 at scale 2 over CDP,
-fill each route's input and submit. Toggle the `dark` class on `<html>` for the dark set rather
+fill each route's input and, for a result, submit. Toggle the `dark` class on `<html>` for the dark set rather
 than the app's theme switch, which persists to the user's settings. The home Standard slide is the annotated
 `dataset.json` (`SpecPreview` in `.livemark/routes/index.tsx`).
 

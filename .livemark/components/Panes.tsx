@@ -4,16 +4,17 @@ import { type Shot, tk } from "./Landing.tsx"
 
 // Captured from the built app on the files in .agents/skills/landing-terminals/samples/
 export const desktopShots = {
+  main: desktopShot("main", "Fairspec Desktop's home screen listing its four tools"),
   dataset: desktopShot(
     "dataset",
-    "Fairspec Desktop inferring a dataset from members.csv",
+    "Fairspec Desktop ready to infer a dataset from members.csv",
   ),
   table: desktopShot(
     "table",
     "Fairspec Desktop reporting two invalid cells in broken.csv",
   ),
   data: desktopShot("data", "Fairspec Desktop inferring a data schema from survey.json"),
-  file: desktopShot("file", "Fairspec Desktop inferring the dialect of members.csv"),
+  file: desktopShot("file", "Fairspec Desktop ready to infer the dialect of members.csv"),
 } satisfies Record<string, Shot>
 
 // Outputs are copied from real runs on .agents/skills/landing-terminals/samples/
