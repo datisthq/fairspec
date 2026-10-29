@@ -264,7 +264,8 @@ const benchmark: Benchmark = {
     { tool: "CSV Validator", seconds: 530.3 },
     { tool: "frictionless-py", seconds: 787.7 },
   ],
-  footnote: "Complete validators only; others ran out of memory under 10 GB.",
+  footnote:
+    "Complete validators only; dataframely, Great Expectations (pandas), pandera (polars) and pointblank (polars) ran out of memory under 10 GB.",
 }
 
 const agentPoints: Point[] = [
