@@ -210,12 +210,12 @@ const slides: Slide[] = [
   { id: "desktop", title: "Desktop", shot: shots.desktop },
 ]
 
-// nyc-311 10GB, full validators only; Fairspec is its best run (Rust, 37def29).
+// From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.
 const benchmark: Benchmark = {
   title: "Validating a 10 GB CSV",
   caption: "19.4M rows · 41 columns",
   rows: [
-    { tool: "Fairspec", seconds: 11.5, ours: true },
+    { tool: "Fairspec", seconds: 12.6, ours: true },
     { tool: "pandera (DuckDB)", seconds: 64.9 },
     { tool: "qsv", seconds: 71.4 },
     { tool: "CSV Validator", seconds: 530.3 },

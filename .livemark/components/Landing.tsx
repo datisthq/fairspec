@@ -382,7 +382,7 @@ export function BenchmarkCard(props: { benchmark: Benchmark }) {
 
 function formatSeconds(seconds: number) {
   return seconds < 100
-    ? `${Math.round(seconds)} s`
+    ? `${seconds.toFixed(1)} s`
     : `${(seconds / 60).toFixed(seconds < 600 ? 1 : 0)} min`
 }
 
