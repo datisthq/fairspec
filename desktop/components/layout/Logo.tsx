@@ -3,7 +3,7 @@ import logo from "#assets/logo.svg"
 
 export function Logo() {
   const { t } = useLingui()
-  const title = t`Fairspec Application`
+  const title = t`Fairspec Desktop`
   const description = t`Data management application`
 
   return (

@@ -2,7 +2,7 @@
   "name": "@fairspec/desktop",
   "version": "0.9.0",
   "private": true,
-  "description": "Fairspec Application is a visual tool for managing and validating tabular and structured data",
+  "description": "Fairspec Desktop is a visual tool for managing and validating tabular and structured data",
   "homepage": "https://fairspec.org/desktop/",
   "license": "MIT",
   "author": "Evgeny Karev",

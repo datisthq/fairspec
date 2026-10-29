@@ -297,13 +297,13 @@ msgstr "{'de': 'verletzt die Prüfung', 'es': 'no supera la comprobación', 'fr'
 msgid "Failures are grouped by error type, so the problem that dominates is visible at a glance"
 msgstr "Los fallos se agrupan por tipo de error, de modo que el problema predominante se ve de un vistazo"
 
-#: components/layout/Logo.tsx
-msgid "Fairspec Application"
-msgstr "Aplicación Fairspec"
-
 #: helpers/help.ts
 msgid "Fairspec describes datasets, tabular data and files with plain JSON descriptors, so that data can be published with enough structure to be checked. This application validates those descriptors and the data they point at, and infers them from data you already have, all on your own machine"
 msgstr "Fairspec describe conjuntos de datos, datos tabulares y archivos mediante sencillos descriptores JSON, de modo que los datos puedan publicarse con estructura suficiente para ser comprobados. Esta aplicación valida esos descriptores y los datos a los que apuntan, y los infiere a partir de datos que ya tiene, todo en su propia máquina"
+
+#: components/layout/Logo.tsx
+msgid "Fairspec Desktop"
+msgstr "Fairspec Desktop"
 
 #: components/layout/Menu.tsx
 #: helpers/help.ts

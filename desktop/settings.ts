@@ -4,7 +4,7 @@ export const APP_USER_MODEL_ID = "org.fairspec.application"
 
 export const ENGINE_IPC = "engine:ipc"
 
-export const TITLE = "Fairspec Application"
+export const TITLE = "Fairspec Desktop"
 export const DESCRIPTION =
   "Visual tool for managing and validating tabular and structured data"
 

@@ -297,13 +297,13 @@ msgstr "fails check"
 msgid "Failures are grouped by error type, so the problem that dominates is visible at a glance"
 msgstr "Failures are grouped by error type, so the problem that dominates is visible at a glance"
 
-#: components/layout/Logo.tsx
-msgid "Fairspec Application"
-msgstr "Fairspec Application"
-
 #: helpers/help.ts
 msgid "Fairspec describes datasets, tabular data and files with plain JSON descriptors, so that data can be published with enough structure to be checked. This application validates those descriptors and the data they point at, and infers them from data you already have, all on your own machine"
 msgstr "Fairspec describes datasets, tabular data and files with plain JSON descriptors, so that data can be published with enough structure to be checked. This application validates those descriptors and the data they point at, and infers them from data you already have, all on your own machine"
+
+#: components/layout/Logo.tsx
+msgid "Fairspec Desktop"
+msgstr "Fairspec Desktop"
 
 #: components/layout/Menu.tsx
 #: helpers/help.ts

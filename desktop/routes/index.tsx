@@ -53,7 +53,7 @@ function Component() {
         <Trans>Technical preview</Trans>
       </div>
       <div className="text-content">
-        <h1 id="top">Fairspec Application</h1>
+        <h1 id="top">Fairspec Desktop</h1>
         <p>
           <Trans>
             Visual tool for managing and validating tabular and structured data
