@@ -75,6 +75,11 @@
           "type": "toml",
           "path": "terminal/pyproject.toml",
           "jsonpath": "$.project.version"
+        },
+        {
+          "type": "toml",
+          "path": "uv.lock",
+          "jsonpath": "$.package[?(@.name.value === 'fairspec' || @.name.value === 'fairspec-dataset' || @.name.value === 'fairspec-library' || @.name.value === 'fairspec-mcp-server' || @.name.value === 'fairspec-metadata' || @.name.value === 'fairspec-python' || @.name.value === 'fairspec-table' || @.name.value === 'fairspec-terminal')].version"
         }
       ]
     },
