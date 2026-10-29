@@ -96,10 +96,10 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center border-b bg-background">
       <div className="flex items-center self-stretch pl-4 pr-4">
-        <div className="hidden lg:flex">
+        <div className="hidden md:flex">
           <MenuToggle />
         </div>
-        <Link to="/" className="lg:hidden flex items-center">
+        <Link to="/" className="md:hidden flex items-center">
           <Logo />
         </Link>
       </div>
@@ -123,10 +123,10 @@ export function Header() {
           )
         })}
       </div>
-      <div className="lg:hidden ml-auto pr-2">
+      <div className="md:hidden ml-auto">
         <MenuToggle />
       </div>
-      <div className="hidden lg:flex items-center gap-1 pr-4">
+      <div className="flex items-center gap-1 pl-1 pr-4 md:ml-auto lg:ml-0">
         <Maximize />
         <Close />
       </div>

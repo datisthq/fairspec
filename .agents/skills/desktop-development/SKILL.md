@@ -50,6 +50,9 @@ Run from the repo root; `pnpm -C desktop <script>` runs a script of this section
   validate/infer route over CDP with a real file
 - `desktop/package.json` pins `productName: fairspec`: Electron derives the user-data directory
   from it, so renaming it would orphan every user's settings
+- The window is frameless (`frame: false`), so `Maximize` and `Close` in `components/layout/Header.tsx`
+  show at every width. The header's toggle and logo switch at `md`, the sidebar's own mobile
+  breakpoint (`hooks/media.ts`); a different breakpoint shows two toggles or two logos
 
 ## i18n
 
@@ -74,6 +77,7 @@ This section is the `desktop` release-please component: tags `desktop-vX.Y.Z`, i
 Release PR; `release.yaml` builds installers for macOS (x64, arm64), Windows x64 and Linux
 (x64, arm64) and attaches them to the GitHub release as
 `fairspec-desktop-<os>-<arch>-<version>`. `${arch}` follows each format: `amd64` for `.deb`,
-`x86_64` for AppImage. Windows on Arm is out: `nodejs-polars` has no win32-arm64 build. Only changes to the shipped application use `feat` or `fix`; the landing
+`x86_64` for AppImage. Linux's `executableName` is `fairspec-desktop`: left unset it derives `@fairspecdesktop`
+from the npm name, and `fairspec` would take the CLI's name in `/usr/bin`. Windows on Arm is out: `nodejs-polars` has no win32-arm64 build. Only changes to the shipped application use `feat` or `fix`; the landing
 page, tests, READMEs and tooling are `chore` or `docs`. When in doubt, ask whether the change
 alters what someone installing the app gets.
