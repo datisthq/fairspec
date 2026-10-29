@@ -169,18 +169,18 @@ sections="python rust"`): it skips release-please and publishes those sections a
   strip, shortened below `sm`, the whole strip one link to Discussions
 - The hero is livemark's: a `HeroCarousel` bleeding to `xl:w-[60rem]`, 16:10 slides, `lg:pt-8 lg:pb-14` so title and
   window sit high on the first screen, and a source chip hanging off the frame's
-  bottom-left corner (`lg:-bottom-10 lg:-left-10`, as irondocs). Slides are terminal screenshots rendered from
-  real CLI and MCP runs by **`landing-screenshots`**; only Desktop's is the app itself, and the
-  home Standard slide is markup (`content`), the annotated `dataset.json`. The
+  bottom-left corner (`lg:-bottom-10 lg:-left-10`, as irondocs). Slides are markup (`content`), never images
+  of text: terminal sessions of real CLI and MCP runs (**`landing-terminals`**) and, on home,
+  the annotated `dataset.json`; only Desktop's is an image, the app itself. The
   home hero shows the standard and the tools (CLI, MCP, skills, Desktop), not library code.
   Under its actions the home hero has an install card (`Hero`'s `install` prop, as htmlpress):
   one `$ command target` row per channel — `install.sh`, PyPI, npm, crates.io — hidden below `sm`
 - Shared pieces live in `.livemark/components/Landing.tsx` (layout) and `Panes.tsx` (the
-  `shots` list and the showcase samples), imported relatively: a new file under `.livemark/components/` must not take a
+  terminal sessions and the showcase samples), imported relatively: a new file under `.livemark/components/` must not take a
   livemark component's name (`Section.tsx` would replace livemark's), and
   `livemark/components/<new>` resolves in the build but not for `tsgo`
 - Window output on the page (showcases) is real too: rerun the command on the sample
-  `members.csv`/`broken.csv` in `.agents/skills/landing-screenshots/samples/` and paste it
+  `members.csv`/`broken.csv` in `.agents/skills/landing-terminals/samples/` and paste it
 - `.livemark/.target/` is livemark's generated mount, gitignored and excluded from types and
   fmt. `.livemark/styles/general.css` is an escape of livemark's: when a livemark upgrade adds
   tokens (the build fails on an unknown utility such as `bg-positive/15`), re-copy it from

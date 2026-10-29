@@ -36,9 +36,18 @@ import {
   BenchmarkCard,
   textLinkClass,
   tk,
-  ShotCard,
 } from "../components/Landing.tsx"
-import { InferredDataset, MembersCsv, shots, WindowCode } from "../components/Panes.tsx"
+import {
+  desktopShot,
+  HeroTerminal,
+  InferredDataset,
+  McpValidateSession,
+  MembersCsv,
+  SkillsSession,
+  TerminalPane,
+  ValidateSession,
+  WindowCode,
+} from "../components/Panes.tsx"
 
 // @ts-ignore
 export const Route = createFileRoute("/")({
@@ -138,7 +147,13 @@ function Landing() {
           title="Ready for AI agents"
           lede="Hand the busywork of describing and checking data to your coding agent or AI assistant."
           points={agentPoints}
-          visual={<ShotCard shot={shots.skills} />}
+          visual={
+            <WindowCard label="claude">
+              <TerminalPane>
+                <SkillsSession />
+              </TerminalPane>
+            </WindowCard>
+          }
           links={
             <>
               <Link
@@ -204,10 +219,34 @@ const install: InstallCommand[] = [
 
 const slides: Slide[] = [
   { id: "standard", title: "Standard", content: <SpecPreview /> },
-  { id: "cli", title: "CLI", shot: shots.validate },
-  { id: "mcp", title: "MCP", shot: shots.mcpValidate },
-  { id: "skills", title: "Skills", shot: shots.skills },
-  { id: "desktop", title: "Desktop", shot: shots.desktop },
+  {
+    id: "cli",
+    title: "CLI",
+    content: (
+      <HeroTerminal>
+        <ValidateSession />
+      </HeroTerminal>
+    ),
+  },
+  {
+    id: "mcp",
+    title: "MCP",
+    content: (
+      <HeroTerminal>
+        <McpValidateSession />
+      </HeroTerminal>
+    ),
+  },
+  {
+    id: "skills",
+    title: "Skills",
+    content: (
+      <HeroTerminal>
+        <SkillsSession />
+      </HeroTerminal>
+    ),
+  },
+  { id: "desktop", title: "Desktop", shot: desktopShot },
 ]
 
 // From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.
@@ -221,7 +260,7 @@ const benchmark: Benchmark = {
     { tool: "CSV Validator", seconds: 530.3 },
     { tool: "frictionless-py", seconds: 787.7 },
   ],
-  footnote: "Four more validators ran out of memory under a 10 GB cap.",
+  footnote: "Complete validators only. Four more ran out of memory under a 10 GB cap.",
 }
 
 const agentPoints: Point[] = [

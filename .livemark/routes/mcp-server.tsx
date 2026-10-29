@@ -42,7 +42,10 @@ import {
   BrokenCsv,
   InferredDataset,
   MembersCsv,
-  shots,
+  HeroTerminal,
+  McpInferSession,
+  McpQuerySession,
+  McpValidateSession,
   WindowCode,
 } from "../components/Panes.tsx"
 
@@ -200,11 +203,33 @@ const slides: Slide[] = [
   {
     id: "validate",
     title: "Validate",
-    shot: shots.mcpValidate,
+    content: (
+      <HeroTerminal>
+        <McpValidateSession />
+      </HeroTerminal>
+    ),
     source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
   },
-  { id: "infer", title: "Infer", shot: shots.mcpInfer, source: membersCsv },
-  { id: "query", title: "Query", shot: shots.mcpQuery, source: membersCsv },
+  {
+    id: "infer",
+    title: "Infer",
+    content: (
+      <HeroTerminal>
+        <McpInferSession />
+      </HeroTerminal>
+    ),
+    source: membersCsv,
+  },
+  {
+    id: "query",
+    title: "Query",
+    content: (
+      <HeroTerminal>
+        <McpQuerySession />
+      </HeroTerminal>
+    ),
+    source: membersCsv,
+  },
 ]
 
 /* ─────────────────────────── Installation ─────────────────────────── */

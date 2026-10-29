@@ -293,14 +293,6 @@ export function ShotPicture(props: { shot: Shot; className?: string }) {
   )
 }
 
-export function ShotCard(props: { shot: Shot }) {
-  return (
-    <div className="overflow-hidden rounded-card border border-primary/20 bg-card">
-      <ShotPicture shot={props.shot} className="aspect-[16/10] w-full" />
-    </div>
-  )
-}
-
 function SourceChip(props: { source: NonNullable<Slide["source"]> }) {
   return (
     <figure className="flex h-full gap-3 rounded-card border border-primary/25 bg-card p-4 shadow-lg">

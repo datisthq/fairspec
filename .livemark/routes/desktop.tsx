@@ -34,9 +34,15 @@ import {
   WindowCard,
   actionClass,
   textLinkClass,
-  ShotCard,
 } from "../components/Landing.tsx"
-import { BrokenCsv, shots, ValidationErrors, WindowCode } from "../components/Panes.tsx"
+import {
+  BrokenCsv,
+  desktopShot,
+  TerminalPane,
+  ValidateSession,
+  ValidationErrors,
+  WindowCode,
+} from "../components/Panes.tsx"
 
 // Livemark generates its route tree at build time, so this route id
 // is not known to the checker here.
@@ -139,7 +145,13 @@ function ApplicationPage() {
           title="Prefer code?"
           lede="The checks the application runs are also commands, library calls and, for most, MCP tools."
           points={codePoints}
-          visual={<ShotCard shot={shots.validate} />}
+          visual={
+            <WindowCard label="terminal">
+              <TerminalPane>
+                <ValidateSession />
+              </TerminalPane>
+            </WindowCard>
+          }
           links={
             <>
               <Link to="/cli-tool/" className={textLinkClass}>
@@ -200,7 +212,7 @@ const slides: Slide[] = [
   {
     id: "app",
     title: "Application",
-    shot: shots.desktop,
+    shot: desktopShot,
     source: {
       eyebrow: "No code required",
       file: "macOS · Windows · Linux",

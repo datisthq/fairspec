@@ -182,7 +182,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 | `benchmark-development`   | the benchmark in `benchmark/`: generated data, rival validators        |
 | `monorepo-layout`         | adding a section, a root script, a workflow job or a release component |
 | `human-documentation`     | a report for people under `.humans/`, and the docs pass before a merge |
-| `landing-screenshots`     | the landing heroes' terminal screenshots: what they show, re-rendering |
+| `landing-terminals`       | the landing heroes' terminal sessions: what they show, refreshing them |
 | `issue-resolution`        | taking one issue or bug report to a tested change                      |
 | `change-verification`     | checking a change works — the smallest slice that covers the diff      |
 | `change-review`           | reviewing a pull request or the local diff — also what CI runs         |

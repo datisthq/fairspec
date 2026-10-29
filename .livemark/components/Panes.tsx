@@ -1,40 +1,314 @@
+import { cn } from "cn"
 import type { ReactNode } from "react"
 import { type Shot, tk } from "./Landing.tsx"
 
-// Rendered from real CLI and MCP runs by .agents/skills/landing-screenshots/render.ts
-export const shots = {
-  validate: shot(
-    "validate",
-    "fairspec table validate reporting two cell type errors in broken.csv",
-  ),
-  infer: shot(
-    "infer",
-    "fairspec inferring a table schema from members.csv, then validating against it",
-  ),
-  preview: shot(
-    "preview",
-    "fairspec table preview printing the rows and column types of members.csv",
-  ),
-  query: shot("query", "fairspec table query running SQL over members.csv"),
-  mcpValidate: shot(
-    "mcp-validate",
-    "An AI assistant calling validateTableTool and summarising the report",
-  ),
-  mcpInfer: shot(
-    "mcp-infer",
-    "An AI assistant calling inferTableSchemaTool on members.csv",
-  ),
-  mcpQuery: shot("mcp-query", "An AI assistant calling queryTableTool with SQL"),
-  skills: shot(
-    "skills",
-    "A coding agent loading the fairspec-validation skill and running the check",
-  ),
-  desktop: {
-    src: "/application.webp",
-    srcDark: "/application.webp",
-    alt: "Fairspec Desktop showing its dataset, table, data and file tools",
-  },
-} satisfies Record<string, Shot>
+export const desktopShot: Shot = {
+  src: "/application.webp",
+  srcDark: "/application.webp",
+  alt: "Fairspec Desktop showing its dataset, table, data and file tools",
+}
+
+// Outputs are copied from real runs on .agents/skills/landing-terminals/samples/
+export function TerminalPane(props: { className?: string; children: ReactNode }) {
+  return (
+    <div
+      className={cn(
+        tk.body,
+        "space-y-4 font-mono leading-relaxed [overflow-wrap:anywhere]",
+        props.className ?? "p-5 text-sm",
+      )}
+    >
+      {props.children}
+    </div>
+  )
+}
+
+// From xl the hero window bleeds off the right edge, so the text keeps a max width.
+export function HeroTerminal(props: { children: ReactNode }) {
+  return (
+    <TerminalPane className="px-3 py-4 text-[10.5px] sm:p-5 sm:text-sm xl:max-w-[42rem] xl:p-8 xl:text-base">
+      {props.children}
+    </TerminalPane>
+  )
+}
+
+export function ValidateSession() {
+  return (
+    <>
+      <div>
+        <Command args="table validate broken.csv" flags="--schema" rest="schema.json" />
+        <ErrorLines />
+      </div>
+      <div>
+        <Command
+          args="table validate broken.csv"
+          flags="--schema"
+          rest="schema.json"
+          pipe="'.errors[]'"
+        />
+        <Json text='{"type":"cell/type","columnName":"id","rowNumber":3,"cell":"x","columnType":"integer"}' />
+        <Json text='{"type":"cell/type","columnName":"joined","rowNumber":2,"cell":"2024-02-30","columnType":"date"}' />
+      </div>
+    </>
+  )
+}
+
+export function InferSession() {
+  return (
+    <>
+      <div>
+        <Command
+          args="table infer-schema members.csv"
+          flags="--json"
+          pipe=".properties"
+        />
+        <Json text='{"id":{"type":"integer"},"name":{"type":"string"},"joined":{"type":"string","format":"date"},"score":{"type":"number"}}' />
+      </div>
+      <div>
+        <Command args="table validate members.csv" flags="--schema" rest="schema.json" />
+        <p>
+          <span className={tk.str}>✔</span> Validation passed
+        </p>
+      </div>
+    </>
+  )
+}
+
+export function PreviewSession() {
+  return (
+    <div>
+      <Command args="table preview members.csv" />
+      <TableOutput>
+        {`shape: (3, 4)
+┌─────┬───────┬────────────┬───────┐
+│ id  ┆ name  ┆ joined     ┆ score │
+│ --- ┆ ---   ┆ ---        ┆ ---   │
+│ i64 ┆ str   ┆ date       ┆ f64   │
+╞═════╪═══════╪════════════╪═══════╡
+│ 1   ┆ Ada   ┆ 2024-01-15 ┆ 91.5  │
+│ 2   ┆ Grace ┆ 2024-02-03 ┆ 88.0  │
+│ 3   ┆ Linus ┆ 2024-03-21 ┆ 79.25 │
+└─────┴───────┴────────────┴───────┘`}
+      </TableOutput>
+    </div>
+  )
+}
+
+export function QuerySession() {
+  return (
+    <div>
+      <Command
+        args="table query members.csv"
+        sql='"SELECT name, score FROM self WHERE score > 80"'
+      />
+      <TableOutput>
+        {`shape: (2, 2)
+┌───────┬───────┐
+│ name  ┆ score │
+│ ---   ┆ ---   │
+│ str   ┆ f64   │
+╞═══════╪═══════╡
+│ Ada   ┆ 91.5  │
+│ Grace ┆ 88.0  │
+└───────┴───────┘`}
+      </TableOutput>
+    </div>
+  )
+}
+
+export function McpValidateSession() {
+  return (
+    <>
+      <Ask>Check broken.csv against schema.json.</Ask>
+      <Step say="Validating the table with the Fairspec MCP server.">
+        <ToolCall
+          tool="validateTableTool"
+          args='{"resource":{"data":"broken.csv","tableSchema":"schema.json"}}'
+          result='{"report":{"valid":false,"errors":[{"type":"cell/type","columnName":"id","rowNumber":3,"cell":"x","columnType":"integer"},{"type":"cell/type","columnName":"joined","rowNumber":2,"cell":"2024-02-30","columnType":"date"}]},"truncated":false}'
+        />
+      </Step>
+      <Step say="Two cells fail: id is not an integer in row 3, and 2024-02-30 is not a date in row 2." />
+    </>
+  )
+}
+
+export function McpInferSession() {
+  return (
+    <>
+      <Ask>Describe the columns of members.csv.</Ask>
+      <Step say="Inferring a table schema from the file.">
+        <ToolCall
+          tool="inferTableSchemaTool"
+          args='{"resource":{"data":"members.csv"}}'
+          result='{"tableSchema":{"properties":{"id":{"type":"integer"},"name":{"type":"string"},"joined":{"type":"string","format":"date"},"score":{"type":"number"}}}}'
+        />
+      </Step>
+      <Step say="Four columns: an integer id, a name, a joined date and a numeric score." />
+    </>
+  )
+}
+
+export function McpQuerySession() {
+  return (
+    <>
+      <Ask>Who in members.csv scored above 80?</Ask>
+      <Step say="Querying the table with SQL.">
+        <ToolCall
+          tool="queryTableTool"
+          args='{"resource":{"data":"members.csv"},"query":"SELECT name, score FROM self WHERE score > 80"}'
+          result='{"records":[{"name":"Ada","score":91.5},{"name":"Grace","score":88}],"truncated":false}'
+        />
+      </Step>
+      <Step say="Ada with 91.5 and Grace with 88." />
+    </>
+  )
+}
+
+export function SkillsSession() {
+  return (
+    <>
+      <Ask>Why does broken.csv fail its schema?</Ask>
+      <Step say="Loading the fairspec-validation skill.">
+        <p>
+          <span className={cn(tk.key, "font-semibold")}>Skill</span>
+          <span className={tk.dim}>(</span>
+          <span className={tk.url}>fairspec-validation</span>
+          <span className={tk.dim}>)</span>
+        </p>
+      </Step>
+      <Step say="Running the check it recommends.">
+        <Command args="table validate broken.csv" flags="--schema" rest="schema.json" />
+        <Result>
+          <ErrorLines />
+        </Result>
+      </Step>
+      <Step say="Both are cell/type errors: fix the value, or the schema's type or format." />
+    </>
+  )
+}
+
+function Command(props: {
+  args: string
+  flags?: string
+  rest?: string
+  sql?: string
+  pipe?: string
+}) {
+  return (
+    <p>
+      <span className="font-semibold text-destructive">$</span>{" "}
+      <span className={cn(tk.key, "font-semibold")}>fairspec</span> {props.args}
+      {props.flags ? <span className={tk.url}> {props.flags}</span> : null}
+      {props.rest ? ` ${props.rest}` : null}
+      {props.sql ? <span className={tk.str}> {props.sql}</span> : null}
+      {props.pipe ? (
+        <>
+          {props.flags === "--json" ? null : <span className={tk.url}> --json</span>}
+          <span className={tk.dim}> | </span>
+          <span className={tk.key}>jq</span>
+          <span className={tk.url}> -c</span>
+          <span className={tk.str}> {props.pipe}</span>
+        </>
+      ) : null}
+    </p>
+  )
+}
+
+function ErrorLines() {
+  return (
+    <>
+      <p>
+        <span className="text-destructive">✖</span> Value of the cell x in column id of
+        row 3 is not integer
+      </p>
+      <p>
+        <span className="text-destructive">✖</span> Value of the cell 2024-02-30 in column
+        joined of row 2 is not date
+      </p>
+    </>
+  )
+}
+
+function TableOutput(props: { children: string }) {
+  return <pre className="overflow-x-auto leading-[1.2]">{props.children}</pre>
+}
+
+function Ask(props: { children: ReactNode }) {
+  return (
+    <p className="font-semibold">
+      <span className={tk.cmd}>›</span> {props.children}
+    </p>
+  )
+}
+
+function Step(props: { say: string; children?: ReactNode }) {
+  return (
+    <div className="flex gap-2">
+      <span className={tk.num}>●</span>
+      <div className="min-w-0">
+        <p>{props.say}</p>
+        {props.children}
+      </div>
+    </div>
+  )
+}
+
+function ToolCall(props: { tool: string; args: string; result: string }) {
+  return (
+    <>
+      <p>
+        <span className={cn(tk.key, "font-semibold")}>fairspec</span>
+        <span className={tk.dim}> · </span>
+        <span className={tk.url}>{props.tool}</span>
+      </p>
+      <div className="pl-[2ch]">
+        <Json text={props.args} />
+      </div>
+      <Result>
+        <Json text={props.result} />
+      </Result>
+    </>
+  )
+}
+
+function Result(props: { children: ReactNode }) {
+  return (
+    <div className="flex gap-[1ch]">
+      <span className={tk.dim}>⎿</span>
+      <div className="min-w-0">{props.children}</div>
+    </div>
+  )
+}
+
+function Json(props: { text: string }) {
+  const parts: ReactNode[] = []
+  let last = 0
+  for (const m of props.text.matchAll(JSON_TOKEN)) {
+    if (m.index > last)
+      parts.push(
+        <span key={last} className={tk.punct}>
+          {props.text.slice(last, m.index)}
+        </span>,
+      )
+    const className = m[1] ? tk.key : m[2] ? tk.str : tk.num
+    parts.push(
+      <span key={m.index} className={className}>
+        {m[0]}
+      </span>,
+    )
+    last = m.index + m[0].length
+  }
+  if (last < props.text.length)
+    parts.push(
+      <span key={last} className={tk.punct}>
+        {props.text.slice(last)}
+      </span>,
+    )
+  return <p>{parts}</p>
+}
+
+const JSON_TOKEN =
+  /("(?:[^"\\]|\\.)*"(?=:))|("(?:[^"\\]|\\.)*")|true|false|null|-?\d+(?:\.\d+)?/g
 
 export function ValidationErrors() {
   return (
@@ -141,8 +415,4 @@ function SchemaProperty(props: { name: string; type: string; format?: string }) 
       <span className={tk.punct}>{" }"}</span>
     </>
   )
-}
-
-function shot(id: string, alt: string) {
-  return { src: `/screenshots/${id}.webp`, srcDark: `/screenshots/${id}-dark.webp`, alt }
 }
