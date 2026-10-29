@@ -260,7 +260,7 @@ const benchmark: Benchmark = {
     { tool: "CSV Validator", seconds: 530.3 },
     { tool: "frictionless-py", seconds: 787.7 },
   ],
-  footnote: "Complete validators only. Four more ran out of memory under a 10 GB cap.",
+  footnote: "Complete validators only; others ran out of memory under 10 GB.",
 }
 
 const agentPoints: Point[] = [
