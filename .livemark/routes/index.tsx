@@ -64,6 +64,7 @@ function Landing() {
       <Header />
       <main className="flex flex-col">
         <Hero
+          fill
           eyebrow="Open source · MIT License"
           title={
             <>
@@ -259,13 +260,13 @@ const benchmark: Benchmark = {
   caption: "19.4M rows · 41 columns",
   rows: [
     { tool: "Fairspec", seconds: 12.6, ours: true },
-    { tool: "pandera (DuckDB)", seconds: 64.9 },
+    { tool: "pandera", seconds: 64.9 },
     { tool: "qsv", seconds: 71.4 },
     { tool: "CSV Validator", seconds: 530.3 },
     { tool: "frictionless-py", seconds: 787.7 },
   ],
   footnote:
-    "Complete validators only; dataframely, Great Expectations (pandas), pandera (polars) and pointblank (polars) ran out of memory under 10 GB.",
+    "Complete validators only; dataframely, Great Expectations, pandera and pointblank ran out of memory under 10 GB.",
 }
 
 const agentPoints: Point[] = [
