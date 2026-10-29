@@ -64,7 +64,6 @@ function Landing() {
       <Header />
       <main className="flex flex-col">
         <Hero
-          fill
           eyebrow="Open source · MIT License"
           title={
             <>
