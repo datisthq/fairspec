@@ -64,7 +64,7 @@ const sections: readonly HeaderSection[] = [
   },
   {
     key: "mcp",
-    title: "MCP Server",
+    title: "MCP",
     icon: icons.Sparkles,
     href: "https://fairspec.org/mcp-server/",
     external: true,
