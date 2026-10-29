@@ -1,0 +1,8 @@
+{
+  "title": "Club Members 2024",
+  "published": "2024-04-01",
+  "members": [
+    { "id": 1, "name": "Ada", "joined": "2024-01-15", "score": 91.5, "active": true },
+    { "id": 2, "name": "Grace", "joined": "2024-02-03", "score": 88.0, "active": true }
+  ]
+}

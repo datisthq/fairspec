@@ -34,10 +34,12 @@ import {
   WindowCard,
   actionClass,
   textLinkClass,
+  tk,
 } from "../components/Landing.tsx"
 import {
   BrokenCsv,
-  desktopShot,
+  desktopShots,
+  MembersCsv,
   TerminalPane,
   ValidateSession,
   ValidationErrors,
@@ -208,18 +210,37 @@ function ApplicationPage() {
 
 /* ─────────────────────────── Hero ─────────────────────────── */
 
+const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv /> }
+
 const slides: Slide[] = [
+  { id: "dataset", title: "Dataset", shot: desktopShots.dataset, source: membersCsv },
   {
-    id: "app",
-    title: "Application",
-    shot: desktopShot,
-    source: {
-      eyebrow: "No code required",
-      file: "macOS · Windows · Linux",
-      code: <>Your files never leave your machine.</>,
-    },
+    id: "table",
+    title: "Table",
+    shot: desktopShots.table,
+    source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
   },
+  {
+    id: "data",
+    title: "Data",
+    shot: desktopShots.data,
+    source: { eyebrow: "Input", file: "survey.json", code: <SurveyJson /> },
+  },
+  { id: "file", title: "File", shot: desktopShots.file, source: membersCsv },
 ]
+
+function SurveyJson() {
+  return (
+    <>
+      {"{ "}
+      <span className={tk.key}>"title"</span>:{" "}
+      <span className={tk.str}>"Club Members 2024"</span>,{"\n  "}
+      <span className={tk.key}>"published"</span>:{" "}
+      <span className={tk.str}>"2024-04-01"</span>,{"\n  "}
+      <span className={tk.key}>"members"</span>: [ … ] {"}"}
+    </>
+  )
+}
 
 /* ─────────────────────────── Download ─────────────────────────── */
 

@@ -38,7 +38,7 @@ import {
   tk,
 } from "../components/Landing.tsx"
 import {
-  desktopShot,
+  desktopShots,
   HeroTerminal,
   InferredDataset,
   McpValidateSession,
@@ -246,7 +246,7 @@ const slides: Slide[] = [
       </HeroTerminal>
     ),
   },
-  { id: "desktop", title: "Desktop", shot: desktopShot },
+  { id: "desktop", title: "Desktop", shot: desktopShots.table },
 ]
 
 // From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.
