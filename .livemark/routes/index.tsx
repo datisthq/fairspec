@@ -63,7 +63,7 @@ function Landing() {
               Data exchange format compatible with{" "}
               <code className="font-mono text-foreground">DataCite</code> for metadata and{" "}
               <code className="font-mono text-foreground">JSON Schema</code> for
-              structured data, shipped with Python, TypeScript, an MCP server, agent
+              structured data, shipped with Python, TypeScript, Rust, an MCP server, agent
               skills and a desktop app.
             </>
           }

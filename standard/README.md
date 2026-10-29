@@ -24,6 +24,6 @@ Fairspec consists of five complementary JSON-based specifications:
 - **Standards-based**: Compatible with DataCite Metadata Schema 4.6 and JSON Schema Draft 2020-12
 - **Format-agnostic**: Works with CSV, TSV, JSON, JSONL, Parquet, Arrow, XLSX, ODS, and SQLite
 - **Extensible**: Custom profiles can add domain-specific properties while maintaining compatibility
-- **Software-first**: Available with Python and TypeScript implementations out-of-the-box
+- **Software-first**: Available with Python, TypeScript and Rust implementations out-of-the-box
 
 Fairspec enables researchers and data publishers to describe their data with sufficient metadata to ensure it can be properly discovered, cited, and reused by others in the scientific community.

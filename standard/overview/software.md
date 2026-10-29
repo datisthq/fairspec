@@ -14,8 +14,12 @@ Validate, infer, and query Fairspec descriptors from Python. Built on top of the
 A fast TypeScript framework with the same API surface as the Python package. Ships an opinionated terminal CLI and adapters for tabular and JSON formats.
 :::
 
+:::card{title="Rust" icon="cog" href="/rust/getting-started/"}
+A single prebuilt `fairspec` binary carrying the terminal CLI and the MCP server, plus a library of crates built on Polars. No runtime to install.
+:::
+
 :::card{title="CLI Tool" icon="square-terminal" href="/cli-tool/"}
-The `fairspec` command, shipped by both the Python and TypeScript packages. Validate datasets, infer schemas, and query tables from scripts, CI pipelines, or an interactive terminal.
+The `fairspec` command, shipped by the Python, TypeScript and Rust packages. Validate datasets, infer schemas, and query tables from scripts, CI pipelines, or an interactive terminal.
 :::
 
 :::card{title="MCP Server" icon="sparkles" href="/mcp-server/"}
