@@ -446,22 +446,22 @@ dependencies = [
 requires-dist = [
     { name = "fairspec-library", editable = "library" },
     { name = "fairspec-mcp-server", editable = "mcp-server" },
-    { name = "fireargs", specifier = ">=0.1" },
+    { name = "fireargs", specifier = ">=0.1.2" },
     { name = "rich", specifier = ">=14" },
 ]
 
 [[package]]
 name = "fireargs"
-version = "0.1.0"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/85/66b1e4e0dc98ab394eda28b3740a8757736ab671576040fa1280cf92918b/fireargs-0.1.0.tar.gz", hash = "sha256:9a34e2170839b4f778266b244daa145d25a618d44173f7f87b765de2d59124d5", size = 25574, upload-time = "2026-10-21T11:23:24.046Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/72/c12a663d8a5ee89d6c3e3ac23ea0f5db78648e277ac17184bfbfc8657173/fireargs-0.1.2.tar.gz", hash = "sha256:56820db07d837cf69270df724b274845c2d63dcb90d9099812898b3a59ffa88d", size = 29882, upload-time = "2026-10-29T10:12:57.021Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d9/b0/d49a4b00bd78bf153a0d2488a62a347a8c4950f77a5e28eca32dc04bddeb/fireargs-0.1.0-py3-none-any.whl", hash = "sha256:52e60316eddf56ddf2ecb5a0c84b3d7fddf02b79daa6ec6c3d03f9fc8106d78a", size = 36408, upload-time = "2026-10-21T11:23:23.196Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/ef/b46d10902609334cacab5c84a70a11bb0e259bc38bc72534692cb2f853b2/fireargs-0.1.2-py3-none-any.whl", hash = "sha256:97e3ebbbaf7c5b065ed9e4d9ef905bd0f5b653c3250830f025cd15d238ceb09d", size = 41542, upload-time = "2026-10-29T10:12:55.825Z" },
 ]
 
 [[package]]
