@@ -128,3 +128,7 @@ A bare `show:report` merges every file in the results cache, so stale sizes, ren
 partial reruns resurface on the page: pass the result files explicitly, the rivals' files the
 current page was built from plus the new Fairspec runs. Re-run a Fairspec number that moves
 far from its last review before publishing it; a single cold 10GB run under load is noise
+
+The landing page copies the 10GB numbers by hand into `.livemark/routes/index.tsx`: the hero's
+`benchmark` card and the Performance stripe's `measures`. Refresh both with the page, and name a
+rival by its backend (`pandera (polars)` and `pandera (DuckDB)` are different results).

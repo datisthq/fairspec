@@ -6,6 +6,7 @@ import {
   CircleCheck,
   CodeXml,
   FileText,
+  Gauge,
   Github,
   Globe,
   Laptop,
@@ -173,6 +174,7 @@ function Landing() {
           }
         />
         <ConformanceStripe />
+        <PerformanceStripe />
         <FinalCta
           title={
             <>
@@ -635,4 +637,118 @@ function ConformanceCase() {
       {"\n  }]\n}"}
     </>
   )
+}
+
+/* ─────────────────────────── Performance ─────────────────────────── */
+
+interface Measure {
+  tool: string
+  /** Absent when the tool ran out of memory under the cap. */
+  seconds?: number
+  memoryMb?: number
+  ours?: boolean
+}
+
+const BENCHMARK_BYTES = 10_022_863_718
+
+// The nyc-311 10GB run in .humans/benchmark-nyc-311.html; complete validators only
+const measures: Measure[] = [
+  { tool: "Fairspec (Python)", seconds: 12.6, memoryMb: 999, ours: true },
+  { tool: "Fairspec (Rust)", seconds: 12.6, memoryMb: 1005, ours: true },
+  { tool: "Fairspec (TypeScript)", seconds: 15.5, memoryMb: 1597, ours: true },
+  { tool: "pandera (DuckDB)", seconds: 64.9, memoryMb: 6328 },
+  { tool: "qsv", seconds: 71.4, memoryMb: 3849 },
+  { tool: "CSV Validator", seconds: 530.3, memoryMb: 3225 },
+  { tool: "frictionless-py", seconds: 787.7, memoryMb: 2772 },
+  { tool: "pandera (polars)" },
+  { tool: "pointblank (polars)" },
+  { tool: "dataframely" },
+  { tool: "Great Expectations (pandas)" },
+]
+
+function PerformanceStripe() {
+  const fastest = Math.min(...measures.flatMap(m => (m.seconds ? [m.seconds] : [])))
+  return (
+    <LandingSection
+      title="Performance"
+      lede="Validating a 10 GB CSV against its Table Schema from Python, Rust and TypeScript, against complete validators only: tools that check every cell and report each failing one. Each tool gets at most 10 GB of memory."
+    >
+      <Reveal>
+        <WindowCard label="benchmark · 10 GB CSV · 19.4M rows · 41 columns · 795M cells">
+          <div className="p-5 sm:p-6">
+            <div className="mb-3 hidden grid-cols-[12rem_minmax(0,1fr)_6rem_5rem] gap-4 font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase sm:grid">
+              <span>tool</span>
+              <span>speed</span>
+              <span className="text-right">throughput</span>
+              <span className="text-right">memory</span>
+            </div>
+            <ul className="space-y-3">
+              {measures.map(m => (
+                <li
+                  key={m.tool}
+                  className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-4 gap-y-1 sm:grid-cols-[12rem_minmax(0,1fr)_6rem_5rem] sm:items-center"
+                >
+                  <span
+                    className={cn(
+                      "text-sm",
+                      m.ours ? "font-semibold text-foreground" : "text-muted-foreground",
+                    )}
+                  >
+                    {m.tool}
+                  </span>
+                  {m.seconds ? (
+                    <span className="order-last col-span-3 h-3 rounded-full bg-muted sm:order-none sm:col-span-1">
+                      <span
+                        className={cn(
+                          "block h-full min-w-1 rounded-full",
+                          m.ours ? "bg-primary" : "bg-muted-foreground/40",
+                        )}
+                        style={{ width: `${(fastest / m.seconds) * 100}%` }}
+                      />
+                    </span>
+                  ) : (
+                    <span className="order-last col-span-3 font-mono text-xs text-muted-foreground/70 italic sm:order-none sm:col-span-1">
+                      ran out of memory
+                    </span>
+                  )}
+                  <span
+                    className={cn(
+                      "text-right font-mono text-xs whitespace-nowrap tabular-nums",
+                      m.ours ? "font-semibold text-primary" : "text-muted-foreground",
+                    )}
+                  >
+                    {m.seconds ? formatThroughput(m.seconds) : "—"}
+                  </span>
+                  <span className="text-right font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
+                    {m.memoryMb ? formatMemory(m.memoryMb) : "> 10 GB"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <Gauge className="mt-0.5 size-3.5 shrink-0" />
+              <span>
+                Input megabytes per second and peak memory, median of 2 runs on an AMD
+                Ryzen 5 PRO 7545U. Every finishing tool reports the same 100 seeded
+                errors. Reproduce with{" "}
+                <code className="font-mono text-foreground">
+                  pnpm -C benchmark measure --case nyc-311 --size 10GB
+                </code>
+                .
+              </span>
+            </p>
+          </div>
+        </WindowCard>
+      </Reveal>
+    </LandingSection>
+  )
+}
+
+function formatThroughput(seconds: number) {
+  const megabytes = BENCHMARK_BYTES / 1e6 / seconds
+  return `${megabytes.toFixed(megabytes < 100 ? 1 : 0)} MB/s`
+}
+
+function formatMemory(megabytes: number) {
+  return `${(megabytes / 1024).toFixed(1)} GB`
 }
