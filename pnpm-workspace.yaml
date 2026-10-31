@@ -28,6 +28,8 @@ minimumReleaseAgeExclude:
   - "@fairspec/*"
   - fireargs
   - livemark
+  - textlane
+  - "@textlane/*"
 minimumReleaseAgeExcludePrune: true
 
 saveExact: true
