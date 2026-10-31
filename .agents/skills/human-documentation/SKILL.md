@@ -88,12 +88,7 @@ Work through the diff asking each of these:
 
 ### Where a fact belongs
 
-`AGENTS.md` loads into every session, so it carries only what must hold before anyone knows which
-section they are in: hard rules, invariants that fail silently, the commit rules, one line per
-root command, and the skills table. A section's commands, layout, conventions and traps go in
-its `<section>-development` skill; a cross-cutting procedure goes in its own skill, with at most
-a one-line pointer left in `AGENTS.md`. When a paragraph grows there, move it. Keep `AGENTS.md`
-near 16 KB.
+Whether a rule or lesson for agents goes in `AGENTS.md` or a skill: **`agent-documentation`**.
 
 Contributor-facing prose for people (setup, how to send a PR) belongs in `CONTRIBUTING.md` and
 the READMEs, which may point at `AGENTS.md` but never restate it.

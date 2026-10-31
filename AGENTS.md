@@ -68,7 +68,7 @@ Fairspec (changes to them are `docs`).
 - Run type checking as part of your tasks
 - Don't run linting as part of your tasks
 - Start plan from a summary a new/updated API summary (models/signatures) and most challenging points, continue plan using your default settings
-- **After every task, check whether a skill in `.agents/skills/` needs updating, and update it in the same commit.** Read the task description for what it taught: a new convention, a correction to how the work was done, or a decision about how an area should look or behave. Write that into the skill for that area, so the next session follows it without being told again. When no skill covers the area and the lesson will recur, add one. Where a fact belongs: the **`human-documentation`** skill
+- Update docs when a change requires it (**`human-documentation`**), and **after every task record any lesson it taught** in the same commit (**`agent-documentation`**).
 - **End every response that finishes a task with a status line: one bold sentence of about ten
   words, as the final paragraph, nothing after it** (e.g. **Docs folded into skills; guard and
   section tests green.**). The agents summary shows only this line
@@ -174,6 +174,7 @@ verification-before-completion. Each is named `<subject>-<facet>`, subject first
 
 | skill                     | when                                                                   |
 | ------------------------- | ---------------------------------------------------------------------- |
+| `agent-documentation`     | writing a session's lesson into a skill or `AGENTS.md`                 |
 | `typescript-development`  | the npm packages, CLI or MCP server in `typescript/`                   |
 | `python-development`      | the PyPI packages, CLI or MCP server in `python/`                      |
 | `rust-development`        | the Cargo workspace in `rust/`, the Rust twin and its CLI              |
