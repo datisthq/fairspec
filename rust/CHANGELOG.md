@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/datisthq/fairspec/compare/rust-v0.1.1...rust-v0.2.0) (2026-10-31)
+
+
+### Features
+
+* **rust:** publish linux musl binaries of the terminal ([78e3573](https://github.com/datisthq/fairspec/commit/78e3573097ba3b4ae10bfae70291bb6995c73043))
+
 ## [0.1.1](https://github.com/datisthq/fairspec/compare/rust-v0.1.0...rust-v0.1.1) (2026-10-28)
 
 
