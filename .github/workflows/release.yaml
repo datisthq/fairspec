@@ -193,6 +193,20 @@ jobs:
           # 22.04 for the oldest glibc the binary links against
           - { runner: ubuntu-22.04, os: linux, arch: x64, archive: tar.gz }
           - { runner: ubuntu-22.04-arm, os: linux, arch: arm64, archive: tar.gz }
+          - {
+              runner: ubuntu-latest,
+              os: linux,
+              arch: x64-musl,
+              target: x86_64-unknown-linux-musl,
+              archive: tar.gz,
+            }
+          - {
+              runner: ubuntu-24.04-arm,
+              os: linux,
+              arch: arm64-musl,
+              target: aarch64-unknown-linux-musl,
+              archive: tar.gz,
+            }
           - { runner: macos-15-intel, os: macos, arch: x64, archive: tar.gz }
           - { runner: macos-latest, os: macos, arch: arm64, archive: tar.gz }
           - { runner: windows-latest, os: windows, arch: x64, archive: zip }
@@ -222,15 +236,28 @@ jobs:
           sudo mkswap /mnt/swapfile
           sudo swapon /mnt/swapfile
       - name: Build Binary
+        if: ${{ !matrix.target }}
         working-directory: rust
         run: cargo +nightly-2026-09-01 build --locked --profile dist-release --features fairspec-library/nightly -p fairspec
+      # Built on Alpine so the C dependencies compile against musl too; the binary links it statically
+      - name: Build Musl Binary
+        if: ${{ matrix.target }}
+        run: >-
+          docker run --rm -v "$PWD:/work" -w /work/rust
+          rust:1-alpine@sha256:7e9e2d068a107a2adafd19930011178d14a78326053cd4c3a9f7ad3fd049557d
+          sh -c "apk add --no-cache build-base cmake perl &&
+          rustup toolchain install nightly-2026-09-01 --profile minimal &&
+          cargo +nightly-2026-09-01 build --locked --profile dist-release --target ${{ matrix.target }}
+          --features fairspec-library/nightly -p fairspec"
       - name: Pack Binary
+        env:
+          DIR: rust/target/${{ matrix.target }}/dist-release
         run: |
           mkdir dist
           if [ "${{ matrix.archive }}" = zip ]; then
-            7z a "dist/$NAME.zip" ./rust/target/dist-release/fairspec.exe
+            7z a "dist/$NAME.zip" "./$DIR/fairspec.exe"
           else
-            tar -czf "dist/$NAME.tar.gz" -C rust/target/dist-release fairspec
+            tar -czf "dist/$NAME.tar.gz" -C "$DIR" fairspec
           fi
       - name: Publish Release
         env:

@@ -239,7 +239,9 @@ behaviour.
 This section is the `rust` release-please component: tags `rust-vX.Y.Z`, its own changelog.
 `release.yaml`'s `rust` job builds `fairspec` with the `build:dist` profile and attaches
 `fairspec-terminal-<os>-<arch>-<version>.{tar.gz,zip}` for linux, macOS
-(x64, arm64) and windows x64. No Windows on Arm: the desktop app cannot ship there
+(x64, arm64), linux musl (`x64-musl`, `arm64-musl`) and windows x64. The musl binaries build
+in a digest-pinned `rust:1-alpine` container, so the C dependencies (`aws-lc-sys`, sqlite,
+zstd) compile against musl too, and land under `target/<triple>/`. No Windows on Arm: the desktop app cannot ship there
 (`nodejs-polars` has no win32-arm64 build) and the CLI keeps parity with it.
 
 - Release type is `simple`, not `rust`: release-please's Cargo updater fails on
