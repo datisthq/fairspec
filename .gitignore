@@ -75,3 +75,4 @@ tmuxp.yaml
 .content-collections/
 .vitest/
 /.worktrees/
+.playwright-mcp/
