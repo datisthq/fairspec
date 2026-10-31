@@ -6,13 +6,14 @@
 #   curl -fsSL https://fairspec.org/install.sh | sh -s -- terminal
 #   curl -fsSL https://fairspec.org/install.sh | sh -s -- desktop
 #
-# FAIRSPEC_PLATFORM overrides the detected platform (linux-x64, linux-arm64, macos-x64,
-# macos-arm64, windows-x64); FAIRSPEC_INSTALL_DIR overrides where the binary goes.
+# FAIRSPEC_PLATFORM overrides the detected platform (linux-x64, linux-arm64, linux-x64-musl,
+# linux-arm64-musl, macos-x64, macos-arm64, windows-x64); FAIRSPEC_INSTALL_DIR overrides where
+# the binary goes.
 
 set -eu
 
 REPO="datisthq/fairspec"
-PLATFORMS="linux-x64 linux-arm64 macos-x64 macos-arm64 windows-x64"
+PLATFORMS="linux-x64 linux-arm64 linux-x64-musl linux-arm64-musl macos-x64 macos-arm64 windows-x64"
 
 main() {
   product=${1:-}
@@ -30,8 +31,11 @@ main() {
     *" $platform "*) ;;
     *) fail "Unsupported platform \"$platform\": set FAIRSPEC_PLATFORM to one of: $PLATFORMS" ;;
   esac
-  os=${platform%-*}
+  os=${platform%%-*}
   arch=${platform#*-}
+  case "$product-$arch" in
+    desktop-*-musl) fail "Fairspec Desktop needs glibc: there is no build for $platform" ;;
+  esac
 
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
@@ -75,12 +79,18 @@ detect_platform() {
     *) arch="$(uname -m)" ;;
   esac
   case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
-    linux) echo "linux-$arch" ;;
+    linux) echo "linux-$arch$(detect_musl)" ;;
     darwin) echo "macos-$arch" ;;
     # Windows on Arm runs the x64 build under emulation
     msys* | mingw* | cygwin* | *_nt*) echo "windows-x64" ;;
     *) echo "unknown-$arch" ;;
   esac
+}
+
+detect_musl() {
+  for loader in /lib/ld-musl-*; do
+    [ -e "$loader" ] && echo "-musl" && return
+  done
 }
 
 # Every section of the monorepo releases on its own tag, so releases/latest may be another one

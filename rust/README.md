@@ -6,7 +6,7 @@ This guide will help you get started with Fairspec Rust. If you are new to the c
 
 Fairspec Rust is a single `fairspec` binary — the [terminal](/rust/terminal/) and the [MCP server](/mcp-server/) — and a library of crates. Prebuilt binaries are published for:
 
-- **Linux** x64 and arm64
+- **Linux** x64 and arm64, glibc and musl (Alpine)
 - **macOS** x64 and arm64
 - **Windows** x64
 
