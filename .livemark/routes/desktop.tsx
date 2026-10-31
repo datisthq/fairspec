@@ -4,9 +4,13 @@ import {
   CheckCircle2,
   Code,
   CodeXml,
+  Database,
   ExternalLink,
+  File,
+  FolderOpen,
   Github,
   History,
+  LayoutDashboard,
   ListOrdered,
   Monitor,
   MousePointerClick,
@@ -14,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
   SquareTerminal,
+  Table,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useState } from "react"
@@ -215,6 +220,7 @@ const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv />
 const slides: Slide[] = [
   {
     id: "overview",
+    icon: LayoutDashboard,
     title: "Overview",
     shot: desktopShots.main,
     source: {
@@ -223,20 +229,28 @@ const slides: Slide[] = [
       code: <>Your files never leave your machine.</>,
     },
   },
-  { id: "dataset", title: "Dataset", shot: desktopShots.dataset, source: membersCsv },
+  {
+    id: "dataset",
+    icon: FolderOpen,
+    title: "Dataset",
+    shot: desktopShots.dataset,
+    source: membersCsv,
+  },
   {
     id: "table",
+    icon: Table,
     title: "Table",
     shot: desktopShots.table,
     source: { eyebrow: "Input", file: "broken.csv", code: <BrokenCsv /> },
   },
   {
     id: "data",
+    icon: Database,
     title: "Data",
     shot: desktopShots.data,
     source: { eyebrow: "Input", file: "survey.json", code: <SurveyJson /> },
   },
-  { id: "file", title: "File", shot: desktopShots.file, source: membersCsv },
+  { id: "file", icon: File, title: "File", shot: desktopShots.file, source: membersCsv },
 ]
 
 function SurveyJson() {

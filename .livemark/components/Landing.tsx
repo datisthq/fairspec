@@ -4,6 +4,7 @@ import { buttonVariants } from "livemark/elements/button"
 import { useInView } from "livemark/hooks/in-view"
 import {
   type ComponentType,
+  type KeyboardEvent,
   type ReactNode,
   type SVGProps,
   useRef,
@@ -20,6 +21,7 @@ export interface Shot {
 export type Slide = {
   id: string
   title: string
+  icon: ComponentType<SVGProps<SVGSVGElement>>
   source?: { eyebrow: string; file: string; code: ReactNode }
 } & ({ shot: Shot } | { content: ReactNode })
 
@@ -163,6 +165,28 @@ function HeroCarousel(props: { slides: Slide[]; aside?: ReactNode }) {
   // A bar can finish in the same frame as the click that stops it; its end event
   // still holds the old closure, so it checks this instead of `stopped`.
   const stoppedRef = useRef(false)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  const selectSlide = (index: number) => {
+    stoppedRef.current = true
+    setActive(index)
+    setStopped(true)
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const count = props.slides.length
+    const targets: Record<string, number> = {
+      ArrowRight: (active + 1) % count,
+      ArrowLeft: (active - 1 + count) % count,
+      Home: 0,
+      End: count - 1,
+    }
+    const next = targets[event.key]
+    if (next === undefined) return
+    event.preventDefault()
+    selectSlide(next)
+    tabRefs.current[next]?.focus()
+  }
 
   return (
     <div
@@ -179,19 +203,26 @@ function HeroCarousel(props: { slides: Slide[]; aside?: ReactNode }) {
             <span className="size-2.5 rounded-full bg-yellow-400/60" />
             <span className="size-2.5 rounded-full bg-green-400/60" />
           </span>
-          <div role="tablist" className="flex min-w-0 gap-1">
+          <div
+            role="tablist"
+            aria-label="Examples"
+            onKeyDown={handleKeyDown}
+            className="flex min-w-0 gap-1 overflow-x-auto"
+          >
             {props.slides.map((slide, index) => (
               <button
                 key={slide.id}
                 type="button"
+                ref={element => {
+                  tabRefs.current[index] = element
+                }}
+                id={`hero-tab-${slide.id}`}
                 role="tab"
+                tabIndex={index === active ? 0 : -1}
                 aria-selected={index === active}
                 aria-controls={`hero-slide-${slide.id}`}
-                onClick={() => {
-                  stoppedRef.current = true
-                  setActive(index)
-                  setStopped(true)
-                }}
+                title={slide.title}
+                onClick={() => selectSlide(index)}
                 className={cn(
                   "relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-control px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
                   index === active
@@ -199,12 +230,11 @@ function HeroCarousel(props: { slides: Slide[]; aside?: ReactNode }) {
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <span
-                  className={cn("font-mono text-xs", index === active && "text-primary")}
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className={index === active ? undefined : "hidden sm:inline"}>
+                <slide.icon
+                  aria-hidden
+                  className={cn("size-4 shrink-0", index === active && "text-primary")}
+                />
+                <span className={index === active ? undefined : "sr-only sm:not-sr-only"}>
                   {slide.title}
                 </span>
                 {index === active ? (
@@ -232,6 +262,7 @@ function HeroCarousel(props: { slides: Slide[]; aside?: ReactNode }) {
               key={slide.id}
               id={`hero-slide-${slide.id}`}
               role="tabpanel"
+              aria-labelledby={`hero-tab-${slide.id}`}
               aria-hidden={index !== active}
               inert={index !== active}
               className={cn(

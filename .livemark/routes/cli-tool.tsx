@@ -4,13 +4,17 @@ import {
   BookOpen,
   Bot,
   Braces,
+  CircleCheck,
   Database,
   ExternalLink,
+  Eye,
   FileText,
   Globe,
   ListChecks,
   Package,
   PlayCircle,
+  ScanSearch,
+  Search,
   Sliders,
   Sparkles,
   SquareTerminal,
@@ -190,6 +194,7 @@ const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv />
 const slides: Slide[] = [
   {
     id: "infer",
+    icon: ScanSearch,
     title: "Infer",
     content: (
       <HeroTerminal>
@@ -200,6 +205,7 @@ const slides: Slide[] = [
   },
   {
     id: "validate",
+    icon: CircleCheck,
     title: "Validate",
     content: (
       <HeroTerminal>
@@ -210,6 +216,7 @@ const slides: Slide[] = [
   },
   {
     id: "preview",
+    icon: Eye,
     title: "Preview",
     content: (
       <HeroTerminal>
@@ -220,6 +227,7 @@ const slides: Slide[] = [
   },
   {
     id: "query",
+    icon: Search,
     title: "Query",
     content: (
       <HeroTerminal>

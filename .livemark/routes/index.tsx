@@ -2,19 +2,22 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   BookOpen,
   Bot,
-  Code,
   CircleCheck,
+  Code,
   CodeXml,
   FileText,
   Gauge,
   Github,
   Globe,
   Laptop,
+  Monitor,
+  Plug,
   Puzzle,
   Rocket,
   ScrollText,
   Sparkles,
   SquareTerminal,
+  Terminal,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { cn } from "cn"
@@ -224,9 +227,10 @@ const install: InstallCommand[] = [
 ]
 
 const slides: Slide[] = [
-  { id: "standard", title: "Standard", content: <SpecPreview /> },
+  { id: "standard", icon: ScrollText, title: "Standard", content: <SpecPreview /> },
   {
     id: "cli",
+    icon: Terminal,
     title: "CLI",
     content: (
       <HeroTerminal>
@@ -236,6 +240,7 @@ const slides: Slide[] = [
   },
   {
     id: "mcp",
+    icon: Plug,
     title: "MCP",
     content: (
       <HeroTerminal>
@@ -245,6 +250,7 @@ const slides: Slide[] = [
   },
   {
     id: "skills",
+    icon: Sparkles,
     title: "Skills",
     content: (
       <HeroTerminal>
@@ -252,7 +258,7 @@ const slides: Slide[] = [
       </HeroTerminal>
     ),
   },
-  { id: "desktop", title: "Desktop", shot: desktopShots.main },
+  { id: "desktop", icon: Monitor, title: "Desktop", shot: desktopShots.main },
 ]
 
 // From the nyc-311 10GB run in .humans/benchmark-nyc-311.html; full validators only.

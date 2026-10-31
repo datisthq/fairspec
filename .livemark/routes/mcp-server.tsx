@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   Bot,
   CheckCircle2,
+  CircleCheck,
   Cpu,
   Eye,
   Github,
@@ -9,6 +10,7 @@ import {
   ListOrdered,
   MessageSquare,
   Rocket,
+  ScanSearch,
   ScrollText,
   Search,
   Sparkles,
@@ -202,6 +204,7 @@ const membersCsv = { eyebrow: "Input", file: "members.csv", code: <MembersCsv />
 const slides: Slide[] = [
   {
     id: "validate",
+    icon: CircleCheck,
     title: "Validate",
     content: (
       <HeroTerminal>
@@ -212,6 +215,7 @@ const slides: Slide[] = [
   },
   {
     id: "infer",
+    icon: ScanSearch,
     title: "Infer",
     content: (
       <HeroTerminal>
@@ -222,6 +226,7 @@ const slides: Slide[] = [
   },
   {
     id: "query",
+    icon: Search,
     title: "Query",
     content: (
       <HeroTerminal>
