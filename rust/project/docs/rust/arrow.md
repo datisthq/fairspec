@@ -5,7 +5,7 @@ path: /rust/library/arrow/
 order: 16
 ---
 
-Apache Arrow IPC file handling with high-performance columnar data processing.
+Apache Arrow IPC file handling for columnar data.
 
 ## Installation
 
@@ -32,6 +32,8 @@ let resource = serde_json::from_value(json!({"data": "table.arrow"}))?;
 let table = load_arrow_table(&resource, &LoadTableOptions::default())?;
 // High-performance columnar format
 ```
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

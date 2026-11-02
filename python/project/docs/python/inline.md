@@ -107,7 +107,7 @@ users = load_csv_table(Resource(name="users", data="users.csv"))
 
 ### Resource Metadata
 
-You can include metadata with inline data resources:
+An inline resource takes a name and a table schema like any other resource:
 
 ```python
 from fairspec import load_inline_table, Resource
@@ -115,8 +115,6 @@ from fairspec_metadata import TableSchema, StringColumnProperty
 
 table = load_inline_table(Resource(
     name="countries",
-    title="Country Reference Data",
-    description="ISO country codes and names",
     data=[
         {"code": "US", "name": "United States"},
         {"code": "CN", "name": "China"},

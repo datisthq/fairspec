@@ -5,7 +5,7 @@ path: /typescript/library/ods/
 order: 10
 ---
 
-OpenDocument Spreadsheet (ODS) file handling with sheet selection, advanced header processing, and high-performance data operations.
+OpenDocument Spreadsheet (ODS) file handling with sheet selection and advanced header processing.
 
 ## Installation
 
@@ -30,6 +30,8 @@ const table = await loadXlsxTable({ data: "table.ods" })
 // the column types will be automatically inferred
 ```
 
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading ODS Files
@@ -43,8 +45,8 @@ const table = await loadXlsxTable({ data: "data.ods" })
 // Load with custom format (specify sheet)
 const table = await loadXlsxTable({
   data: "data.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     sheetName: "Sheet2",
   },
 })
@@ -63,14 +65,14 @@ import { saveXlsxTable } from "fairspec"
 // Save with default options
 await saveXlsxTable(table, {
   path: "output.ods",
-  format: { name: "ods" },
+  fileDialect: { format: "ods" },
 })
 
 // Save with custom sheet name
 await saveXlsxTable(table, {
   path: "output.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     sheetName: "Data",
   },
 })
@@ -81,11 +83,13 @@ await saveXlsxTable(table, {
 ### Sheet Selection
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Select by sheet number (1-indexed)
 const table = await loadXlsxTable({
   data: "workbook.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     sheetNumber: 2, // Load second sheet
   },
 })
@@ -93,8 +97,8 @@ const table = await loadXlsxTable({
 // Select by sheet name
 const table = await loadXlsxTable({
   data: "workbook.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     sheetName: "Sales Data",
   },
 })
@@ -103,11 +107,13 @@ const table = await loadXlsxTable({
 ### Multi-Header Row Processing
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // ODS with multiple header rows
 const table = await loadXlsxTable({
   data: "multi-header.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     headerRows: [1, 2],
     headerJoin: "_",
   },
@@ -118,11 +124,13 @@ const table = await loadXlsxTable({
 ### Comment Row Handling
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Skip specific comment rows
 const table = await loadXlsxTable({
   data: "with-comments.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     commentRows: [1, 2],
     headerRows: [3],
   },
@@ -131,8 +139,8 @@ const table = await loadXlsxTable({
 // Skip rows with comment prefix
 const table = await loadXlsxTable({
   data: "data.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     commentPrefix: "#",
     headerRows: [1],
   },
@@ -142,6 +150,8 @@ const table = await loadXlsxTable({
 ### Remote File Loading
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Load from URL
 const table = await loadXlsxTable({
   data: "https://example.com/data.ods",
@@ -162,11 +172,13 @@ The n-th name names the n-th column. A sheet with more columns than names fails 
 load; names past its last column add columns that are empty in every row.
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Name the three columns of the sheet
 const table = await loadXlsxTable({
   data: "data.ods",
-  format: {
-    name: "ods",
+  fileDialect: {
+    format: "ods",
     columnNames: ["name", "age", "city"],
   },
 })

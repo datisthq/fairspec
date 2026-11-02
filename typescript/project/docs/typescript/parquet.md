@@ -5,7 +5,7 @@ path: /typescript/library/parquet/
 order: 12
 ---
 
-Apache Parquet file handling with high-performance columnar data processing and compression.
+Apache Parquet file handling for compressed columnar data.
 
 ## Installation
 
@@ -29,6 +29,8 @@ import { loadParquetTable } from "fairspec"
 const table = await loadParquetTable({ data: "table.parquet" })
 // Efficient columnar format with compression
 ```
+
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 
@@ -62,7 +64,7 @@ await saveParquetTable(table, { path: "output.parquet" })
 // Save with explicit format
 await saveParquetTable(table, {
   path: "output.parquet",
-  format: { name: "parquet" },
+  fileDialect: { format: "parquet" },
 })
 ```
 
@@ -71,6 +73,8 @@ await saveParquetTable(table, {
 ### Remote File Loading
 
 ```typescript
+import { loadParquetTable } from "fairspec"
+
 // Load from URL
 const table = await loadParquetTable({
   data: "https://example.com/data.parquet",

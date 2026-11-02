@@ -5,7 +5,7 @@ path: /rust/library/json/
 order: 12
 ---
 
-JSON file handling with automatic format detection and high-performance data operations.
+JSON file handling with automatic format detection.
 
 ## Installation
 
@@ -34,6 +34,8 @@ let table = load_json_table(&resource, &LoadTableOptions::default())?;
 ```
 
 Unlike the other loaders, `load_json_table` returns `Option<Table>`: `None` when the data under the dialect's `jsonPointer` is not a table.
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

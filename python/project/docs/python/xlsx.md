@@ -5,7 +5,7 @@ path: /python/library/xlsx/
 order: 14
 ---
 
-Excel (.xlsx) file handling with sheet selection, advanced header processing, and high-performance data operations.
+Excel (.xlsx) file handling with sheet selection and advanced header processing.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_xlsx_table, Resource
 table = load_xlsx_table(Resource(data="table.xlsx"))
 # the column types will be automatically inferred
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

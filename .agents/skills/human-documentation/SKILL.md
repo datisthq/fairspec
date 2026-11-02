@@ -70,6 +70,10 @@ Work through the diff asking each of these:
 - **A generated artefact.** The profiles copied by `pnpm generate:profiles`, and the copies each
   implementation bundles, go stale without failing anything — treat them as documentation for
   this purpose and regenerate them.
+- **A guide snippet nothing runs.** No test executes `*/project/docs/` code blocks, and a wrong key
+  fails silently: TypeScript's `Resource` and Python's models accept unknown keys, so
+  `format: { name: "xlsx" }` in place of `fileDialect: { format: "xlsx" }` type-checks and is
+  ignored. Check a changed snippet against the model's fields, or run it.
 
 ### Where to look
 

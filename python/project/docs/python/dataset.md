@@ -31,12 +31,11 @@ A dataset is a collection of related data resources (tables) with:
 Datasets are represented in Python by the `Dataset` model and serialised as JSON descriptors (often named `dataset.json`) following the Fairspec specification.
 
 ```python
-from fairspec import Dataset, Resource
+from fairspec import Dataset, Resource, Rights, Title
 
 dataset = Dataset(
-    name="sales-data",
-    title="Sales Database Export",
-    license="CC-BY-4.0",
+    titles=[Title(title="Sales Database Export")],
+    rightsList=[Rights(rights="CC-BY-4.0")],
     resources=[
         Resource(name="users", data="users.csv"),
         Resource(name="orders", data="orders.csv"),
@@ -209,6 +208,8 @@ The returned `Report` has two fields:
 Example error inspection:
 
 ```python
+from fairspec import validate_dataset
+
 report = validate_dataset("dataset.json")
 
 for error in report.errors:
@@ -263,6 +264,8 @@ Output formats depend on the available render plugins. The result is a string or
 A `Dataset` exposes its resources via the `resources` attribute. Iterate to access each resource's metadata:
 
 ```python
+from fairspec import Dataset, load_dataset
+
 dataset = Dataset.model_validate(load_dataset("dataset.json"))
 
 for resource in dataset.resources or []:
@@ -284,12 +287,11 @@ To validate a single resource without re-validating the whole dataset, use `vali
 ### Create a Dataset from Files
 
 ```python
-from fairspec import Dataset, Resource, infer_dataset, validate_dataset
+from fairspec import Dataset, Resource, Rights, Title, infer_dataset, validate_dataset
 
 dataset = Dataset(
-    name="sales-data",
-    title="Sales Database Export",
-    license="CC-BY-4.0",
+    titles=[Title(title="Sales Database Export")],
+    rightsList=[Rights(rights="CC-BY-4.0")],
     resources=[
         Resource(data="customers.csv"),
         Resource(data="orders.csv"),
@@ -344,16 +346,17 @@ from fairspec import (
     ForeignKeyReference,
     IntegerColumnProperty,
     Resource,
+    Rights,
     StringColumnProperty,
     TableSchema,
+    Title,
     infer_dataset,
     validate_dataset,
 )
 
 dataset = Dataset(
-    name="sales-data",
-    title="Sales Database Export",
-    license="CC-BY-4.0",
+    titles=[Title(title="Sales Database Export")],
+    rightsList=[Rights(rights="CC-BY-4.0")],
     resources=[
         Resource(
             name="customers",

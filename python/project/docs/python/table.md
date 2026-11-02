@@ -189,6 +189,8 @@ naming a column the table lacks raises. A resource's own `tableSchema` still rep
 entirely.
 
 ```python
+from fairspec import Resource, infer_table_schema
+
 schema = infer_table_schema(
     Resource(data="data.csv"),
     columnProperties={
@@ -218,7 +220,7 @@ table = pl.DataFrame({
     "active": ["true", "false", "true"],
 }).lazy()
 
-schema = infer_table_schema_from_table(table, sample_rows=100, confidence=0.9)
+schema = infer_table_schema_from_table(table, sampleRows=100, confidence=0.9)
 ```
 
 ## Rendering a Table Schema
@@ -281,7 +283,7 @@ typed = normalize_table(table, schema)
 ```python
 from fairspec import denormalize_table
 
-raw = denormalize_table(typed, schema, native_types=["string", "number", "boolean"])
+raw = denormalize_table(typed, schema, nativeTypes=["string", "number", "boolean"])
 ```
 
 ## Defining a Table Schema

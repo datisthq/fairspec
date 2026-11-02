@@ -5,7 +5,7 @@ path: /typescript/library/csv/
 order: 5
 ---
 
-Comprehensive CSV file handling with automatic format detection, advanced header processing, and high-performance data operations.
+Comprehensive CSV file handling with automatic format detection and advanced header processing.
 
 ## Installation
 
@@ -31,6 +31,8 @@ const table = await loadCsvTable({ data: "table.csv" })
 // or you can provide a Table Schema
 ```
 
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading CSV Files
@@ -44,8 +46,8 @@ const table = await loadCsvTable({ data: "data.csv" })
 // Load with custom format
 const table = await loadCsvTable({
   data: "data.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     delimiter: ";",
     headerRows: [1],
   },
@@ -70,8 +72,8 @@ await saveCsvTable(table, { path: "output.csv" })
 // Save with custom format
 await saveCsvTable(table, {
   path: "output.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     delimiter: "\t",
     quoteChar: "'",
   },
@@ -80,7 +82,7 @@ await saveCsvTable(table, {
 // Save as TSV
 await saveCsvTable(table, {
   path: "output.tsv",
-  format: { name: "tsv" },
+  fileDialect: { format: "tsv" },
 })
 ```
 
@@ -96,8 +98,8 @@ const table = await loadCsvTable({ data: "unknown-dialect.csv" })
 // You can also explicitly specify the format if detection isn't accurate
 const table = await loadCsvTable({
   data: "data.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     delimiter: ",",
     quoteChar: '"',
     headerRows: [1],
@@ -110,6 +112,8 @@ const table = await loadCsvTable({
 ### Multi-Header Row Processing
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // CSV with multiple header rows:
 // Year,2023,2023,2024,2024
 // Quarter,Q1,Q2,Q1,Q2
@@ -117,8 +121,8 @@ const table = await loadCsvTable({
 
 const table = await loadCsvTable({
   data: "multi-header.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     headerRows: [1, 2],
     headerJoin: "_",
   },
@@ -129,6 +133,8 @@ const table = await loadCsvTable({
 ### Comment Row Handling
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // CSV with comment rows:
 // # This is a comment
 // # Generated on 2024-01-01
@@ -137,8 +143,8 @@ const table = await loadCsvTable({
 
 const table = await loadCsvTable({
   data: "with-comments.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     commentRows: [1, 2],
     headerRows: [3],
   },
@@ -147,8 +153,8 @@ const table = await loadCsvTable({
 // Or use commentPrefix to skip lines starting with a specific character
 const table = await loadCsvTable({
   data: "with-comments.csv",
-  format: {
-    name: "csv",
+  fileDialect: {
+    format: "csv",
     commentPrefix: "#",
     headerRows: [1],
   },
@@ -158,6 +164,8 @@ const table = await loadCsvTable({
 ### Remote File Loading
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // Load from URL
 const table = await loadCsvTable({
   data: "https://example.com/data.csv",

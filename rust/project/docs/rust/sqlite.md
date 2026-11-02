@@ -36,6 +36,8 @@ let table = load_sqlite_table(&resource, &LoadTableOptions::default())?;
 // column types will be automatically inferred from database schema
 ```
 
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading SQLite Tables

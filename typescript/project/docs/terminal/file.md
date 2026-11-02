@@ -199,7 +199,7 @@ The command can detect:
 
 ## Working with Datasets
 
-All file commands support loading files from dataset descriptors:
+`file describe` and `file copy` can take a file from a dataset descriptor:
 
 ```bash
 # Describe a resource from a dataset
@@ -207,9 +207,6 @@ fairspec file describe --dataset dataset.json --resource sales-data
 
 # Copy a resource from a dataset
 fairspec file copy --dataset dataset.json --resource users --to-path users.csv
-
-# Validate a resource from a dataset
-fairspec file validate --dataset dataset.json --resource products --hash abc123
 ```
 
 ## Output Formats

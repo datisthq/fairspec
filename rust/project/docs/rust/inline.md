@@ -128,7 +128,7 @@ let users = load_csv_table(&resource, &options)?;
 
 ### Resource Metadata
 
-You can include metadata with inline data resources:
+An inline resource takes a name and a table schema like any other resource:
 
 ```rust
 use fairspec::fairspec_table::{LoadTableOptions, load_inline_table};
@@ -136,8 +136,6 @@ use serde_json::json;
 
 let resource = serde_json::from_value(json!({
     "name": "countries",
-    "titles": [{"title": "Country Reference Data"}],
-    "descriptions": [{"description": "ISO country codes and names", "descriptionType": "Abstract"}],
     "data": [
         {"code": "US", "name": "United States"},
         {"code": "CN", "name": "China"},

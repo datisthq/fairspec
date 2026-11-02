@@ -43,7 +43,7 @@ const concat = await loadTable({ data: ["part1.csv", "part2.csv"] })
 
 const xlsx = await loadTable({
   data: "report.xlsx",
-  fileDialect: { sheetName: "Q1 Sales" },
+  fileDialect: { format: "xlsx", sheetName: "Q1 Sales" },
 })
 ```
 
@@ -280,6 +280,8 @@ replaces the inferred one as written; one without a `type` only adds `title`, `d
 table lacks throws. A resource's own `tableSchema` still replaces inference entirely.
 
 ```ts
+import { inferTableSchemaFromTable } from "fairspec"
+
 const schema = await inferTableSchemaFromTable(table, {
   columnProperties: {
     id: { type: "string" },
@@ -312,7 +314,7 @@ const schema: TableSchema = {
     id: { type: "integer" },
     price: { type: "number" },
     active: { type: "boolean" },
-    date: { type: "date" },
+    date: { type: "string", format: "date" },
   },
 }
 

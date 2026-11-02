@@ -5,7 +5,7 @@ path: /typescript/library/json/
 order: 7
 ---
 
-JSON file handling with automatic format detection and high-performance data operations.
+JSON file handling with automatic format detection.
 
 ## Installation
 
@@ -29,6 +29,8 @@ import { loadJsonTable } from "fairspec"
 const table = await loadJsonTable({ data: "table.json" })
 // Standard JSON array of objects format
 ```
+
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 
@@ -62,7 +64,7 @@ await saveJsonTable(table, { path: "output.json" })
 // Save with explicit format
 await saveJsonTable(table, {
   path: "output.json",
-  format: { name: "json" },
+  fileDialect: { format: "json" },
 })
 ```
 
@@ -84,11 +86,13 @@ JSON tables use an array of objects format:
 Extract data from nested objects using `jsonPointer`:
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Input: {"users": [{"id": 1, "name": "Alice"}]}
 const table = await loadJsonTable({
   data: "data.json",
-  format: {
-    name: "json",
+  fileDialect: {
+    format: "json",
     jsonPointer: "/users",
   },
 })
@@ -99,11 +103,13 @@ const table = await loadJsonTable({
 Select specific columns using `columnNames`:
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Only load specific columns
 const table = await loadJsonTable({
   data: "data.json",
-  format: {
-    name: "json",
+  fileDialect: {
+    format: "json",
     columnNames: ["name", "age"],
   },
 })
@@ -114,11 +120,13 @@ const table = await loadJsonTable({
 Handle CSV-style array data with `rowType: "array"`:
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Input: [["id", "name"], [1, "Alice"], [2, "Bob"]]
 const table = await loadJsonTable({
   data: "data.json",
-  format: {
-    name: "json",
+  fileDialect: {
+    format: "json",
     rowType: "array",
   },
 })
@@ -131,11 +139,13 @@ A row with more items than the header fails the load (validation reports the fil
 Wrap data in a nested structure when saving:
 
 ```typescript
+import { saveJsonTable } from "fairspec"
+
 // Output: {"users": [{"id": 1, "name": "Alice"}]}
 await saveJsonTable(table, {
   path: "output.json",
-  format: {
-    name: "json",
+  fileDialect: {
+    format: "json",
     jsonPointer: "/users",
   },
 })

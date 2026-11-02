@@ -5,7 +5,7 @@ path: /python/library/arrow/
 order: 16
 ---
 
-Apache Arrow IPC file handling with high-performance columnar data processing.
+Apache Arrow IPC file handling for columnar data.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_arrow_table, Resource
 table = load_arrow_table(Resource(data="table.arrow"))
 # High-performance columnar format
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

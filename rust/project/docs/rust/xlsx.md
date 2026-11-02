@@ -5,7 +5,7 @@ path: /rust/library/xlsx/
 order: 14
 ---
 
-Excel (.xlsx) file handling with sheet selection, advanced header processing, and high-performance data operations.
+Excel (.xlsx) file handling with sheet selection and advanced header processing.
 
 ## Installation
 
@@ -32,6 +32,8 @@ let resource = serde_json::from_value(json!({"data": "table.xlsx"}))?;
 let table = load_xlsx_table(&resource, &LoadTableOptions::default())?;
 // the column types will be automatically inferred
 ```
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

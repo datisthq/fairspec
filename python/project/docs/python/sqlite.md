@@ -34,6 +34,8 @@ table = load_sqlite_table(Resource(
 # column types will be automatically inferred from database schema
 ```
 
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading SQLite Tables

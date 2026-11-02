@@ -5,7 +5,7 @@ path: /typescript/library/xlsx/
 order: 9
 ---
 
-Excel (.xlsx) file handling with sheet selection, advanced header processing, and high-performance data operations.
+Excel (.xlsx) file handling with sheet selection and advanced header processing.
 
 ## Installation
 
@@ -30,6 +30,8 @@ const table = await loadXlsxTable({ data: "table.xlsx" })
 // the column types will be automatically inferred
 ```
 
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading XLSX Files
@@ -43,8 +45,8 @@ const table = await loadXlsxTable({ data: "data.xlsx" })
 // Load with custom format (specify sheet)
 const table = await loadXlsxTable({
   data: "data.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     sheetName: "Sheet2",
   },
 })
@@ -66,8 +68,8 @@ await saveXlsxTable(table, { path: "output.xlsx" })
 // Save with custom sheet name
 await saveXlsxTable(table, {
   path: "output.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     sheetName: "Data",
   },
 })
@@ -78,11 +80,13 @@ await saveXlsxTable(table, {
 ### Sheet Selection
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Select by sheet number (1-indexed)
 const table = await loadXlsxTable({
   data: "workbook.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     sheetNumber: 2, // Load second sheet
   },
 })
@@ -90,8 +94,8 @@ const table = await loadXlsxTable({
 // Select by sheet name
 const table = await loadXlsxTable({
   data: "workbook.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     sheetName: "Sales Data",
   },
 })
@@ -100,11 +104,13 @@ const table = await loadXlsxTable({
 ### Multi-Header Row Processing
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // XLSX with multiple header rows
 const table = await loadXlsxTable({
   data: "multi-header.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     headerRows: [1, 2],
     headerJoin: "_",
   },
@@ -115,11 +121,13 @@ const table = await loadXlsxTable({
 ### Comment Row Handling
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Skip specific comment rows
 const table = await loadXlsxTable({
   data: "with-comments.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     commentRows: [1, 2],
     headerRows: [3],
   },
@@ -128,8 +136,8 @@ const table = await loadXlsxTable({
 // Skip rows with comment prefix
 const table = await loadXlsxTable({
   data: "data.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     commentPrefix: "#",
     headerRows: [1],
   },
@@ -139,6 +147,8 @@ const table = await loadXlsxTable({
 ### Remote File Loading
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Load from URL
 const table = await loadXlsxTable({
   data: "https://example.com/data.xlsx",
@@ -159,11 +169,13 @@ The n-th name names the n-th column. A sheet with more columns than names fails 
 load; names past its last column add columns that are empty in every row.
 
 ```typescript
+import { loadXlsxTable } from "fairspec"
+
 // Name the three columns of the sheet
 const table = await loadXlsxTable({
   data: "data.xlsx",
-  format: {
-    name: "xlsx",
+  fileDialect: {
+    format: "xlsx",
     columnNames: ["name", "age", "city"],
   },
 })

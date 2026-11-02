@@ -5,7 +5,7 @@ path: /typescript/library/tsv/
 order: 6
 ---
 
-Tab-separated values (TSV) file handling with automatic format detection and high-performance data operations.
+Tab-separated values (TSV) file handling with automatic format detection.
 
 ## Installation
 
@@ -30,6 +30,8 @@ const table = await loadCsvTable({ data: "table.tsv" })
 // the column types will be automatically inferred
 ```
 
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading TSV Files
@@ -43,8 +45,8 @@ const table = await loadCsvTable({ data: "data.tsv" })
 // Load with explicit format
 const table = await loadCsvTable({
   data: "data.tsv",
-  format: {
-    name: "tsv",
+  fileDialect: {
+    format: "tsv",
     headerRows: [1],
   },
 })
@@ -63,14 +65,14 @@ import { saveCsvTable } from "fairspec"
 // Save with default options
 await saveCsvTable(table, {
   path: "output.tsv",
-  format: { name: "tsv" },
+  fileDialect: { format: "tsv" },
 })
 
 // Save with line terminator option
 await saveCsvTable(table, {
   path: "output.tsv",
-  format: {
-    name: "tsv",
+  fileDialect: {
+    format: "tsv",
     lineTerminator: "\r\n",
   },
 })
@@ -81,11 +83,13 @@ await saveCsvTable(table, {
 ### Multi-Header Row Processing
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // TSV with multiple header rows
 const table = await loadCsvTable({
   data: "multi-header.tsv",
-  format: {
-    name: "tsv",
+  fileDialect: {
+    format: "tsv",
     headerRows: [1, 2],
     headerJoin: "_",
   },
@@ -95,11 +99,13 @@ const table = await loadCsvTable({
 ### Comment Handling
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // TSV with comment lines
 const table = await loadCsvTable({
   data: "with-comments.tsv",
-  format: {
-    name: "tsv",
+  fileDialect: {
+    format: "tsv",
     commentPrefix: "#",
     headerRows: [1],
   },
@@ -108,8 +114,8 @@ const table = await loadCsvTable({
 // Or specify specific comment row numbers
 const table = await loadCsvTable({
   data: "with-comments.tsv",
-  format: {
-    name: "tsv",
+  fileDialect: {
+    format: "tsv",
     commentRows: [1, 2],
     headerRows: [3],
   },
@@ -119,6 +125,8 @@ const table = await loadCsvTable({
 ### Remote File Loading
 
 ```typescript
+import { loadCsvTable } from "fairspec"
+
 // Load from URL
 const table = await loadCsvTable({
   data: "https://example.com/data.tsv",

@@ -224,8 +224,10 @@ const dataset = await inferDataset({
   ],
 })
 
-dataset.title = "Sales Database Export"
-dataset.description = "Customer orders and product catalog"
+dataset.titles = [{ title: "Sales Database Export" }]
+dataset.descriptions = [
+  { description: "Customer orders and product catalog", descriptionType: "Abstract" },
+]
 
 await saveDataset(dataset, { target: "./sales-dataset" })
 

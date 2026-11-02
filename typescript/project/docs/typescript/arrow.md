@@ -5,7 +5,7 @@ path: /typescript/library/arrow/
 order: 11
 ---
 
-Apache Arrow IPC file handling with high-performance columnar data processing.
+Apache Arrow IPC file handling for columnar data.
 
 ## Installation
 
@@ -29,6 +29,8 @@ import { loadArrowTable } from "fairspec"
 const table = await loadArrowTable({ data: "table.arrow" })
 // High-performance columnar format
 ```
+
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 
@@ -62,7 +64,7 @@ await saveArrowTable(table, { path: "output.arrow" })
 // Save with explicit format
 await saveArrowTable(table, {
   path: "output.arrow",
-  format: { name: "arrow" },
+  fileDialect: { format: "arrow" },
 })
 ```
 
@@ -71,6 +73,8 @@ await saveArrowTable(table, {
 ### Remote File Loading
 
 ```typescript
+import { loadArrowTable } from "fairspec"
+
 // Load from URL
 const table = await loadArrowTable({
   data: "https://example.com/data.arrow",

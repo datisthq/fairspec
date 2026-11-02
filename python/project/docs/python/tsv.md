@@ -5,7 +5,7 @@ path: /python/library/tsv/
 order: 11
 ---
 
-Tab-separated values (TSV) file handling with automatic format detection and high-performance data operations.
+Tab-separated values (TSV) file handling with automatic format detection.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_csv_table, Resource
 table = load_csv_table(Resource(data="table.tsv"))
 # the column types will be automatically inferred
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

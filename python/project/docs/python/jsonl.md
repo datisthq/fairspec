@@ -5,7 +5,7 @@ path: /python/library/jsonl/
 order: 13
 ---
 
-JSONL (JSON Lines) file handling with automatic format detection and high-performance data operations.
+JSONL (JSON Lines) file handling with automatic format detection.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_json_table, Resource
 table = load_json_table(Resource(data="table.jsonl"))
 # Newline-delimited JSON objects
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

@@ -5,7 +5,7 @@ path: /typescript/library/jsonl/
 order: 8
 ---
 
-JSONL (JSON Lines) file handling with automatic format detection and high-performance data operations.
+JSONL (JSON Lines) file handling with automatic format detection.
 
 ## Installation
 
@@ -30,6 +30,8 @@ const table = await loadJsonTable({ data: "table.jsonl" })
 // Newline-delimited JSON objects
 ```
 
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
+
 ## Basic Usage
 
 ### Loading JSONL Files
@@ -43,7 +45,7 @@ const table = await loadJsonTable({ data: "data.jsonl" })
 // Load with explicit format
 const table = await loadJsonTable({
   data: "data.jsonl",
-  format: { name: "jsonl" },
+  fileDialect: { format: "jsonl" },
 })
 
 // Load multiple files (concatenated)
@@ -60,7 +62,7 @@ import { saveJsonTable } from "fairspec"
 // Save as JSONL
 await saveJsonTable(table, {
   path: "output.jsonl",
-  format: { name: "jsonl" },
+  fileDialect: { format: "jsonl" },
 })
 ```
 
@@ -83,11 +85,13 @@ A blank line, or one holding only spaces, tabs and a carriage return, is not a r
 Select specific columns using `columnNames`:
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Only load specific columns
 const table = await loadJsonTable({
   data: "data.jsonl",
-  format: {
-    name: "jsonl",
+  fileDialect: {
+    format: "jsonl",
     columnNames: ["name", "age"],
   },
 })
@@ -98,6 +102,8 @@ const table = await loadJsonTable({
 Handle CSV-style array data with `rowType: "array"`:
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Input JSONL with arrays:
 // ["id", "name"]
 // [1, "Alice"]
@@ -105,8 +111,8 @@ Handle CSV-style array data with `rowType: "array"`:
 
 const table = await loadJsonTable({
   data: "data.jsonl",
-  format: {
-    name: "jsonl",
+  fileDialect: {
+    format: "jsonl",
     rowType: "array",
   },
 })
@@ -115,6 +121,8 @@ const table = await loadJsonTable({
 ### Remote File Loading
 
 ```typescript
+import { loadJsonTable } from "fairspec"
+
 // Load from URL
 const table = await loadJsonTable({
   data: "https://example.com/data.jsonl",

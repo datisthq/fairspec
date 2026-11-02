@@ -28,13 +28,15 @@ import { loadSqliteTable } from "fairspec"
 
 const table = await loadSqliteTable({
   data: "database.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "users",
   },
 })
 // column types will be automatically inferred from database schema
 ```
+
+Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyDataFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 
@@ -46,8 +48,8 @@ import { loadSqliteTable } from "fairspec"
 // Load a table from SQLite database
 const table = await loadSqliteTable({
   data: "data.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "products",
   },
 })
@@ -55,8 +57,8 @@ const table = await loadSqliteTable({
 // Load from a specific path
 const table = await loadSqliteTable({
   data: "/path/to/database.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "orders",
   },
 })
@@ -70,8 +72,8 @@ import { saveSqliteTable } from "fairspec"
 // Save table to SQLite database
 await saveSqliteTable(table, {
   path: "output.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "results",
   },
 })
@@ -79,8 +81,8 @@ await saveSqliteTable(table, {
 // Overwrite existing table
 await saveSqliteTable(table, {
   path: "output.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "results",
   },
   overwrite: true,
@@ -94,11 +96,13 @@ await saveSqliteTable(table, {
 Table schemas are automatically inferred from SQLite table definitions:
 
 ```typescript
+import { loadSqliteTable } from "fairspec"
+
 // Field types are automatically detected from database schema
 const table = await loadSqliteTable({
   data: "shop.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "products",
   },
 })
@@ -115,8 +119,8 @@ import { saveSqliteTable } from "fairspec"
 // Creates a new database file with the specified table
 await saveSqliteTable(table, {
   path: "new-database.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "my_data",
   },
 })
@@ -131,8 +135,8 @@ import { saveSqliteTable } from "fairspec"
 
 await saveSqliteTable(table, {
   path: "output.db",
-  format: {
-    name: "sqlite",
+  fileDialect: {
+    format: "sqlite",
     tableName: "customers",
   },
   tableSchema: {

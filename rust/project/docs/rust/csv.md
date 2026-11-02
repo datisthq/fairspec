@@ -5,7 +5,7 @@ path: /rust/library/csv/
 order: 10
 ---
 
-Comprehensive CSV file handling with automatic format detection, advanced header processing, and high-performance data operations.
+Comprehensive CSV file handling with automatic format detection and advanced header processing.
 
 ## Installation
 
@@ -33,6 +33,8 @@ let table = load_csv_table(&resource, &LoadTableOptions::default())?;
 // the column types will be automatically inferred
 // or you can provide a Table Schema
 ```
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

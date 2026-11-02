@@ -161,6 +161,8 @@ else:
 To validate only a sub-schema inside a larger descriptor, pass `root_json_pointer`:
 
 ```python
+from fairspec import validate_data_schema
+
 result = validate_data_schema("dataset.json", root_json_pointer="/resources/0/dataSchema")
 ```
 

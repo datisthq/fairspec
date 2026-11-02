@@ -117,15 +117,13 @@ const users = await loadCsvTable({
 
 ### Resource Metadata
 
-You can include metadata with inline data resources:
+An inline resource takes a name and a table schema like any other resource:
 
 ```typescript
 import { loadInlineTable } from "fairspec"
 
 const table = await loadInlineTable({
   name: "countries",
-  title: "Country Reference Data",
-  description: "ISO country codes and names",
   data: [
     { code: "US", name: "United States" },
     { code: "CN", name: "China" },

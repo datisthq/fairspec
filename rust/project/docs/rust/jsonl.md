@@ -5,7 +5,7 @@ path: /rust/library/jsonl/
 order: 13
 ---
 
-JSONL (JSON Lines) file handling with automatic format detection and high-performance data operations.
+JSONL (JSON Lines) file handling with automatic format detection.
 
 ## Installation
 
@@ -32,6 +32,8 @@ let resource = serde_json::from_value(json!({"data": "table.jsonl"}))?;
 let table = load_json_table(&resource, &LoadTableOptions::default())?;
 // Newline-delimited JSON objects
 ```
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

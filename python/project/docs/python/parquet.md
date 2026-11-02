@@ -5,7 +5,7 @@ path: /python/library/parquet/
 order: 17
 ---
 
-Apache Parquet file handling with high-performance columnar data processing and compression.
+Apache Parquet file handling for compressed columnar data.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_parquet_table, Resource
 table = load_parquet_table(Resource(data="table.parquet"))
 # Efficient columnar format with compression
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

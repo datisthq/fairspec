@@ -5,7 +5,7 @@ path: /rust/library/parquet/
 order: 17
 ---
 
-Apache Parquet file handling with high-performance columnar data processing and compression.
+Apache Parquet file handling for compressed columnar data.
 
 ## Installation
 
@@ -32,6 +32,8 @@ let resource = serde_json::from_value(json!({"data": "table.parquet"}))?;
 let table = load_parquet_table(&resource, &LoadTableOptions::default())?;
 // Efficient columnar format with compression
 ```
+
+Loaders return a Polars `LazyFrame` (the `Table` alias): call `.collect()?` to get a `DataFrame`. Savers take a `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 

@@ -5,7 +5,7 @@ path: /python/library/json/
 order: 12
 ---
 
-JSON file handling with automatic format detection and high-performance data operations.
+JSON file handling with automatic format detection.
 
 ## Installation
 
@@ -29,6 +29,8 @@ from fairspec import load_json_table, Resource
 table = load_json_table(Resource(data="table.json"))
 # Standard JSON array of objects format
 ```
+
+Loaders return a Polars `LazyFrame`: call `.collect()` to get a `DataFrame`. Savers take any `LazyFrame`, so pass `df.lazy()` to save a `DataFrame`.
 
 ## Basic Usage
 
