@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.3](https://github.com/datisthq/fairspec/compare/typescript-v0.13.2...typescript-v0.13.3) (2026-11-02)
+
+
+### Bug Fixes
+
+* report a missing xlsx or ods sheet instead of a polars concat error ([c71fa46](https://github.com/datisthq/fairspec/commit/c71fa4650b064b8bc0d27d1141c1ad9e14b49c02))
+
 ## [0.13.2](https://github.com/datisthq/fairspec/compare/typescript-v0.13.1...typescript-v0.13.2) (2026-10-29)
 
 

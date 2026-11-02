@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/datisthq/fairspec/compare/python-v0.3.1...python-v0.3.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* report a missing xlsx or ods sheet instead of a polars concat error ([c71fa46](https://github.com/datisthq/fairspec/commit/c71fa4650b064b8bc0d27d1141c1ad9e14b49c02))
+
 ## [0.3.1](https://github.com/datisthq/fairspec/compare/python-v0.3.0...python-v0.3.1) (2026-10-29)
 
 
