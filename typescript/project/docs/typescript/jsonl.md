@@ -40,16 +40,16 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadJsonTable } from "fairspec"
 
 // Load from local file
-const table = await loadJsonTable({ data: "data.jsonl" })
+const local = await loadJsonTable({ data: "data.jsonl" })
 
 // Load with explicit format
-const table = await loadJsonTable({
+const custom = await loadJsonTable({
   data: "data.jsonl",
   fileDialect: { format: "jsonl" },
 })
 
 // Load multiple files (concatenated)
-const table = await loadJsonTable({
+const combined = await loadJsonTable({
   data: ["part1.jsonl", "part2.jsonl"],
 })
 ```
@@ -124,12 +124,12 @@ const table = await loadJsonTable({
 import { loadJsonTable } from "fairspec"
 
 // Load from URL
-const table = await loadJsonTable({
+const remote = await loadJsonTable({
   data: "https://example.com/data.jsonl",
 })
 
 // Load multiple remote files
-const table = await loadJsonTable({
+const remoteParts = await loadJsonTable({
   data: [
     "https://api.example.com/logs-2023.jsonl",
     "https://api.example.com/logs-2024.jsonl",

@@ -40,10 +40,10 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadCsvTable } from "fairspec"
 
 // Load a simple TSV file
-const table = await loadCsvTable({ data: "data.tsv" })
+const local = await loadCsvTable({ data: "data.tsv" })
 
 // Load with explicit format
-const table = await loadCsvTable({
+const custom = await loadCsvTable({
   data: "data.tsv",
   fileDialect: {
     format: "tsv",
@@ -52,7 +52,7 @@ const table = await loadCsvTable({
 })
 
 // Load multiple TSV files (concatenated)
-const table = await loadCsvTable({
+const combined = await loadCsvTable({
   data: ["part1.tsv", "part2.tsv", "part3.tsv"],
 })
 ```
@@ -102,7 +102,7 @@ const table = await loadCsvTable({
 import { loadCsvTable } from "fairspec"
 
 // TSV with comment lines
-const table = await loadCsvTable({
+const byCommentPrefix = await loadCsvTable({
   data: "with-comments.tsv",
   fileDialect: {
     format: "tsv",
@@ -112,7 +112,7 @@ const table = await loadCsvTable({
 })
 
 // Or specify specific comment row numbers
-const table = await loadCsvTable({
+const byCommentRows = await loadCsvTable({
   data: "with-comments.tsv",
   fileDialect: {
     format: "tsv",
@@ -128,12 +128,12 @@ const table = await loadCsvTable({
 import { loadCsvTable } from "fairspec"
 
 // Load from URL
-const table = await loadCsvTable({
+const remote = await loadCsvTable({
   data: "https://example.com/data.tsv",
 })
 
 // Load multiple remote files
-const table = await loadCsvTable({
+const remoteParts = await loadCsvTable({
   data: [
     "https://api.example.com/data-2023.tsv",
     "https://api.example.com/data-2024.tsv",

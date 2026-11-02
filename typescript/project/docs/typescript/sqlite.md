@@ -46,7 +46,7 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadSqliteTable } from "fairspec"
 
 // Load a table from SQLite database
-const table = await loadSqliteTable({
+const products = await loadSqliteTable({
   data: "data.db",
   fileDialect: {
     format: "sqlite",
@@ -55,7 +55,7 @@ const table = await loadSqliteTable({
 })
 
 // Load from a specific path
-const table = await loadSqliteTable({
+const orders = await loadSqliteTable({
   data: "/path/to/database.db",
   fileDialect: {
     format: "sqlite",

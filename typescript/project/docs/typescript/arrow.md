@@ -40,15 +40,15 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadArrowTable } from "fairspec"
 
 // Load from local file
-const table = await loadArrowTable({ data: "data.arrow" })
+const local = await loadArrowTable({ data: "data.arrow" })
 
 // Load from remote URL
-const table = await loadArrowTable({
+const remote = await loadArrowTable({
   data: "https://example.com/data.arrow",
 })
 
 // Load multiple files (concatenated)
-const table = await loadArrowTable({
+const combined = await loadArrowTable({
   data: ["file1.arrow", "file2.arrow"],
 })
 ```
@@ -76,12 +76,12 @@ await saveArrowTable(table, {
 import { loadArrowTable } from "fairspec"
 
 // Load from URL
-const table = await loadArrowTable({
+const remote = await loadArrowTable({
   data: "https://example.com/data.arrow",
 })
 
 // Load multiple remote files
-const table = await loadArrowTable({
+const remoteParts = await loadArrowTable({
   data: [
     "https://api.example.com/data-2023.arrow",
     "https://api.example.com/data-2024.arrow",

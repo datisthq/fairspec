@@ -41,10 +41,10 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadCsvTable } from "fairspec"
 
 // Load a simple CSV file
-const table = await loadCsvTable({ data: "data.csv" })
+const local = await loadCsvTable({ data: "data.csv" })
 
 // Load with custom format
-const table = await loadCsvTable({
+const custom = await loadCsvTable({
   data: "data.csv",
   fileDialect: {
     format: "csv",
@@ -54,7 +54,7 @@ const table = await loadCsvTable({
 })
 
 // Load multiple CSV files (concatenated)
-const table = await loadCsvTable({
+const combined = await loadCsvTable({
   data: ["part1.csv", "part2.csv", "part3.csv"],
 })
 ```
@@ -92,11 +92,11 @@ await saveCsvTable(table, {
 import { loadCsvTable } from "fairspec"
 
 // Format is automatically detected when not specified
-const table = await loadCsvTable({ data: "unknown-dialect.csv" })
+const detected = await loadCsvTable({ data: "unknown-dialect.csv" })
 // The CSV plugin will automatically infer delimiter, quote characters, etc.
 
 // You can also explicitly specify the format if detection isn't accurate
-const table = await loadCsvTable({
+const explicit = await loadCsvTable({
   data: "data.csv",
   fileDialect: {
     format: "csv",
@@ -141,7 +141,7 @@ import { loadCsvTable } from "fairspec"
 // Name,Age,City
 // John,25,NYC
 
-const table = await loadCsvTable({
+const byCommentRows = await loadCsvTable({
   data: "with-comments.csv",
   fileDialect: {
     format: "csv",
@@ -151,7 +151,7 @@ const table = await loadCsvTable({
 })
 
 // Or use commentPrefix to skip lines starting with a specific character
-const table = await loadCsvTable({
+const byCommentPrefix = await loadCsvTable({
   data: "with-comments.csv",
   fileDialect: {
     format: "csv",
@@ -167,12 +167,12 @@ const table = await loadCsvTable({
 import { loadCsvTable } from "fairspec"
 
 // Load from URL
-const table = await loadCsvTable({
+const remote = await loadCsvTable({
   data: "https://example.com/data.csv",
 })
 
 // Load multiple remote files
-const table = await loadCsvTable({
+const remoteParts = await loadCsvTable({
   data: [
     "https://api.example.com/data-2023.csv",
     "https://api.example.com/data-2024.csv",

@@ -40,10 +40,10 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadXlsxTable } from "fairspec"
 
 // Load a simple ODS file
-const table = await loadXlsxTable({ data: "data.ods" })
+const local = await loadXlsxTable({ data: "data.ods" })
 
 // Load with custom format (specify sheet)
-const table = await loadXlsxTable({
+const fromSheet = await loadXlsxTable({
   data: "data.ods",
   fileDialect: {
     format: "ods",
@@ -52,7 +52,7 @@ const table = await loadXlsxTable({
 })
 
 // Load multiple ODS files (concatenated)
-const table = await loadXlsxTable({
+const combined = await loadXlsxTable({
   data: ["part1.ods", "part2.ods", "part3.ods"],
 })
 ```
@@ -86,7 +86,7 @@ await saveXlsxTable(table, {
 import { loadXlsxTable } from "fairspec"
 
 // Select by sheet number (1-indexed)
-const table = await loadXlsxTable({
+const bySheetNumber = await loadXlsxTable({
   data: "workbook.ods",
   fileDialect: {
     format: "ods",
@@ -95,7 +95,7 @@ const table = await loadXlsxTable({
 })
 
 // Select by sheet name
-const table = await loadXlsxTable({
+const bySheetName = await loadXlsxTable({
   data: "workbook.ods",
   fileDialect: {
     format: "ods",
@@ -127,7 +127,7 @@ const table = await loadXlsxTable({
 import { loadXlsxTable } from "fairspec"
 
 // Skip specific comment rows
-const table = await loadXlsxTable({
+const byCommentRows = await loadXlsxTable({
   data: "with-comments.ods",
   fileDialect: {
     format: "ods",
@@ -137,7 +137,7 @@ const table = await loadXlsxTable({
 })
 
 // Skip rows with comment prefix
-const table = await loadXlsxTable({
+const byCommentPrefix = await loadXlsxTable({
   data: "data.ods",
   fileDialect: {
     format: "ods",
@@ -153,12 +153,12 @@ const table = await loadXlsxTable({
 import { loadXlsxTable } from "fairspec"
 
 // Load from URL
-const table = await loadXlsxTable({
+const remote = await loadXlsxTable({
   data: "https://example.com/data.ods",
 })
 
 // Load multiple remote files
-const table = await loadXlsxTable({
+const remoteParts = await loadXlsxTable({
   data: [
     "https://api.example.com/data-2023.ods",
     "https://api.example.com/data-2024.ods",

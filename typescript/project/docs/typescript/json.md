@@ -40,15 +40,15 @@ Loaders return a nodejs-polars `LazyDataFrame`: call `.collect()` to get a `Data
 import { loadJsonTable } from "fairspec"
 
 // Load from local file
-const table = await loadJsonTable({ data: "data.json" })
+const local = await loadJsonTable({ data: "data.json" })
 
 // Load from remote URL
-const table = await loadJsonTable({
+const remote = await loadJsonTable({
   data: "https://example.com/data.json",
 })
 
 // Load multiple files (concatenated)
-const table = await loadJsonTable({
+const combined = await loadJsonTable({
   data: ["file1.json", "file2.json"],
 })
 ```
