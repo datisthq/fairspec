@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import polars as pl
+import pytest
 from fairspec_dataset import get_temp_file_path
 from fairspec_metadata import OdsFileDialect, Resource, XlsxFileDialect
 from ..load import load_xlsx_table
@@ -58,6 +59,24 @@ class TestLoadXlsxTableXlsx:
         frame: pl.DataFrame = table.collect()  # ty: ignore[invalid-assignment]
 
         assert frame.to_dicts() == [RECORD1, RECORD2]
+
+    def test_should_fail_on_a_missing_sheet_name(self):
+        path = get_temp_file_path()
+        write_test_data(path, [ROW1, ROW2, ROW3])
+
+        with pytest.raises(Exception, match="Resource data has no such sheet"):
+            load_xlsx_table(
+                Resource(data=path, fileDialect=XlsxFileDialect(sheetName="missing"))
+            )
+
+    def test_should_fail_on_a_sheet_number_past_the_last_sheet(self):
+        path = get_temp_file_path()
+        write_test_data(path, [ROW1, ROW2, ROW3])
+
+        with pytest.raises(Exception, match="Resource data has no such sheet"):
+            load_xlsx_table(
+                Resource(data=path, fileDialect=XlsxFileDialect(sheetNumber=2))
+            )
 
     def test_should_support_no_header(self):
         path = get_temp_file_path()

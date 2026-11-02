@@ -41,6 +41,10 @@ export async function loadXlsxTable(resource: Resource, options?: LoadTableOptio
     }
   }
 
+  if (!tables.length) {
+    throw new Error("Resource data has no such sheet")
+  }
+
   let table = concatPartTables(tables, fileDialect, isOwnHeader ? partHeaders : undefined)
 
   if (!options?.denormalized) {

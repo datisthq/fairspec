@@ -99,6 +99,27 @@ describe("loadXlsxTable (format=xlsx)", () => {
       expect((await table.collect()).toRecords()).toEqual([record1, record2])
     })
 
+    it("should fail on a missing sheetName", async () => {
+      const path = getTempFilePath()
+      await writeTestData(path, [row1, row2, row3])
+
+      await expect(
+        loadXlsxTable({
+          data: path,
+          fileDialect: { format: "xlsx", sheetName: "missing" },
+        }),
+      ).rejects.toThrow("Resource data has no such sheet")
+    })
+
+    it("should fail on a sheetNumber past the last sheet", async () => {
+      const path = getTempFilePath()
+      await writeTestData(path, [row1, row2, row3])
+
+      await expect(
+        loadXlsxTable({ data: path, fileDialect: { format: "xlsx", sheetNumber: 2 } }),
+      ).rejects.toThrow("Resource data has no such sheet")
+    })
+
     it("should support no header", async () => {
       const path = getTempFilePath()
       await writeTestData(path, [row2, row3])

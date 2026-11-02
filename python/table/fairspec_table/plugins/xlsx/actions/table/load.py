@@ -55,6 +55,9 @@ def load_xlsx_table(resource: Resource, **options: Unpack[LoadTableOptions]) -> 
             if is_own_header:
                 part_headers.append(get_sheet_header(rows, file_dialect))
 
+    if not tables:
+        raise Exception("Resource data has no such sheet")
+
     result = concat_part_tables(
         tables, file_dialect, part_headers if is_own_header else None
     )
