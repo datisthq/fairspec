@@ -2,6 +2,15 @@ import { defineConfig } from "livemark"
 
 export default defineConfig({
   site: "https://fairspec.org",
+  head: {
+    scripts: [
+      {
+        src: "https://counter.datist.io/api/script.js",
+        "data-site-id": "6",
+        defer: "true",
+      },
+    ],
+  },
   title: "Fairspec",
   description: "Making data FAIR",
   logo: "/logo.svg",

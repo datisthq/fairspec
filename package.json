@@ -23,7 +23,6 @@
     "update:deps": "ncu -ws --root -u --cooldown 7d"
   },
   "devDependencies": {
-    "@plausible-analytics/tracker": "0.4.5",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-start": "catalog:",
     "@types/node": "catalog:",

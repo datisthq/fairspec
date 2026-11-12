@@ -224,9 +224,6 @@ importers:
 
   .:
     devDependencies:
-      '@plausible-analytics/tracker':
-        specifier: 0.4.5
-        version: 0.4.5
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2824,9 +2821,6 @@ packages:
   '@parcel/watcher@2.5.6':
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
-
-  '@plausible-analytics/tracker@0.4.5':
-    resolution: {integrity: sha512-6BfAGejXY+YA3Cw6LYT2Zpn4hTxDtPQAawFsYUsQCOg78wIS5C4deAGXTfJffa5VleMWITv5lpJ/EYuQBl1tPA==}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -10911,8 +10905,6 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.6
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
-
-  '@plausible-analytics/tracker@0.4.5': {}
 
   '@polka/url@1.0.0-next.29': {}
 
