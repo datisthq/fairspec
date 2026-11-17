@@ -266,7 +266,7 @@ const benchmark: Benchmark = {
   title: "Validating a 10 GB CSV",
   caption: "19.4M rows · 41 columns",
   rows: [
-    { tool: "Fairspec", seconds: 11.3, ours: true },
+    { tool: "Fairspec", seconds: 11.4, ours: true },
     { tool: "pandera", seconds: 64.9 },
     { tool: "qsv", seconds: 71.4 },
     { tool: "CSV Validator", seconds: 530.3 },
@@ -659,9 +659,9 @@ const BENCHMARK_BYTES = 10_022_863_718
 
 // The nyc-311 10GB run in .humans/benchmark-nyc-311.html; complete validators only
 const measures: Measure[] = [
-  { tool: "Fairspec (TypeScript)", seconds: 11.3, memoryMb: 1181, ours: true },
-  { tool: "Fairspec (Python)", seconds: 12.6, memoryMb: 999, ours: true },
-  { tool: "Fairspec (Rust)", seconds: 12.6, memoryMb: 1005, ours: true },
+  { tool: "Fairspec (Rust)", seconds: 11.4, memoryMb: 971, ours: true },
+  { tool: "Fairspec (TypeScript)", seconds: 12.4, memoryMb: 1152, ours: true },
+  { tool: "Fairspec (Python)", seconds: 12.5, memoryMb: 1027, ours: true },
   { tool: "pandera (DuckDB)", seconds: 64.9, memoryMb: 6328 },
   { tool: "qsv", seconds: 71.4, memoryMb: 3849 },
   { tool: "CSV Validator", seconds: 530.3, memoryMb: 3225 },
