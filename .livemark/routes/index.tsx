@@ -266,7 +266,7 @@ const benchmark: Benchmark = {
   title: "Validating a 10 GB CSV",
   caption: "19.4M rows · 41 columns",
   rows: [
-    { tool: "Fairspec", seconds: 12.6, ours: true },
+    { tool: "Fairspec", seconds: 11.3, ours: true },
     { tool: "pandera", seconds: 64.9 },
     { tool: "qsv", seconds: 71.4 },
     { tool: "CSV Validator", seconds: 530.3 },
@@ -659,9 +659,9 @@ const BENCHMARK_BYTES = 10_022_863_718
 
 // The nyc-311 10GB run in .humans/benchmark-nyc-311.html; complete validators only
 const measures: Measure[] = [
+  { tool: "Fairspec (TypeScript)", seconds: 11.3, memoryMb: 1181, ours: true },
   { tool: "Fairspec (Python)", seconds: 12.6, memoryMb: 999, ours: true },
   { tool: "Fairspec (Rust)", seconds: 12.6, memoryMb: 1005, ours: true },
-  { tool: "Fairspec (TypeScript)", seconds: 13.9, memoryMb: 1511, ours: true },
   { tool: "pandera (DuckDB)", seconds: 64.9, memoryMb: 6328 },
   { tool: "qsv", seconds: 71.4, memoryMb: 3849 },
   { tool: "CSV Validator", seconds: 530.3, memoryMb: 3225 },
@@ -734,8 +734,8 @@ function PerformanceStripe() {
             <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
               <Gauge className="mt-0.5 size-3.5 shrink-0" />
               <span>
-                Input megabytes per second and peak memory, median of 2 runs on an AMD
-                Ryzen 5 PRO 7545U. Every finishing tool reports the same 100 seeded
+                Input megabytes per second and peak memory, median of 2 to 5 runs on an
+                AMD Ryzen 5 PRO 7545U. Every finishing tool reports the same 100 seeded
                 errors. Fairspec TypeScript runs on Node 26. Reproduce with{" "}
                 <code className="font-mono text-foreground">
                   pnpm -C benchmark measure --case nyc-311 --size 10GB
