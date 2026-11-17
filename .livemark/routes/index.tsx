@@ -661,7 +661,7 @@ const BENCHMARK_BYTES = 10_022_863_718
 const measures: Measure[] = [
   { tool: "Fairspec (Python)", seconds: 12.6, memoryMb: 999, ours: true },
   { tool: "Fairspec (Rust)", seconds: 12.6, memoryMb: 1005, ours: true },
-  { tool: "Fairspec (TypeScript)", seconds: 15.5, memoryMb: 1597, ours: true },
+  { tool: "Fairspec (TypeScript)", seconds: 13.9, memoryMb: 1511, ours: true },
   { tool: "pandera (DuckDB)", seconds: 64.9, memoryMb: 6328 },
   { tool: "qsv", seconds: 71.4, memoryMb: 3849 },
   { tool: "CSV Validator", seconds: 530.3, memoryMb: 3225 },
@@ -736,7 +736,7 @@ function PerformanceStripe() {
               <span>
                 Input megabytes per second and peak memory, median of 2 runs on an AMD
                 Ryzen 5 PRO 7545U. Every finishing tool reports the same 100 seeded
-                errors. Reproduce with{" "}
+                errors. Fairspec TypeScript runs on Node 26. Reproduce with{" "}
                 <code className="font-mono text-foreground">
                   pnpm -C benchmark measure --case nyc-311 --size 10GB
                 </code>

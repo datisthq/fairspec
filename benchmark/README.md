@@ -47,6 +47,14 @@ limit in seconds (3600), and `--memory-max` caps each tool, for example `10G`. R
 `.cache/results/`, one file per invocation; `show:report` keeps the latest result per case,
 size and tool, and `--out` writes the page elsewhere.
 
+The TypeScript adapter runs on the Node that runs `measure`. `pnpm` resolves the repo's Node 24,
+while the published numbers come from Node 26, so run the script directly with Node 26 first on
+`PATH`:
+
+```bash
+cd benchmark && PATH=<node-26>/bin:$PATH node @measure.ts --case nyc-311 --tool fairspec-typescript
+```
+
 `generate:data` writes a dataset without measuring anything:
 
 ```bash

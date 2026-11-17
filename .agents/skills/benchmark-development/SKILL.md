@@ -20,6 +20,10 @@ user reference; this skill is how to change it without making the numbers lie.
   into .cache/bin/. The Fairspec adapters (`fairspec/validate.{py,ts}`) need `pnpm -C python setup` and `pnpm -C typescript build`; the Rust one (`fairspec/rust/`, a member of the `rust/` workspace so it shares its polars patch, profile and CPU flags) is built by its tool with `pnpm -C rust build:dist` before each run, so it never goes stale; that needs the pinned nightly toolchain (`rustup toolchain install nightly-2026-09-01`). Rust runs on the streaming engine like Python; on the in-memory engine it held 2.8GB per GB
 - `pnpm -C benchmark measure` — narrowed with `--case`, `--size`, `--tool`; set `--runs 1 --warmup 0`
   and a `--timeout` for multi-gigabyte sizes, and `--memory-max` below what the machine has free
+- `fairspec-typescript` runs on `process.execPath`, and `pnpm` (through the vite-plus shim and
+  `engines ^24.11.0`) runs Node 24. Published numbers are Node 26: run `node @measure.ts` from
+  `benchmark/` with Node 26 first on `PATH`. On Node 24 nodejs-polars `mapBatches` costs ~0.35s
+  per GB in full GCs
 - `pnpm -C benchmark show:report` — merges `.cache/results/`, latest result per case, size and tool
 - After a Fairspec change, re-measure only the tools that changed
   (`--tool fairspec-python --tool fairspec-typescript --tool fairspec-rust`); unchanged rivals carry over in the
@@ -126,7 +130,8 @@ The published comparison is a `.humans/` page: `pnpm -C benchmark show:report --
 full run of the case on an otherwise idle machine; a partial or noisy run is not published.
 A bare `show:report` merges every file in the results cache, so stale sizes, renamed tools and
 partial reruns resurface on the page: pass the result files explicitly, the rivals' files the
-current page was built from plus the new Fairspec runs. Re-run a Fairspec number that moves
+current page was built from plus the new Fairspec runs. Nothing else records that list, so
+the publishing commit's body names every result file. Re-run a Fairspec number that moves
 far from its last review before publishing it; a single cold 10GB run under load is noise
 
 The landing page copies the 10GB numbers by hand into `.livemark/routes/index.tsx`: the hero's
