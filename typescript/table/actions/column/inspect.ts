@@ -25,10 +25,14 @@ import { inspectTopojsonColumn } from "./types/topojson.ts"
 import { inspectWkbColumn } from "./types/wkb.ts"
 import { inspectWktColumn } from "./types/wkt.ts"
 
+/** Builds a flag from a reader of a column's typed value, undefined if it is not parsed */
+export type FlagFactory = (readTyped: (name: string) => pl.Expr | undefined) => pl.Expr
+
 /**
  * Check every column against its schema, keyed by column name in mapping order. The
  * integer columns in `plainIntegerColumns` read only the plain form, so a cell with a
- * fraction or an exponent fails their type check
+ * fraction or an exponent fails their type check. Each of `flags` builds an always-false
+ * Boolean, evaluated in the same read
  */
 export async function inspectColumns(
   mappings: ColumnMapping[],
@@ -36,9 +40,10 @@ export async function inspectColumns(
   options: {
     maxErrors: number
     plainIntegerColumns?: ReadonlySet<string>
+    flags?: FlagFactory[]
   },
 ) {
-  const { maxErrors, plainIntegerColumns = new Set<string>() } = options
+  const { maxErrors, plainIntegerColumns = new Set<string>(), flags = [] } = options
   const errors = new Map<string, TableError[]>()
   const polarsMappings: ColumnMapping[] = []
 
@@ -50,10 +55,11 @@ export async function inspectColumns(
     }
   }
 
-  if (polarsMappings.length) {
+  if (polarsMappings.length || flags.length) {
     const cellErrors = await inspectCellsInPolars(polarsMappings, table, {
       maxErrors,
       plainIntegerColumns,
+      flags,
     })
     for (const [name, columnErrors] of cellErrors) {
       errors.set(name, columnErrors)
@@ -179,12 +185,14 @@ async function inspectCellsInPolars(
   options: {
     maxErrors: number
     plainIntegerColumns: ReadonlySet<string>
+    flags: FlagFactory[]
   },
 ) {
-  const { maxErrors, plainIntegerColumns } = options
+  const { maxErrors, plainIntegerColumns, flags } = options
   const errors = new Map<string, TableError[]>(
     mappings.map(mapping => [mapping.target.name, []]),
   )
+  const isFlagged = flags.map((_, index) => pl.col(getFlagName(index)))
 
   // The error columns carry a tag, not the error itself: a literal is broadcast to
   // every row, so a JSON template would materialize a full-length string column per
@@ -198,14 +206,31 @@ async function inspectCellsInPolars(
       isSourceTypeDropped: false,
     }))
   }
-  if (!checked.length) return errors
+  if (!checked.length) {
+    if (flags.length) {
+      await table
+        .select(...createFlagExprs(flags, new Map()))
+        .filter(pl.anyHorizontal(isFlagged))
+        .collect()
+    }
+    return errors
+  }
 
+  // The targets come first so the flags read them: the streaming engine evaluates a
+  // repeated expression once per use, so a flag parsing a column again parses it twice
+  const targetNames = new Map(
+    checked.map(({ index, mapping }) => [mapping.source.name, getTargetName(index)]),
+  )
   const checkTable = table
     .withRowIndex(NUMBER_COLUMN_NAME, 1)
+    .withColumns(
+      ...checked.map(({ index, targetExpr }) => targetExpr.alias(getTargetName(index))),
+    )
     .select(
       pl.col(NUMBER_COLUMN_NAME),
-      ...checked.flatMap(({ index, mapping, targetExpr, sourceExpr }) => [
-        targetExpr.alias(getTargetName(index)),
+      ...createFlagExprs(flags, targetNames),
+      ...checked.flatMap(({ index, mapping, sourceExpr }) => [
+        pl.col(getTargetName(index)),
         ...(sourceExpr ? [sourceExpr.alias(getSourceName(index))] : []),
         pl.col(mapping.source.name).alias(getCellName(index)),
       ]),
@@ -218,10 +243,14 @@ async function inspectCellsInPolars(
     )
 
   // A lazy frame caches nothing, so every column shares this one collect: a collect
-  // per column would parse the whole source once for each
+  // per column would parse the whole source once for each. The flags join the filter
+  // only so the optimizer keeps them; they are never true
   const checkFrame = await checkTable
     .filter(
-      pl.anyHorizontal(checked.map(({ index }) => pl.col(getErrorName(index)).neq(0))),
+      pl.anyHorizontal([
+        ...checked.map(({ index }) => pl.col(getErrorName(index)).neq(0)),
+        ...isFlagged,
+      ]),
     )
     .select(
       pl.col(NUMBER_COLUMN_NAME),
@@ -341,6 +370,15 @@ function getIsSameExpr(a: pl.Expr, b: pl.Expr) {
   }
 }
 
+function createFlagExprs(flags: FlagFactory[], targetNames: Map<string, string>) {
+  const readTyped = (name: string) => {
+    const targetName = targetNames.get(name)
+    return targetName ? pl.col(targetName) : undefined
+  }
+
+  return flags.map((createFlag, index) => createFlag(readTyped).alias(getFlagName(index)))
+}
+
 function getTargetName(index: number) {
   return `fairspec:target:${index}`
 }
@@ -351,6 +389,10 @@ function getSourceName(index: number) {
 
 function getCellName(index: number) {
   return `fairspec:cell:${index}`
+}
+
+function getFlagName(index: number) {
+  return `fairspec:flag:${index}`
 }
 
 function getErrorName(index: number) {

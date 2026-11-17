@@ -114,13 +114,10 @@ and leaves it out of the validator count and the fastest-rival tile.
   16GB file showed 52GB RSS inside a 12GB cap. The reported memory is peak `RssAnon` summed over
   the tool's process tree, sampled every 50 ms; `peakRssMb` stays in the results only for
   reference
-- Fairspec TypeScript's memory is bimodal (2.2–7.7GB at 10GB, Python a steady 2.3GB): the
-  nodejs-polars binary uses glibc malloc where py-polars ships jemalloc, and glibc fragments
-  under the streaming engine. `LD_PRELOAD` of jemalloc or mimalloc brings it to Python's level,
-  time unchanged. One high reading is that, not a measuring fault; don't rerun until it is low.
-  In-process polars knobs don't help (morsel/chunk size, prefetch) except `POLARS_MAX_THREADS=6`,
-  at 15–30% more time. A source build of nodejs-polars with jemalloc and py-polars' x86-64-v3
-  `RUSTFLAGS` gave 19s/2.4GB against npm's 21s/2.4–8GB; adding `cse`/`nightly` gained nothing
+- nodejs-polars links jemalloc since 0.26.2, as py-polars does. On 0.26.1's glibc malloc
+  Fairspec TypeScript's memory was bimodal at 10GB (2.2–7.7GB): glibc fragments under the
+  streaming engine. A high TypeScript reading on 0.26.2 or later is not that; look for a
+  regression. A source build with py-polars' x86-64-v3 `RUSTFLAGS` gained ~10% on 0.26.1
 - A partial tool's bars are a lighter gray (`--partial`) than the full rivals'
 
 ## Publishing

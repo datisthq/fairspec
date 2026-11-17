@@ -1,8 +1,8 @@
 diff --git a/bin/lazy/expr/index.js b/bin/lazy/expr/index.js
-index 9c187ae69f43f4a45904bd5ebe1c465812f5193d..2d47756d4d214264f2c7a8f5d346041261b3f92e 100644
+index 69ad01f..e6735e1 100644
 --- a/bin/lazy/expr/index.js
 +++ b/bin/lazy/expr/index.js
-@@ -70,14 +70,10 @@ const _Expr = (_expr) => {
+@@ -74,14 +74,10 @@ const _Expr = (_expr) => {
          };
          return wrap(method, callOpts);
      };
@@ -20,7 +20,7 @@ index 9c187ae69f43f4a45904bd5ebe1c465812f5193d..2d47756d4d214264f2c7a8f5d3460412
          serialize(format) {
              return _expr.serialize(format);
          },
-@@ -654,6 +650,13 @@ const _Expr = (_expr) => {
+@@ -686,6 +682,13 @@ const _Expr = (_expr) => {
          neq: wrapExprArg("neq"),
          notEquals: wrapExprArg("neq"),
      };
@@ -33,9 +33,9 @@ index 9c187ae69f43f4a45904bd5ebe1c465812f5193d..2d47756d4d214264f2c7a8f5d3460412
 +    return expr;
  };
  exports._Expr = _Expr;
- const isExpr = (anyVal) => {
+ const isScalarValue = (anyVal) => anyVal === null ||
 diff --git a/bin/lazy/expr/string.d.ts b/bin/lazy/expr/string.d.ts
-index 37a9a54446cbc86e110c3dbefab319de316c21d7..8d851a07190c02dc7b36707d6c841a206f249d86 100644
+index 37a9a54..8d851a0 100644
 --- a/bin/lazy/expr/string.d.ts
 +++ b/bin/lazy/expr/string.d.ts
 @@ -487,9 +487,9 @@ export interface ExprString extends StringFunctions<Expr> {
@@ -62,7 +62,7 @@ index 37a9a54446cbc86e110c3dbefab319de316c21d7..8d851a07190c02dc7b36707d6c841a20
 +    cache?: boolean;
 +}
 diff --git a/bin/lazy/expr/string.js b/bin/lazy/expr/string.js
-index b43a30bcdd7844a91c1243009840f78b0f06ee2b..d7bcc180e069390f801fe7a9472a5f06290da0db 100644
+index b43a30b..d7bcc18 100644
 --- a/bin/lazy/expr/string.js
 +++ b/bin/lazy/expr/string.js
 @@ -110,13 +110,15 @@ const ExprStringFunctions = (_expr) => {
@@ -85,7 +85,7 @@ index b43a30bcdd7844a91c1243009840f78b0f06ee2b..d7bcc180e069390f801fe7a9472a5f06
              throw new Error(`only "DataType.Date" and "DataType.Datetime" are supported`);
          },
 diff --git a/bin/series/index.js b/bin/series/index.js
-index 139c72a6eb1fcb14c75d5efa663370c741fa9e7e..fc43af8b26299d2e9e16c4930434ca2f7548b1d1 100644
+index 139c72a..fc43af8 100644
 --- a/bin/series/index.js
 +++ b/bin/series/index.js
 @@ -69,9 +69,6 @@ function _Series(_s) {

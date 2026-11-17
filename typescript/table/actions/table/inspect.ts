@@ -11,12 +11,11 @@ import type { ColumnMapping } from "../../models/column.ts"
 import type { SchemaMapping } from "../../models/schema.ts"
 import type { Table } from "../../models/table.ts"
 import {
-  COUNT_COLUMN_NAME,
   ERROR_COLUMN_NAME,
   INSPECT_ROW_CONCURRENCY,
   NUMBER_COLUMN_NAME,
 } from "../../settings.ts"
-import { createKeyPresenceExpr, createRowKeyChecks } from "./checks/key.ts"
+import { createKeyHashProbe, createRowKeyChecks } from "./checks/key.ts"
 import { mergeMissingValues } from "./-shared/helpers.ts"
 
 export async function inspectTable(
@@ -37,18 +36,18 @@ export async function inspectTable(
     const polarsSchema = getPolarsSchema(sample.schema)
     mapping = { source: polarsSchema, target: tableSchema }
 
-    const { columnErrors, plainIntegerColumns } = await inspectSchemaColumns(
-      mapping,
-      table,
-      { sample, maxErrors },
-    )
+    const { columnErrors, keyProbes } = await inspectSchemaColumns(mapping, table, {
+      sample,
+      maxErrors,
+    })
     errors.push(...columnErrors)
 
-    const rowErrors = await inspectRows(mapping, table, {
-      maxErrors,
-      plainIntegerColumns,
-    })
-    errors.push(...rowErrors)
+    // The cell checks stop reading at maxErrors, leaving the key hashes partial, but
+    // only once their errors fill the report, which then has no room for row errors
+    if (errors.length < maxErrors) {
+      const rowErrors = await inspectRows(mapping, table, { maxErrors, keyProbes })
+      errors.push(...rowErrors)
+    }
   }
 
   if (checks.length && errors.length < maxErrors) {
@@ -100,14 +99,19 @@ async function inspectSchemaColumns(
   // The exact integer reading costs every read, so an integer column whose sample holds
   // no cell only it reads is read plain: such a cell then fails the type check, and only
   // then are the columns read again, exactly
-  let plainIntegerColumns = await getPlainIntegerColumns(columnMappings, sample)
+  const plainIntegerColumns = await getPlainIntegerColumns(columnMappings, sample)
+  let keyProbes = createKeyProbes(mapping, plainIntegerColumns)
   let cellErrors = await inspectColumns(columnMappings, table, {
     maxErrors,
     plainIntegerColumns,
+    flags: keyProbes.map(({ probe }) => probe.createFlagExpr),
   })
   if (await getHasUnplainIntegerCell(columnMappings, cellErrors, plainIntegerColumns)) {
-    plainIntegerColumns = new Set()
-    cellErrors = await inspectColumns(columnMappings, table, { maxErrors })
+    keyProbes = createKeyProbes(mapping, new Set())
+    cellErrors = await inspectColumns(columnMappings, table, {
+      maxErrors,
+      flags: keyProbes.map(({ probe }) => probe.createFlagExpr),
+    })
   }
 
   for (const column of columns) {
@@ -127,8 +131,20 @@ async function inspectSchemaColumns(
       Number(!a.type.startsWith("column/")) - Number(!b.type.startsWith("column/")),
   )
 
-  return { columnErrors, plainIntegerColumns }
+  return { columnErrors, keyProbes }
 }
+
+function createKeyProbes(
+  mapping: SchemaMapping,
+  plainIntegerColumns: ReadonlySet<string>,
+) {
+  return createRowKeyChecks(mapping, { plainIntegerColumns }).map(check => ({
+    check,
+    probe: createKeyHashProbe(check),
+  }))
+}
+
+type KeyProbe = ReturnType<typeof createKeyProbes>[number]
 
 async function getPlainIntegerColumns(mappings: ColumnMapping[], sample: pl.DataFrame) {
   const integerMappings = mappings.filter(
@@ -185,16 +201,16 @@ async function getHasExactIntegers(mappings: ColumnMapping[], table: Table) {
 async function inspectRows(
   mapping: SchemaMapping,
   table: Table,
-  options: { maxErrors: number; plainIntegerColumns: ReadonlySet<string> },
+  options: { maxErrors: number; keyProbes: KeyProbe[] },
 ) {
-  const { maxErrors, plainIntegerColumns } = options
+  const { maxErrors, keyProbes } = options
   const errors: TableError[] = []
   const columns = getColumns(mapping.target)
   const abortController = new AbortController()
   const maxRowErrors = Math.ceil(maxErrors / columns.length)
 
-  const collectRowErrors = async (check: RowKeyCheck) => {
-    if (!(await getHasDuplicateKey(table, check))) return
+  const collectRowErrors = async ({ check, probe }: KeyProbe) => {
+    if (!probe.getHasDuplicateKey()) return
 
     // A literal is broadcast to every row, so flag the error with a boolean rather
     // than a JSON template, which would materialize a full-length string column.
@@ -229,9 +245,7 @@ async function inspectRows(
 
   try {
     await pAll(
-      [...createRowKeyChecks(mapping, { plainIntegerColumns })].map(
-        it => () => collectRowErrors(it),
-      ),
+      keyProbes.map(it => () => collectRowErrors(it)),
       { concurrency: INSPECT_ROW_CONCURRENCY },
     )
   } catch (error) {
@@ -240,22 +254,4 @@ async function inspectRows(
   }
 
   return errors
-}
-
-type RowKeyCheck = ReturnType<typeof createRowKeyChecks>[number]
-
-// Grouping reads only the key columns and builds no per-row expression, so a clean key
-// costs a fraction of the locating query, which runs only once a duplicate is known
-async function getHasDuplicateKey(table: Table, check: RowKeyCheck) {
-  const probe = await table
-    .select(check.keyExprs)
-    .filter(createKeyPresenceExpr(check.keyColumns.map(name => pl.col(name))))
-    // maintainOrder: nodejs-polars defaults it to true, an ordered aggregate for no reader
-    .groupBy(check.keyColumns, false)
-    .len(COUNT_COLUMN_NAME)
-    .filter(pl.col(COUNT_COLUMN_NAME).gt(1))
-    .head(1)
-    .collect()
-
-  return probe.height > 0
 }

@@ -75,4 +75,4 @@ peerDependencyRules:
     vitest: "*"
 
 patchedDependencies:
-  nodejs-polars@0.26.1: .patches/nodejs-polars@0.26.1.patch
+  nodejs-polars@0.26.2: .patches/nodejs-polars@0.26.2.patch

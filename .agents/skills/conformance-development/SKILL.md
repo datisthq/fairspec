@@ -161,8 +161,9 @@ fails the other. The Rust runner checks the same, so a new operation also goes i
   order, so `ORDER BY`, `MIN`/`MAX` and comparisons follow that order; an integer Categorical,
   or a string one with labels, without `withOrder` is an `Enum` in value order, since its labels
   sort as text (`"10" < "2"`).
-  `denarrow_column` takes an `Enum` source back to values. nodejs-polars has no `Enum`, so
-  TypeScript skips those cases (`KNOWN_DIVERGENCES`, #76)
+  `denarrow_column` takes an `Enum` source back to values. TypeScript does not narrow to
+  `Enum` yet (nodejs-polars has it since 0.26.2), so it skips those cases
+  (`KNOWN_DIVERGENCES`, #76)
 - The row-parsed text types (duration, WKT, WKB) check `enum`, `const`, `minLength`,
   `maxLength` and `pattern` in their row scan with the polars path's own check functions
   (`TEXT_CHECK_FUNCTIONS` in `inspectTextColumn` and twins), evaluated in that scan's one

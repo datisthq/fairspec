@@ -1,4 +1,4 @@
-import type { TableSchema } from "@fairspec/metadata"
+import type { TableError, TableSchema } from "@fairspec/metadata"
 import * as pl from "nodejs-polars"
 import { describe, expect, it } from "vite-plus/test"
 import { inspectTable } from "../../inspect.ts"
@@ -251,6 +251,74 @@ describe("inspectTable (row/unique)", () => {
     const errors = await inspectTable(table, { tableSchema, maxErrors: 4 })
     expect(errors.map(error => "rowNumber" in error && error.rowNumber)).toEqual([2, 3])
   })
+
+  it("should find a duplicate key beside cell errors", async () => {
+    const table = pl.DataFrame({ id: ["1", "2", "x", "2"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "integer" } },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors.map(getTypeAndRow)).toEqual([
+      ["cell/type", 3],
+      ["row/primaryKey", 4],
+    ])
+  })
+
+  it("should find a duplicate key without cell checks", async () => {
+    const table = pl.DataFrame({ name: ["a", "b", "a"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { name: { type: "string" } },
+      uniqueKeys: [["name"]],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors.map(getTypeAndRow)).toEqual([["row/uniqueKey", 3]])
+  })
+
+  it("should find a duplicate key across read batches", async () => {
+    const ids = [...Array.from({ length: 300_000 }, (_, index) => String(index)), "0"]
+    const table = pl.DataFrame({ id: ids }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "integer" } },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema })
+
+    expect(errors.map(getTypeAndRow)).toEqual([["row/primaryKey", 300_001]])
+  })
+
+  it("should find a duplicate key in a column that parses to one value", async () => {
+    const flags = Array.from({ length: 300_000 }, () => "true")
+    const table = pl.DataFrame({ flag: flags }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { flag: { type: "boolean" } },
+      uniqueKeys: [["flag"]],
+    }
+
+    const errors = await inspectTable(table, { tableSchema, maxErrors: 1 })
+
+    expect(errors.map(getTypeAndRow)).toEqual([["row/uniqueKey", 2]])
+  })
+
+  it("should leave key errors out once cell errors fill the report", async () => {
+    const table = pl.DataFrame({ id: ["x", "y", "1", "1"] }).lazy()
+    const tableSchema: TableSchema = {
+      properties: { id: { type: "integer" } },
+      primaryKey: ["id"],
+    }
+
+    const errors = await inspectTable(table, { tableSchema, maxErrors: 2 })
+
+    expect(errors.map(getTypeAndRow)).toEqual([
+      ["cell/type", 1],
+      ["cell/type", 2],
+    ])
+  })
 })
 
 describe("inspectTable (typed keys)", () => {
@@ -282,3 +350,7 @@ describe("inspectTable (typed keys)", () => {
     ])
   })
 })
+
+function getTypeAndRow(error: TableError) {
+  return [error.type, "rowNumber" in error ? error.rowNumber : undefined]
+}

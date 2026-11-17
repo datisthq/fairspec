@@ -49,7 +49,7 @@
     "fflate": "^0.8.3",
     "kysely": "^0.28.17",
     "kysely-generic-sqlite": "^1.2.1",
-    "nodejs-polars": "^0.26.1",
+    "nodejs-polars": "^0.26.2",
     "p-all": "^5.0.1",
     "wasm-xlsxwriter": "0.13.1",
     "zod": "^4.4.1"

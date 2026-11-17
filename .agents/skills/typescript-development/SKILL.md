@@ -95,7 +95,7 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   wkt, array, object, geojson, topojson) and the row key checks keep their own scan. The one
   second read: an integer column whose sample is plain is read by the plain form alone
   (`getPlainIntegerColumns` in `typescript/table/actions/table/inspect.ts`), and only when one
-  of its type error cells reads exactly are the columns and key probes read again, exactly
+  of its type error cells reads exactly are the columns read again, exactly, with fresh key probes
 - **Count expression nodes, not rows, in the check read.** The streaming engine shares no
   repeated expression, so one used twice runs twice, and the CSV source hands ~1000-row
   morsels of a wide file, so every node costs per morsel even on all-null input: a branch
@@ -113,27 +113,29 @@ a structural convention. Move a test and its `fixtures/` together: `resolveSnaps
   `Buffer.indexOf` over four concurrent `FileHandle.read`s into fixed 4MB buffers, each
   slice starting two bytes early; searching LF CR LF only in a slice holding a CR. Never a
   stream that concatenates its chunks: that cost 0.5s per GB
-- **A row key check probes before it locates.** `inspectRows` first runs a `groupBy(key).len()`
-  probe on the key columns alone, and only on a duplicate runs the row-indexed
-  `pl.struct(key).isFirstDistinct()` query. Never locate rows with a join: joins drop null keys,
+- **A row key check hashes before it locates.** `createKeyHashProbe`
+  (`typescript/table/actions/table/checks/key.ts`) is a `FlagFactory` riding the cell checks'
+  read: `mapBatches` appends each batch's key hashes to one Series and returns all-false, and
+  only when hashes repeat does `inspectRows` run the row-indexed
+  `pl.struct(key).isFirstDistinct()` query, as the Python and Rust twins do. It reads a key
+  column from the target that read already parses (targets are a `withColumns` before the
+  `select`), never a second parse. nodejs-polars plans `hash` as its input's dtype, so cast
+  it to UInt64 or a null branch widens it to Float64 and a struct key fails to plan;
+  `pl.concat` of Series copies per item (2s for 2000 batches), so accumulate with the
+  in-place `Series.append`; `pl.repeat` rejects booleans. Never locate rows with a join: joins drop null keys,
   while key checks skip any key with a null cell (`createKeyPresenceExpr`; a null primary key
   cell is `cell/missing` instead), and a key whose columns are not all in the data is skipped.
   Keys compare typed values, so each key column goes through `normalizeColumn` (`keyExprs`):
   `1.0` and `1` are one number key, and a `missingValues` marker is null, or two `NA` cells
-  conflict. nodejs-polars has no `Enum` dtype (casting to one throws, reading one fails
-  `dtypes`), so a `withOrder` Categorical cannot sort by category order here: its conformance
-  cases are `KNOWN_DIVERGENCES` skips until https://github.com/datisthq/fairspec/issues/76.
+  conflict. nodejs-polars has `Enum` only since 0.26.2, so a `withOrder` Categorical does not
+  sort by category order here yet: its conformance cases are `KNOWN_DIVERGENCES` skips until
+  https://github.com/datisthq/fairspec/issues/76.
   Its window functions also ignore `NULLS LAST` in `OVER (ORDER BY …)` (`ROW_NUMBER` ranks a
   null first in descending order), unlike Python and Rust; `ORDER BY` and `ARRAY_AGG` honour it.
   nodejs-polars' `pl.struct` takes plain strings as literals, not column names — pass
   `pl.col(name)` expressions, or every row looks distinct and duplicates pass silently.
-  `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read.
-  The Python twin hashes keys inside the cell checks' read instead of probing; nodejs-polars has
-  no lazy batch function to do the same, so this probe keeps its separate read until
-  nodejs-polars has one, tracked in https://github.com/datisthq/fairspec/issues/77. It runs
-  after the column checks: beside them (`Promise.all`) it saved ~13% of the time but held
-  ~7GB of anonymous memory at 10GB in three runs of four, against a steady 1.5GB
-- **nodejs-polars is patched** (`.patches/nodejs-polars@0.26.1.patch`, `patchedDependencies` in
+  `LazyFrame.groupBy` defaults `maintainOrder` to true; pass `false` where order is never read
+- **nodejs-polars is patched** (`.patches/nodejs-polars@0.26.2.patch`, `patchedDependencies` in
   `pnpm-workspace.yaml`): the `Expr` and `Series` wrappers set their computed symbol keys after
   the object literal, which makes each wrapper ~20x cheaper to build — about 0.4s of every
   validation. It also lets `Expr.str.strptime` take `{ strict, exact, cache }`, which the

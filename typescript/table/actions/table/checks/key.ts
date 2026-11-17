@@ -34,6 +34,51 @@ export function createRowKeyChecks(
   return checks
 }
 
+export type RowKeyCheck = ReturnType<typeof createRowKeyChecks>[number]
+
+/** Records the hash of every present key while another query reads the table. */
+export function createKeyHashProbe(check: RowKeyCheck) {
+  const hashes = pl.Series("", [], pl.UInt64)
+  const falses = new Map<number, pl.Series>()
+
+  // Called per batch. It returns all-false, so the flag joins the reading query's
+  // filter without changing its rows
+  const recordHashes = (batch: pl.Series) => {
+    hashes.append(batch)
+    let result = falses.get(batch.length)
+    if (!result) {
+      result = pl.Series("", new Array(batch.length).fill(false), pl.Bool)
+      falses.set(batch.length, result)
+    }
+    return result
+  }
+
+  // A key column the reading query already parses is read from it: the streaming
+  // engine does not share a repeated expression, so parsing it again costs a second read
+  const createFlagExpr = (readTyped: (name: string) => pl.Expr | undefined) => {
+    const keys = check.keyColumns.flatMap((name, index) => {
+      const key = readTyped(name) ?? check.keyExprs[index]
+      return key ? [key] : []
+    })
+    const [firstKey] = keys
+    const keyExpr = keys.length === 1 && firstKey ? firstKey : pl.struct(keys)
+    // nodejs-polars plans `hash` as its input's dtype, so without the cast the null
+    // branch widens it to Float64, and a struct key fails to plan
+    return pl
+      .when(createKeyPresenceExpr(keys))
+      .then(keyExpr.hash().cast(pl.UInt64))
+      .otherwise(pl.lit(null).cast(pl.UInt64))
+      .mapBatches(recordHashes, { returnType: pl.Bool, isElementwise: true })
+  }
+
+  const getHasDuplicateKey = () => {
+    const presentHashes = hashes.dropNulls()
+    return presentHashes.nUnique() < presentHashes.length
+  }
+
+  return { createFlagExpr, getHasDuplicateKey }
+}
+
 /** A key with any null value is never a duplicate. */
 export function createKeyPresenceExpr(keyExprs: pl.Expr[]) {
   return pl.allHorizontal(keyExprs.map(expr => expr.isNotNull()))
