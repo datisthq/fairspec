@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.4](https://github.com/datisthq/fairspec/compare/typescript-v0.13.3...typescript-v0.13.4) (2026-11-17)
+
+
+### Performance Improvements
+
+* **desktop:** run on nodejs-polars 0.26.2, which links jemalloc ([5f2b5e3](https://github.com/datisthq/fairspec/commit/5f2b5e310407818c33a08bc717290fbdd17fb3d3))
+* **typescript:** run on nodejs-polars 0.26.2 and hash row keys during the cell read ([5f2b5e3](https://github.com/datisthq/fairspec/commit/5f2b5e310407818c33a08bc717290fbdd17fb3d3))
+
 ## [0.13.3](https://github.com/datisthq/fairspec/compare/typescript-v0.13.2...typescript-v0.13.3) (2026-11-02)
 
 
